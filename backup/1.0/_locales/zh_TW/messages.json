@@ -1,0 +1,65 @@
+{
+  "appDesc": {
+    "message": "更多功能、更易使用的圖像瀏覽"
+  },
+  "appName": {
+    "message": "Image Viewer"
+  },
+  "default_image_fit": {
+    "message": "預設圖像大小"
+  },
+  "fit_with_original_size": {
+    "message": "圖像原本的大小"
+  },
+  "fit_with_window": {
+    "message": "視窗大小"
+  },
+  "fit_with_window_height": {
+    "message": "視窗高度"
+  },
+  "fit_with_window_width": {
+    "message": "視窗闊度"
+  },
+  "height": {
+    "message": "高度"
+  },
+  "min_height": {
+    "message": "最小高度"
+  },
+  "min_width": {
+    "message": "最小闊度"
+  },
+  "open_in_image_viewer": {
+    "message": "於Image Viewer觀看"
+  },
+  "options": {
+    "message": "設定"
+  },
+  "options_title": {
+    "message": "設定 - Image Viewer"
+  },
+  "reset": {
+    "message": "重設"
+  },
+  "rotate_degree": {
+    "message": "旋轉角度"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "size_filter": {
+    "message": "圖像大小過濾"
+  },
+  "view_all_images_in_image_viewer": {
+    "message": "於Image Viewer觀看所有圖像"
+  },
+  "view_images_in_image_viewer": {
+    "message": "於Image Viewer觀看圖像"
+  },
+  "width": {
+    "message": "闊度"
+  },
+  "zoom_ratio": {
+    "message": "縮放倍率"
+  }
+}

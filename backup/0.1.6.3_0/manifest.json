@@ -1,0 +1,26 @@
+{
+   "background": {
+      "scripts": [ "scripts/prototypes.js", "scripts/storage.js", "background.js" ]
+   },
+   "browser_action": {
+      "default_icon": "icon128.png"
+   },
+   "content_scripts": [ {
+      "css": [ "css/viewer.css" ],
+      "js": [ "scripts/prototypes.js", "scripts/jquery.js", "scripts/jquery.mousewheel.js", "scripts/storage.js", "scripts/css-transform.js", "image-viewer.js", "activate.js" ],
+      "matches": [ "*://*/*", "file:///*" ]
+   } ],
+   "default_locale": "en",
+   "description": "__MSG_appDesc__",
+   "icons": {
+      "128": "icon128.png",
+      "16": "icon16.png"
+   },
+   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC/M1pHr5EnIrzpFyzAaqQJQVy/mru+yquDRSFqC6OzIjhk88Q4onxG8VtqGKbIdwVA5JJgmUO8uatmycAcKHLK4yK4SRtXmW2B13AUg98VUjxWgQt7FeKxommvuQVMlRG31rn1GWasjZfKDoAd/L4sA8x/1VdJHPxfkViyP9uRfwIDAQAB",
+   "manifest_version": 2,
+   "name": "__MSG_appName__",
+   "options_page": "options.html",
+   "permissions": [ "tabs", "contextMenus", "*://*/*" ],
+   "update_url": "http://clients2.google.com/service/update2/crx",
+   "version": "0.1.6.3"
+}

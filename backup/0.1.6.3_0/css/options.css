@@ -1,0 +1,37 @@
+body{
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+}
+#title{
+	padding-left: 70px;
+	font-size: 24px;
+	height: 50px;
+	line-height: 50px;
+	background: url(../icon.png) 5px center no-repeat;
+}
+
+form, fieldset, ul{
+	padding: 0;
+	margin: 0;
+}
+fieldset{
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+input[type=range]{
+	vertical-align: middle;
+	width: 120px;
+}
+input[type=range][name=rotate]{
+	width: 360px;
+}
+
+#option-form{
+
+}
+#option-form li{
+	list-style: none;
+}
+#option-form .option-list > li:not(:last-child){
+	margin-bottom: 10px;
+}

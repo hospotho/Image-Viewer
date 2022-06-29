@@ -1,0 +1,44 @@
+{
+  "name": "__MSG_appName__",
+  "description": "__MSG_appDesc__",
+  "version": "1.0",
+  "default_locale": "en",
+  "manifest_version": 3,
+  "icons": {
+    "16": "/icon/icon16.png",
+    "128": "/icon/icon128.png"
+  },
+  "permissions": ["storage", "contextMenus", "scripting"],
+  "host_permissions": ["*://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_icon": {
+      "16": "/icon/icon16.png",
+      "128": "/icon/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "css":["/css/viewer.css"],
+      "js": ["/scripts/image-viewer.js", "/scripts/activate-url.js"],
+      "matches": ["*://*/*", "file:///*"]
+    }
+  ],
+  "commands": {
+    "open-image-viwer": {
+      "suggested_key": {
+        "default": "Alt+1"
+      },
+      "description": "Open image viwer"
+    },
+    "open-image-viwer-without-size-filter": {
+      "suggested_key": {
+        "default": "Alt+Shift+1"
+      },
+      "description": "Open image viwer without size filter"
+    }
+  }
+}

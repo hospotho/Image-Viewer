@@ -1,0 +1,24 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Shadow DOM</title>
+    <style>
+      p {
+        color: #f00;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="shadowDiv1"><p class="shadowrootClass">Hello, Shadow DOM world!</p></div>
+    <div id="shadowDiv2"></div>
+    <script>
+      //選擇shadowDiv2當成shadow host
+      var shadowHost = document.querySelector('#shadowDiv2')
+
+      //在此節點上附件shadow root
+      var shadowRoot = shadowHost.attachShadow({mode: 'open'})
+
+      shadowRoot.innerHTML = '<p class="shadowrootClass">測試自建一個shadow DOM</p>'
+    </script>
+  </body>
+</html>
