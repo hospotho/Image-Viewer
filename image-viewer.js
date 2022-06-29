@@ -453,7 +453,7 @@ const imageViewer = (function () {
         e.preventDefault()
         if (!e.altKey) return
         const match = img.style.transform.match(/rotate\((.+)deg\)/)
-        const rotate = match ? Number(match[1]) : 0
+        const rotate = match ? Number(match[1]) % 360 : 0
         img.style.transform = img.style.transform.replace(/rotate\(.+deg\)/, '')
         img.style.transform += e.deltaY > 0 ? ` rotate(${rotate - options.rotateDeg}deg)` : ` rotate(${rotate + options.rotateDeg}deg)`
         img.style.transform = img.style.transform.replace(/\s+/g, ' ').trim()
@@ -480,8 +480,17 @@ const imageViewer = (function () {
       })
       li.addEventListener('mousemove', e => {
         if (!dragFlag) return
-        img.style.transform = img.style.transform.replace(/translateX\(-?\d+px\) translateY\(-?\d+px\)/, '')
-        img.style.transform += ` translateX(${e.clientX - startPos.x}px) translateY(${e.clientY - startPos.y}px)`
+        const scaleMatch = img.style.transform.match(/scale\((\d+\.\d+)\)/)
+        const scale = scaleMatch ? Number(scaleMatch[1]) : 1
+        const rotateMatch = img.style.transform.match(/rotate\((.+)deg\)/)
+        const rotate = rotateMatch ? Number(rotateMatch[1]) % 360 : 0
+        const moveX = (e.clientX - startPos.x) / scale
+        const moveY = (e.clientY - startPos.y) / scale
+        const antiRotate = (-rotate / 180) * Math.PI
+        const rotateX = moveX * Math.cos(antiRotate) - moveY * Math.sin(antiRotate)
+        const rotateY = moveX * Math.sin(antiRotate) + moveY * Math.cos(antiRotate)
+        img.style.transform = img.style.transform.replace(/translateX\(-?\d*\.?\d*px\) translateY\(-?\d*\.?\d*px\)/, '')
+        img.style.transform += ` translateX(${rotateX}px) translateY(${rotateY}px)`
         img.style.transform = img.style.transform.replace(/\s+/g, ' ').trim()
       })
       li.addEventListener('mouseup', e => {
