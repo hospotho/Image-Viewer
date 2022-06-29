@@ -61,7 +61,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     case 'open_in_image_viewer':
       chrome.scripting.executeScript({
         target: {tabId: tab.id},
-        func: url => imageViewer([url], {closeButton: true}),
+        func: url => {
+          chrome.storage.sync.get('options', res => {
+            var {options} = res
+            options.closeButton = true
+            imageViewer([url], options)
+          })
+        },
         args: [info.srcUrl]
       })
       break

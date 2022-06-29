@@ -454,7 +454,7 @@ const imageViewer = (function () {
         if (!e.altKey) return
         const match = img.style.transform.match(/rotate\((.+)deg\)/)
         const rotate = match ? Number(match[1]) : 0
-        img.style.transform = img.style.transform.replace(/(rotate\(.+deg\))/, '')
+        img.style.transform = img.style.transform.replace(/rotate\(.+deg\)/, '')
         img.style.transform += e.deltaY > 0 ? ` rotate(${rotate - options.rotateDeg}deg)` : ` rotate(${rotate + options.rotateDeg}deg)`
         img.style.transform = img.style.transform.replace(/\s+/g, ' ').trim()
       })
