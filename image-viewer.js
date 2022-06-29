@@ -484,13 +484,14 @@ const imageViewer = (function () {
         const scale = scaleMatch ? Number(scaleMatch[1]) : 1
         const rotateMatch = img.style.transform.match(/rotate\((.+)deg\)/)
         const rotate = rotateMatch ? Number(rotateMatch[1]) % 360 : 0
+        const mirror = img.classList.contains('mirror') ? -1 : 1
         const moveX = (e.clientX - startPos.x) / scale
         const moveY = (e.clientY - startPos.y) / scale
         const antiRotate = (-rotate / 180) * Math.PI
         const rotateX = moveX * Math.cos(antiRotate) - moveY * Math.sin(antiRotate)
         const rotateY = moveX * Math.sin(antiRotate) + moveY * Math.cos(antiRotate)
-        img.style.transform = img.style.transform.replace(/translateX\(-?\d*\.?\d*px\) translateY\(-?\d*\.?\d*px\)/, '')
-        img.style.transform += ` translateX(${rotateX}px) translateY(${rotateY}px)`
+        img.style.transform = img.style.transform.replace(/translateX\(.+px\) translateY\(.+px\)/, '')
+        img.style.transform += ` translateX(${rotateX * mirror}px) translateY(${rotateY}px)`
         img.style.transform = img.style.transform.replace(/\s+/g, ' ').trim()
       })
       li.addEventListener('mouseup', e => {
