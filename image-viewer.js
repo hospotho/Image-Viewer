@@ -490,12 +490,7 @@ const imageViewer = (function () {
     //MoveTo button
     shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', () => {
       var imgUrl = shadowRoot.querySelector('.current img').src
-      for (const img of shadowRoot.querySelectorAll('img')) {
-        if (imgUrl === img.src) {
-          img.scrollIntoView({block: 'center'})
-          break
-        }
-      }
+      document.querySelector(`img[src="${imgUrl}"]`).scrollIntoView({block: 'center'})
       closeImageViewer()
     })
     // Close button
