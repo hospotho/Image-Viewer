@@ -411,7 +411,7 @@ const imageViewer = (function () {
 
   function buildImageList(imageList) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
-    let first = strToNode(`<li class="current"><img src="${imageList[0]}" alt="" /></li>`)
+    let first = strToNode(`<li class="current"><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer"/></li>`)
     first.firstChild.addEventListener('load', e => {
       if (e.target.naturalWidth === 0) e.target.parentNode.remove()
     })
@@ -423,7 +423,7 @@ const imageViewer = (function () {
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
     shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = imageList.length
     for (let i = 1; i < imageList.length; i++) {
-      const li = strToNode(`<li><img src="${imageList[i]}" alt="" /></li>`)
+      const li = strToNode(`<li><img src="${imageList[i]}" alt="" referrerpolicy="no-referrer"/></li>`)
       li.firstChild.addEventListener('load', e => {
         if (e.target.naturalWidth === 0) e.target.parentNode.remove()
         shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
