@@ -387,7 +387,7 @@ const imageViewer = (function () {
 
     const shadowHolder = document.createElement('div')
     shadowHolder.classList.add('__shadow__image-viewer')
-    shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
+    shadowRoot = shadowHolder.attachShadow({mode: 'open'})
     document.body.appendChild(shadowHolder)
 
     const stylesheet = document.createElement('style')
@@ -414,10 +414,10 @@ const imageViewer = (function () {
     let first = strToNode(`<li class="current"><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer"/></li>`)
     first.firstChild.addEventListener('load', e => {
       if (e.target.naturalWidth === 0) e.target.parentNode.remove()
+      shadowRoot.querySelector(`.${appName}-info-width`).value = _imageList.querySelector('li img').naturalWidth
+      shadowRoot.querySelector(`.${appName}-info-height`).value = _imageList.querySelector('li img').naturalHeight
     })
     _imageList.appendChild(first)
-    shadowRoot.querySelector(`.${appName}-info-width`).value = _imageList.querySelector('li img').naturalWidth
-    shadowRoot.querySelector(`.${appName}-info-height`).value = _imageList.querySelector('li img').naturalHeight
 
     if (imageList.length === 1) return
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
