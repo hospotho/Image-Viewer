@@ -19,6 +19,55 @@ const imageViewer = (function () {
     return
   }
 
+  function VtoM(scaleX, scaleY, rotate, moveX, moveY) {
+    const m = [0, 0, 0, 0, 0, 0]
+    const deg = Math.PI / 180
+    m[0] = scaleX * Math.cos(rotate * deg)
+    m[1] = scaleY * Math.sin(rotate * deg)
+    m[2] = -scaleX * Math.sin(rotate * deg)
+    m[3] = scaleY * Math.cos(rotate * deg)
+    m[4] = moveX
+    m[5] = moveY
+    return `matrix(${m.map(t => t.toFixed(2))})`
+  }
+
+  function MtoV(str) {
+    const match = str.match(/matrix\([-\d\.e, ]+\)/)
+    if (!match) return
+    const m = match[0]
+      .slice(7, -1)
+      .split(',')
+      .map(t => Number(t))
+    //https://www.w3.org/TR/css-transforms-1/#decomposing-a-2d-matrix
+    var row0x = m[0]
+    var row0y = m[2]
+    var row1x = m[1]
+    var row1y = m[3]
+    const moveX = m[4]
+    const moveY = m[5]
+    var scaleX = Math.sqrt(row0x * row0x + row0y * row0y)
+    var scaleY = Math.sqrt(row1x * row1x + row1y * row1y)
+    const determinant = row0x * row1y - row0y * row1x
+    if (determinant < 0) {
+      scaleX = -scaleX
+    }
+    if (determinant === 0) {
+      scaleX = 1
+      scaleY = 1
+    }
+    if (scaleX) {
+      row0x *= 1 / scaleX
+      row0y *= 1 / scaleX
+    }
+    if (scaleY) {
+      row1x *= 1 / scaleY
+      row1y *= 1 / scaleY
+    }
+    var rotate = Math.atan2(row0y, row0x)
+    console.log([scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY])
+    return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
+  }
+
   const frame = () => {
     return `<ul class="${imageListName}"></ul>
     <nav class="${appName}-control">
@@ -316,7 +365,7 @@ const imageViewer = (function () {
 
     const shadowHolder = document.createElement('div')
     shadowHolder.classList.add('__shadow__image-viewer')
-    shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
+    shadowRoot = shadowHolder.attachShadow({mode: 'open'})
     document.body.appendChild(shadowHolder)
 
     const stylesheet = document.createElement('style')
@@ -340,8 +389,11 @@ const imageViewer = (function () {
 
   function buildImageList(imageList) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
-    let first = `<li class="${appName}-list-0 current"><img src="${imageList[0]}" alt="" /></li>`
-    _imageList.appendChild(strToNode(first))
+    let first = strToNode(`<li class="current"><img src="${imageList[0]}" alt="" /></li>`)
+    first.firstChild.addEventListener('load', e => {
+      if (e.target.naturalWidth === 0) e.target.parentNode.remove()
+    })
+    _imageList.appendChild(first)
     shadowRoot.querySelector(`.${appName}-info-width`).value = _imageList.querySelector('li img').naturalWidth
     shadowRoot.querySelector(`.${appName}-info-height`).value = _imageList.querySelector('li img').naturalHeight
 
@@ -349,8 +401,11 @@ const imageViewer = (function () {
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
     shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = imageList.length
     for (let i = 1; i < imageList.length; i++) {
-      const html = `<li class="${appName}-list-${i}"><img src="${imageList[i]}" alt="" /></li>`
-      _imageList.appendChild(strToNode(html))
+      const li = strToNode(`<li><img src="${imageList[i]}" alt="" /></li>`)
+      li.firstChild.addEventListener('load', e => {
+        if (e.target.naturalWidth === 0) e.target.parentNode.remove()
+      })
+      _imageList.appendChild(li)
     }
   }
 
@@ -385,12 +440,11 @@ const imageViewer = (function () {
       img.height = h
       img.style.marginLeft = `${-w / 2}px`
       img.style.marginTop = `${-h / 2}px`
-      img.style.transform = ''
+      img.style.transform = 'matrix(1,0,0,1,0,0)'
     }
     shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).forEach(li => {
       const img = li.firstChild
-      img.addEventListener('load', e => action(e.target))
-      if (img.naturalWidth) action(img)
+      action(img)
       const event = new CustomEvent('resetDrag')
       li.dispatchEvent(event)
     })
@@ -438,37 +492,38 @@ const imageViewer = (function () {
     //transform
     shadowRoot.querySelectorAll(`.${appName}  .${imageListName} li`).forEach(li => {
       const img = li.firstChild
+      var zoomCount = 0
+      var rotateCount = 0
       //zoom
       li.addEventListener('wheel', e => {
         e.preventDefault()
         if (e.altKey) return
-        const match = img.style.transform.match(/scale\((\d+\.\d+)\)/)
-        const scale = match ? Number(match[1]) : 1
-        img.style.transform = img.style.transform.replace(/(scale\(\d+\.?\d*\))/, '')
-        img.style.transform += e.deltaY > 0 ? ` scale(${scale / options.zoomRatio})` : ` scale(${scale * options.zoomRatio})`
-        img.style.transform = img.style.transform.replace(/\s+/g, ' ').trim()
+        var [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        e.deltaY > 0 ? zoomCount-- : zoomCount++
+        scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
+        scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
+        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+        rotate = (mirror * options.rotateDeg * rotateCount) % 360
+        img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
       //rotate
       li.addEventListener('wheel', e => {
         e.preventDefault()
         if (!e.altKey) return
-        const match = img.style.transform.match(/rotate\((.+)deg\)/)
-        const rotate = match ? Number(match[1]) % 360 : 0
-        img.style.transform = img.style.transform.replace(/rotate\(.+deg\)/, '')
-        img.style.transform += e.deltaY > 0 ? ` rotate(${rotate - options.rotateDeg}deg)` : ` rotate(${rotate + options.rotateDeg}deg)`
-        img.style.transform = img.style.transform.replace(/\s+/g, ' ').trim()
+        var [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+        mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
+        rotate = (mirror * options.rotateDeg * rotateCount) % 360
+        img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
       //mirror-reflect
       li.addEventListener('click', e => {
         if (!e.altKey) return
-        if (img.classList.contains('mirror')) {
-          img.classList.remove('mirror')
-          img.style.transform = img.style.transform.replace('scaleX(-1)', '')
-        } else {
-          img.classList.add('mirror')
-          img.style.transform += ' scaleX(-1)'
-        }
-        img.style.transform = img.style.transform.replace(/\s+/g, ' ').trim()
+        var [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+        rotate = (mirror * options.rotateDeg * rotateCount) % 360
+        rotateCount *= -1
+        img.style.transform = VtoM(-scaleX, scaleY, rotate, moveX, moveY)
       })
       //dragging
       var dragFlag = false
@@ -480,34 +535,28 @@ const imageViewer = (function () {
       })
       li.addEventListener('mousemove', e => {
         if (!dragFlag) return
-        const scaleMatch = img.style.transform.match(/scale\((\d+\.\d+)\)/)
-        const scale = scaleMatch ? Number(scaleMatch[1]) : 1
-        const rotateMatch = img.style.transform.match(/rotate\((.+)deg\)/)
-        const rotate = rotateMatch ? Number(rotateMatch[1]) % 360 : 0
-        const mirror = img.classList.contains('mirror') ? -1 : 1
-        const moveX = (e.clientX - startPos.x) / scale
-        const moveY = (e.clientY - startPos.y) / scale
-        const antiRotate = (-rotate / 180) * Math.PI
-        const rotateX = moveX * Math.cos(antiRotate) - moveY * Math.sin(antiRotate)
-        const rotateY = moveX * Math.sin(antiRotate) + moveY * Math.cos(antiRotate)
-        img.style.transform = img.style.transform.replace(/translateX\(.+px\) translateY\(.+px\)/, '')
-        img.style.transform += ` translateX(${rotateX * mirror}px) translateY(${rotateY}px)`
-        img.style.transform = img.style.transform.replace(/\s+/g, ' ').trim()
+        var [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        rotate = options.rotateDeg * rotateCount
+        moveX = e.clientX - startPos.x
+        moveY = e.clientY - startPos.y
+        img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
       li.addEventListener('mouseup', e => {
         dragFlag = false
-        imagePos = {
-          x: e.clientX - startPos.x,
-          y: e.clientY - startPos.y
-        }
+        imagePos = {x: e.clientX - startPos.x, y: e.clientY - startPos.y}
       })
       li.addEventListener('resetDrag', e => {
+        zoomCount = 0
+        rotateCount = 0
+        img.style.transform = 'matrix(1,0,0,1,0,0)'
         imagePos = {x: 0, y: 0}
         startPos = {x: 0, y: 0}
       })
       //reset
-      li.addEventListener('dblclick ', e => {
-        img.style.transform = ''
+      li.addEventListener('dblclick', e => {
+        zoomCount = 0
+        rotateCount = 0
+        img.style.transform = 'matrix(1,0,0,1,0,0)'
         imagePos = {x: 0, y: 0}
         startPos = {x: 0, y: 0}
       })
