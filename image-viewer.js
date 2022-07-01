@@ -19,6 +19,29 @@ const imageViewer = (function () {
     return
   }
 
+  function simpleUnlazyImage() {
+    const imgList = document.querySelectorAll('img')
+    const index1 = parseInt(Math.random() * imgList.length)
+    const index2 = parseInt(Math.random() * imgList.length)
+    const index3 = parseInt(Math.random() * imgList.length)
+    const check = [...imgList[index1].attributes, ...imgList[index2].attributes, ...imgList[index3].attributes]
+      .map(i => (i.name !== 'src' && /^(?:https?:\/)?\/.+/.test(i.value) ? {[i.name]: i.value} : null))
+      .filter(k => k !== null)
+    if (check.length === 0) return
+    const lazyName = Object.keys(check[0])[0]
+    const lazyimgList = document.querySelectorAll(`img[${lazyName}]`)
+    const test = [...lazyimgList].map(img => img.src)
+    const tester = parseInt(Math.random() * imgList.length)
+    const src1 = test[tester]
+    const src2 = test[test.length - tester]
+    const src3 = test[parseInt(imgList.length / 2)]
+    if (src1 !== src2 && src1 !== src3 && src2 !== src3) return
+    console.log('unlazy')
+    for (const img of lazyimgList) {
+      img.src = img.getAttribute(lazyName).split(' ')[0]
+    }
+  }
+
   function VtoM(scaleX, scaleY, rotate, moveX, moveY) {
     const m = [0, 0, 0, 0, 0, 0]
     const deg = Math.PI / 180
@@ -650,5 +673,6 @@ const imageViewer = (function () {
     fitImage(options)
   }
 
+  simpleUnlazyImage()
   return imageViewer
 })()
