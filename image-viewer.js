@@ -426,7 +426,7 @@ const imageViewer = (function () {
       const li = strToNode(`<li><img src="${imageList[i]}" alt="" /></li>`)
       li.firstChild.addEventListener('load', e => {
         if (e.target.naturalWidth === 0) e.target.parentNode.remove()
-        shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = shadowRoot.querySelector(`.${appName} .${imageListName}`).length
+        shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
       })
       _imageList.appendChild(li)
     }
