@@ -177,15 +177,12 @@ const imageViewer = (function () {
         border-top: 0px #333 solid;
       }
       .__crx__image-viewer .__crx__image-viewer-control * {
-        opacity: 0;
-      }
-      .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-relate {
-        opacity: 1;
+        visibility: hidden;
       }
       .__crx__image-viewer .__crx__image-viewer-control:hover,
       .__crx__image-viewer .__crx__image-viewer-control:hover * {
         background: rgba(0, 0, 0, 0.8);
-        opacity: 1;
+        visibility: visible;
       }      
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-info {
         position: absolute;
@@ -271,6 +268,7 @@ const imageViewer = (function () {
         font-family: Verdana, Helvetica, Arial, sans-serif;
         color: #ddd;
         font-size: 16px;
+        visibility: visible;
       }
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-relate ul {
         display: inline-block;
@@ -388,7 +386,7 @@ const imageViewer = (function () {
 
     const shadowHolder = document.createElement('div')
     shadowHolder.classList.add('__shadow__image-viewer')
-    shadowRoot = shadowHolder.attachShadow({mode: 'open'})
+    shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
     document.body.appendChild(shadowHolder)
 
     const stylesheet = document.createElement('style')
