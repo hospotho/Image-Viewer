@@ -677,5 +677,6 @@ const imageViewer = (function () {
   }
 
   simpleUnlazyImage()
+  console.log('Image viewer initialized')
   return imageViewer
 })()
