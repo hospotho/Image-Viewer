@@ -503,7 +503,10 @@ const imageViewer = (function () {
     const closeButton = shadowRoot.querySelector('.' + appName + ' .' + appName + '-button-close')
     closeButton.classList.add('show')
     closeButton.addEventListener('click', closeImageViewer)
-    closeButton.addEventListener('contextmenu', close)
+    closeButton.addEventListener('contextmenu', e => {
+      e.preventDefault()
+      window.close()
+    })
   }
 
   function addImageEvent(options) {
