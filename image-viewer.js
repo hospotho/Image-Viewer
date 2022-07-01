@@ -24,9 +24,11 @@ const imageViewer = (function () {
     const index1 = parseInt(Math.random() * imgList.length)
     const index2 = parseInt(Math.random() * imgList.length)
     const index3 = parseInt(Math.random() * imgList.length)
-    const check = [...imgList[index1].attributes, ...imgList[index2].attributes, ...imgList[index3].attributes]
-      .map(i => (i.name !== 'src' && /^(?:https?:\/)?\/.+/.test(i.value) ? {[i.name]: i.value} : null))
-      .filter(k => k !== null)
+    const attributes = [...imgList[index1].attributes, ...imgList[index2].attributes, ...imgList[index3].attributes]
+    const check = []
+    for (const attr of attributes) {
+      if (attr.name !== 'src' && /^(?:https?:\/)?\/.+/.test(attr.value)) check.push({[attr.name]: attr.value})
+    }
     if (check.length === 0) return
     const lazyName = Object.keys(check[0])[0]
     const lazyimgList = document.querySelectorAll(`img[${lazyName}]`)
@@ -87,7 +89,6 @@ const imageViewer = (function () {
       row1y *= 1 / scaleY
     }
     var rotate = Math.atan2(row0y, row0x)
-    console.log([scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY])
     return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
   }
 
@@ -425,6 +426,7 @@ const imageViewer = (function () {
       const li = strToNode(`<li><img src="${imageList[i]}" alt="" /></li>`)
       li.firstChild.addEventListener('load', e => {
         if (e.target.naturalWidth === 0) e.target.parentNode.remove()
+        shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = shadowRoot.querySelector(`.${appName} .${imageListName}`).length
       })
       _imageList.appendChild(li)
     }
@@ -465,7 +467,8 @@ const imageViewer = (function () {
     }
     shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).forEach(li => {
       const img = li.firstChild
-      action(img)
+      img.addEventListener('load', e => action(e.target))
+      if (img.naturalWidth) action(img)
       const event = new CustomEvent('resetDrag')
       li.dispatchEvent(event)
     })
@@ -489,7 +492,6 @@ const imageViewer = (function () {
       var imgUrl = shadowRoot.querySelector('.current img').src
       for (const img of shadowRoot.querySelectorAll('img')) {
         if (imgUrl === img.src) {
-          console.log('moveto')
           img.scrollIntoView({block: 'center'})
           break
         }
@@ -668,10 +670,10 @@ const imageViewer = (function () {
     console.log('Total image: ', imageList.length)
     buildApp()
     buildImageList(imageList)
+    fitImage(options)
     addFrameEvent(options)
     addImageEvent(options)
     if (imageList.length > 1) addImageListEvent()
-    fitImage(options)
   }
 
   simpleUnlazyImage()
