@@ -22,7 +22,7 @@
   },
   "content_scripts": [
     {
-      "js": ["image-viewer.js", "/scripts/activate-url.js"],
+      "js": ["/scripts/activate-url.js"],
       "matches": ["*://*/*", "file:///*"]
     }
   ],

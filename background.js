@@ -30,12 +30,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })
     return true
   }
+  if (request === 'load_script') {
+    chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, res => sendResponse({}))
+    return true
+  }
   sendResponse({})
-})
-
-//==========Tooltip==========
-chrome.action.onClicked.addListener(tab => {
-  chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
 })
 
 //==========Context menu (right-click menu)==========
@@ -61,11 +60,20 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     case 'open_in_image_viewer':
       chrome.scripting.executeScript({
         target: {tabId: tab.id},
-        func: url => {
-          chrome.storage.sync.get('options', res => {
+        func: srcUrl => {
+          chrome.runtime.sendMessage('get_options', res => {
+            if (!res) return
             var {options} = res
             options.closeButton = true
-            imageViewer([url], options)
+
+            if (typeof imageViewer === 'function') {
+              imageViewer([srcUrl], options)
+            } else {
+              chrome.runtime.sendMessage('load_script', res => {
+                console.log(srcUrl)
+                imageViewer([srcUrl], options)
+              })
+            }
           })
         },
         args: [info.srcUrl]
@@ -78,6 +86,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-all.js']})
       break
   }
+})
+
+//==========Tooltip==========
+chrome.action.onClicked.addListener(tab => {
+  chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
 })
 
 //==========command==========

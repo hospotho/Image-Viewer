@@ -36,6 +36,14 @@
       }
     }
 
-    imageViewer(uniqueImageUrls, options)
+    if (uniqueImageUrls.length === 0) return
+    if (typeof imageViewer === 'function') {
+      imageViewer([images[0].src], options)
+    } else {
+      chrome.runtime.sendMessage('load_script', res => {
+        console.log('in')
+        imageViewer([images[0].src], options)
+      })
+    }
   })
 })()
