@@ -635,12 +635,15 @@ const imageViewer = (function () {
     //function key
     window.addEventListener('keydown', e => {
       if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
+        e.preventDefault()
         return nextItem()
       }
       if (e.code === 'ArrowLeft' || e.code === 'ArrowUp') {
+        e.preventDefault()
         return prevItem()
       }
       if (e.code === 'Escape' || e.code === '"NumpadAdd"') {
+        e.preventDefault()
         return closeImageViewer()
       }
     })
