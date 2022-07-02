@@ -96,7 +96,7 @@ chrome.action.onClicked.addListener(tab => {
 //==========command==========
 chrome.commands.onCommand.addListener((command, tab) => {
   switch (command) {
-    case 'open_image_viewer':
+    case 'open-image-viewer':
       chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
       break
     case 'open-image-viwer-without-size-filter':
