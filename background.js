@@ -24,10 +24,7 @@ resetLocalStorage()
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request === 'get_options') {
-    chrome.storage.sync.get('options', res => {
-      var options = res
-      sendResponse(options)
-    })
+    chrome.storage.sync.get('options', res => sendResponse(res))
     return true
   }
   if (request === 'load_script') {
@@ -60,22 +57,17 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     case 'open_in_image_viewer':
       chrome.scripting.executeScript({
         target: {tabId: tab.id},
-        func: srcUrl => {
+        func: srcUrl =>
           chrome.runtime.sendMessage('get_options', res => {
             if (!res) return
             var {options} = res
             options.closeButton = true
-
-            if (typeof imageViewer === 'function') {
-              imageViewer([srcUrl], options)
-            } else {
-              chrome.runtime.sendMessage('load_script', res => {
-                console.log(srcUrl)
-                imageViewer([srcUrl], options)
-              })
-            }
-          })
-        },
+            typeof imageViewer === 'function'
+              ? imageViewer([srcUrl], options)
+              : chrome.runtime.sendMessage('load_script', res => {
+                  imageViewer([srcUrl], options)
+                })
+          }),
         args: [info.srcUrl]
       })
       break
