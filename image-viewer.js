@@ -19,31 +19,6 @@ const imageViewer = (function () {
     return
   }
 
-  function simpleUnlazyImage() {
-    const imgList = document.querySelectorAll('img')
-    const index1 = parseInt(Math.random() * imgList.length)
-    const index2 = parseInt(Math.random() * imgList.length)
-    const index3 = parseInt(Math.random() * imgList.length)
-    const attributes = [...imgList[index1].attributes, ...imgList[index2].attributes, ...imgList[index3].attributes]
-    const check = []
-    for (const attr of attributes) {
-      if (attr.name !== 'src' && /^(?:https?:\/)?\/.+/.test(attr.value)) check.push({[attr.name]: attr.value})
-    }
-    if (check.length === 0) return
-    const lazyName = Object.keys(check[0])[0]
-    const lazyimgList = document.querySelectorAll(`img[${lazyName}]`)
-    const test = [...lazyimgList].map(img => img.src)
-    const tester = parseInt(Math.random() * imgList.length)
-    const src1 = test[tester]
-    const src2 = test[test.length - tester]
-    const src3 = test[parseInt(imgList.length / 2)]
-    if (src1 !== src2 && src1 !== src3 && src2 !== src3) return
-    console.log('unlazy')
-    for (const img of lazyimgList) {
-      img.src = img.getAttribute(lazyName).split(' ')[0]
-    }
-  }
-
   function VtoM(scaleX, scaleY, rotate, moveX, moveY) {
     const m = [0, 0, 0, 0, 0, 0]
     const deg = Math.PI / 180
@@ -594,7 +569,7 @@ const imageViewer = (function () {
     function prevItem() {
       clearTimeout(debounceTimeout)
       const imageList = imageListNode.querySelectorAll('li')
-      const currentListItem = imageList.querySelector('li.current')
+      const currentListItem = imageListNode.querySelector('li.current')
       var currentIndex = [...imageList].indexOf(currentListItem)
       if (currentIndex === -1) currentIndex = Math.max(index, imageList.length)
 
@@ -639,7 +614,7 @@ const imageViewer = (function () {
       }
     }
 
-    //function key
+    //key event
     window.addEventListener('keydown', e => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
@@ -681,7 +656,6 @@ const imageViewer = (function () {
     if (imageList.length > 1) addImageListEvent()
   }
 
-  simpleUnlazyImage()
   console.log('Image viewer initialized')
   return imageViewer
 })()

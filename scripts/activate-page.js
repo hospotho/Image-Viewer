@@ -1,6 +1,29 @@
 ;(function () {
   'use strict'
 
+  function simpleUnlazyImage() {
+    document.documentElement.classList.add('has-unlazy')
+    const imgList = document.querySelectorAll('img')
+    for (const img in imgList) {
+      img.loading = 'eager'
+    }
+    const index1 = parseInt(Math.random() * imgList.length)
+    const index2 = parseInt(Math.random() * imgList.length)
+    const index3 = parseInt(Math.random() * imgList.length)
+    const attributes = [...imgList[index1].attributes, ...imgList[index2].attributes, ...imgList[index3].attributes]
+    const check = []
+    for (const attr of attributes) {
+      if (attr.name !== 'src' && /^(?:https?:\/)?\/.+/.test(attr.value)) check.push({[attr.name]: attr.value})
+    }
+    if (check.length === 0) return
+    const lazyName = Object.keys(check[0])[0]
+    const lazyimgList = document.querySelectorAll(`img[${lazyName}]`)
+    console.log(`Unlazy img with ${lazyName} attr`)
+    for (const img of lazyimgList) {
+      img.src = img.getAttribute(lazyName).split(' ')[0]
+    }
+  }
+
   chrome.runtime.sendMessage('get_options', res => {
     if (!res) return
     var {options} = res
@@ -13,6 +36,10 @@
       viewer.style.transition = 'opacity 0.1s'
       viewer.style.opacity = '0'
       return
+    }
+
+    if (!document.documentElement.classList.contains('has-unlazy')) {
+      simpleUnlazyImage()
     }
 
     var imageUrls = []
