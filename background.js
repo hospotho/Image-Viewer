@@ -94,16 +94,13 @@ chrome.action.onClicked.addListener(tab => {
 })
 
 //==========command==========
-chrome.commands.onCommand.addListener(command => {
-  console.log(`Command: ${command}`)
-  if (command === 'open-image-viwer') {
-    return
-  }
-  if (command === 'open-image-viwer-without-size-filter') {
-    return
+chrome.commands.onCommand.addListener((command, tab) => {
+  switch (command) {
+    case 'open_image_viewer':
+      chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
+      break
+    case 'open-image-viwer-without-size-filter':
+      chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-all.js']})
+      break
   }
 })
-
-// chrome.extension.onMessage.addListener((request ,sender, sendResponse) => {
-
-// })

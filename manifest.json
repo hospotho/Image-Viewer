@@ -31,13 +31,13 @@
       "suggested_key": {
         "default": "Alt+1"
       },
-      "description": "__MSG_view_images_in_image_viewer"
+      "description": "__MSG_view_images_in_image_viewer__"
     },
     "open-image-viwer-without-size-filter": {
       "suggested_key": {
         "default": "Alt+Shift+1"
       },
-      "description": "__MSG_view_all_images_in_image_viewer"
+      "description": "__MSG_view_all_images_in_image_viewer__"
     }
   }
 }
