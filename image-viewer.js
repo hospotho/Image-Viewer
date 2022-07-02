@@ -634,15 +634,15 @@ const imageViewer = (function () {
 
     //function key
     window.addEventListener('keydown', e => {
-      if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
         return nextItem()
       }
-      if (e.code === 'ArrowLeft' || e.code === 'ArrowUp') {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault()
         return prevItem()
       }
-      if (e.code === 'Escape' || e.code === '"NumpadAdd"') {
+      if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
         e.preventDefault()
         return closeImageViewer()
       }
