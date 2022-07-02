@@ -410,20 +410,18 @@ const imageViewer = (function () {
   function fitImage(options) {
     function both(imageWidth, imageHeight) {
       const windowWidth = document.documentElement.clientWidth
-      const windowHeight = document.documentElement.clientHeight
+      const windowHeight = Math.min(document.documentElement.clientHeight, document.body.clientHeight)
       const windowRatio = windowWidth / windowHeight
       const imgRatio = imageWidth / imageHeight
       return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
     }
     function width(imageWidth, imageHeight) {
       const windowWidth = document.documentElement.clientWidth
-      const windowHeight = document.documentElement.clientHeight
       const imgRatio = imageWidth / imageHeight
       return [windowWidth, windowWidth / imgRatio]
     }
     function height(imageWidth, imageHeight) {
-      const windowWidth = document.documentElement.clientWidth
-      const windowHeight = document.documentElement.clientHeight
+      const windowHeight = Math.min(document.documentElement.clientHeight, document.body.clientHeight)
       const imgRatio = imageWidth / imageHeight
       return [windowHeight * imgRatio, windowHeight]
     }
