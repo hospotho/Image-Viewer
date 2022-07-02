@@ -62,6 +62,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             if (!res) return
             var {options} = res
             options.closeButton = true
+            options.minWidth = 0
+            options.minHeight = 0
             typeof imageViewer === 'function'
               ? imageViewer([srcUrl], options)
               : chrome.runtime.sendMessage('load_script', res => {

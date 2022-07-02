@@ -5,6 +5,8 @@
     if (!res) return
     var {options} = res
     options.closeButton = false
+    options.minWidth = 0
+    options.minHeight = 0
 
     var images = document.querySelectorAll('body img[src="' + location.href + '"]')
     if (images.length && images[0].src == location.href) {
