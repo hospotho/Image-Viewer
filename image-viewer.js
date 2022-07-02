@@ -387,7 +387,7 @@ const imageViewer = (function () {
 
     const shadowHolder = document.createElement('div')
     shadowHolder.classList.add('__shadow__image-viewer')
-    shadowRoot = shadowHolder.attachShadow({mode: 'open'})
+    shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
     document.body.appendChild(shadowHolder)
 
     const stylesheet = document.createElement('style')
@@ -409,11 +409,11 @@ const imageViewer = (function () {
     } catch (e) {}
   }
 
-  function buildImageList(imageList) {
+  function buildImageList(imageList, options) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     let first = strToNode(`<li class="current"><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer"/></li>`)
     first.firstChild.addEventListener('load', e => {
-      if (e.target.naturalWidth === 0) e.target.parentNode.remove()
+      if (e.target.naturalWidth === 0 || e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) e.target.parentNode.remove()
       shadowRoot.querySelector(`.${appName}-info-width`).value = _imageList.querySelector('li img').naturalWidth
       shadowRoot.querySelector(`.${appName}-info-height`).value = _imageList.querySelector('li img').naturalHeight
     })
@@ -425,7 +425,7 @@ const imageViewer = (function () {
     for (let i = 1; i < imageList.length; i++) {
       const li = strToNode(`<li><img src="${imageList[i]}" alt="" referrerpolicy="no-referrer"/></li>`)
       li.firstChild.addEventListener('load', e => {
-        if (e.target.naturalWidth === 0) e.target.parentNode.remove()
+        if (e.target.naturalWidth === 0 || e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) e.target.parentNode.remove()
         shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
       })
       _imageList.appendChild(li)
@@ -590,12 +590,16 @@ const imageViewer = (function () {
 
     //function
     var debounceTimeout
+    var index = 0
     function prevItem() {
       clearTimeout(debounceTimeout)
-      const currentListItem = imageListNode.querySelector('li.current')
-      const currentIndex = [...imageList].indexOf(currentListItem)
+      const imageList = imageListNode.querySelectorAll('li')
+      const currentListItem = imageList.querySelector('li.current')
+      var currentIndex = [...imageList].indexOf(currentListItem)
+      if (currentIndex === -1) currentIndex = Math.max(index, imageList.length)
 
       const prevIndex = currentIndex === 0 ? imageList.length - 1 : currentIndex - 1
+      index = prevIndex
       shadowRoot.querySelector(`.${appName}-relate-counter-current`).innerHTML = prevIndex + 1
       const relateListItem = imageListNode.querySelector(`li:nth-child(${prevIndex + 1})`)
       currentListItem.classList.remove('current')
@@ -608,10 +612,13 @@ const imageViewer = (function () {
     }
 
     function nextItem() {
+      const imageList = imageListNode.querySelectorAll('li')
       const currentListItem = imageListNode.querySelector('li.current')
-      const currentIndex = [...imageList].indexOf(currentListItem)
+      var currentIndex = [...imageList].indexOf(currentListItem)
+      if (currentIndex === -1) currentIndex = Math.max(index, imageList.length)
 
       const nextIndex = currentIndex === imageList.length - 1 ? 0 : currentIndex + 1
+      index = nextIndex
       const action = () => {
         shadowRoot.querySelector(`.${appName}-relate-counter-current`).innerHTML = nextIndex + 1
         const relateListItem = imageListNode.querySelector(`li:nth-child(${nextIndex + 1})`)
@@ -663,11 +670,11 @@ const imageViewer = (function () {
   }
 
   //==========main function==========
-  function imageViewer(imageList, options = {}) {
+  function imageViewer(imageList, options) {
     if (imageList.length === 0 || document.documentElement.classList.contains('has-image-viewer')) return
     console.log('Total image: ', imageList.length)
     buildApp()
-    buildImageList(imageList)
+    buildImageList(imageList, options)
     fitImage(options)
     addFrameEvent(options)
     addImageEvent(options)

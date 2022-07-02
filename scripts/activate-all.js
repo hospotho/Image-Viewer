@@ -5,6 +5,8 @@
     if (!res) return
     var {options} = res
     options.closeButton = true
+    options.minWidth = 0
+    options.minHeight = 0
 
     if (document.documentElement.classList.contains('has-image-viewer')) {
       document.documentElement.classList.remove('has-image-viewer')
