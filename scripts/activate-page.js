@@ -8,7 +8,7 @@
 
     if (document.documentElement.classList.contains('has-image-viewer')) {
       document.documentElement.classList.remove('has-image-viewer')
-      var viewer = document.querySelector('body > div.__crx__image-viewer')
+      var viewer = document.querySelector('body > div.__shadow__image-viewer')
       viewer.addEventListener('transitionend', () => viewer.remove())
       viewer.style.transition = 'opacity 0.1s'
       viewer.style.opacity = '0'

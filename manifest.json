@@ -27,13 +27,13 @@
     }
   ],
   "commands": {
-    "open-image-viwer": {
+    "open-image-viewer": {
       "suggested_key": {
         "default": "Alt+1"
       },
       "description": "__MSG_view_images_in_image_viewer__"
     },
-    "open-image-viwer-without-size-filter": {
+    "open-image-viewer-without-size-filter": {
       "suggested_key": {
         "default": "Alt+Shift+1"
       },

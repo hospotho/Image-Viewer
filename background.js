@@ -99,7 +99,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
     case 'open-image-viewer':
       chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
       break
-    case 'open-image-viwer-without-size-filter':
+    case 'open-image-viewer-without-size-filter':
       chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-all.js']})
       break
   }
