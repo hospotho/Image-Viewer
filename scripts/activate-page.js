@@ -9,8 +9,8 @@
     var lazyName = ''
     const reg = /^(?:https?:\/)?\/.+/
     const imgList = document.querySelectorAll('img')
-    const maxCheck = Math.min(parseInt(imgList.length / 5 + 5), imgList.length)
-    top: for (let i = imgList.length; i > maxCheck; i--) {
+    const maxCheck = imgList.length - Math.min(parseInt(imgList.length / 5 + 5), imgList.length)
+    top: for (let i = imgList.length - 1; i > maxCheck; i--) {
       for (const attr of imgList[i].attributes) {
         if (attr.name !== 'src' && reg.test(attr.value)) {
           lazyName = attr.name
