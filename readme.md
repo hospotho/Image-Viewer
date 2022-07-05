@@ -1,25 +1,20 @@
 # Image Viewer
 
-Image Viewer is a manifest V3 Chrome extension for viewing images on a page
-
-It is written for learning manifest V3 and shadow dom.
+<p align="center"><img src="icon/icon128.png"></p>
+Image Viewer is a manifest V3 Chrome extension for viewing images on a page. It is written for learning manifest V3 and shadow dom.
 
 ## Features
 
-1. Auto fit image base on setting (4 fitting mode)
-2. Image size filter
-3. Scroll to the original image on the page
-4. Index display (index/total)
-5. Zoom image `WheelUp/Down`
-6. Rotate image `Alt + WheelUp/Down`
-7. Mirror image `Alt + click`
-8. View image whith scroll and hotkeys
-
-## ToDo
-
-1. Collect lazy load images.
-2. Better image filter (svg, transparent png)
-3. `image-viewer.min.js`
+1. Image size filter
+2. Four basic fitting mode + auto fit image base on setting
+3. Index display (index/total)
+4. View image whith hotkeys (Next: `right/down`, Prev: `left/up`)
+5. View image whith scroll (place cursor on close button or control bar)
+6. Scroll to the original image on the page
+7. Zoom image `WheelUp/Down`
+8. Rotate image `Alt + WheelUp/Down`
+9. Mirror image `Alt + click`
+10. close window by call window.close() when right click on close button
 
 ## Workflow
 
@@ -31,21 +26,21 @@ It is written for learning manifest V3 and shadow dom.
 
 4. `buildApp()` will apend main frame and style enclosing by shadow dom to `<body>`.
 
-5. `buildImageList(imageList)` will fill image list by imageList argument.
+5. `buildImageList(imageList)` and `initImageList(options)` will fill image to image viewer image list.
+   
+6. `fitImage(options)` will be called for fitting image.
 
-6. Event listeners of those elements will be added by `addFrameEvent()`, `addImageEvent()` and `addImageListEvent()`. 
-
-7. At the end `fitImage(options)` will be called for fitting image.
+7. Event listeners of those elements will be added by `addFrameEvent()`, `addImageEvent()` and `addImageListEvent()`. 
 
 8. Image viewer build complete.
 
 ## Browser support
 
-The entire project was written in Vanilla JavaScript with Chrome API, `image-viewer.js` sure work on all modern browser support Shadow DOM v1.
+The entire project was written in Vanilla JavaScript with Chrome API. Standalone `image-viewer.js` should work on all modern browser, you can write your own activate script and run `image-viewer.js` by tampermonkey or other alternatives.
+## ToDo
 
-Chrome(>=53) Edge(>=79) Firefox(>=63) Opera(>=40) Safari(>=10)
-
-But this project was only tested on Chrome(103.0.5060.53). Unknow for Edge, Firefox, Safari and etc. browsers
+1. `image-viewer.min.js`
+2. ...
 
 ## History
 
@@ -57,7 +52,7 @@ The author of translate in `_locales` is unknow.
 
 Since I was using this extension, lot of features were added to this project.
 
-At 2022-06, I felt tired to update it. So, I decided to clear up all those old style messy jQuery code and undertake a complete rewrite of it.
+At 2022-06, I felt tired to update it, so I decided to clear up all those old style messy jQuery code and undertake a complete rewrite of it.
 
 Rewrite is done, also upgrade to manifest V3. <= Now
 
