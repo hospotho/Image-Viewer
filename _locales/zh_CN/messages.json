@@ -30,7 +30,7 @@
     "message": "最小阔度"
   },
   "open_in_image_viewer": {
-    "message": "於Image Viewer观看"
+    "message": "在Image Viewer观看"
   },
   "options": {
     "message": "设定"
@@ -51,10 +51,10 @@
     "message": "图像大小过滤"
   },
   "view_all_images_in_image_viewer": {
-    "message": "於Image Viewer观看所有图像"
+    "message": "在Image Viewer观看所有图像"
   },
   "view_images_in_image_viewer": {
-    "message": "於Image Viewer观看图像"
+    "message": "在Image Viewer观看图像"
   },
   "width": {
     "message": "阔度"
