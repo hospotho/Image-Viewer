@@ -1,6 +1,15 @@
 ;(function () {
   'use strict'
 
+  function closeImageViewer() {
+    document.documentElement.classList.remove('has-image-viewer')
+    var viewer = document.querySelector('.__shadow__image-viewer')
+    viewer.addEventListener('transitionend', () => viewer.remove())
+    viewer.style.transition = 'opacity 0.1s'
+    viewer.style.opacity = '0'
+    return
+  }
+
   function simpleUnlazyImage() {
     document.documentElement.classList.add('has-unlazy')
     for (const img of document.querySelectorAll('img[loading]')) {
@@ -25,26 +34,7 @@
     }
   }
 
-  chrome.runtime.sendMessage('get_options', res => {
-    if (!res) return
-    var {options} = res
-    options.closeButton = true
-    options.minWidth = 0
-    options.minHeight = 0
-
-    if (document.documentElement.classList.contains('has-image-viewer')) {
-      document.documentElement.classList.remove('has-image-viewer')
-      var viewer = document.querySelector('body > div.__shadow__image-viewer')
-      viewer.addEventListener('transitionend', () => viewer.remove())
-      viewer.style.transition = 'opacity 0.1s'
-      viewer.style.opacity = '0'
-      return
-    }
-
-    if (!document.documentElement.classList.contains('has-unlazy')) {
-      simpleUnlazyImage()
-    }
-
+  function getImageList() {
     var imageUrls = []
     for (const img of document.querySelectorAll('img[src]')) {
       imageUrls.push(img.src)
@@ -65,14 +55,32 @@
         uniqueImageUrls.push(img)
       }
     }
+    return uniqueImageUrls
+  }
 
-    if (uniqueImageUrls.length === 0) return
-    if (typeof imageViewer === 'function') {
-      imageViewer(uniqueImageUrls, options)
-    } else {
-      chrome.runtime.sendMessage('load_script', res => {
-        imageViewer(uniqueImageUrls, options)
-      })
+  chrome.runtime.sendMessage('get_options', res => {
+    if (!res) return
+    var {options} = res
+    options.closeButton = true
+    options.minWidth = 0
+    options.minHeight = 0
+
+    if (document.documentElement.classList.contains('has-image-viewer')) {
+      closeImageViewer()
+      return
     }
+
+    if (!document.documentElement.classList.contains('has-unlazy')) {
+      simpleUnlazyImage()
+    }
+
+    var uniqueImageUrls = getImageList()
+    if (uniqueImageUrls.length === 0) return
+
+    typeof imageViewer === 'function'
+      ? imageViewer(uniqueImageUrls, options)
+      : chrome.runtime.sendMessage('load_script', res => {
+          imageViewer(uniqueImageUrls, options)
+        })
   })
 })()
