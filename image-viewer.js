@@ -384,14 +384,9 @@ const imageViewer = (function () {
     } catch (e) {}
   }
 
-  function buildImageList(imageList, options) {
+  function buildImageList(imageList) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
-    let first = strToNode(`<li class="current"><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer"/></li>`)
-    first.firstChild.addEventListener('load', e => {
-      if (e.target.naturalWidth === 0 || e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) e.target.parentNode.remove()
-      shadowRoot.querySelector(`.${appName}-info-width`).value = _imageList.querySelector('li img').naturalWidth
-      shadowRoot.querySelector(`.${appName}-info-height`).value = _imageList.querySelector('li img').naturalHeight
-    })
+    let first = strToNode(`<li><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer"/></li>`)
     _imageList.appendChild(first)
 
     if (imageList.length === 1) return
@@ -399,15 +394,51 @@ const imageViewer = (function () {
     shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = imageList.length
     for (let i = 1; i < imageList.length; i++) {
       const li = strToNode(`<li><img src="${imageList[i]}" alt="" referrerpolicy="no-referrer"/></li>`)
-      li.firstChild.addEventListener('load', e => {
-        if (e.target.naturalWidth === 0 || e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) e.target.parentNode.remove()
-        shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
-      })
       _imageList.appendChild(li)
     }
   }
 
+  function initImageList(options) {
+    const index = options.index || 0
+    const base = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)[index]
+    base.classList.add('current')
+    shadowRoot.querySelector(`.${appName}-relate-counter-current`).innerHTML = index + 1
+
+    const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
+    imageListNode.style.top = `${-index * 100}%`
+
+    base.firstChild.addEventListener('load', e => {
+      if (options.sizeCheck) {
+        options.minWidth = e.target.naturalWidth
+        options.minHeight = e.target.naturalHeight
+        options.sizeCheck = false
+      }
+      shadowRoot.querySelector(`.${appName}-info-width`).value = e.target.naturalWidth
+      shadowRoot.querySelector(`.${appName}-info-height`).value = e.target.naturalHeight
+
+      const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
+      shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`).forEach(img => {
+        img.addEventListener('load', e => {
+          if (e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) {
+            e.target.parentNode.remove()
+          }
+          total.innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
+        })
+        img.addEventListener('error', e => {
+          e.target.parentNode.remove()
+          total.innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
+        })
+        if (img.complete && (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight)) {
+          img.parentNode.remove()
+          total.innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
+        }
+      })
+      fitImage(options)
+    })
+  }
+
   function fitImage(options) {
+    if (options.sizeCheck) return
     function both(imageWidth, imageHeight) {
       const windowWidth = document.documentElement.clientWidth
       const windowHeight = document.doctype ? document.documentElement.clientHeight : document.body.clientHeight
@@ -466,7 +497,7 @@ const imageViewer = (function () {
       document.querySelector(`img[src="${imgUrl}"]`).scrollIntoView({block: 'center'})
       closeImageViewer()
     })
-    // Close button
+    //Close button
     if (!options.closeButton) return
     const closeButton = shadowRoot.querySelector('.' + appName + ' .' + appName + '-button-close')
     closeButton.classList.add('show')
@@ -558,10 +589,8 @@ const imageViewer = (function () {
   }
 
   function addImageListEvent() {
-    const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
-    const imageList = imageListNode.querySelectorAll('li')
-
     //function
+    const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     var debounceTimeout
     var index = 0
     function prevItem() {
@@ -643,11 +672,12 @@ const imageViewer = (function () {
   }
 
   //==========main function==========
-  function imageViewer(imageList, options) {
+  function imageViewer(imageList, _options) {
     if (imageList.length === 0 || document.documentElement.classList.contains('has-image-viewer')) return
-    console.log('Total image: ', imageList.length)
+    var options = _options
     buildApp()
-    buildImageList(imageList, options)
+    buildImageList(imageList)
+    initImageList(options)
     fitImage(options)
     addFrameEvent(options)
     addImageEvent(options)
