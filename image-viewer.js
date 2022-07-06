@@ -441,7 +441,7 @@ const imageViewer = (function () {
     if (options.sizeCheck) return
     function both(imageWidth, imageHeight) {
       const windowWidth = document.documentElement.clientWidth
-      const windowHeight = document.doctype ? document.documentElement.clientHeight : document.body.clientHeight
+      const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
       const windowRatio = windowWidth / windowHeight
       const imgRatio = imageWidth / imageHeight
       return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
