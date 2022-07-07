@@ -499,7 +499,7 @@ const imageViewer = (function () {
           img.scrollIntoView({block: 'center'})
           const temp = img.style.border
           img.style.border = '5px solid red'
-          setTimeout(() => (img.style.border = temp), 500)
+          setTimeout(() => (img.style.border = temp), 1000)
           break
         }
       }
