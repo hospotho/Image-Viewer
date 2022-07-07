@@ -612,7 +612,7 @@ const imageViewer = (function () {
       index = prevIndex
       shadowRoot.querySelector(`.${appName}-relate-counter-current`).innerHTML = prevIndex + 1
       const relateListItem = imageListNode.querySelector(`li:nth-child(${prevIndex + 1})`)
-      currentListItem.classList.remove('current')
+      currentListItem?.classList.remove('current')
       relateListItem.classList.add('current')
 
       imageListNode.style.top = `${-prevIndex * 100}%`
@@ -632,7 +632,7 @@ const imageViewer = (function () {
       const action = () => {
         shadowRoot.querySelector(`.${appName}-relate-counter-current`).innerHTML = nextIndex + 1
         const relateListItem = imageListNode.querySelector(`li:nth-child(${nextIndex + 1})`)
-        currentListItem.classList.remove('current')
+        currentListItem?.classList.remove('current')
         relateListItem.classList.add('current')
 
         imageListNode.style.top = `${-nextIndex * 100}%`
