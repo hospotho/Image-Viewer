@@ -494,7 +494,15 @@ const imageViewer = (function () {
     //MoveTo button
     shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', () => {
       var imgUrl = shadowRoot.querySelector('.current img').src
-      document.querySelector(`img[src="${imgUrl}"]`).scrollIntoView({block: 'center'})
+      for (const img of document.querySelectorAll('img')) {
+        if (img.src === imgUrl) {
+          img.scrollIntoView({block: 'center'})
+          const temp = img.style.border
+          img.style.border = '5px solid red'
+          setTimeout(() => (img.style.border = temp), 500)
+          break
+        }
+      }
       closeImageViewer()
     })
     //Close button
