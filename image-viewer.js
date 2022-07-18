@@ -495,16 +495,36 @@ const imageViewer = (function () {
     //MoveTo button
     shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', () => {
       var imgUrl = shadowRoot.querySelector('.current img').src
+      var element = null
       for (const img of document.querySelectorAll('img')) {
-        if (img.src === imgUrl) {
-          img.scrollIntoView({block: 'center'})
-          const temp = img.style.border
-          img.style.border = '5px solid red'
-          setTimeout(() => (img.style.border = temp), 1000)
+        if (imgUrl === img.src) {
+          element = img
           break
         }
       }
+      if (!element) {
+        for (const video of document.querySelectorAll('video')) {
+          if (imgUrl === video.poster) {
+            element = video
+            break
+          }
+        }
+      }
+      if (!element) {
+        for (const node of document.querySelectorAll('*')) {
+          const bg = window.getComputedStyle(node).backgroundImage
+          if (imgUrl === bg?.substring(4, bg.length - 1).replace(/['"]/g, '')) {
+            element = node
+            break
+          }
+        }
+      }
       closeImageViewer()
+      if (!element) return
+      element.scrollIntoView({block: 'center'})
+      const temp = element.style.border
+      element.style.border = '5px solid red'
+      setTimeout(() => (element.style.border = temp), 1000)
     })
     //Close button
     if (!options.closeButton) return
