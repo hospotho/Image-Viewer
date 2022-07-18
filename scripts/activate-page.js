@@ -26,7 +26,6 @@
     document.documentElement.classList.remove(countClass)
     document.documentElement.classList.add(`unlazy-count-${imgList.length}`)
 
-    for (const img of imgList) img.loading = 'eager'
     var lazyName = ''
     var mult = false
     const reg = /^(?:https?:\/)?\/.+/
@@ -51,8 +50,11 @@
     const lazyImage = document.querySelectorAll(`img[${lazyName}]`)
     const getLazyURL = mult ? match => match.slice(-1) : match => match[0]
     for (const img of lazyImage) {
-      img.src = getLazyURL([...img.getAttribute(lazyName).matchAll(multReg)])
+      const newURL = getLazyURL([...img.getAttribute(lazyName).matchAll(multReg)])
+      img.src = newURL
+      img.srcset = newURL
     }
+    for (const img of imgList) img.loading = 'eager'
   }
 
   function getImageList(options) {
