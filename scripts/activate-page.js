@@ -73,9 +73,9 @@
       }
     }
 
-    for (const img of document.querySelectorAll('video[poster]')) {
-      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
-        imageUrls.push(img.poster)
+    for (const video of document.querySelectorAll('video[poster]')) {
+      if (video.clientWidth >= video.minWidth && video.clientHeight >= video.minHeight) {
+        imageUrls.push(video.poster)
       }
     }
 
