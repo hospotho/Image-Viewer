@@ -51,28 +51,20 @@
   function getImageList(options) {
     var imageUrls = []
     for (const img of document.querySelectorAll('img[src]')) {
-      if ((img.clientWidth === options.minWidth && img.clientHeight === options.minHeight) || !img.complete) {
+      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
         imageUrls.push(img.src)
       }
     }
 
     for (const node of document.querySelectorAll('*')) {
       if (node.clientWidth < options.minWidth || node.clientWidth < options.minHeight) break
-      const style = window.getComputedStyle(node)
-      const bg = style.backgroundImage
-      if (!bg) break
-      if (bg.indexOf('url') === 0 && bg.indexOf('.svg")') === -1) {
+      const bg = window.getComputedStyle(node).backgroundImage
+      if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
         imageUrls.push(bg.substring(4, bg.length - 1).replace(/['"]/g, ''))
       }
     }
 
-    var uniqueImageUrls = []
-    for (const img of imageUrls) {
-      if (!uniqueImageUrls.includes(img)) {
-        uniqueImageUrls.push(img)
-      }
-    }
-    return uniqueImageUrls
+    return [...new Set(imageUrls)]
   }
 
   chrome.runtime.sendMessage('get_options', async res => {
@@ -84,14 +76,12 @@
 
     chrome.runtime.sendMessage('get_args', args => {
       const [srcUrl] = args
-      const type = document.querySelector(`img[src="${srcUrl}"`)
+      const type = document.querySelector(`img[src='${srcUrl}'`)
       if (type) {
         const minSize = Math.min(type.clientWidth, type.clientHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
         options.minHeight = Math.min(minSize, options.minHeight)
       } else {
-        options.minWidth = 0
-        options.minHeight = 0
         options.sizeCheck = true
       }
 

@@ -67,21 +67,13 @@
 
     for (const node of document.querySelectorAll('*')) {
       if (node.clientWidth < options.minWidth || node.clientWidth < options.minHeight) break
-      const style = window.getComputedStyle(node)
-      const bg = style.backgroundImage
-      if (!bg) break
-      if (bg.indexOf('url') === 0 && bg.indexOf('.svg")') === -1) {
+      const bg = window.getComputedStyle(node).backgroundImage
+      if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
         imageUrls.push(bg.substring(4, bg.length - 1).replace(/['"]/g, ''))
       }
     }
 
-    var uniqueImageUrls = []
-    for (const img of imageUrls) {
-      if (!uniqueImageUrls.includes(img)) {
-        uniqueImageUrls.push(img)
-      }
-    }
-    return uniqueImageUrls
+    return [...new Set(imageUrls)]
   }
 
   chrome.runtime.sendMessage('get_options', async res => {
