@@ -73,6 +73,12 @@
       }
     }
 
+    for (const img of document.querySelectorAll('video[poster]')) {
+      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
+        imageUrls.push(img.poster)
+      }
+    }
+
     return [...new Set(imageUrls)]
   }
 

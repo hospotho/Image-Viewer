@@ -70,6 +70,10 @@
       }
     }
 
+    for (const img of document.querySelectorAll('video[poster]')) {
+      imageUrls.push(img.poster)
+    }
+
     return [...new Set(imageUrls)]
   }
 
