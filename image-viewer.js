@@ -409,8 +409,9 @@ const imageViewer = (function () {
 
     base.firstChild.addEventListener('load', e => {
       if (options.sizeCheck) {
-        options.minWidth = e.target.naturalWidth
-        options.minHeight = e.target.naturalHeight
+        const minSize = Math.min(e.target.naturalWidth, e.target.naturalHeight)
+        options.minWidth = Math.min(minSize, options.minWidth)
+        options.minHeight = Math.min(minSize, options.minHeight)
         options.sizeCheck = false
       }
       shadowRoot.querySelector(`.${appName}-info-width`).value = e.target.naturalWidth
