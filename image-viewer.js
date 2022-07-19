@@ -299,8 +299,9 @@ const imageViewer = (function () {
         border-color: transparent transparent transparent #787878;
       }      
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-control-buttons {
+        display: flex;
+        justify-content: center;
         margin: 5px auto 0;
-        width: 330px;
       }
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-control-buttons li {
         list-style: none;
