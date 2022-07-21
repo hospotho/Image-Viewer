@@ -496,36 +496,39 @@ const imageViewer = (function () {
     //MoveTo button
     shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', () => {
       var imgUrl = shadowRoot.querySelector('.current img').src
-      var element = null
-      for (const img of document.querySelectorAll('img')) {
+      var imgNode = null
+      for (const img of document.getElementsByTagName('img')) {
         if (imgUrl === img.src) {
-          element = img
+          //check style.display by offsetParent
+          if (img.offsetParent === null && img.style.position !== 'fixed') continue
+          imgNode = img
           break
         }
       }
-      if (!element) {
-        for (const video of document.querySelectorAll('video')) {
+      if (imgNode === null) {
+        for (const video of document.getElementsByTagName('video')) {
           if (imgUrl === video.poster) {
-            element = video
+            imgNode = video
             break
           }
         }
       }
-      if (!element) {
-        for (const node of document.querySelectorAll('*')) {
+      if (imgNode === null) {
+        for (const node of document.getElementsByTagName('*')) {
           const bg = window.getComputedStyle(node).backgroundImage
-          if (imgUrl === bg?.substring(4, bg.length - 1).replace(/['"]/g, '')) {
-            element = node
+          if (bg !== 'none' && imgUrl === bg.substring(4, bg.length - 1).replace(/['"]/g, '')) {
+            imgNode = node
             break
           }
         }
       }
       closeImageViewer()
-      if (!element) return
-      element.scrollIntoView({block: 'center'})
-      const temp = element.style.border
-      element.style.border = '5px solid red'
-      setTimeout(() => (element.style.border = temp), 1000)
+      if (imgNode === null) return
+      console.log('Move to image node')
+      imgNode.scrollIntoView({block: 'center'})
+      const temp = imgNode.style.border
+      imgNode.style.border = '5px solid red'
+      setTimeout(() => (imgNode.style.border = temp), 1000)
     })
     //Close button
     if (!options.closeButton) return
