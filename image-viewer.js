@@ -403,7 +403,8 @@ const imageViewer = (function () {
     const index = options.index || 0
     const base = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)[index]
     base.classList.add('current')
-    shadowRoot.querySelector(`.${appName}-relate-counter-current`).innerHTML = index + 1
+    const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
+    current.innerHTML = index + 1
 
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     imageListNode.style.top = `${-index * 100}%`
@@ -418,21 +419,29 @@ const imageViewer = (function () {
       shadowRoot.querySelector(`.${appName}-info-width`).value = e.target.naturalWidth
       shadowRoot.querySelector(`.${appName}-info-height`).value = e.target.naturalHeight
 
+      function updateCounter() {
+        const length = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
+        const newCurr = Math.min(length, index + 1)
+        total.innerHTML = length
+        current.innerHTML = newCurr
+        imageListNode.style.top = `${-(newCurr - 1) * 100}%`
+      }
+
       const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
       shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`).forEach(img => {
         img.addEventListener('load', e => {
           if (e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) {
             e.target.parentNode.remove()
+            updateCounter()
           }
-          total.innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
         })
         img.addEventListener('error', e => {
           e.target.parentNode.remove()
-          total.innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
+          updateCounter()
         })
         if (img.complete && (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight)) {
           img.parentNode.remove()
-          total.innerHTML = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
+          updateCounter()
         }
       })
       fitImage(options)
