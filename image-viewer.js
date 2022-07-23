@@ -661,7 +661,7 @@ const imageViewer = (function () {
       var currentIndex = [...imageList].indexOf(currentListItem)
       if (currentIndex === -1) currentIndex = Math.max(index, imageList.length)
 
-      const nextIndex = currentIndex === imageList.length - 1 ? 0 : currentIndex + 1
+      const nextIndex = currentIndex >= imageList.length - 1 ? 0 : currentIndex + 1
       index = nextIndex
       const action = () => {
         shadowRoot.querySelector(`.${appName}-relate-counter-current`).innerHTML = nextIndex + 1
