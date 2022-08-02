@@ -490,64 +490,71 @@ const imageViewer = (function () {
   }
 
   function addFrameEvent(options) {
-    //Fit button
-    const currFitBtn = shadowRoot.querySelector(`.${appName}-control-button-${options.fitMode}`)
-    currFitBtn?.classList.add('on')
-    for (const fitBtn of shadowRoot.querySelectorAll(`.${appName}-control-buttons button[data-fit]`)) {
-      fitBtn.addEventListener('click', e => {
-        shadowRoot.querySelectorAll(`.${appName}-control-buttons button`).forEach(btn => btn.classList.remove('on'))
-        e.target.classList.add('on')
-        var newOptions = options
-        newOptions.fitMode = e.target.getAttribute('data-fit')
-        fitImage(newOptions)
+    function addFitButtonEvent() {
+      const currFitBtn = shadowRoot.querySelector(`.${appName}-control-button-${options.fitMode}`)
+      currFitBtn?.classList.add('on')
+      for (const fitBtn of shadowRoot.querySelectorAll(`.${appName}-control-buttons button[data-fit]`)) {
+        fitBtn.addEventListener('click', e => {
+          shadowRoot.querySelectorAll(`.${appName}-control-buttons button`).forEach(btn => btn.classList.remove('on'))
+          e.target.classList.add('on')
+          var newOptions = options
+          newOptions.fitMode = e.target.getAttribute('data-fit')
+          fitImage(newOptions)
+        })
+      }
+    }
+    function addMoveToButtonEvent() {
+      shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', () => {
+        var imgUrl = shadowRoot.querySelector('.current img').src
+        var imgNode = null
+        for (const img of document.getElementsByTagName('img')) {
+          if (imgUrl === img.src) {
+            //check style.display by offsetParent
+            if (img.offsetParent === null && img.style.position !== 'fixed') continue
+            imgNode = img
+            break
+          }
+        }
+        if (imgNode === null) {
+          for (const video of document.getElementsByTagName('video')) {
+            if (imgUrl === video.poster) {
+              imgNode = video
+              break
+            }
+          }
+        }
+        if (imgNode === null) {
+          for (const node of document.getElementsByTagName('*')) {
+            const bg = window.getComputedStyle(node).backgroundImage
+            if (bg !== 'none' && imgUrl === bg.substring(4, bg.length - 1).replace(/['"]/g, '')) {
+              imgNode = node
+              break
+            }
+          }
+        }
+        closeImageViewer()
+        if (imgNode === null) return
+        console.log('Move to image node')
+        imgNode.scrollIntoView({block: 'center'})
+        const temp = imgNode.style.border
+        imgNode.style.border = '5px solid red'
+        setTimeout(() => (imgNode.style.border = temp), 1000)
       })
     }
-    //MoveTo button
-    shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', () => {
-      var imgUrl = shadowRoot.querySelector('.current img').src
-      var imgNode = null
-      for (const img of document.getElementsByTagName('img')) {
-        if (imgUrl === img.src) {
-          //check style.display by offsetParent
-          if (img.offsetParent === null && img.style.position !== 'fixed') continue
-          imgNode = img
-          break
-        }
-      }
-      if (imgNode === null) {
-        for (const video of document.getElementsByTagName('video')) {
-          if (imgUrl === video.poster) {
-            imgNode = video
-            break
-          }
-        }
-      }
-      if (imgNode === null) {
-        for (const node of document.getElementsByTagName('*')) {
-          const bg = window.getComputedStyle(node).backgroundImage
-          if (bg !== 'none' && imgUrl === bg.substring(4, bg.length - 1).replace(/['"]/g, '')) {
-            imgNode = node
-            break
-          }
-        }
-      }
-      closeImageViewer()
-      if (imgNode === null) return
-      console.log('Move to image node')
-      imgNode.scrollIntoView({block: 'center'})
-      const temp = imgNode.style.border
-      imgNode.style.border = '5px solid red'
-      setTimeout(() => (imgNode.style.border = temp), 1000)
-    })
-    //Close button
-    if (!options.closeButton) return
-    const closeButton = shadowRoot.querySelector('.' + appName + ' .' + appName + '-button-close')
-    closeButton.classList.add('show')
-    closeButton.addEventListener('click', closeImageViewer)
-    closeButton.addEventListener('contextmenu', e => {
-      e.preventDefault()
-      window.close()
-    })
+    function addCloseButtonEvent() {
+      if (!options.closeButton) return
+      const closeButton = shadowRoot.querySelector('.' + appName + ' .' + appName + '-button-close')
+      closeButton.classList.add('show')
+      closeButton.addEventListener('click', closeImageViewer)
+      closeButton.addEventListener('contextmenu', e => {
+        e.preventDefault()
+        window.close()
+      })
+    }
+
+    addFitButtonEvent()
+    addMoveToButtonEvent()
+    addCloseButtonEvent()
   }
 
   function addImageEvent(options) {
