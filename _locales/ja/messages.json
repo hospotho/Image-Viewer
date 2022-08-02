@@ -29,6 +29,9 @@
   "min_width": {
     "message": "最小横幅"
   },
+  "not_factor_of_360": {
+    "message": "360の約数ではありません"
+  },
   "open_in_image_viewer": {
     "message": "Image Viewerで見る"
   },

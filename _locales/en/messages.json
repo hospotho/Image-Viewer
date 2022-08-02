@@ -29,6 +29,9 @@
   "min_width": {
     "message": "Min. width"
   },
+  "not_factor_of_360": {
+    "message": "Not a factor of 360"
+  },
   "open_in_image_viewer": {
     "message": "Open in Image Viewer"
   },
