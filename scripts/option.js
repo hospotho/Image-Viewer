@@ -31,10 +31,10 @@
       setValue(options)
     })
 
-    document.querySelector('input#zoomRatio').addEventListener('change', e => {
+    document.querySelector('input#zoomRatio').addEventListener('input', e => {
       e.target.nextElementSibling.innerHTML = e.target.value
     })
-    document.querySelector('input#rotateDeg').addEventListener('change', e => {
+    document.querySelector('input#rotateDeg').addEventListener('input', e => {
       e.target.nextElementSibling.innerHTML = e.target.value + '&#176'
       e.target.nextElementSibling.nextElementSibling.style = 360 % e.target.value !== 0 ? '' : 'display:none'
     })
