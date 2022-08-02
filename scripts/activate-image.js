@@ -65,7 +65,7 @@
     }
 
     for (const video of document.querySelectorAll('video[poster]')) {
-      if (video.clientWidth >= video.minWidth && video.clientHeight >= video.minHeight) {
+      if (video.clientWidth >= options.minWidth && video.clientHeight >= options.minHeight) {
         imageUrls.push(video.poster)
       }
     }
