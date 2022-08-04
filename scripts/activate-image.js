@@ -89,6 +89,7 @@
         options.minHeight = Math.min(minSize, options.minHeight)
       } else {
         options.sizeCheck = true
+        console.log('Image not visible')
       }
 
       var uniqueImageUrls = getImageList(options)
@@ -96,6 +97,7 @@
         options.index = uniqueImageUrls.indexOf(srcUrl)
       } else {
         uniqueImageUrls.unshift(srcUrl)
+        console.log('Image unshift to list')
       }
 
       typeof imageViewer === 'function'
