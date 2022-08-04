@@ -84,7 +84,7 @@
       const [srcUrl] = args
       const type = document.querySelector(`img[src='${srcUrl}'`)
       if (type) {
-        const minSize = Math.min(type.clientWidth, type.clientHeight)
+        const minSize = Math.min(type.clientWidth, type.clientHeight, type.naturalWidth, type.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
         options.minHeight = Math.min(minSize, options.minHeight)
       } else {
