@@ -640,46 +640,50 @@ const imageViewer = (function () {
   function addImageListEvent() {
     //function
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
+    const infoWidth = shadowRoot.querySelector(`.${appName}-info-width`)
+    const infoHeight = shadowRoot.querySelector(`.${appName}-info-height`)
+
     var debounceTimeout
-    var index = 0
     function prevItem() {
       clearTimeout(debounceTimeout)
-      const imageList = imageListNode.querySelectorAll('li')
-      const currentListItem = imageListNode.querySelector('li.current')
-      var currentIndex = [...imageList].indexOf(currentListItem)
-      if (currentIndex === -1) currentIndex = Math.max(index, imageList.length)
+      const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
+      const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
+      var currentIndex = Number(current.innerHTML) - 1
+      var imageLlength = Number(total.innerHTML)
 
-      const prevIndex = currentIndex === 0 ? imageList.length - 1 : currentIndex - 1
-      index = prevIndex
-      shadowRoot.querySelector(`.${appName}-relate-counter-current`).innerHTML = prevIndex + 1
-      const relateListItem = imageListNode.querySelector(`li:nth-child(${prevIndex + 1})`)
-      currentListItem?.classList.remove('current')
-      relateListItem.classList.add('current')
+      const prevIndex = currentIndex === 0 ? imageLlength - 1 : currentIndex - 1
+      current.innerHTML = prevIndex + 1
 
       imageListNode.style.top = `${-prevIndex * 100}%`
+      imageListNode.querySelector('li.current')?.classList.remove('current')
+
+      const relateListItem = imageListNode.querySelector(`li:nth-child(${prevIndex + 1})`)
+      relateListItem.classList.add('current')
+
       const relateImage = relateListItem.querySelector('img')
-      shadowRoot.querySelector(`.${appName}-info-width`).value = relateImage.naturalWidth
-      shadowRoot.querySelector(`.${appName}-info-height`).value = relateImage.naturalHeight
+      infoWidth.value = relateImage.naturalWidth
+      infoHeight.value = relateImage.naturalHeight
     }
 
     function nextItem() {
-      const imageList = imageListNode.querySelectorAll('li')
-      const currentListItem = imageListNode.querySelector('li.current')
-      var currentIndex = [...imageList].indexOf(currentListItem)
-      if (currentIndex === -1) currentIndex = Math.max(index, imageList.length)
+      const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
+      const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
+      var currentIndex = Number(current.innerHTML) - 1
+      var imageLlength = Number(total.innerHTML)
 
-      const nextIndex = currentIndex >= imageList.length - 1 ? 0 : currentIndex + 1
-      index = nextIndex
+      const nextIndex = currentIndex >= imageLlength - 1 ? 0 : currentIndex + 1
       const action = () => {
-        shadowRoot.querySelector(`.${appName}-relate-counter-current`).innerHTML = nextIndex + 1
-        const relateListItem = imageListNode.querySelector(`li:nth-child(${nextIndex + 1})`)
-        currentListItem?.classList.remove('current')
-        relateListItem.classList.add('current')
+        current.innerHTML = nextIndex + 1
 
         imageListNode.style.top = `${-nextIndex * 100}%`
+        imageListNode.querySelector('li.current')?.classList.remove('current')
+
+        const relateListItem = imageListNode.querySelector(`li:nth-child(${nextIndex + 1})`)
+        relateListItem.classList.add('current')
+
         const relateImage = relateListItem.querySelector('img')
-        shadowRoot.querySelector(`.${appName}-info-width`).value = relateImage.naturalWidth
-        shadowRoot.querySelector(`.${appName}-info-height`).value = relateImage.naturalHeight
+        infoWidth.value = relateImage.naturalWidth
+        infoHeight.value = relateImage.naturalHeight
       }
 
       if (nextIndex === 0) {
