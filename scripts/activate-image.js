@@ -82,7 +82,7 @@
 
     chrome.runtime.sendMessage('get_args', args => {
       const [srcUrl] = args
-      const type = document.querySelector(`img[src='${srcUrl}'`)
+      const type = [...document.querySelectorAll(`img`)].filter(img => img.src === srcUrl)[0]
       if (type) {
         const minSize = Math.min(type.clientWidth, type.clientHeight, type.naturalWidth, type.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
