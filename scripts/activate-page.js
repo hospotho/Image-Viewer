@@ -79,7 +79,7 @@
       }
     }
 
-    return [...new Set(imageUrls)]
+    return [...new Set(imageUrls)].filter(url => url !== '')
   }
 
   chrome.runtime.sendMessage('get_options', async res => {
@@ -96,7 +96,7 @@
 
     var uniqueImageUrls = getImageList(options)
     if (uniqueImageUrls.length === 0) {
-      console.log('No images pass filter')
+      console.log(`${uniqueImageUrls.length} images pass filter`)
       return
     }
 
