@@ -364,6 +364,7 @@ const imageViewer = (function () {
     const shadowHolder = document.createElement('div')
     shadowHolder.classList.add('__shadow__image-viewer')
     shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
+    // shadowRoot = shadowHolder.attachShadow({mode: 'open'})
     document.body.appendChild(shadowHolder)
 
     const stylesheet = document.createElement('style')
