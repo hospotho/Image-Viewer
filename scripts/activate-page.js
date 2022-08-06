@@ -95,7 +95,10 @@
     await simpleUnlazyImage()
 
     var uniqueImageUrls = getImageList(options)
-    if (uniqueImageUrls.length === 0) return
+    if (uniqueImageUrls.length === 0) {
+      console.log('No images pass filter')
+      return
+    }
 
     typeof imageViewer === 'function'
       ? imageViewer(uniqueImageUrls, options)
