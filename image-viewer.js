@@ -425,6 +425,7 @@ const imageViewer = (function () {
         total.innerHTML = length
         current.innerHTML = newCurr
         imageListNode.style.top = `${-(newCurr - 1) * 100}%`
+        if (length === 0) closeImageViewer()
       }
 
       const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
