@@ -508,7 +508,7 @@ const imageViewer = (function () {
         var imgUrl = shadowRoot.querySelector('.current img').src
         var imgNode = null
         for (const img of document.getElementsByTagName('img')) {
-          if (imgUrl === img.src) {
+          if (imgUrl === img.currentSrc) {
             //check style.display by offsetParent
             if (img.offsetParent === null && img.style.position !== 'fixed') continue
             imgNode = img

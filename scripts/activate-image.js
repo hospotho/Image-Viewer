@@ -52,7 +52,7 @@
     var imageUrls = []
     for (const img of document.querySelectorAll('img[src]')) {
       if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
-        imageUrls.push(img.src)
+        imageUrls.push(img.currentSrc)
       }
     }
 
@@ -80,21 +80,21 @@
 
     chrome.runtime.sendMessage('get_args', async args => {
       const [srcUrl] = args
-      const type = [...document.getElementsByTagName('img')].filter(img => img.src === srcUrl || img.srcset === srcUrl)[0]
+      const type = [...document.getElementsByTagName('img')].filter(img => img.currentSrc === srcUrl)[0]
       if (type) {
         const minSize = Math.min(type.clientWidth, type.clientHeight, type.naturalWidth, type.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
         options.minHeight = Math.min(minSize, options.minHeight)
       } else {
         options.sizeCheck = true
-        console.log('Image not visible')
+        console.log(`Image node of ${srcUrl} not found`)
       }
 
       await simpleUnlazyImage()
 
       var uniqueImageUrls = getImageList(options)
-      if (uniqueImageUrls.indexOf(type?.src) !== -1) {
-        options.index = uniqueImageUrls.indexOf(type.src)
+      if (uniqueImageUrls.indexOf(type?.currentSrc) !== -1) {
+        options.index = uniqueImageUrls.indexOf(type.currentSrc)
       } else if (uniqueImageUrls.indexOf(srcUrl) !== -1) {
         options.index = uniqueImageUrls.indexOf(srcUrl)
       } else {

@@ -60,7 +60,7 @@
   function getImageList() {
     var imageUrls = []
     for (const img of document.querySelectorAll('img[src]')) {
-      imageUrls.push(img.src)
+      imageUrls.push(img.currentSrc)
     }
 
     for (const node of document.querySelectorAll('*')) {

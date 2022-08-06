@@ -61,7 +61,7 @@
     var imageUrls = []
     for (const img of document.querySelectorAll('img[src]')) {
       if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
-        imageUrls.push(img.src)
+        imageUrls.push(img.currentSrc)
       }
     }
 
