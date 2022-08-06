@@ -404,8 +404,8 @@ const imageViewer = (function () {
     const index = options.index || 0
     const base = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)[index]
     base.classList.add('current')
+    const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
     const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
-    current.innerHTML = index + 1
 
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     imageListNode.style.top = `${-index * 100}%`
@@ -421,15 +421,16 @@ const imageViewer = (function () {
       shadowRoot.querySelector(`.${appName}-info-height`).value = e.target.naturalHeight
 
       function updateCounter() {
-        const length = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).length
-        const newCurr = Math.min(length, index + 1)
+        const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
+        const length = list.length
+        const index = list.indexOf(base)
+        const newCurr = index === -1 ? Math.min(length, index + 1) : index
         total.innerHTML = length
         current.innerHTML = newCurr
         imageListNode.style.top = `${-(newCurr - 1) * 100}%`
         if (length === 0) closeImageViewer()
       }
 
-      const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
       shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`).forEach(img => {
         img.addEventListener('load', e => {
           if (e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) {
