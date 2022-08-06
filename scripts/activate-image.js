@@ -78,11 +78,9 @@
     var {options} = res
     options.closeButton = true
 
-    await simpleUnlazyImage()
-
-    chrome.runtime.sendMessage('get_args', args => {
+    chrome.runtime.sendMessage('get_args', async args => {
       const [srcUrl] = args
-      const type = [...document.querySelectorAll(`img`)].filter(img => img.src === srcUrl)[0]
+      const type = [...document.getElementsByTagName('img')].filter(img => img.src === srcUrl || img.srcset === srcUrl)[0]
       if (type) {
         const minSize = Math.min(type.clientWidth, type.clientHeight, type.naturalWidth, type.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
@@ -92,8 +90,12 @@
         console.log('Image not visible')
       }
 
+      await simpleUnlazyImage()
+
       var uniqueImageUrls = getImageList(options)
-      if (uniqueImageUrls.indexOf(srcUrl) !== -1) {
+      if (uniqueImageUrls.indexOf(type?.src) !== -1) {
+        options.index = uniqueImageUrls.indexOf(type.src)
+      } else if (uniqueImageUrls.indexOf(srcUrl) !== -1) {
         options.index = uniqueImageUrls.indexOf(srcUrl)
       } else {
         uniqueImageUrls.unshift(srcUrl)
