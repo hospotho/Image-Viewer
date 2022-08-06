@@ -401,6 +401,17 @@ const imageViewer = (function () {
   }
 
   function initImageList(options) {
+    function updateCounter() {
+      const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
+      const length = list.length
+      const index = list.indexOf(base)
+      const newCurr = index === -1 ? Math.min(length, index + 1) : index + 1
+      total.innerHTML = length
+      current.innerHTML = newCurr
+      imageListNode.style.top = `${-(newCurr - 1) * 100}%`
+      if (length === 0) closeImageViewer()
+    }
+
     const index = options.index || 0
     const base = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)[index]
     base.classList.add('current')
@@ -409,6 +420,8 @@ const imageViewer = (function () {
 
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     imageListNode.style.top = `${-index * 100}%`
+
+    updateCounter()
 
     base.firstChild.addEventListener('load', e => {
       if (options.sizeCheck) {
@@ -419,17 +432,6 @@ const imageViewer = (function () {
       }
       shadowRoot.querySelector(`.${appName}-info-width`).value = e.target.naturalWidth
       shadowRoot.querySelector(`.${appName}-info-height`).value = e.target.naturalHeight
-
-      function updateCounter() {
-        const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
-        const length = list.length
-        const index = list.indexOf(base)
-        const newCurr = index === -1 ? Math.min(length, index + 1) : index
-        total.innerHTML = length
-        current.innerHTML = newCurr
-        imageListNode.style.top = `${-(newCurr - 1) * 100}%`
-        if (length === 0) closeImageViewer()
-      }
 
       shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`).forEach(img => {
         img.addEventListener('load', e => {
