@@ -40,8 +40,9 @@
     console.log(`Unlazy img with ${lazyName} attr`)
     const lazyImage = document.querySelectorAll(`img[${lazyName}]`)
     const getLazyURL = mult ? match => match.slice(-1)[0][0] : match => match[0][0]
+    const protocol = window.location.protocol
     for (const img of lazyImage) {
-      const newURL = getLazyURL([...img.getAttribute(lazyName).matchAll(multReg)]).replace(/https?/, 'https')
+      const newURL = getLazyURL([...img.getAttribute(lazyName).matchAll(multReg)]).replace(/https?:/, protocol)
       img.src = newURL
       img.srcset = newURL
     }
