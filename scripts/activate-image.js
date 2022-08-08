@@ -58,7 +58,9 @@
     for (const img of lazyImage) {
       const attr = img.getAttribute(lazyName)
       if (!attr) continue
-      const newURL = getLazyURL([...attr.matchAll(multReg)]).replace(/https?:/, protocol)
+      const match = [...attr.matchAll(multReg)]
+      if (match.length === 0) continue
+      const newURL = getLazyURL(match).replace(/https?:/, protocol)
       img.src = newURL
       img.srcset = newURL
     }
