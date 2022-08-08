@@ -103,6 +103,8 @@
         console.log('Image unshift to list')
       }
 
+    console.log(`${uniqueImageUrls.length} images pass filter`)
+    
       typeof imageViewer === 'function'
         ? imageViewer(uniqueImageUrls, options)
         : chrome.runtime.sendMessage('load_script', res => {

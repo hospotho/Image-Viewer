@@ -93,10 +93,8 @@
     await simpleUnlazyImage()
 
     var uniqueImageUrls = getImageList()
-    if (uniqueImageUrls.length === 0) {
-      console.log('No images found')
-      return
-    }
+    console.log(`${uniqueImageUrls.length} images found`)
+    if (uniqueImageUrls.length === 0) return
 
     typeof imageViewer === 'function'
       ? imageViewer(uniqueImageUrls, options)
