@@ -371,10 +371,12 @@ const imageViewer = (function () {
     stylesheet.innerHTML = style()
     const viewer = document.createElement('div')
     viewer.classList.add(appName)
+    viewer.tabIndex = 0
     viewer.innerHTML = frame()
 
     shadowRoot.append(stylesheet)
     shadowRoot.append(viewer)
+    viewer.focus()
 
     try {
       for (const node of shadowRoot.querySelectorAll(`.${appName} [data-i18n]`)) {
@@ -700,7 +702,7 @@ const imageViewer = (function () {
     }
 
     //key event
-    window.addEventListener('keydown', e => {
+    shadowRoot.querySelector(`.${appName}`).addEventListener('keydown', e => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
         return nextItem()
