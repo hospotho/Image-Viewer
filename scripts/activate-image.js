@@ -11,20 +11,31 @@
   }
 
   async function simpleUnlazyImage() {
+    function hash(input) {
+      var hash = 0
+      if (input.length === 0) return hash
+      for (let i = 0; i < input.length; i++) {
+        const chr = input.charCodeAt(i)
+        hash = hash * 31 + chr
+        hash |= 0
+      }
+      return hash
+    }
     const imgList = document.querySelectorAll('img')
-    const countClass = [...document.documentElement.classList].find(x => x.startsWith('unlazy-count-'))
-    if (imgList.length === parseInt(countClass?.substring(13))) return
-    document.documentElement.classList.remove(countClass)
-    document.documentElement.classList.add(`unlazy-count-${imgList.length}`)
+    const listSize = imgList.length
+    const currHash = hash(window.location.href + String(listSize))
+    const unlazyClass = [...document.documentElement.classList].find(x => x.startsWith('unlazy-hash-'))
+    if (currHash === parseInt(unlazyClass?.substring(12))) return
+    document.documentElement.classList.remove(unlazyClass)
+    document.documentElement.classList.add(`unlazy-hash-${currHash}`)
 
     var lazyName = ''
     var mult = false
-    const reg = /^(?:https?:\/)?\/.+/
+    const urlReg = /^(?:https?:\/)?\/.+/
     const multReg = /(?:https?:\/)?\/\S+\.[a-zA-Z]{3,4}/g
-    const maxCheck = imgList.length - Math.min(parseInt(imgList.length / 5 + 5), imgList.length)
-    top: for (let i = imgList.length - 1; i > maxCheck; i--) {
-      for (const attr of imgList[i].attributes) {
-        if (attr.name === 'src' || !reg.test(attr.value)) continue
+    top: for (let i = 0; i < listSize; i++) {
+      sub: for (const attr of imgList[i].attributes) {
+        if (attr.name === 'src' || !urlReg.test(attr.value)) continue sub
         lazyName = attr.name
 
         const match = [...attr.value.matchAll(multReg)]
@@ -36,17 +47,23 @@
         break top
       }
     }
-    if (!lazyName) return
+    if (!lazyName) {
+      console.log('No lazy src attribute found')
+      return
+    }
     console.log(`Unlazy img with ${lazyName} attr`)
     const lazyImage = document.querySelectorAll(`img[${lazyName}]`)
     const getLazyURL = mult ? match => match.slice(-1)[0][0] : match => match[0][0]
     const protocol = window.location.protocol
     for (const img of lazyImage) {
-      const newURL = getLazyURL([...img.getAttribute(lazyName).matchAll(multReg)]).replace(/https?:/, protocol)
+      const attr = img.getAttribute(lazyName)
+      if (!attr) continue
+      const newURL = getLazyURL([...attr.matchAll(multReg)]).replace(/https?:/, protocol)
       img.src = newURL
       img.srcset = newURL
     }
     for (const img of imgList) img.loading = 'eager'
+    await new Promise(resolve => setTimeout(resolve, 500))
   }
 
   function getImageList(options) {
@@ -103,8 +120,8 @@
         console.log('Image unshift to list')
       }
 
-    console.log(`${uniqueImageUrls.length} images pass filter`)
-    
+      console.log(`${uniqueImageUrls.length} images pass filter`)
+
       typeof imageViewer === 'function'
         ? imageViewer(uniqueImageUrls, options)
         : chrome.runtime.sendMessage('load_script', res => {
