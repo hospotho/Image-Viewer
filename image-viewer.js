@@ -446,7 +446,7 @@ const imageViewer = (function () {
           e.target.parentNode.remove()
           updateCounter()
         })
-        if (img.complete && (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight)) {
+        if (img.complete && (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight || img.naturalWidth === 0 || img.naturalHeight === 0)) {
           img.parentNode.remove()
           updateCounter()
         }
