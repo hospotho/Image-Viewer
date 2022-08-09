@@ -540,7 +540,10 @@ const imageViewer = (function () {
           }
         }
         closeImageViewer()
-        if (imgNode === null) return
+        if (imgNode === null) {
+          console.log('Image node not found')
+          return
+        }
         console.log('Move to image node')
         imgNode.scrollIntoView({block: 'center'})
         const temp = imgNode.style.border
