@@ -97,7 +97,7 @@ const ImageViewerUtils = {
   getImageList: function (options) {
     var imageUrls = []
     for (const img of document.getElementsByTagName('img')) {
-      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || (img.naturalWidth >= options.minWidth && img.naturalHeight >= options.minHeight) || !img.complete) {
+      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
         imageUrls.push(img.currentSrc)
       }
     }
