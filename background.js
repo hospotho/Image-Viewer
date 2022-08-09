@@ -7,7 +7,7 @@
   function resetLocalStorage() {
     chrome.storage.sync.get('options', res => {
       if (res && Object.keys(res).length === 0 && Object.getPrototypeOf(res) === Object.prototype) {
-        const defaultOptions = {fitMode: 'both', zoomRatio: 1.5, rotateDeg: 15, minWidth: 100, minHeight: 100}
+        const defaultOptions = {fitMode: 'both', zoomRatio: 1.2, rotateDeg: 15, minWidth: 150, minHeight: 150}
         chrome.storage.sync.set({options: defaultOptions}, () => {
           console.log('Set options to default values.')
         })
