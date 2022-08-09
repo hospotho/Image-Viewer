@@ -91,7 +91,7 @@ const ImageViewerUtils = {
       imageUrls.push(img.poster)
     }
 
-    return [...new Set(imageUrls)]
+    return [...new Set(imageUrls)].filter(url => url !== '')
   },
 
   getImageList: function (options) {
@@ -116,6 +116,6 @@ const ImageViewerUtils = {
       }
     }
 
-    return [...new Set(imageUrls)]
+    return [...new Set(imageUrls)].filter(url => url !== '')
   }
 }
