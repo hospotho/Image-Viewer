@@ -25,6 +25,10 @@
         chrome.storage.sync.get('options', res => sendResponse(res))
         return true
       }
+      if (request === 'load_utility') {
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['scripts/utility.js']}, res => sendResponse({}))
+        return true
+      }
       if (request === 'load_script') {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, res => sendResponse({}))
         return true
