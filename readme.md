@@ -40,7 +40,8 @@ The entire project was written in Vanilla JavaScript with Chrome API. Standalone
 ## ToDo
 
 1. `image-viewer.min.js`
-2. ...
+2. keyboard shortcut (image search, index, transforms)
+3. iframe image support
 
 ## History
 
