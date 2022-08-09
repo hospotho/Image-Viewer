@@ -2,14 +2,14 @@
   'use strict'
 
   function i18n() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
+    for (const el of document.querySelectorAll('[data-i18n]')) {
       const tag = el.getAttribute('data-i18n')
       const message = chrome.i18n.getMessage(tag)
       if (message) {
         el.innerHTML = message
         if (el.value != '') el.value = message
       }
-    })
+    }
   }
 
   function setValue(options) {
@@ -22,14 +22,11 @@
     document.querySelector('input#minHeight').value = options.minHeight
   }
 
-  function init() {
+  async function init() {
     i18n()
-    const defaultOptions = {fitMode: 'both', zoomRatio: 1.5, rotateDeg: 15, minWidth: 100, minHeight: 100}
-    var options = structuredClone(defaultOptions)
-    chrome.storage.sync.get('options', res => {
-      ;({options} = res)
-      setValue(options)
-    })
+    const defaultOptions = {fitMode: 'both', zoomRatio: 1.2, rotateDeg: 15, minWidth: 150, minHeight: 150}
+    var options = (await chrome.storage.sync.get('options')) || structuredClone(defaultOptions)
+    setValue(options)
 
     document.querySelector('input#zoomRatio').addEventListener('input', e => {
       e.target.nextElementSibling.innerHTML = e.target.value
