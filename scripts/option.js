@@ -25,7 +25,7 @@
   async function init() {
     i18n()
     const defaultOptions = {fitMode: 'both', zoomRatio: 1.2, rotateDeg: 15, minWidth: 150, minHeight: 150}
-    var options = (await chrome.storage.sync.get('options')) || structuredClone(defaultOptions)
+    var {options} = await chrome.storage.sync.get('options')
     setValue(options)
 
     document.querySelector('input#zoomRatio').addEventListener('input', e => {
