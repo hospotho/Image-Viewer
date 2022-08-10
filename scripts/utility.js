@@ -8,15 +8,6 @@ const ImageViewerUtils = {
     return
   },
 
-  getImageSize: function (src) {
-    return new Promise((resolve, reject) => {
-      let img = new Image()
-      img.onload = () => resolve(img.naturalWidth)
-      img.onerror = () => resolve(0)
-      img.src = src
-    })
-  },
-
   simpleUnlazyImage: async function () {
     function hash(input) {
       var hash = 0
@@ -27,6 +18,26 @@ const ImageViewerUtils = {
         hash |= 0
       }
       return hash
+    }
+    function getRandomIndexArray(length) {
+      const maxCheckLength = Math.min(10, length)
+      const indexArray = [...Array(length).keys()]
+      var currentIndex = length - 1
+      var randomIndex = Math.floor(Math.random() * (currentIndex + 1))
+      while (currentIndex >= 0) {
+        ;[indexArray[currentIndex], indexArray[randomIndex]] = [indexArray[randomIndex], indexArray[currentIndex]]
+        currentIndex--
+        randomIndex = Math.floor(Math.random() * (currentIndex + 1))
+      }
+      return indexArray.slice(0, maxCheckLength)
+    }
+    function getImageSize(src) {
+      return new Promise(resolve => {
+        let img = new Image()
+        img.onload = () => resolve(img.naturalWidth)
+        img.onerror = () => resolve(0)
+        img.src = src
+      })
     }
     const imgList = document.querySelectorAll('img')
     const listSize = imgList.length
@@ -39,21 +50,29 @@ const ImageViewerUtils = {
     var mult = false
     const urlReg = /^(?:https?:\/)?\/.+/
     const multReg = /(?:https?:\/)?\/\S+\.[a-zA-Z]{3,4}/g
-    top: for (let i = 0; i < listSize; i++) {
-      sub: for (const attr of imgList[i].attributes) {
+    const randomIndex = getRandomIndexArray(listSize)
+
+    top: for (const index of randomIndex) {
+      sub: for (const attr of imgList[index].attributes) {
         if (attr.name === 'src' || !urlReg.test(attr.value)) continue sub
-        lazyName = attr.name
 
         const match = [...attr.value.matchAll(multReg)]
-        if (match.length === 1) break top
+        if (match.length === 1 && (await getImageSize(match[0][0])) > 0) {
+          lazyName = attr.name
+          break top
+        }
         const first = match[0][0]
         const last = match[match.length - 1][0]
-        const [firstSize, LastSize] = await Promise.all([this.getImageSize(first), this.getImageSize(last)])
-        mult = LastSize > firstSize
-        break top
+        const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
+        if (firstSize || LastSize) {
+          mult = LastSize > firstSize
+          lazyName = attr.name
+          break top
+        }
       }
     }
-    if (!lazyName) {
+
+    if (lazyName === '') {
       console.log('No lazy src attribute found')
       return
     }
