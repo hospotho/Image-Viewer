@@ -64,18 +64,21 @@ const ImageViewerUtils = {
         if (attr.name === 'src' || failAttr.includes(attr.name) || !urlReg.test(attr.value)) continue sub
 
         const match = [...attr.value.matchAll(multReg)]
+        const naturalSize = imgList[index].naturalWidth
         if (match.length === 1) {
-          if ((await getImageSize(match[0][0])) === 0) {
+          const lazySize = await getImageSize(match[0][0])
+          if (lazySize <= naturalSize) {
             failAttr.push(attr.name)
             continue sub
           }
           lazyName = attr.name
           break top
-        } else {
+        }
+        if (match.length > 1) {
           const first = match[0][0]
           const last = match[match.length - 1][0]
           const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
-          if (firstSize + LastSize === 0) {
+          if (firstSize <= naturalSize && LastSize <= naturalSize) {
             failAttr.push(attr.name)
             continue sub
           }
