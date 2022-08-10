@@ -103,7 +103,7 @@ const ImageViewerUtils = {
     }
 
     for (const node of document.querySelectorAll('*')) {
-      if (node.clientWidth < options.minWidth || node.clientWidth < options.minHeight) break
+      if (node.clientWidth < options.minWidth || node.clientWidth < options.minHeight) continue
       const bg = window.getComputedStyle(node).backgroundImage
       if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
         imageUrls.push(bg.substring(4, bg.length - 1).replace(/['"]/g, ''))
