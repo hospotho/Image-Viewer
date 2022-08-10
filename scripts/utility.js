@@ -19,28 +19,30 @@ const ImageViewerUtils = {
       }
       return hash
     }
-    function getRandomIndexArray(length) {
-      const maxCheckLength = Math.min(10, length)
-      const indexArray = [...Array(length).keys()]
-      var currentIndex = length - 1
+    function getRandomIndexArray(range, length = 10) {
+      const maxLength = Math.min(range, length)
+      const indexArray = [...Array(range).keys()]
+      var currentIndex = range - 1
       var randomIndex = Math.floor(Math.random() * (currentIndex + 1))
-      while (currentIndex >= 0) {
+      const neededIndex = range - maxLength
+      while (currentIndex >= neededIndex) {
         ;[indexArray[currentIndex], indexArray[randomIndex]] = [indexArray[randomIndex], indexArray[currentIndex]]
         currentIndex--
         randomIndex = Math.floor(Math.random() * (currentIndex + 1))
       }
-      return indexArray.slice(0, maxCheckLength)
+      return indexArray.slice(neededIndex)
     }
     function getImageSize(src, count = 0) {
       return new Promise(resolve => {
         if (count === 3) return resolve(0)
-        console.log(`Try to fetch image size of ${src}, count: ${count + 1}`)
+        console.log(`Fetch image size of ${src} count: ${count + 1}`)
         let img = new Image()
         img.onload = () => resolve(img.naturalWidth)
         img.onerror = () => resolve(getImageSize(src, count + 1))
         img.src = src
       })
     }
+    console.log('Try to unlazy image')
     const imgList = document.querySelectorAll('img')
     const listSize = imgList.length
     const currHash = hash(window.location.href + String(listSize))
