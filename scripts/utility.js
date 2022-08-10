@@ -50,6 +50,8 @@ const ImageViewerUtils = {
     if (currHash === parseInt(unlazyClass?.substring(12))) return
     document.documentElement.classList.remove(unlazyClass)
     document.documentElement.classList.add(`unlazy-hash-${currHash}`)
+    console.log('Reset unlazy hash')
+
     var lazyName = ''
     var failAttr = []
     var mult = false
