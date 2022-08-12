@@ -42,16 +42,15 @@ const ImageViewerUtils = {
         img.src = src
       })
     }
-    console.log('Try to unlazy image')
     const imgList = document.querySelectorAll('img')
     const listSize = imgList.length
-    console.log(`${listSize} image found`)
     const currHash = hash(window.location.href + String(listSize))
     const unlazyClass = [...document.documentElement.classList].find(x => x.startsWith('unlazy-hash-'))
     if (currHash === parseInt(unlazyClass?.substring(12))) return
     document.documentElement.classList.remove(unlazyClass)
     document.documentElement.classList.add(`unlazy-hash-${currHash}`)
-    console.log('Reset unlazy hash')
+    console.log('Try to unlazy image')
+    console.log(`${listSize} image found`)
 
     var lazyName = ''
     var failAttr = []
