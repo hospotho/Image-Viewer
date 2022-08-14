@@ -1,7 +1,7 @@
 const ImageViewerUtils = {
   closeImageViewer: function () {
     document.documentElement.classList.remove('has-image-viewer')
-    var viewer = document.querySelector('.__shadow__image-viewer')
+    const viewer = document.querySelector('.__shadow__image-viewer')
     viewer.addEventListener('transitionend', () => viewer.remove())
     viewer.style.transition = 'opacity 0.1s'
     viewer.style.opacity = '0'
@@ -10,7 +10,7 @@ const ImageViewerUtils = {
 
   simpleUnlazyImage: async function () {
     function hash(input) {
-      var hash = 0
+      let hash = 0
       if (input.length === 0) return hash
       for (let i = 0; i < input.length; i++) {
         const chr = input.charCodeAt(i)
@@ -22,8 +22,8 @@ const ImageViewerUtils = {
     function getRandomIndexArray(range, length = 10) {
       const maxLength = Math.min(range, length)
       const indexArray = [...Array(range).keys()]
-      var currentIndex = range - 1
-      var randomIndex = Math.floor(Math.random() * (currentIndex + 1))
+      let currentIndex = range - 1
+      let randomIndex = Math.floor(Math.random() * (currentIndex + 1))
       const neededIndex = range - maxLength
       while (currentIndex >= neededIndex) {
         ;[indexArray[currentIndex], indexArray[randomIndex]] = [indexArray[randomIndex], indexArray[currentIndex]]
@@ -36,7 +36,7 @@ const ImageViewerUtils = {
       return new Promise(resolve => {
         if (count === 3) return resolve(0)
         console.log(`Fetch image size of ${src} count: ${count + 1}`)
-        let img = new Image()
+        const img = new Image()
         img.onload = () => resolve(img.naturalWidth)
         img.onerror = () => resolve(getImageSize(src, count + 1))
         img.src = src
@@ -52,9 +52,9 @@ const ImageViewerUtils = {
     console.log('Try to unlazy image')
     console.log(`${listSize} image found`)
 
-    var lazyName = ''
-    var failAttr = []
-    var mult = false
+    let lazyName = ''
+    let mult = false
+    const failAttr = []
     const urlReg = /^(?:https?:\/)?\/.+/
     const multReg = /(?:https?:\/)?\/\S+\.[a-zA-Z]{3,4}/g
     const randomIndex = getRandomIndexArray(listSize)
@@ -111,7 +111,7 @@ const ImageViewerUtils = {
   },
 
   getAllImage: function () {
-    var imageUrls = []
+    const imageUrls = []
     for (const img of document.getElementsByTagName('img')) {
       imageUrls.push(img.currentSrc)
     }
@@ -131,7 +131,7 @@ const ImageViewerUtils = {
   },
 
   getImageList: function (options) {
-    var imageUrls = []
+    const imageUrls = []
     for (const img of document.getElementsByTagName('img')) {
       if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
         imageUrls.push(img.currentSrc)

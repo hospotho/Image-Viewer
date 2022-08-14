@@ -1,10 +1,10 @@
 ;(async function () {
   'use strict'
 
-  var image = document.querySelector(`body img[src='${location.href}']`)
+  const image = document.querySelector(`body img[src='${location.href}']`)
   if (!image) return
   
-  var {options} = await chrome.runtime.sendMessage('get_options')
+  let {options} = await chrome.runtime.sendMessage('get_options')
   options.closeButton = false
   options.minWidth = 0
   options.minHeight = 0

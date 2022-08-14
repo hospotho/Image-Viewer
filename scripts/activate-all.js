@@ -5,7 +5,7 @@
     await chrome.runtime.sendMessage('load_utility')
   }
 
-  var {options} = await chrome.runtime.sendMessage('get_options')
+  let {options} = await chrome.runtime.sendMessage('get_options')
   options.closeButton = true
   options.minWidth = 0
   options.minHeight = 0
@@ -17,7 +17,7 @@
 
   await ImageViewerUtils.simpleUnlazyImage()
 
-  var uniqueImageUrls = ImageViewerUtils.getAllImage()
+  const uniqueImageUrls = ImageViewerUtils.getAllImage()
   console.log(`${uniqueImageUrls.length} images found`)
   if (uniqueImageUrls.length === 0) return
 

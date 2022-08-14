@@ -5,7 +5,7 @@
     await chrome.runtime.sendMessage('load_utility')
   }
 
-  var {options} = await chrome.runtime.sendMessage('get_options')
+  let {options} = await chrome.runtime.sendMessage('get_options')
   options.closeButton = true
 
   if (document.documentElement.classList.contains('has-image-viewer')) {
@@ -15,7 +15,7 @@
 
   await ImageViewerUtils.simpleUnlazyImage()
 
-  var uniqueImageUrls = ImageViewerUtils.getImageList(options)
+  const uniqueImageUrls = ImageViewerUtils.getImageList(options)
   console.log(`${uniqueImageUrls.length} images pass filter`)
   if (uniqueImageUrls.length === 0) return
 
