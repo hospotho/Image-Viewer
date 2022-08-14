@@ -21,16 +21,22 @@ const ImageViewerUtils = {
     }
     function getRandomIndexArray(range, length = 10) {
       const maxLength = Math.min(range, length)
-      const indexArray = [...Array(range).keys()]
-      let currentIndex = range - 1
-      let randomIndex = Math.floor(Math.random() * (currentIndex + 1))
-      const neededIndex = range - maxLength
-      while (currentIndex >= neededIndex) {
-        ;[indexArray[currentIndex], indexArray[randomIndex]] = [indexArray[randomIndex], indexArray[currentIndex]]
-        currentIndex--
-        randomIndex = Math.floor(Math.random() * (currentIndex + 1))
+      const arr = []
+      while (arr.length < maxLength) {
+        let r = Math.floor(Math.random() * (range + 1))
+        if (arr.indexOf(r) === -1) arr.push(r)
       }
-      return indexArray.slice(neededIndex)
+      return arr
+      // const indexArray = [...Array(range).keys()]
+      // let currentIndex = range - 1
+      // let randomIndex = Math.floor(Math.random() * (currentIndex + 1))
+      // const neededIndex = range - maxLength
+      // while (currentIndex >= neededIndex) {
+      //   ;[indexArray[currentIndex], indexArray[randomIndex]] = [indexArray[randomIndex], indexArray[currentIndex]]
+      //   currentIndex--
+      //   randomIndex = Math.floor(Math.random() * (currentIndex + 1))
+      // }
+      // return indexArray.slice(neededIndex)
     }
     function getImageSize(src, count = 0) {
       return new Promise(resolve => {
