@@ -2,7 +2,7 @@
   'use strict'
 
   const i18n = tag => chrome.i18n.getMessage(tag)
-  var args = []
+  let args = []
 
   function resetLocalStorage() {
     chrome.storage.sync.get('options', res => {
