@@ -1,18 +1,18 @@
 const imageViewer = (function () {
   const appName = '__crx__image-viewer'
   const imageListName = '__crx__image-list'
-  var shadowRoot
+  let shadowRoot
 
   //==========utility==========
   function strToNode(str) {
-    var template = document.createElement('template')
+    const template = document.createElement('template')
     template.innerHTML = str.trim()
     return template.content.firstChild
   }
 
   function closeImageViewer() {
     document.documentElement.classList.remove('has-image-viewer')
-    var viewer = document.querySelector('.__shadow__image-viewer')
+    const viewer = document.querySelector('.__shadow__image-viewer')
     viewer.addEventListener('transitionend', () => viewer.remove())
     viewer.style.transition = 'opacity 0.1s'
     viewer.style.opacity = '0'
@@ -39,14 +39,14 @@ const imageViewer = (function () {
       .split(',')
       .map(t => Number(t))
     //https://www.w3.org/TR/css-transforms-1/#decomposing-a-2d-matrix
-    var row0x = m[0]
-    var row0y = m[2]
-    var row1x = m[1]
-    var row1y = m[3]
+    let row0x = m[0]
+    let row0y = m[2]
+    let row1x = m[1]
+    let row1y = m[3]
     const moveX = m[4]
     const moveY = m[5]
-    var scaleX = Math.sqrt(row0x * row0x + row0y * row0y)
-    var scaleY = Math.sqrt(row1x * row1x + row1y * row1y)
+    let scaleX = Math.sqrt(row0x * row0x + row0y * row0y)
+    let scaleY = Math.sqrt(row1x * row1x + row1y * row1y)
     const determinant = row0x * row1y - row0y * row1x
     if (determinant < 0) {
       scaleX = -scaleX
@@ -63,7 +63,7 @@ const imageViewer = (function () {
       row1x *= 1 / scaleY
       row1y *= 1 / scaleY
     }
-    var rotate = Math.atan2(row0y, row0x)
+    const rotate = Math.atan2(row0y, row0x)
     return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
   }
 
@@ -380,7 +380,7 @@ const imageViewer = (function () {
 
     try {
       for (const node of shadowRoot.querySelectorAll(`.${appName} [data-i18n]`)) {
-        var msg = chrome.i18n.getMessage(node.getAttribute('data-i18n'))
+        const msg = chrome.i18n.getMessage(node.getAttribute('data-i18n'))
         if (!msg) break
         node.innerHTML = msg
         if (node.value !== '') node.value = msg
@@ -504,7 +504,7 @@ const imageViewer = (function () {
         fitBtn.addEventListener('click', e => {
           shadowRoot.querySelectorAll(`.${appName}-control-buttons button`).forEach(btn => btn.classList.remove('on'))
           e.target.classList.add('on')
-          var newOptions = options
+          let newOptions = options
           newOptions.fitMode = e.target.getAttribute('data-fit')
           fitImage(newOptions)
         })
@@ -512,8 +512,8 @@ const imageViewer = (function () {
     }
     function addMoveToButtonEvent() {
       shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', () => {
-        var imgUrl = shadowRoot.querySelector('.current img').src
-        var imgNode = null
+        const imgUrl = shadowRoot.querySelector('.current img').src
+        let imgNode = null
         for (const img of document.getElementsByTagName('img')) {
           if (imgUrl === img.currentSrc) {
             //check style.display by offsetParent
@@ -583,13 +583,13 @@ const imageViewer = (function () {
     //transform
     shadowRoot.querySelectorAll(`.${appName}  .${imageListName} li`).forEach(li => {
       const img = li.firstChild
-      var zoomCount = 0
-      var rotateCount = 0
+      let zoomCount = 0
+      let rotateCount = 0
       //zoom
       li.addEventListener('wheel', e => {
         e.preventDefault()
         if (e.altKey) return
-        var [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
         e.deltaY > 0 ? zoomCount-- : zoomCount++
         scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
         scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
@@ -601,7 +601,7 @@ const imageViewer = (function () {
       li.addEventListener('wheel', e => {
         e.preventDefault()
         if (!e.altKey) return
-        var [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
         const mirror = Math.sign(scaleX) * Math.sign(scaleY)
         mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
@@ -610,23 +610,23 @@ const imageViewer = (function () {
       //mirror-reflect
       li.addEventListener('click', e => {
         if (!e.altKey) return
-        var [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
         const mirror = Math.sign(scaleX) * Math.sign(scaleY)
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
         rotateCount *= -1
         img.style.transform = VtoM(-scaleX, scaleY, rotate, moveX, moveY)
       })
       //dragging
-      var dragFlag = false
-      var imagePos = {x: 0, y: 0}
-      var startPos = {x: 0, y: 0}
+      let dragFlag = false
+      let imagePos = {x: 0, y: 0}
+      let startPos = {x: 0, y: 0}
       li.addEventListener('mousedown', e => {
         dragFlag = true
         startPos = {x: e.clientX - imagePos.x, y: e.clientY - imagePos.y}
       })
       li.addEventListener('mousemove', e => {
         if (!dragFlag) return
-        var [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
         rotate = options.rotateDeg * rotateCount
         moveX = e.clientX - startPos.x
         moveY = e.clientY - startPos.y
@@ -773,7 +773,7 @@ const imageViewer = (function () {
   //==========main function==========
   function imageViewer(imageList, _options) {
     if (imageList.length === 0 || document.documentElement.classList.contains('has-image-viewer')) return
-    var options = _options
+    let options = _options
     buildApp()
     buildImageList(imageList)
     initImageList(options)
