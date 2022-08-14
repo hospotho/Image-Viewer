@@ -654,44 +654,65 @@ const imageViewer = (function () {
     })
   }
 
-  function addImageListEvent() {
+  function addImageListEvent(options) {
     //function
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     const infoWidth = shadowRoot.querySelector(`.${appName}-info-width`)
     const infoHeight = shadowRoot.querySelector(`.${appName}-info-height`)
+    const throttlePeriod = options.throttlePeriod || 80
 
-    var debounceTimeout
-    function prevItem() {
-      clearTimeout(debounceTimeout)
+    let debounceTimeout
+    let throttleTimeout = Date.now()
+    function prevItem(repeat = false) {
+      if (!repeat) {
+        clearTimeout(debounceTimeout)
+        throttleTimeout = Date.now()
+      }
       const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
       const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
-      var currentIndex = Number(current.innerHTML) - 1
-      var imageLlength = Number(total.innerHTML)
-
+      const currentIndex = Number(current.innerHTML) - 1
+      const imageLlength = Number(total.innerHTML)
       const prevIndex = currentIndex === 0 ? imageLlength - 1 : currentIndex - 1
-      current.innerHTML = prevIndex + 1
 
-      imageListNode.style.top = `${-prevIndex * 100}%`
-      imageListNode.querySelector('li.current')?.classList.remove('current')
+      const action = () => {
+        current.innerHTML = prevIndex + 1
+        imageListNode.style.top = `${-prevIndex * 100}%`
+        imageListNode.querySelector('li.current')?.classList.remove('current')
 
-      const relateListItem = imageListNode.querySelector(`li:nth-child(${prevIndex + 1})`)
-      relateListItem.classList.add('current')
+        const relateListItem = imageListNode.querySelector(`li:nth-child(${prevIndex + 1})`)
+        relateListItem.classList.add('current')
 
-      const relateImage = relateListItem.querySelector('img')
-      infoWidth.value = relateImage.naturalWidth
-      infoHeight.value = relateImage.naturalHeight
+        const relateImage = relateListItem.querySelector('img')
+        infoWidth.value = relateImage.naturalWidth
+        infoHeight.value = relateImage.naturalHeight
+      }
+
+      if (repeat) {
+        if (prevIndex === imageLlength - 1) {
+          clearTimeout(debounceTimeout)
+          debounceTimeout = setTimeout(action, 1000)
+        } else if (Date.now() >= throttleTimeout + throttlePeriod) {
+          action()
+          throttleTimeout = Date.now()
+        }
+      } else {
+        action()
+      }
     }
 
-    function nextItem() {
+    function nextItem(repeat = false) {
+      if (!repeat) {
+        clearTimeout(debounceTimeout)
+        throttleTimeout = Date.now()
+      }
       const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
       const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
-      var currentIndex = Number(current.innerHTML) - 1
-      var imageLlength = Number(total.innerHTML)
-
+      const currentIndex = Number(current.innerHTML) - 1
+      const imageLlength = Number(total.innerHTML)
       const nextIndex = currentIndex >= imageLlength - 1 ? 0 : currentIndex + 1
+
       const action = () => {
         current.innerHTML = nextIndex + 1
-
         imageListNode.style.top = `${-nextIndex * 100}%`
         imageListNode.querySelector('li.current')?.classList.remove('current')
 
@@ -703,9 +724,14 @@ const imageViewer = (function () {
         infoHeight.value = relateImage.naturalHeight
       }
 
-      if (nextIndex === 0) {
-        clearTimeout(debounceTimeout)
-        debounceTimeout = setTimeout(action, 1000)
+      if (repeat) {
+        if (nextIndex === 0) {
+          clearTimeout(debounceTimeout)
+          debounceTimeout = setTimeout(action, 1000)
+        } else if (Date.now() >= throttleTimeout + throttlePeriod) {
+          action()
+          throttleTimeout = Date.now()
+        }
       } else {
         action()
       }
@@ -715,15 +741,18 @@ const imageViewer = (function () {
     shadowRoot.querySelector(`.${appName}`).addEventListener('keydown', e => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
-        return nextItem()
+        nextItem(e.repeat)
+        return
       }
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault()
-        return prevItem()
+        prevItem(e.repeat)
+        return
       }
       if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
         e.preventDefault()
-        return closeImageViewer()
+        closeImageViewer()
+        return
       }
     })
     //arror button
@@ -751,7 +780,7 @@ const imageViewer = (function () {
     fitImage(options)
     addFrameEvent(options)
     addImageEvent(options)
-    if (imageList.length > 1) addImageListEvent()
+    if (imageList.length > 1) addImageListEvent(options)
   }
 
   console.log('Image viewer initialized')
