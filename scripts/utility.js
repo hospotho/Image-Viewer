@@ -46,6 +46,7 @@ const ImageViewerUtils = {
         img.onload = () => resolve(img.naturalWidth)
         img.onerror = () => resolve(getImageSize(src, count + 1))
         img.src = src
+        setTimeout(() => resolve(getImageSize(src, count + 1)), 3000)
       })
     }
     const imgList = document.querySelectorAll('img')
