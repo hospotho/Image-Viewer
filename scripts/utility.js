@@ -20,10 +20,9 @@ const ImageViewerUtils = {
       return hash
     }
     function getRandomIndexArray(range, length = 10) {
-      const maxLength = Math.min(range, length)
       const arr = []
-      while (arr.length < maxLength) {
-        let r = Math.floor(Math.random() * (range + 1))
+      while (arr.length < length) {
+        let r = Math.floor(Math.random() * range)
         if (arr.indexOf(r) === -1) arr.push(r)
       }
       return arr
@@ -38,15 +37,14 @@ const ImageViewerUtils = {
       // }
       // return indexArray.slice(neededIndex)
     }
-    function getImageSize(src, count = 0) {
+    function getImageSize(src) {
       return new Promise(resolve => {
-        if (count === 3) return resolve(0)
-        console.log(`Fetch image size of ${src} count: ${count + 1}`)
+        console.log(`Fetch image size of ${src}`)
         const img = new Image()
         img.onload = () => resolve(img.naturalWidth)
-        img.onerror = () => resolve(getImageSize(src, count + 1))
+        img.onerror = () => resolve(0)
         img.src = src
-        setTimeout(() => resolve(getImageSize(src, count + 1)), 3000)
+        setTimeout(() => resolve(0), 2000)
       })
     }
     const imgList = document.querySelectorAll('img')
@@ -64,7 +62,7 @@ const ImageViewerUtils = {
     const failAttr = []
     const urlReg = /^(?:https?:\/)?\/.+/
     const multReg = /(?:https?:\/)?\/\S+\.[a-zA-Z]{3,4}/g
-    const randomIndex = getRandomIndexArray(listSize)
+    const randomIndex = listSize > 10 ? getRandomIndexArray(listSize) : [...Array(listSize).keys()]
 
     top: for (const index of randomIndex) {
       sub: for (const attr of imgList[index].attributes) {
