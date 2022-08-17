@@ -561,17 +561,18 @@ const imageViewer = (function () {
         window.close()
       })
     }
-    function disableWebsiteKeyEvent() {
+    function disableWebsiteDefaultEvent() {
       const viewer = shadowRoot.querySelector(`.${appName}`)
       viewer.addEventListener('keydown', e => e.stopPropagation())
       viewer.addEventListener('keyup', e => e.stopPropagation())
       viewer.addEventListener('keypress', e => e.stopPropagation())
+      viewer.addEventListener('contextmenu', e => e.stopPropagation())
     }
 
     addFitButtonEvent()
     addMoveToButtonEvent()
     addCloseButtonEvent()
-    disableWebsiteKeyEvent()
+    disableWebsiteDefaultEvent()
   }
 
   function addImageEvent(options) {
