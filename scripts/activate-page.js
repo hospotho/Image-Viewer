@@ -16,7 +16,7 @@
   await ImageViewerUtils.simpleUnlazyImage()
 
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
-  console.log(`${uniqueImageUrls.length} images pass filter`)
+  console.log(`${uniqueImageUrls.length} images pass filter or not complete`)
   if (uniqueImageUrls.length === 0) return
 
   if (typeof imageViewer !== 'function') {

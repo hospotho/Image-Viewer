@@ -31,7 +31,7 @@
     console.log('Image unshift to list')
   }
 
-  console.log(`${uniqueImageUrls.length} images pass filter`)
+  console.log(`${uniqueImageUrls.length} images pass filter or not complete`)
 
   if (typeof imageViewer !== 'function') {
     await chrome.runtime.sendMessage('load_script')
