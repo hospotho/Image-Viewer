@@ -104,7 +104,6 @@ const imageViewer = (function () {
       .__crx__image-viewer * {
         margin: 0;
         padding: 0;
-        transition: 0s;
       }
       .__crx__image-viewer {
         position: fixed;
@@ -129,6 +128,7 @@ const imageViewer = (function () {
         position: absolute;
         left: 0;
         top: 0;
+        transition: 0s;
       }
       .__crx__image-viewer .__crx__image-list li {
         cursor: move;
