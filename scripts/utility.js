@@ -132,7 +132,7 @@ const ImageViewerUtils = {
       imageUrls.push(img.poster)
     }
 
-    return [...new Set(imageUrls)].filter(url => url !== '')
+    return [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
   },
 
   getImageList: function (options) {
@@ -157,6 +157,6 @@ const ImageViewerUtils = {
       }
     }
 
-    return [...new Set(imageUrls)].filter(url => url !== '')
+    return [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
   }
 }
