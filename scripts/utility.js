@@ -60,16 +60,19 @@ const ImageViewerUtils = {
     let lazyName = ''
     let mult = false
     const failAttr = []
-    const urlReg = /^(?:https?:\/)?\/.+/
-    const multReg = /(?:https?:\/)?\/\S+\.[a-zA-Z]{3,4}/g
+    const regex = /(?:https?:\/)?\/\S+\.[a-zA-Z]{3,4}/g
     const randomIndex = listSize > 10 ? getRandomIndexArray(listSize) : [...Array(listSize).keys()]
 
     top: for (const index of randomIndex) {
+      const naturalSize = imgList[index].naturalWidth
       sub: for (const attr of imgList[index].attributes) {
-        if (attr.name === 'src' || failAttr.includes(attr.name) || !urlReg.test(attr.value)) continue sub
+        if (attr.name === 'src' || failAttr.includes(attr.name)) continue sub
 
-        const match = [...attr.value.matchAll(multReg)]
-        const naturalSize = imgList[index].naturalWidth
+        const match = [...attr.value.matchAll(regex)]
+        if (attr.value && match.length === 0) {
+          failAttr.push(attr.name)
+          continue sub
+        }
         if (match.length === 1) {
           const lazySize = await getImageSize(match[0][0])
           if (lazySize <= naturalSize) {
@@ -105,7 +108,7 @@ const ImageViewerUtils = {
     for (const img of lazyImage) {
       const attr = img.getAttribute(lazyName)
       if (!attr) continue
-      const match = [...attr.matchAll(multReg)]
+      const match = [...attr.matchAll(regex)]
       if (match.length === 0) continue
       const newURL = getLazyURL(match).replace(/https?:/, protocol)
       img.src = newURL
