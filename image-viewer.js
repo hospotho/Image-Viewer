@@ -390,14 +390,14 @@ const imageViewer = (function () {
 
   function buildImageList(imageList) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
-    let first = strToNode(`<li><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer"></li>`)
+    let first = strToNode(`<li><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer" crossorigin="anonymous"></li>`)
     _imageList.appendChild(first)
 
     if (imageList.length === 1) return
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
     shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = imageList.length
     for (let i = 1; i < imageList.length; i++) {
-      const li = strToNode(`<li><img src="${imageList[i]}" alt="" referrerpolicy="no-referrer"></li>`)
+      const li = strToNode(`<li><img src="${imageList[i]}" alt="" referrerpolicy="no-referrer" crossorigin="anonymous"></li>`)
       _imageList.appendChild(li)
     }
   }
