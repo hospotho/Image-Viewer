@@ -435,7 +435,7 @@ const imageViewer = (function () {
       shadowRoot.querySelector(`.${appName}-info-width`).value = e.target.naturalWidth
       shadowRoot.querySelector(`.${appName}-info-height`).value = e.target.naturalHeight
 
-      shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`).forEach(img => {
+      for (const img of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
         img.addEventListener('load', e => {
           if (e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) {
             e.target.parentNode.remove()
@@ -450,7 +450,13 @@ const imageViewer = (function () {
           img.parentNode.remove()
           updateCounter()
         }
-      })
+        setTimeout(() => {
+          if (!img.complete || img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight || img.naturalWidth === 0 || img.naturalHeight === 0) {
+            img.parentNode.remove()
+            updateCounter()
+          }
+        }, 2000)
+      }
       fitImage(options)
     })
   }
@@ -487,13 +493,13 @@ const imageViewer = (function () {
       img.style.marginTop = `${-h / 2}px`
       img.style.transform = 'matrix(1,0,0,1,0,0)'
     }
-    shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`).forEach(li => {
+    for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)) {
       const img = li.firstChild
       img.addEventListener('load', e => action(e.target))
       if (img.naturalWidth) action(img)
       const event = new CustomEvent('resetDrag')
       li.dispatchEvent(event)
-    })
+    }
   }
 
   function addFrameEvent(options) {
@@ -582,7 +588,7 @@ const imageViewer = (function () {
     })
 
     //transform
-    shadowRoot.querySelectorAll(`.${appName}  .${imageListName} li`).forEach(li => {
+    for (const li of shadowRoot.querySelectorAll(`.${appName}  .${imageListName} li`)) {
       const img = li.firstChild
       let zoomCount = 0
       let rotateCount = 0
@@ -652,7 +658,7 @@ const imageViewer = (function () {
         imagePos = {x: 0, y: 0}
         startPos = {x: 0, y: 0}
       })
-    })
+    }
   }
 
   function addImageListEvent(options) {
