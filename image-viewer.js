@@ -406,35 +406,14 @@ const imageViewer = (function () {
     function updateCounter() {
       const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
       const length = list.length
-      const index = list.indexOf(base)
-      const newCurr = index === -1 ? Math.min(length, index + 1) : index + 1
+      const currIndex = list.indexOf(base)
+      const newCurr = currIndex === -1 ? Math.min(length, baseIndex + 1) : baseIndex + 1
       total.innerHTML = length
       current.innerHTML = newCurr
       imageListNode.style.top = `${-(newCurr - 1) * 100}%`
       if (length === 0) closeImageViewer()
     }
-
-    const index = options.index || 0
-    const base = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)[index]
-    base.classList.add('current')
-    const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
-    const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
-
-    const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
-    imageListNode.style.top = `${-index * 100}%`
-
-    updateCounter()
-
-    base.firstChild.addEventListener('load', e => {
-      if (options.sizeCheck) {
-        const minSize = Math.min(e.target.naturalWidth, e.target.naturalHeight)
-        options.minWidth = Math.min(minSize, options.minWidth)
-        options.minHeight = Math.min(minSize, options.minHeight)
-        options.sizeCheck = false
-      }
-      shadowRoot.querySelector(`.${appName}-info-width`).value = e.target.naturalWidth
-      shadowRoot.querySelector(`.${appName}-info-height`).value = e.target.naturalHeight
-
+    function removeFailedImg() {
       for (const img of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
         img.addEventListener('load', e => {
           if (e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) {
@@ -458,7 +437,35 @@ const imageViewer = (function () {
         }, 2000)
       }
       fitImage(options)
+    }
+
+    const baseIndex = options.index || 0
+    const base = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)[baseIndex]
+    base.classList.add('current')
+    const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
+    const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
+
+    const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
+    imageListNode.style.top = `${-baseIndex * 100}%`
+
+    updateCounter()
+
+    let completeFlag = false
+    base.firstChild.addEventListener('load', e => {
+      completeFlag = true
+      if (options.sizeCheck) {
+        const minSize = Math.min(e.target.naturalWidth, e.target.naturalHeight)
+        options.minWidth = Math.min(minSize, options.minWidth)
+        options.minHeight = Math.min(minSize, options.minHeight)
+        options.sizeCheck = false
+      }
+      shadowRoot.querySelector(`.${appName}-info-width`).value = e.target.naturalWidth
+      shadowRoot.querySelector(`.${appName}-info-height`).value = e.target.naturalHeight
+      removeFailedImg()
     })
+    setTimeout(() => {
+      if (!completeFlag) removeFailedImg()
+    }, 3000)
   }
 
   function fitImage(options) {
