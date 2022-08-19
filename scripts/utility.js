@@ -19,24 +19,6 @@ const ImageViewerUtils = {
       }
       return hash
     }
-    function getRandomIndexArray(range, length = 10) {
-      const arr = []
-      while (arr.length < length) {
-        let r = Math.floor(Math.random() * range)
-        if (arr.indexOf(r) === -1) arr.push(r)
-      }
-      return arr
-      // const indexArray = [...Array(range).keys()]
-      // let currentIndex = range - 1
-      // let randomIndex = Math.floor(Math.random() * (currentIndex + 1))
-      // const neededIndex = range - maxLength
-      // while (currentIndex >= neededIndex) {
-      //   ;[indexArray[currentIndex], indexArray[randomIndex]] = [indexArray[randomIndex], indexArray[currentIndex]]
-      //   currentIndex--
-      //   randomIndex = Math.floor(Math.random() * (currentIndex + 1))
-      // }
-      // return indexArray.slice(neededIndex)
-    }
     function getImageSize(src) {
       return new Promise(resolve => {
         console.log(`Fetch image size of ${src}`)
@@ -47,74 +29,69 @@ const ImageViewerUtils = {
         setTimeout(() => resolve(0), 2000)
       })
     }
+
     const imgList = document.querySelectorAll('img')
     const listSize = imgList.length
     const currHash = hash(window.location.href + String(listSize))
     const unlazyClass = [...document.documentElement.classList].find(x => x.startsWith('unlazy-hash-'))
     if (currHash === parseInt(unlazyClass?.substring(12))) return
+
     document.documentElement.classList.remove(unlazyClass)
     document.documentElement.classList.add(`unlazy-hash-${currHash}`)
     console.log('Try to unlazy image')
     console.log(`${listSize} image found`)
 
-    let lazyName = ''
-    let mult = false
-    const failAttr = []
-    const regex = /(?:https?:\/)?\/\S+\.[a-zA-Z]{3,4}/g
-    const randomIndex = listSize > 10 ? getRandomIndexArray(listSize) : [...Array(listSize).keys()]
-
-    top: for (const index of randomIndex) {
-      const naturalSize = imgList[index].naturalWidth
-      sub: for (const attr of imgList[index].attributes) {
-        if (attr.name === 'src' || failAttr.includes(attr.name)) continue sub
-
-        const match = [...attr.value.matchAll(regex)]
-        if (attr.value && match.length === 0) {
-          failAttr.push(attr.name)
-          continue sub
-        }
-        if (match.length === 1) {
-          const lazySize = await getImageSize(match[0][0])
-          if (lazySize <= naturalSize) {
-            failAttr.push(attr.name)
-            continue sub
-          }
-          lazyName = attr.name
-          break top
-        }
-        if (match.length > 1) {
-          const first = match[0][0]
-          const last = match[match.length - 1][0]
-          const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
-          if (firstSize <= naturalSize && LastSize <= naturalSize) {
-            failAttr.push(attr.name)
-            continue sub
-          }
-          mult = LastSize > firstSize
-          lazyName = attr.name
-          break top
-        }
-      }
-    }
-
-    if (lazyName === '') {
-      console.log('No lazy src attribute found')
-      return
-    }
-    console.log(`Unlazy img with ${lazyName} attr`)
-    const lazyImage = document.querySelectorAll(`img[${lazyName}]`)
-    const getLazyURL = mult ? match => match.slice(-1)[0][0] : match => match[0][0]
+    const passList = ['class', 'style', 'src', 'alt', 'loading', 'crossorigin', 'height', 'width', 'sizes']
+    const asyncList = []
+    const regex = /(?:https?:\/)?\/\S+/g
     const protocol = window.location.protocol
-    for (const img of lazyImage) {
-      const attr = img.getAttribute(lazyName)
-      if (!attr) continue
-      const match = [...attr.matchAll(regex)]
-      if (match.length === 0) continue
-      const newURL = getLazyURL(match).replace(/https?:/, protocol)
-      img.src = newURL
-      img.srcset = newURL
+
+    for (const img of imgList) {
+      asyncList.push(
+        new Promise(async resolve => {
+          const naturalSize = img.naturalWidth
+          for (const attr of img.attributes) {
+            if (passList.includes(attr.name)) continue
+
+            const match = [...attr.value.matchAll(regex)]
+            if (match.length === 0) continue
+            if (match.length === 1) {
+              const lazySize = await getImageSize(match[0][0])
+              if (lazySize <= naturalSize) continue
+
+              const newURL = match[0][0].replace(/https?:/, protocol)
+              img.src = newURL
+              img.srcset = newURL
+              resolve(attr.name)
+            }
+            if (match.length > 1) {
+              const first = match[0][0]
+              const last = match[match.length - 1][0]
+              const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
+              if (firstSize <= naturalSize && LastSize <= naturalSize) continue
+
+              const large = LastSize > firstSize ? last : first
+              const newURL = large.replace(/https?:/, protocol)
+              img.src = newURL
+              img.srcset = newURL
+              resolve(attr.name)
+            }
+          }
+          img.loading = 'eager'
+          resolve('')
+        })
+      )
     }
-    for (const img of imgList) img.loading = 'eager'
+
+    const lazyName = (await Promise.all(asyncList)).filter(n => n)
+    if (lazyName.length !== 0) {
+      for (const name of [...new Set(lazyName)]) {
+        console.log(`Unlazy ${lazyName.filter(x => x === name).length} img with ${name} attr`)
+      }
+    } else {
+      console.log('No lazy src attribute found')
+    }
+
     await new Promise(resolve => setTimeout(resolve, 500))
   },
 
