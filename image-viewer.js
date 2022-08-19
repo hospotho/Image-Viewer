@@ -675,14 +675,16 @@ const imageViewer = (function () {
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     const infoWidth = shadowRoot.querySelector(`.${appName}-info-width`)
     const infoHeight = shadowRoot.querySelector(`.${appName}-info-height`)
-    const debouncePeriod = options.debouncePeriod || 1000
+    const debouncePeriod = options.debouncePeriod === 0 ? 0 : options.debouncePeriod || 1500
     const throttlePeriod = options.throttlePeriod || 80
 
     let debounceTimeout
     let throttleTimeout = Date.now()
+    let debounceFlag = false
     function prevItem(repeat = false) {
       if (!repeat) {
         clearTimeout(debounceTimeout)
+        debounceFlag = false
         throttleTimeout = Date.now()
       }
       const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
@@ -706,8 +708,13 @@ const imageViewer = (function () {
 
       if (repeat) {
         if (prevIndex === imageLlength - 1) {
-          clearTimeout(debounceTimeout)
-          debounceTimeout = setTimeout(action, debouncePeriod)
+          if (!debounceFlag) {
+            debounceTimeout = setTimeout(() => {
+              action()
+              debounceFlag = false
+            }, debouncePeriod)
+          }
+          debounceFlag = true
         } else if (Date.now() >= throttleTimeout + throttlePeriod) {
           action()
           throttleTimeout = Date.now()
@@ -720,6 +727,7 @@ const imageViewer = (function () {
     function nextItem(repeat = false) {
       if (!repeat) {
         clearTimeout(debounceTimeout)
+        debounceFlag = false
         throttleTimeout = Date.now()
       }
       const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
@@ -743,8 +751,13 @@ const imageViewer = (function () {
 
       if (repeat) {
         if (nextIndex === 0) {
-          clearTimeout(debounceTimeout)
-          debounceTimeout = setTimeout(action, debouncePeriod)
+          if (!debounceFlag) {
+            debounceTimeout = setTimeout(() => {
+              action()
+              debounceFlag = false
+            }, debouncePeriod)
+          }
+          debounceFlag = true
         } else if (Date.now() >= throttleTimeout + throttlePeriod) {
           action()
           throttleTimeout = Date.now()
