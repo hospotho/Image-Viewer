@@ -7,6 +7,7 @@
 
   let {options} = await chrome.runtime.sendMessage('get_options')
   options.closeButton = true
+  options.cors = document.querySelectorAll('img[crossorigin="anonymous"]').length ? true : false
 
   if (document.documentElement.classList.contains('has-image-viewer')) {
     ImageViewerUtils.closeImageViewer()

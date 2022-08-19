@@ -9,6 +9,7 @@
   options.closeButton = true
   options.minWidth = 0
   options.minHeight = 0
+  options.cors = document.querySelectorAll('img[crossorigin="anonymous"]').length ? true : false
 
   if (document.documentElement.classList.contains('has-image-viewer')) {
     ImageViewerUtils.closeImageViewer()

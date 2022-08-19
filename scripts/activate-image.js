@@ -7,6 +7,7 @@
 
   let {options} = await chrome.runtime.sendMessage('get_options')
   options.closeButton = true
+  options.cors = document.querySelectorAll('img[crossorigin="anonymous"]').length ? true : false
 
   const [srcUrl] = await chrome.runtime.sendMessage('get_args')
   const type = [...document.getElementsByTagName('img')].filter(img => img.currentSrc === srcUrl)[0]

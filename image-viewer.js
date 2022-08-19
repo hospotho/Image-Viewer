@@ -388,16 +388,17 @@ const imageViewer = (function () {
     } catch (e) {}
   }
 
-  function buildImageList(imageList) {
+  function buildImageList(imageList, options) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
-    let first = strToNode(`<li><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer" crossorigin="anonymous"></li>`)
+    const cors = options.cors ? 'crossorigin="anonymous"' : ''
+    let first = strToNode(`<li><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer" ${cors}></li>`)
     _imageList.appendChild(first)
 
     if (imageList.length === 1) return
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
     shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = imageList.length
     for (let i = 1; i < imageList.length; i++) {
-      const li = strToNode(`<li><img src="${imageList[i]}" alt="" referrerpolicy="no-referrer" crossorigin="anonymous"></li>`)
+      const li = strToNode(`<li><img src="${imageList[i]}" alt="" referrerpolicy="no-referrer" ${cors}></li>`)
       _imageList.appendChild(li)
     }
   }
@@ -790,7 +791,7 @@ const imageViewer = (function () {
     if (imageList.length === 0 || document.documentElement.classList.contains('has-image-viewer')) return
     let options = _options
     buildApp()
-    buildImageList(imageList)
+    buildImageList(imageList, options)
     initImageList(options)
     fitImage(options)
     addFrameEvent(options)
