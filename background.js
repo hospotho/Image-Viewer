@@ -7,7 +7,17 @@
   function resetLocalStorage() {
     chrome.storage.sync.get('options', res => {
       if (res && Object.keys(res).length === 0 && Object.getPrototypeOf(res) === Object.prototype) {
-        const defaultOptions = {fitMode: 'both', zoomRatio: 1.2, rotateDeg: 15, minWidth: 150, minHeight: 150, debouncePeriod: 1500, throttlePeriod: 80}
+        const defaultOptions = {
+          fitMode: 'both',
+          zoomRatio: 1.2,
+          rotateDeg: 15,
+          minWidth: 150,
+          minHeight: 150,
+          debouncePeriod: 1500,
+          throttlePeriod: 80,
+          hotkey: ['Ctrl + A', 'Ctrl + S', 'Ctrl + D', 'Ctrl + F', ''],
+          customUrl: 'https://example.com/search?query={imgSrc}&option=example_option'
+        }
         chrome.storage.sync.set({options: defaultOptions}, () => {
           console.log('Set options to default values.')
         })
