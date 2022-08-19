@@ -13,6 +13,7 @@ const imageViewer = (function () {
   function closeImageViewer() {
     document.documentElement.classList.remove('has-image-viewer')
     const viewer = document.querySelector('.__shadow__image-viewer')
+    if (!viewer) return
     viewer.addEventListener('transitionend', () => viewer.remove())
     viewer.style.transition = 'opacity 0.1s'
     viewer.style.opacity = '0'
