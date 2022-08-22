@@ -15,12 +15,14 @@ Image Viewer is a manifest V3 Chrome extension for viewing images on a page. It 
 8. Rotate image `Alt + WheelUp/Down`
 9. Mirror image `Alt + click`
 10. close window by call window.close() when right click on close button
+11. And more...
 
 ## Workflow
+(May have been change after each update, just for ref)
 
-1. Content script will load `image-viewer.js` to all page and pass `imageViewer(imageList, options)` to global scope (isolated world).
-
-2. When `chrome.action.onClick` or `chrome.contextMenus.onClick` is triggered, event listener will call `chrome.scripting.executeScript()` to execute `activate-{type}.js` on that page. The script will collect and pass images to `imageViewr()`.
+1. When `chrome.action.onClick` or `chrome.contextMenus.onClick` is triggered, event listener will call `chrome.scripting.executeScript()` to execute `activate-{type}.js` on that page. The script will collect and pass images to `imageViewr()`.
+   
+2. If `imageViewr()` is not available, background.js will load `image-viewer.js` to that page and pass `imageViewer(imageList, options)` to global scope (isolated world).
 
 3. When `imageViewr()` is called, a image viewer will start to build base on the images and user options passed by `activate-{type}.js`.
 
@@ -40,8 +42,9 @@ The entire project was written in Vanilla JavaScript with Chrome API. Standalone
 ## ToDo
 
 1. `image-viewer.min.js`
-2. keyboard shortcut (image search, index, transforms)
-3. iframe image support
+2. iframe image support
+3. release on Chrome Web Store
+4. https://hospotho.github.io/Image-Viewer/ to teach user how to use it
 
 ## History
 
@@ -55,7 +58,9 @@ Since I was using this extension, lot of features were added to this project.
 
 At 2022-06, I felt tired to update it, so I decided to clear up all those old style messy jQuery code and undertake a complete rewrite of it.
 
-Rewrite is done, also upgrade to manifest V3. <= Now
+Rewrite is done, also upgrade to manifest V3.
+
+Develop and maintain by me <= Now
 
 ## License
 

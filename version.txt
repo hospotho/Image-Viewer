@@ -1,3 +1,4 @@
+1.5 [2022-08-22]: Support using hotkey to search image
 1.4 [2022-08-10]: Add utility.js to increase performance
 1.3 [2022-07-01]: Renew activate image method
 1.2 [2022-07-01]: Add simpleUnlazyImage()

@@ -583,11 +583,69 @@ const imageViewer = (function () {
       viewer.addEventListener('keypress', e => e.stopPropagation())
       viewer.addEventListener('contextmenu', e => e.stopPropagation())
     }
+    function addHotkeyEvent() {
+      function checkKey(e, hotkey) {
+        const keyList = hotkey.split('+').map(str => str.trim())
+        if (keyList.includes('Ctrl') && !e.ctrlKey) return false
+        if (keyList.includes('Alt') && !e.altKey) return false
+        if (keyList.includes('Shift') && !e.shiftKey) return false
+        return keyList[keyList.length - 1] === e.key.toUpperCase()
+      }
+      const openNewTab = chrome ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
+
+      if (!options.hotkey || options.hotkey.length < 5) return
+      const hotkey = options.hotkey
+      const googleUrl = String.raw`https://www.google.com/searchbyimage?image_url={imgSrc}`
+      const yandexUrl = String.raw`https://yandex.com/images/search?family=yes&rpt=imageview&url={imgSrc}`
+      const saucenaoUrl = String.raw`https://saucenao.com/search.php?db=999&url={imgSrc}`
+      const ascii2dUrl = String.raw`https://ascii2d.net/search/url/{imgSrc}`
+      const urlList = [googleUrl, yandexUrl, saucenaoUrl, ascii2dUrl]
+
+      const viewer = shadowRoot.querySelector(`.${appName}`)
+      for (let i = urlList.length - 1; i >= 0; i--) {
+        if (hotkey[i] === '') continue
+        viewer.addEventListener('keydown', e => {
+          if (!checkKey(e, hotkey[i])) return
+          e.preventDefault()
+          e.stopPropagation()
+          const imgUrl = shadowRoot.querySelector('.current img').src
+          const queryUrl = urlList[i].replace('{imgSrc}', imgUrl)
+          openNewTab(queryUrl)
+        })
+      }
+
+      viewer.addEventListener('keydown', e => {
+        if (!checkKey(e, hotkey[4])) return
+        e.preventDefault()
+        e.stopPropagation()
+        const imgUrl = shadowRoot.querySelector('.current img').src
+        for (let i = urlList.length - 1; i >= 0; i--) {
+          const queryUrl = urlList[i].replace('{imgSrc}', imgUrl)
+          openNewTab(queryUrl)
+        }
+      })
+
+      const customHotkey = hotkey.slice(5)
+      const customUrl = options.customUrl
+      if (customHotkey.length !== customUrl.length) return
+      for (let i = customHotkey.length - 1; i >= 0; i--) {
+        if (customHotkey[i] === '') continue
+        viewer.addEventListener('keydown', e => {
+          if (!checkKey(e, customHotkey[i])) return
+          e.preventDefault()
+          e.stopPropagation()
+          const imgUrl = shadowRoot.querySelector('.current img').src
+          const queryUrl = customUrl[i].replace('{imgSrc}', imgUrl)
+          openNewTab(queryUrl)
+        })
+      }
+    }
 
     addFitButtonEvent()
     addMoveToButtonEvent()
     addCloseButtonEvent()
     disableWebsiteDefaultEvent()
+    addHotkeyEvent()
   }
 
   function addImageEvent(options) {

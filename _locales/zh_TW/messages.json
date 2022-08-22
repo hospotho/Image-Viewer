@@ -1,9 +1,24 @@
 {
+  "add_new_custom": {
+    "message": "新增自定"
+  },
   "appDesc": {
     "message": "更多功能、更易使用的圖像瀏覽"
   },
   "appName": {
     "message": "Image Viewer"
+  },
+  "custom_search": {
+    "message": "自定"
+  },
+  "custom_search_url": {
+    "message": "自定URL"
+  },
+  "debounce_desc": {
+    "message": "長按箭頭鍵時，Image viewer會在越過最前/最後的圖像前停留<br>當延時結束且未被其他操作中斷，剛才的操作將會繼續<br>設置延時時間為0以停止此行為"
+  },
+  "debounce_period": {
+    "message": "延時時間"
   },
   "default_image_fit": {
     "message": "預設圖像大小"
@@ -22,6 +37,9 @@
   },
   "height": {
     "message": "高度"
+  },
+  "hotkey_notice": {
+    "message": "多個搜索使用相同的快捷鍵時，觸發後會同時啟動，既有快捷鍵如'Ctrl + W' 'Ctrl + T'等不會被覆蓋<br><br>使用自定搜索引擎時，搜索圖片的URL會置換'{imgSrc}'成真正的圖像連結<br><br>軟性禁止沒有使用Ctrl/Alt/Shift的熱鍵，在DevTools更改成需要的鍵以保存"
   },
   "min_height": {
     "message": "最小高度"
@@ -50,8 +68,23 @@
   "save": {
     "message": "保存"
   },
+  "search_hotkey": {
+    "message": "圖像搜索熱鍵"
+  },
   "size_filter": {
     "message": "圖像大小過濾"
+  },
+  "speed_control": {
+    "message": "速度控制"
+  },
+  "throttle_desc": {
+    "message": "長按箭頭鍵時，Image viewer會在切換每張圖像前至少停留此時間<br>默認設定的 80ms = 12.5fps (每秒12.5張圖片)<br>當節流時間被設置至接近0, fps上限僅基於電腦性能"
+  },
+  "throttle_period": {
+    "message": "節流時間"
+  },
+  "use_all_search": {
+    "message": "以上所有"
   },
   "view_all_images_in_image_viewer": {
     "message": "於Image Viewer觀看所有圖像"

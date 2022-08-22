@@ -11,15 +11,29 @@ body {
 
 form,
 fieldset,
-ul {
+table {
   padding: 0;
   margin: 0;
 }
 fieldset {
-  padding: 20px;
+  padding: 15px 20px;
   margin-bottom: 20px;
 }
 
+#option-form tr {
+  list-style: none;
+}
+.option-list > tr:not(:last-child) {
+  margin-bottom: 10px;
+}
+#option-form tr.desc{
+  font-size: 13px;
+}
+
+label {
+  display: inline-block;
+  width: 120px;
+}
 input#zoomRatio {
   vertical-align: middle;
   width: 120px;
@@ -28,10 +42,14 @@ input#rotateDeg {
   vertical-align: middle;
   width: 180px;
 }
-
-#option-form li {
-  list-style: none;
+input.customSearchUrl {
+  width: 500px;
 }
-.option-list > li:not(:last-child) {
-  margin-bottom: 10px;
+
+span#notFactor{
+  display: none;
+}
+tr#debounceDesc,
+tr#throttleDesc{
+  display: none;
 }

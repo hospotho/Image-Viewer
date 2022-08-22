@@ -1,9 +1,24 @@
 {
+  "add_new_custom": {
+    "message": "カスタムを追加"
+  },
   "appDesc": {
     "message": "画像観覧をもっと使いやすいように機能を強化します"
   },
   "appName": {
     "message": "Image Viewer"
+  },
+  "custom_search": {
+    "message": "カスタム"
+  },
+  "custom_search_url": {
+    "message": "カスタム URL"
+  },
+  "debounce_desc": {
+    "message": "「矢印キーを長押し」すると、Image Viewerは最初/最後の画像にとどまり<br>遅延が終了し、他の操作によって中断されない場合、前の操作が続行されます<br>この動作を停止するには、遅延時間を 0 に設定してください"
+  },
+  "debounce_period": {
+    "message": "デバウンスタイム"
   },
   "default_image_fit": {
     "message": "デフォルトの画像サイズ"
@@ -22,6 +37,9 @@
   },
   "height": {
     "message": "高度"
+  },
+  "hotkey_notice": {
+    "message": "複数の検索で同じホットキーを使用すると、すべての検索が同時にトリガーされ、「Ctrl + W」「Ctrl + T」などの既存のショートカットキーはオーバーライドされません<br><br>カスタム検索エンジンを使用する場合、検索URLの「{imgSrc}」は実際の画像リンクに置き換えられ<br><br>Ctrl/Alt/Shiftを使用せずのホットキーは推奨しません、たがDevToolsで望みのキーに変更そして保存はできます"
   },
   "min_height": {
     "message": "最小高度"
@@ -50,8 +68,23 @@
   "save": {
     "message": "保存"
   },
+  "search_hotkey": {
+    "message": "画像検索ホットキー"
+  },
   "size_filter": {
     "message": "画像サイズフィルター"
+  },
+  "speed_control": {
+    "message": "速度制御"
+  },
+  "throttle_desc": {
+    "message": "「矢印キーを長押し」すると、Image Viewerは各画像が切り替わる前に少なくともこの期間、各画像を表示します<br>デフォルト設定の 80 ms = 12.5 fps (1 秒あたり 12.5 画像)<br>スロットルタイムが 0 に近い値に設定されている場合、fpsの上限はコンピューターのパフォーマンスのみに基づいています"
+  },
+  "throttle_period": {
+    "message": "スロットルタイム"
+  },
+  "use_all_search": {
+    "message": "上記すべて"
   },
   "view_all_images_in_image_viewer": {
     "message": "Image Viewerですべての画像を表示"

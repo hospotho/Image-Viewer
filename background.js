@@ -15,8 +15,8 @@
           minHeight: 150,
           debouncePeriod: 1500,
           throttlePeriod: 80,
-          hotkey: ['Ctrl + A', 'Ctrl + S', 'Ctrl + D', 'Ctrl + F', ''],
-          customUrl: 'https://example.com/search?query={imgSrc}&option=example_option'
+          hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
+          customUrl: ['https://example.com/search?query={imgSrc}&option=example_option']
         }
         chrome.storage.sync.set({options: defaultOptions}, () => {
           console.log('Set options to default values.')
@@ -31,22 +31,28 @@
 
   function addMessageHandler() {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request === 'get_options') {
-        chrome.storage.sync.get('options', res => sendResponse(res))
-        return true
-      }
-      if (request === 'load_utility') {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['scripts/utility.js']}, res => sendResponse({}))
-        return true
-      }
-      if (request === 'load_script') {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, res => sendResponse({}))
-        return true
-      }
-      if (request === 'get_args') {
-        sendResponse(args)
-        args = []
-        return true
+      switch (request.msg || request) {
+        case 'get_options': {
+          chrome.storage.sync.get('options', res => sendResponse(res))
+          return true
+        }
+        case 'load_utility': {
+          chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['scripts/utility.js']}, res => sendResponse({}))
+          return true
+        }
+        case 'load_script': {
+          chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, res => sendResponse({}))
+          return true
+        }
+        case 'get_args': {
+          sendResponse(args)
+          args = []
+          return true
+        }
+        case 'open_tab': {
+          chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, res => sendResponse({}))
+          return true
+        }
       }
     })
   }
@@ -71,16 +77,19 @@
 
     chrome.contextMenus.onClicked.addListener((info, tab) => {
       switch (info.menuItemId) {
-        case 'open_in_image_viewer':
+        case 'open_in_image_viewer': {
           args.push(info.srcUrl)
           chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-image.js']})
-          break
-        case 'open_image_viewer':
+          return
+        }
+        case 'open_image_viewer': {
           chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
-          break
-        case 'open_all_image_in_image_viewer':
+          return
+        }
+        case 'open_all_image_in_image_viewer': {
           chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-all.js']})
-          break
+          return
+        }
       }
     })
   }
@@ -94,12 +103,14 @@
   function addCommandHandler() {
     chrome.commands.onCommand.addListener((command, tab) => {
       switch (command) {
-        case 'open-image-viewer':
+        case 'open-image-viewer': {
           chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
-          break
-        case 'open-image-viewer-without-size-filter':
+          return
+        }
+        case 'open-image-viewer-without-size-filter': {
           chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-all.js']})
-          break
+          return
+        }
       }
     })
   }
