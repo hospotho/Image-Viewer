@@ -5,7 +5,7 @@
     await chrome.runtime.sendMessage('load_utility')
   }
 
-  let {options} = await chrome.runtime.sendMessage('get_options')
+  const options = window.ImageViewerOption
   options.closeButton = true
   options.minWidth = 0
   options.minHeight = 0
