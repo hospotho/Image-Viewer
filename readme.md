@@ -42,9 +42,8 @@ The entire project was written in Vanilla JavaScript with Chrome API. Standalone
 ## ToDo
 
 1. `image-viewer.min.js`
-2. iframe image support
-3. release on Chrome Web Store
-4. https://hospotho.github.io/Image-Viewer/ to teach user how to use it
+2. release on Chrome Web Store
+3. https://hospotho.github.io/Image-Viewer/ to teach user how to use it
 
 ## History
 

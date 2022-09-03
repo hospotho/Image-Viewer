@@ -23,6 +23,11 @@
   await ImageViewerUtils.simpleUnlazyImage()
 
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
+  if (!!document.querySelector('iframe')) {
+    const iframeImage = await chrome.runtime.sendMessage('load_frames')
+    uniqueImageUrls.push(...iframeImage)
+  }
+
   if (uniqueImageUrls.indexOf(type?.currentSrc) !== -1) {
     options.index = uniqueImageUrls.indexOf(type.currentSrc)
   } else if (uniqueImageUrls.indexOf(srcUrl) !== -1) {

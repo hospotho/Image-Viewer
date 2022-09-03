@@ -17,6 +17,11 @@
   await ImageViewerUtils.simpleUnlazyImage()
 
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
+  if (!!document.querySelector('iframe')) {
+    const iframeImage = await chrome.runtime.sendMessage('load_frames')
+    uniqueImageUrls.push(...iframeImage)
+  }
+  
   console.log(`${uniqueImageUrls.length} images pass filter or not complete`)
   if (uniqueImageUrls.length === 0) return
 

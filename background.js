@@ -55,6 +55,17 @@ function addMessageHandler() {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse({}))
         return true
       }
+      case 'load_frames': {
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['scripts/activate-iframe.js']}, results => {
+          let args = []
+          for (const result of results) {
+            if (!result.result) continue
+            args.push(...result.result)
+          }
+          sendResponse(args)
+        })
+        return true
+      }
       case 'open_tab': {
         chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, () => sendResponse({}))
         return true
@@ -88,15 +99,15 @@ function createContextMenu() {
     switch (info.menuItemId) {
       case 'open_in_image_viewer': {
         await passDataToTab(tab.id, info.srcUrl, 'ImageViewerTargetUrl')
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-image.js']})
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['scripts/activate-image.js']})
         return
       }
       case 'open_image_viewer': {
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['scripts/activate-page.js']})
         return
       }
       case 'open_all_image_in_image_viewer': {
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-all.js']})
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['scripts/activate-all.js']})
         return
       }
     }
@@ -107,7 +118,7 @@ function addTooltipdHandler() {
   chrome.action.onClicked.addListener(async tab => {
     const {options} = await getOptions()
     await passDataToTab(tab.id, options, 'ImageViewerOption')
-    chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
+    chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['scripts/activate-page.js']})
   })
 }
 
@@ -117,11 +128,11 @@ function addCommandHandler() {
     await passDataToTab(tab.id, options, 'ImageViewerOption')
     switch (command) {
       case 'open-image-viewer': {
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['scripts/activate-page.js']})
         return
       }
       case 'open-image-viewer-without-size-filter': {
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-all.js']})
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['scripts/activate-all.js']})
         return
       }
     }
