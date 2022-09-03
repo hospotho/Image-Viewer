@@ -408,8 +408,8 @@ const imageViewer = (function () {
     function updateCounter() {
       const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
       const length = list.length
-      const currIndex = list.indexOf(base)
-      const newCurr = currIndex === -1 ? Math.min(length, baseIndex + 1) : baseIndex + 1
+      const currIndex = list.indexOf(shadowRoot.querySelector('li.current'))
+      const newCurr = currIndex === -1 ? Math.min(length, baseIndex + 1) : currIndex + 1
       total.innerHTML = length
       current.innerHTML = newCurr
       imageListNode.style.top = `${-(newCurr - 1) * 100}%`
@@ -432,7 +432,7 @@ const imageViewer = (function () {
           updateCounter()
         }
         setTimeout(() => {
-          if (!img.complete || img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight || img.naturalWidth === 0 || img.naturalHeight === 0) {
+          if (!img.complete) {
             img.parentNode.remove()
             updateCounter()
           }
