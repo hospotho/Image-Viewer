@@ -47,6 +47,7 @@ const ImageViewerUtils = {
     const protocol = window.location.protocol
 
     for (const img of imgList) {
+      if (img.classList.contains('simpleUnlazy')) continue
       asyncList.push(
         new Promise(async resolve => {
           const naturalSize = img.naturalWidth
@@ -62,6 +63,7 @@ const ImageViewerUtils = {
               const newURL = match[0][0].replace(/https?:/, protocol)
               img.src = newURL
               img.srcset = newURL
+              img.classList.add('simpleUnlazy')
               resolve(attr.name)
             }
             if (match.length > 1) {
@@ -74,6 +76,7 @@ const ImageViewerUtils = {
               const newURL = large.replace(/https?:/, protocol)
               img.src = newURL
               img.srcset = newURL
+              img.classList.add('simpleUnlazy')
               resolve(attr.name)
             }
           }
