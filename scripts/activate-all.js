@@ -9,7 +9,7 @@
   options.closeButton = true
   options.minWidth = 0
   options.minHeight = 0
-  options.cors = document.querySelectorAll('img[crossorigin="anonymous"]').length ? true : false
+  options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
 
   if (document.documentElement.classList.contains('has-image-viewer')) {
     ImageViewerUtils.closeImageViewer()
@@ -20,10 +20,11 @@
 
   const uniqueImageUrls = ImageViewerUtils.getAllImage()
   if (!!document.querySelector('iframe')) {
-    const iframeImage = await chrome.runtime.sendMessage('load_frames')
+    const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', filter: false})
+    console.log(`loaded ${iframeImage.length} iframe images`)
     uniqueImageUrls.push(...iframeImage)
   }
-  
+
   console.log(`${uniqueImageUrls.length} images found`)
   if (uniqueImageUrls.length === 0) return
 

@@ -1,10 +1,8 @@
 ;(async function () {
   if (typeof ImageViewerUtils === 'object') return
 
-  const {options} = await chrome.runtime.sendMessage('get_options')
   const asyncList = []
   for (const img of document.getElementsByTagName('img')) {
-    if (img.clientWidth < options.minWidth || img.clientHeight < options.minHeight) continue
     asyncList.push(
       new Promise(resolve => {
         const c = document.createElement('canvas')

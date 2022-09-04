@@ -7,7 +7,7 @@
 
   const options = window.ImageViewerOption
   options.closeButton = true
-  options.cors = !!document.querySelectorAll('img[crossorigin="anonymous"]').length
+  options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
 
   const srcUrl = window.ImageViewerTargetUrl
   const type = [...document.getElementsByTagName('img')].filter(img => img.currentSrc === srcUrl)[0]
@@ -24,7 +24,8 @@
 
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
   if (!!document.querySelector('iframe')) {
-    const iframeImage = await chrome.runtime.sendMessage('load_frames')
+    const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', filter: true})
+    console.log(`loaded ${iframeImage.length} iframe images`)
     uniqueImageUrls.push(...iframeImage)
   }
 
