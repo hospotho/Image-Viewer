@@ -861,7 +861,7 @@ const imageViewer = (function () {
   //==========main function==========
   function imageViewer(imageList, _options) {
     if (imageList.length === 0 || document.documentElement.classList.contains('has-image-viewer')) return
-    let options = _options
+    const options = _options
     buildApp()
     buildImageList(imageList, options)
     initImageList(options)

@@ -32,18 +32,18 @@
   function i18n() {
     chrome.i18n.getAcceptLanguages(languages => {
       const exist = ['en', 'ja', 'zh_CN', 'zh_TW']
-      let defaultLanguages = 'en'
-      for (let lang of languages) {
+      let displayLanguages = 'en'
+      for (const lang of languages) {
         if (exist.includes(lang.replace('-', '_'))) {
-          defaultLanguages = lang
+          displayLanguages = lang
           break
         }
         if (exist.includes(lang.slice(0, 2))) {
-          defaultLanguages = lang.slice(0, 2)
+          displayLanguages = lang.slice(0, 2)
           break
         }
       }
-      document.documentElement.setAttribute('lang', defaultLanguages)
+      document.documentElement.setAttribute('lang', displayLanguages)
     })
 
     for (const el of document.querySelectorAll('[data-i18n]')) {
