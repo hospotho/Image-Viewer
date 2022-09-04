@@ -4,7 +4,7 @@
   const image = document.querySelector(`body img[src='${location.href}']`)
   if (!image) return
   
-  let {options} = await chrome.runtime.sendMessage('get_options')
+  const {options} = await chrome.runtime.sendMessage('get_options')
   options.closeButton = false
   options.minWidth = 0
   options.minHeight = 0
