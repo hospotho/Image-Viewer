@@ -77,6 +77,9 @@
   "speed_control": {
     "message": "速度控制"
   },
+  "svg_filter": {
+    "message": "過濾svg"
+  },
   "throttle_desc": {
     "message": "長按箭頭鍵時，Image viewer會在切換每張圖像前至少停留此時間<br>默認設定的 80ms = 12.5fps (每秒12.5張圖片)<br>當節流時間被設置至接近0, fps上限僅基於電腦性能"
   },

@@ -11,7 +11,7 @@ body {
 
 form,
 fieldset,
-table {
+ul {
   padding: 0;
   margin: 0;
 }
@@ -20,13 +20,14 @@ fieldset {
   margin-bottom: 20px;
 }
 
-#option-form tr {
-  list-style: none;
+ul {
+  list-style-type: none;
 }
-.option-list > tr:not(:last-child) {
+
+.option-list > li:not(:last-child) {
   margin-bottom: 10px;
 }
-#option-form tr.desc{
+#option-form li.desc {
   font-size: 13px;
 }
 
@@ -46,10 +47,10 @@ input.customSearchUrl {
   width: 500px;
 }
 
-span#notFactor{
+span#notFactor {
   display: none;
 }
-tr#debounceDesc,
-tr#throttleDesc{
+li#debounceDesc,
+li#throttleDesc {
   display: none;
 }

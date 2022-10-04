@@ -24,6 +24,7 @@ function resetLocalStorage() {
         rotateDeg: 15,
         minWidth: 150,
         minHeight: 150,
+        svgFilter: true,
         debouncePeriod: 1500,
         throttlePeriod: 80,
         hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],

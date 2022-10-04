@@ -9,16 +9,6 @@ const ImageViewerUtils = {
   },
 
   simpleUnlazyImage: async function () {
-    function hash(input) {
-      let hash = 0
-      if (input.length === 0) return hash
-      for (let i = 0; i < input.length; i++) {
-        const chr = input.charCodeAt(i)
-        hash = hash * 31 + chr
-        hash |= 0
-      }
-      return hash
-    }
     function getImageSize(src) {
       return new Promise(resolve => {
         console.log(`Fetch image size of ${src}`)
@@ -32,13 +22,8 @@ const ImageViewerUtils = {
 
     const imgList = document.querySelectorAll('img:not(.simpleUnlazy)')
     const listSize = imgList.length
-    // const currHash = hash(window.location.href + String(listSize))
-    // const unlazyClass = [...document.documentElement.classList].find(x => x.startsWith('unlazy-hash-'))
-    // if (currHash === parseInt(unlazyClass?.substring(12))) return
     if (!listSize) return
 
-    // document.documentElement.classList.remove(unlazyClass)
-    // document.documentElement.classList.add(`unlazy-hash-${currHash}`)
     console.log('Try to unlazy image')
     console.log(`${listSize} image found`)
 
@@ -97,7 +82,7 @@ const ImageViewerUtils = {
     await new Promise(resolve => setTimeout(resolve, 500))
   },
 
-  getAllImage: function () {
+  getAllImage: function (options) {
     const imageUrls = []
     for (const img of document.getElementsByTagName('img')) {
       imageUrls.push(img.currentSrc)
@@ -114,7 +99,7 @@ const ImageViewerUtils = {
       imageUrls.push(img.poster)
     }
 
-    return [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
+    return [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank' && (!options.svgFilter || url.slice(-4) !== '.svg'))
   },
 
   getImageList: function (options) {
@@ -139,6 +124,6 @@ const ImageViewerUtils = {
       }
     }
 
-    return [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
+    return [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank' && (!options.svgFilter || url.slice(-4) !== '.svg'))
   }
 }

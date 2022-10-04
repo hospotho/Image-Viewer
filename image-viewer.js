@@ -68,6 +68,61 @@ const imageViewer = (function () {
     return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
   }
 
+  function searchImgNode(imgUrl) {
+    for (const img of document.getElementsByTagName('img')) {
+      if (imgUrl === img.currentSrc) {
+        //check style.display by offsetParent
+        if (img.offsetParent === null && img.style.position !== 'fixed') continue
+        return img
+      }
+    }
+    for (const video of document.getElementsByTagName('video')) {
+      if (imgUrl === video.poster) {
+        return video
+      }
+    }
+    for (const node of document.getElementsByTagName('*')) {
+      const bg = window.getComputedStyle(node).backgroundImage
+      if (bg !== 'none' && imgUrl === bg.substring(4, bg.length - 1).replace(/['"]/g, '')) {
+        return node
+      }
+    }
+    return null
+  }
+
+  function searchImgAnchor(imgNode) {
+    let el = imgNode
+    while (el.parentElement) {
+      el = el.parentElement
+      if (el.tagName.toLowerCase() === 'a') return el
+    }
+    return null
+  }
+
+  const fitFuncDict = {
+    both: (imageWidth, imageHeight) => {
+      const windowWidth = document.documentElement.clientWidth
+      const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
+      const windowRatio = windowWidth / windowHeight
+      const imgRatio = imageWidth / imageHeight
+      return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
+    },
+    width: (imageWidth, imageHeight) => {
+      const windowWidth = document.documentElement.clientWidth
+      const imgRatio = imageWidth / imageHeight
+      return [windowWidth, windowWidth / imgRatio]
+    },
+    height: (imageWidth, imageHeight) => {
+      const windowHeight = document.doctype ? document.documentElement.clientHeight : document.body.clientHeight
+      const imgRatio = imageWidth / imageHeight
+      return [windowHeight * imgRatio, windowHeight]
+    },
+    none: (imageWidth, imageHeight) => {
+      return [imageWidth, imageHeight]
+    }
+  }
+
+  //==========html&style==========
   const frame = () => {
     return `<ul class="${imageListName}"></ul>
     <nav class="${appName}-control">
@@ -472,28 +527,8 @@ const imageViewer = (function () {
 
   function fitImage(options) {
     if (options.sizeCheck) return
-    function both(imageWidth, imageHeight) {
-      const windowWidth = document.documentElement.clientWidth
-      const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-      const windowRatio = windowWidth / windowHeight
-      const imgRatio = imageWidth / imageHeight
-      return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
-    }
-    function width(imageWidth, imageHeight) {
-      const windowWidth = document.documentElement.clientWidth
-      const imgRatio = imageWidth / imageHeight
-      return [windowWidth, windowWidth / imgRatio]
-    }
-    function height(imageWidth, imageHeight) {
-      const windowHeight = document.doctype ? document.documentElement.clientHeight : document.body.clientHeight
-      const imgRatio = imageWidth / imageHeight
-      return [windowHeight * imgRatio, windowHeight]
-    }
-    function none(imageWidth, imageHeight) {
-      return [imageWidth, imageHeight]
-    }
-    const dict = {both: both, width: width, height: height, none: none}
-    const fitFunc = dict[options.fitMode] || both
+
+    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
     const action = img => {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
@@ -506,12 +541,13 @@ const imageViewer = (function () {
       const img = li.firstChild
       img.addEventListener('load', e => action(e.target))
       if (img.naturalWidth) action(img)
-      const event = new CustomEvent('resetDrag')
+      const event = new CustomEvent('resetTransform')
       li.dispatchEvent(event)
     }
   }
 
   function addFrameEvent(options) {
+    const viewer = shadowRoot.querySelector(`.${appName}`)
     function addFitButtonEvent() {
       const currFitBtn = shadowRoot.querySelector(`.${appName}-control-button-${options.fitMode}`)
       currFitBtn?.classList.add('on')
@@ -526,34 +562,9 @@ const imageViewer = (function () {
       }
     }
     function addMoveToButtonEvent() {
-      shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', () => {
+      function moveTo() {
         const imgUrl = shadowRoot.querySelector('.current img').src
-        let imgNode = null
-        for (const img of document.getElementsByTagName('img')) {
-          if (imgUrl === img.currentSrc) {
-            //check style.display by offsetParent
-            if (img.offsetParent === null && img.style.position !== 'fixed') continue
-            imgNode = img
-            break
-          }
-        }
-        if (imgNode === null) {
-          for (const video of document.getElementsByTagName('video')) {
-            if (imgUrl === video.poster) {
-              imgNode = video
-              break
-            }
-          }
-        }
-        if (imgNode === null) {
-          for (const node of document.getElementsByTagName('*')) {
-            const bg = window.getComputedStyle(node).backgroundImage
-            if (bg !== 'none' && imgUrl === bg.substring(4, bg.length - 1).replace(/['"]/g, '')) {
-              imgNode = node
-              break
-            }
-          }
-        }
+        const imgNode = searchImgNode(imgUrl)
         closeImageViewer()
         if (imgNode === null) {
           console.log('Image node not found')
@@ -564,6 +575,13 @@ const imageViewer = (function () {
         const temp = imgNode.style.border
         imgNode.style.border = '5px solid red'
         setTimeout(() => (imgNode.style.border = temp), 1000)
+      }
+      shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', moveTo)
+      viewer.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          moveTo()
+        }
       })
     }
     function addCloseButtonEvent() {
@@ -575,15 +593,41 @@ const imageViewer = (function () {
         e.preventDefault()
         window.close()
       })
+      viewer.addEventListener('keydown', e => {
+        if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
+          e.preventDefault()
+          closeImageViewer()
+          return
+        }
+      })
+    }
+    function addMiddleClickKeyEvent() {
+      viewer.addEventListener('keydown', e => {
+        if (e.key === 'Insert' || e.key === '0') {
+          e.preventDefault()
+          const imgUrl = shadowRoot.querySelector('.current img').src
+          const imgNode = searchImgNode(imgUrl)
+          if (!imgNode) return
+          const anchor = searchImgAnchor(imgNode)
+          if (!anchor) return
+          const openNewTab = chrome ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
+          openNewTab(anchor.href)
+        }
+      })
     }
     function disableWebsiteDefaultEvent() {
-      const viewer = shadowRoot.querySelector(`.${appName}`)
       viewer.addEventListener('keydown', e => e.stopPropagation())
       viewer.addEventListener('keyup', e => e.stopPropagation())
       viewer.addEventListener('keypress', e => e.stopPropagation())
       viewer.addEventListener('contextmenu', e => e.stopPropagation())
+      viewer.addEventListener('mousedown', e => {
+        if (e.button == 1) {
+          e.preventDefault()
+          return false
+        }
+      })
     }
-    function addHotkeyEvent() {
+    function addSearchHotkeyEvent() {
       function checkKey(e, hotkey) {
         const keyList = hotkey.split('+').map(str => str.trim())
         if (keyList.includes('Ctrl') && !e.ctrlKey) return false
@@ -601,23 +645,22 @@ const imageViewer = (function () {
       const ascii2dUrl = String.raw`https://ascii2d.net/search/url/{imgSrc}`
       const urlList = [googleUrl, yandexUrl, saucenaoUrl, ascii2dUrl]
 
-      const viewer = shadowRoot.querySelector(`.${appName}`)
-      for (let i = urlList.length - 1; i >= 0; i--) {
-        if (hotkey[i] === '') continue
-        viewer.addEventListener('keydown', e => {
-          if (!checkKey(e, hotkey[i])) return
+      viewer.addEventListener('keydown', e => {
+        for (let i = urlList.length - 1; i >= 0; i--) {
+          if (hotkey[i] === '') continue
+          if (!checkKey(e, hotkey[i])) continue
+
           e.preventDefault()
-          e.stopPropagation()
           const imgUrl = shadowRoot.querySelector('.current img').src
           const queryUrl = urlList[i].replace('{imgSrc}', imgUrl)
           openNewTab(queryUrl)
-        })
-      }
+          break
+        }
+      })
 
       viewer.addEventListener('keydown', e => {
         if (!checkKey(e, hotkey[4])) return
         e.preventDefault()
-        e.stopPropagation()
         const imgUrl = shadowRoot.querySelector('.current img').src
         for (let i = urlList.length - 1; i >= 0; i--) {
           const queryUrl = urlList[i].replace('{imgSrc}', imgUrl)
@@ -628,56 +671,45 @@ const imageViewer = (function () {
       const customHotkey = hotkey.slice(5)
       const customUrl = options.customUrl
       if (customHotkey.length !== customUrl.length) return
-      for (let i = customHotkey.length - 1; i >= 0; i--) {
-        if (customHotkey[i] === '') continue
-        viewer.addEventListener('keydown', e => {
-          if (!checkKey(e, customHotkey[i])) return
+      viewer.addEventListener('keydown', e => {
+        for (let i = customHotkey.length - 1; i >= 0; i--) {
+          if (customHotkey[i] === '') continue
+          if (!checkKey(e, customHotkey[i])) continue
+
           e.preventDefault()
-          e.stopPropagation()
           const imgUrl = shadowRoot.querySelector('.current img').src
           const queryUrl = customUrl[i].replace('{imgSrc}', imgUrl)
           openNewTab(queryUrl)
-        })
-      }
+          break
+        }
+      })
     }
 
     addFitButtonEvent()
     addMoveToButtonEvent()
     addCloseButtonEvent()
+    addMiddleClickKeyEvent()
     disableWebsiteDefaultEvent()
-    addHotkeyEvent()
+    addSearchHotkeyEvent()
   }
 
   function addImageEvent(options) {
-    //resize
-    window.addEventListener('resize', e => {
-      fitImage(options)
-    })
-
-    //transform
-    for (const li of shadowRoot.querySelectorAll(`.${appName}  .${imageListName} li`)) {
+    function addTransformHandler(li) {
       const img = li.firstChild
       let zoomCount = 0
       let rotateCount = 0
-      //zoom
+      //zoom&rotate
       li.addEventListener('wheel', e => {
         e.preventDefault()
-        if (e.altKey) return
-        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
-        e.deltaY > 0 ? zoomCount-- : zoomCount++
-        scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
-        scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
-        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
-        rotate = (mirror * options.rotateDeg * rotateCount) % 360
-        img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
-      })
-      //rotate
-      li.addEventListener('wheel', e => {
-        e.preventDefault()
-        if (!e.altKey) return
         let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
         const mirror = Math.sign(scaleX) * Math.sign(scaleY)
-        mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
+        if (!e.altKey) {
+          e.deltaY > 0 ? zoomCount-- : zoomCount++
+          scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
+          scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
+        } else {
+          mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
+        }
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
         img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
@@ -690,6 +722,7 @@ const imageViewer = (function () {
         rotateCount *= -1
         img.style.transform = VtoM(-scaleX, scaleY, rotate, moveX, moveY)
       })
+
       //dragging
       let dragFlag = false
       let imagePos = {x: 0, y: 0}
@@ -710,21 +743,45 @@ const imageViewer = (function () {
         dragFlag = false
         imagePos = {x: e.clientX - startPos.x, y: e.clientY - startPos.y}
       })
-      li.addEventListener('resetDrag', e => {
-        zoomCount = 0
-        rotateCount = 0
-        img.style.transform = 'matrix(1,0,0,1,0,0)'
-        imagePos = {x: 0, y: 0}
-        startPos = {x: 0, y: 0}
-      })
+
       //reset
-      li.addEventListener('dblclick', e => {
+      li.addEventListener('dblclick', () => {
         zoomCount = 0
         rotateCount = 0
         img.style.transform = 'matrix(1,0,0,1,0,0)'
         imagePos = {x: 0, y: 0}
         startPos = {x: 0, y: 0}
       })
+      //custom event
+      li.addEventListener('resetTransform', () => {
+        zoomCount = 0
+        rotateCount = 0
+        img.style.transform = 'matrix(1,0,0,1,0,0)'
+        imagePos = {x: 0, y: 0}
+        startPos = {x: 0, y: 0}
+      })
+    }
+    function addMiddleClickHandler(li) {
+      const imgNode = searchImgNode(li.firstChild.src)
+      if (!imgNode) return
+      const anchor = searchImgAnchor(imgNode)
+      if (!anchor) return
+
+      li.addEventListener('auxclick', e => {
+        if (e.button === 1) {
+          anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
+        }
+      })
+    }
+
+    //resize
+    window.addEventListener('resize', e => {
+      fitImage(options)
+    })
+
+    for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)) {
+      addTransformHandler(li)
+      addMiddleClickHandler(li)
     }
   }
 
@@ -737,13 +794,13 @@ const imageViewer = (function () {
     const throttlePeriod = options.throttlePeriod || 80
 
     let debounceTimeout
-    let throttleTimeout = Date.now()
+    let throttleTimestamp = Date.now()
     let debounceFlag = false
     function prevItem(repeat = false) {
       if (!repeat) {
         clearTimeout(debounceTimeout)
         debounceFlag = false
-        throttleTimeout = Date.now()
+        throttleTimestamp = Date.now()
       }
       const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
       const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
@@ -764,29 +821,30 @@ const imageViewer = (function () {
         infoHeight.value = relateImage.naturalHeight
       }
 
-      if (repeat) {
-        if (prevIndex === imageLlength - 1) {
-          if (!debounceFlag) {
-            debounceTimeout = setTimeout(() => {
-              action()
-              debounceFlag = false
-            }, debouncePeriod)
-          }
-          debounceFlag = true
-        } else if (Date.now() >= throttleTimeout + throttlePeriod) {
-          action()
-          throttleTimeout = Date.now()
-        }
-      } else {
+      if (!repeat) {
         action()
+        return
+      }
+
+      if (prevIndex === imageLlength - 1) {
+        if (!debounceFlag) {
+          debounceTimeout = setTimeout(() => {
+            action()
+            debounceFlag = false
+          }, debouncePeriod)
+        }
+        debounceFlag = true
+      } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
+        action()
+        throttleTimestamp = Date.now()
       }
     }
-
+    
     function nextItem(repeat = false) {
       if (!repeat) {
         clearTimeout(debounceTimeout)
         debounceFlag = false
-        throttleTimeout = Date.now()
+        throttleTimestamp = Date.now()
       }
       const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
       const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
@@ -807,21 +865,22 @@ const imageViewer = (function () {
         infoHeight.value = relateImage.naturalHeight
       }
 
-      if (repeat) {
-        if (nextIndex === 0) {
-          if (!debounceFlag) {
-            debounceTimeout = setTimeout(() => {
-              action()
-              debounceFlag = false
-            }, debouncePeriod)
-          }
-          debounceFlag = true
-        } else if (Date.now() >= throttleTimeout + throttlePeriod) {
-          action()
-          throttleTimeout = Date.now()
-        }
-      } else {
+      if (!repeat) {
         action()
+        return
+      }
+
+      if (nextIndex === 0) {
+        if (!debounceFlag) {
+          debounceTimeout = setTimeout(() => {
+            action()
+            debounceFlag = false
+          }, debouncePeriod)
+        }
+        debounceFlag = true
+      } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
+        action()
+        throttleTimestamp = Date.now()
       }
     }
 
@@ -835,11 +894,6 @@ const imageViewer = (function () {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault()
         prevItem(e.repeat)
-        return
-      }
-      if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
-        e.preventDefault()
-        closeImageViewer()
         return
       }
     })

@@ -18,7 +18,7 @@
 
   await ImageViewerUtils.simpleUnlazyImage()
 
-  const uniqueImageUrls = ImageViewerUtils.getAllImage()
+  const uniqueImageUrls = ImageViewerUtils.getAllImage(options)
   if (!!document.querySelector('iframe')) {
     const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', filter: false})
     console.log(`loaded ${iframeImage.length} iframe images`)

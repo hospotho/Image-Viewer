@@ -3,13 +3,13 @@
 
   const zoom = document.querySelector('input#zoomRatio')
   const rotate = document.querySelector('input#rotateDeg')
+
   const width = document.querySelector('input#minWidth')
   const height = document.querySelector('input#minHeight')
+  const svgFilter = document.querySelector('input#svgFilter')
 
   const debounce = document.querySelector('input#debouncePeriod')
-  const debounceDesc = document.querySelector('tr#debounceDesc')
   const throttle = document.querySelector('input#throttlePeriod')
-  const throttleDesc = document.querySelector('tr#throttleDesc')
 
   const google = document.querySelector('input#googleSearch')
   const yandex = document.querySelector('input#yandexSearch')
@@ -23,12 +23,14 @@
     rotateDeg: 15,
     minWidth: 150,
     minHeight: 150,
+    svgFilter: true,
     debouncePeriod: 1500,
     throttlePeriod: 80,
     hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
     customUrl: ['https://example.com/search?query={imgSrc}&option=example_option']
   }
 
+  //==========utility==========
   function i18n() {
     chrome.i18n.getAcceptLanguages(languages => {
       const exist = ['en', 'ja', 'zh_CN', 'zh_TW']
@@ -81,8 +83,8 @@
 
     const i18n = [chrome.i18n.getMessage('custom_search'), chrome.i18n.getMessage('custom_search_url')]
     const htmlStr =
-      `<tr><td><label for="customSearch${length + 1}"><span>${i18n[0]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearch hotkey"></td></tr>` +
-      `<tr><td><label for="customSearchUrl${length + 1}"><span>${i18n[1]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearchUrl"></td></tr>`
+      `<li><label for="customSearch${length + 1}"><span>${i18n[0]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearch hotkey"></li>` +
+      `<li><label for="customSearchUrl${length + 1}"><span>${i18n[1]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearchUrl"></li>`
     tr.insertAdjacentHTML('afterend', htmlStr)
 
     for (const input of document.querySelectorAll('input.hotkey')) {
@@ -100,8 +102,11 @@
       zoom.nextElementSibling.innerHTML = options.zoomRatio
       rotate.value = options.rotateDeg
       rotate.nextElementSibling.innerHTML = options.rotateDeg
+
       width.value = options.minWidth
       height.value = options.minHeight
+      svgFilter.checked = options.svgFilter
+
       debounce.value = options.debouncePeriod
       throttle.value = options.throttlePeriod
 
@@ -133,7 +138,8 @@
     }
   }
 
-  function setInputHandler() {
+  //==========main==========
+  function initFormEvent() {
     zoom.addEventListener('input', e => {
       document.querySelector('span#zoomDisplay').innerHTML = e.target.value
     })
@@ -144,9 +150,11 @@
       span.nextElementSibling.style = 360 % e.target.value !== 0 ? 'display: inline' : ''
     })
 
+    const debounceDesc = document.querySelector('li#debounceDesc')
     debounce.addEventListener('focus', () => (debounceDesc.style = 'display: block; padding: 0px 0px 10px 10px;'))
     debounce.addEventListener('focusout', () => (debounceDesc.style = ''))
-
+    
+    const throttleDesc = document.querySelector('li#throttleDesc')
     throttle.addEventListener('focus', () => (throttleDesc.style = 'display: block; padding: 0px 0px 10px 10px;'))
     throttle.addEventListener('focusout', () => (throttleDesc.style = ''))
 
@@ -160,7 +168,7 @@
     document.querySelector('button#addNewCustom').addEventListener('click', addNewCustom)
   }
 
-  function setFormBtnHandler() {
+  function initFormButton() {
     document.querySelector('button#save').addEventListener('click', () => {
       const options = {}
       options.fitMode = document.querySelector('input[name="fit"]:checked').value
@@ -168,6 +176,7 @@
       options.rotateDeg = Number(rotate.value)
       options.minWidth = Number(width.value)
       options.minHeight = Number(height.value)
+      options.svgFilter = svgFilter.checked
       options.debouncePeriod = Number(debounce.value)
       options.throttlePeriod = Number(throttle.value)
 
@@ -199,8 +208,8 @@
     i18n()
     const {options} = await chrome.storage.sync.get('options')
     setValue(options)
-    setInputHandler()
-    setFormBtnHandler()
+    initFormEvent()
+    initFormButton()
   }
 
   init()

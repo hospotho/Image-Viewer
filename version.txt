@@ -1,3 +1,4 @@
+1.7 [2022-10-04]: Add more keyboard shortcuts and svg filter
 1.6 [2022-09-03]: Support image in iframes
 1.5 [2022-08-22]: Support using hotkey to search image
 1.4 [2022-08-10]: Add utility.js to increase performance

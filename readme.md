@@ -38,12 +38,13 @@ Image Viewer is a manifest V3 Chrome extension for viewing images on a page. It 
 
 ## Browser support
 
-The entire project was written in Vanilla JavaScript with Chrome API. Standalone `image-viewer.js` should work on all modern browser, you can write your own activate script and run `image-viewer.js` by tampermonkey or other alternatives.
+The entire project was written in Vanilla JavaScript with Chrome API. Standalone `image-viewer.js` should work on all modern browser, you can write your own activate script to run `image-viewer.js` using tampermonkey or other alternatives.
 ## ToDo
 
-1. `image-viewer.min.js`
-2. release on Chrome Web Store
-3. https://hospotho.github.io/Image-Viewer/ to teach user how to use it
+1. pick image element by mouse
+2. `image-viewer.min.js`
+3. release on Chrome Web Store
+4. https://hospotho.github.io/Image-Viewer/ to teach user how to use it
 
 ## History
 

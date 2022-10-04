@@ -77,6 +77,9 @@
   "speed_control": {
     "message": "Speed control"
   },
+  "svg_filter": {
+    "message": "Fitler svg"
+  },
   "throttle_desc": {
     "message": "When you 'long press arrow key', Image viewer will display each image approximate this period of time.<br>The default setting 80ms = 12.5fps (12.5 image per 1 second).<br>When throttle period was set to be close to 0, fps limit will only depending on you computer performance."
   },
