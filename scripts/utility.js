@@ -26,28 +26,29 @@ const ImageViewerUtils = {
         img.onload = () => resolve(img.naturalWidth)
         img.onerror = () => resolve(0)
         img.src = src
-        setTimeout(() => resolve(0), 2000)
+        setTimeout(() => resolve(0), 3000)
       })
     }
 
-    const imgList = document.querySelectorAll('img')
+    const imgList = document.querySelectorAll('img:not(.simpleUnlazy)')
     const listSize = imgList.length
-    const currHash = hash(window.location.href + String(listSize))
-    const unlazyClass = [...document.documentElement.classList].find(x => x.startsWith('unlazy-hash-'))
-    if (currHash === parseInt(unlazyClass?.substring(12))) return
+    // const currHash = hash(window.location.href + String(listSize))
+    // const unlazyClass = [...document.documentElement.classList].find(x => x.startsWith('unlazy-hash-'))
+    // if (currHash === parseInt(unlazyClass?.substring(12))) return
+    if (!listSize) return
 
-    document.documentElement.classList.remove(unlazyClass)
-    document.documentElement.classList.add(`unlazy-hash-${currHash}`)
+    // document.documentElement.classList.remove(unlazyClass)
+    // document.documentElement.classList.add(`unlazy-hash-${currHash}`)
     console.log('Try to unlazy image')
     console.log(`${listSize} image found`)
 
-    const passList = ['class', 'style', 'src', 'alt', 'loading', 'crossorigin', 'height', 'width', 'sizes']
+    const passList = ['class', 'style', 'src', 'alt', 'loading', 'crossorigin', 'height', 'width', 'sizes', 'onerror']
     const asyncList = []
     const regex = /(?:https?:\/)?\/\S+/g
     const protocol = window.location.protocol
 
     for (const img of imgList) {
-      if (img.classList.contains('simpleUnlazy')) continue
+      img.classList.add('simpleUnlazy')
       asyncList.push(
         new Promise(async resolve => {
           const naturalSize = img.naturalWidth
@@ -63,7 +64,6 @@ const ImageViewerUtils = {
               const newURL = match[0][0].replace(/https?:/, protocol)
               img.src = newURL
               img.srcset = newURL
-              img.classList.add('simpleUnlazy')
               resolve(attr.name)
             }
             if (match.length > 1) {
@@ -76,7 +76,6 @@ const ImageViewerUtils = {
               const newURL = large.replace(/https?:/, protocol)
               img.src = newURL
               img.srcset = newURL
-              img.classList.add('simpleUnlazy')
               resolve(attr.name)
             }
           }
