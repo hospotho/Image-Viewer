@@ -99,7 +99,9 @@ const ImageViewerUtils = {
       imageUrls.push(img.poster)
     }
 
-    return [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank' && (!options.svgFilter || url.slice(-4) !== '.svg'))
+    return options.svgFilter
+      ? [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank' && !url.includes('.svg'))
+      : [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
   },
 
   getImageList: function (options) {
@@ -124,6 +126,8 @@ const ImageViewerUtils = {
       }
     }
 
-    return [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank' && (!options.svgFilter || url.slice(-4) !== '.svg'))
+    return options.svgFilter
+      ? [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank' && !url.includes('.svg'))
+      : [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
   }
 }
