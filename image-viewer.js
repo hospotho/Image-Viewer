@@ -562,6 +562,7 @@ const imageViewer = (function () {
       }
     }
     function addMoveToButtonEvent() {
+      if (!options.closeButton) return
       function moveTo() {
         const imgUrl = shadowRoot.querySelector('.current img').src
         const imgNode = searchImgNode(imgUrl)
