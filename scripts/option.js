@@ -195,6 +195,7 @@
       chrome.storage.sync.set({options: options}, () => {
         console.log('Options have been save.')
         console.log(options)
+        chrome.runtime.sendMessage('update_options')
       })
     })
 

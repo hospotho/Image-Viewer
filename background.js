@@ -1,11 +1,6 @@
 const i18n = tag => chrome.i18n.getMessage(tag)
-const getOptions = () => {
-  return new Promise(resolve => {
-    chrome.storage.sync.get('options', res => resolve(res))
-  })
-}
-const passDataToTab = (id, data, name) => {
-  console.log('passDataToTab: ', id, data, name)
+const passDataToTab = (id, name, data) => {
+  console.log('passDataToTab: ', id, name, data)
   return chrome.scripting.executeScript({
     args: [data, name],
     target: {tabId: id},
@@ -14,6 +9,8 @@ const passDataToTab = (id, data, name) => {
     }
   })
 }
+
+let currOptions = null
 
 function resetLocalStorage() {
   chrome.storage.sync.get('options', res => {
@@ -42,11 +39,24 @@ function resetLocalStorage() {
 }
 
 function addMessageHandler() {
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('Received message: ', sender.tab.id, request)
-    switch (request.msg || request) {
+  chrome.runtime.onMessage.addListener((request, sender, _sendResponse) => {
+    const sendResponse = data => {
+      console.log(data)
+      _sendResponse(data)
+    }
+    const type = request.msg || request
+    console.log('Received message: ', sender.tab.id, type)
+    switch (type) {
       case 'get_options': {
-        chrome.storage.sync.get('options', res => sendResponse(res))
+        const {options} = currOptions
+        sendResponse(options)
+        return true
+      }
+      case 'update_options': {
+        chrome.storage.sync.get('options', res => {
+          currOptions = res
+          sendResponse()
+        })
         return true
       }
       case 'load_utility': {
@@ -97,11 +107,11 @@ function createContextMenu() {
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     console.log(info.menuItemId)
-    const {options} = await getOptions()
-    await passDataToTab(tab.id, options, 'ImageViewerOption')
+    const {options} = currOptions
+    await passDataToTab(tab.id, 'ImageViewerOption', options)
     switch (info.menuItemId) {
       case 'open_in_image_viewer': {
-        await passDataToTab(tab.id, info.srcUrl, 'ImageViewerTargetUrl')
+        await passDataToTab(tab.id, 'ImageViewerTargetUrl', info.srcUrl)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-image.js']})
         return
       }
@@ -119,16 +129,16 @@ function createContextMenu() {
 
 function addTooltipdHandler() {
   chrome.action.onClicked.addListener(async tab => {
-    const {options} = await getOptions()
-    await passDataToTab(tab.id, options, 'ImageViewerOption')
+    const {options} = currOptions
+    await passDataToTab(tab.id, 'ImageViewerOption', options)
     chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
   })
 }
 
 function addCommandHandler() {
   chrome.commands.onCommand.addListener(async (command, tab) => {
-    const {options} = await getOptions()
-    await passDataToTab(tab.id, options, 'ImageViewerOption')
+    const {options} = currOptions
+    await passDataToTab(tab.id, 'ImageViewerOption', options)
     switch (command) {
       case 'open-image-viewer': {
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
@@ -148,6 +158,7 @@ function init() {
   createContextMenu()
   addTooltipdHandler()
   addCommandHandler()
+  chrome.storage.sync.get('options', res => (currOptions = res))
 }
 
 init()
