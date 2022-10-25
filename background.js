@@ -109,8 +109,7 @@ function createContextMenu() {
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     console.log(info.menuItemId)
-    const {options} = currOptions
-    await passDataToTab(tab.id, 'ImageViewerOption', options)
+    await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
     switch (info.menuItemId) {
       case 'open_in_image_viewer': {
         await passDataToTab(tab.id, 'ImageViewerTargetUrl', info.srcUrl)
@@ -131,16 +130,14 @@ function createContextMenu() {
 
 function addTooltipdHandler() {
   chrome.action.onClicked.addListener(async tab => {
-    const {options} = currOptions
-    await passDataToTab(tab.id, 'ImageViewerOption', options)
+    await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
     chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
   })
 }
 
 function addCommandHandler() {
   chrome.commands.onCommand.addListener(async (command, tab) => {
-    const {options} = currOptions
-    await passDataToTab(tab.id, 'ImageViewerOption', options)
+    await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
     switch (command) {
       case 'open-image-viewer': {
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
