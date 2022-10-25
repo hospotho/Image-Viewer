@@ -27,14 +27,17 @@ function resetLocalStorage() {
         hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
         customUrl: ['https://example.com/search?query={imgSrc}&option=example_option']
       }
+      currOptions = defaultOptions
       chrome.storage.sync.set({options: defaultOptions}, () => {
         console.log('Set options to default values.')
+        console.log(defaultOptions)
       })
       chrome.runtime.openOptionsPage()
-      return
+    } else {
+      currOptions = res.options
+      console.log('Loaded options from storage.')
+      console.log(res.options)
     }
-    console.log('Init complete.')
-    console.log(res)
   })
 }
 
@@ -158,7 +161,7 @@ function init() {
   createContextMenu()
   addTooltipdHandler()
   addCommandHandler()
-  chrome.storage.sync.get('options', res => (currOptions = res))
+  console.log('Init complete.')
 }
 
 init()
