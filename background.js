@@ -62,11 +62,11 @@ function addMessageHandler() {
         return true
       }
       case 'load_utility': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, () => sendResponse({}))
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, () => sendResponse(null))
         return true
       }
       case 'load_script': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse({}))
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse(null))
         return true
       }
       case 'load_frames': {
@@ -82,7 +82,7 @@ function addMessageHandler() {
         return true
       }
       case 'open_tab': {
-        chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, () => sendResponse({}))
+        chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, () => sendResponse(null))
         return true
       }
     }
