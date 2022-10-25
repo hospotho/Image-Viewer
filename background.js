@@ -51,13 +51,12 @@ function addMessageHandler() {
     console.log('Received message: ', sender.tab.id, type)
     switch (type) {
       case 'get_options': {
-        const {options} = currOptions
-        sendResponse(options)
+        sendResponse(currOptions)
         return true
       }
       case 'update_options': {
         chrome.storage.sync.get('options', res => {
-          currOptions = res
+          currOptions = res.options
           sendResponse()
         })
         return true
