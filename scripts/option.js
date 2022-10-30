@@ -153,7 +153,7 @@
     const debounceDesc = document.querySelector('li#debounceDesc')
     debounce.addEventListener('focus', () => (debounceDesc.style = 'display: block; padding: 0px 0px 10px 10px;'))
     debounce.addEventListener('focusout', () => (debounceDesc.style = ''))
-    
+
     const throttleDesc = document.querySelector('li#throttleDesc')
     throttle.addEventListener('focus', () => (throttleDesc.style = 'display: block; padding: 0px 0px 10px 10px;'))
     throttle.addEventListener('focusout', () => (throttleDesc.style = ''))

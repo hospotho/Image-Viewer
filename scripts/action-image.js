@@ -2,6 +2,7 @@
   'use strict'
 
   if (typeof ImageViewerUtils !== 'object') {
+    console.log('loading utility')
     await chrome.runtime.sendMessage('load_utility')
   }
 
@@ -9,36 +10,35 @@
   options.closeButton = true
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
 
-  const srcUrl = window.ImageViewerTargetUrl
-  const type = [...document.getElementsByTagName('img')].filter(img => img.currentSrc === srcUrl)[0]
-  if (type) {
-    const minSize = Math.min(type.clientWidth, type.clientHeight, type.naturalWidth, type.naturalHeight)
+  const nodeInfo = await chrome.runtime.sendMessage('get_info')
+  const [srcUrl, minSize, dom] = nodeInfo === null ? [] : nodeInfo
+
+  if (srcUrl) {
+    console.log('Image node found.')
     options.minWidth = Math.min(minSize, options.minWidth)
     options.minHeight = Math.min(minSize, options.minHeight)
-  } else {
-    options.sizeCheck = true
-    console.log(`Image node of ${srcUrl} not found`)
   }
 
   await ImageViewerUtils.simpleUnlazyImage()
 
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
   if (!!document.querySelector('iframe')) {
-    const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', filter: true})
-    console.log(`loaded ${iframeImage.length} iframe images`)
-    uniqueImageUrls.push(...iframeImage)
+    const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', minSize: minSize})
+    const uniqueIframeImage = [...new Set(iframeImage)]
+    console.log(`loaded ${uniqueIframeImage.length} iframe images`)
+    uniqueImageUrls.push(...uniqueIframeImage)
   }
 
-  if (uniqueImageUrls.indexOf(type?.currentSrc) !== -1) {
-    options.index = uniqueImageUrls.indexOf(type.currentSrc)
+  if (uniqueImageUrls.indexOf(dom?.currentSrc) !== -1) {
+    options.index = uniqueImageUrls.indexOf(dom.currentSrc)
   } else if (uniqueImageUrls.indexOf(srcUrl) !== -1) {
     options.index = uniqueImageUrls.indexOf(srcUrl)
-  } else {
+  } else if (srcUrl) {
     uniqueImageUrls.unshift(srcUrl)
     console.log('Image unshift to list')
   }
 
-  console.log(`${uniqueImageUrls.length} images pass filter or not complete`)
+  console.log(`${uniqueImageUrls.length} images pass filter or still loading`)
 
   if (typeof imageViewer !== 'function') {
     await chrome.runtime.sendMessage('load_script')

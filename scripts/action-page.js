@@ -7,8 +7,6 @@
 
   const options = window.ImageViewerOption
   options.closeButton = true
-  options.minWidth = 0
-  options.minHeight = 0
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
 
   if (document.documentElement.classList.contains('has-image-viewer')) {
@@ -18,14 +16,16 @@
 
   await ImageViewerUtils.simpleUnlazyImage()
 
-  const uniqueImageUrls = ImageViewerUtils.getAllImage(options)
+  const uniqueImageUrls = ImageViewerUtils.getImageList(options)
   if (!!document.querySelector('iframe')) {
-    const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', filter: false})
-    console.log(`loaded ${iframeImage.length} iframe images`)
-    uniqueImageUrls.push(...iframeImage)
+    const minSize = Math.min(options.minWidth, options.minHeight)
+    const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', minSize: minSize})
+    const uniqueIframeImage = [...new Set(iframeImage)]
+    console.log(`loaded ${uniqueIframeImage.length} iframe images`)
+    uniqueImageUrls.push(...uniqueIframeImage)
   }
 
-  console.log(`${uniqueImageUrls.length} images found`)
+  console.log(`${uniqueImageUrls.length} images pass filter or still loading`)
   if (uniqueImageUrls.length === 0) return
 
   if (typeof imageViewer !== 'function') {

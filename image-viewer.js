@@ -840,7 +840,7 @@ const imageViewer = (function () {
         throttleTimestamp = Date.now()
       }
     }
-    
+
     function nextItem(repeat = false) {
       if (!repeat) {
         clearTimeout(debounceTimeout)

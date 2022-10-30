@@ -1,9 +1,9 @@
 const i18n = tag => chrome.i18n.getMessage(tag)
 const passDataToTab = (id, name, data) => {
-  console.log('passDataToTab: ', id, name, data)
+  console.log('Pass data: ', id, name, data)
   return chrome.scripting.executeScript({
     args: [data, name],
-    target: {tabId: id},
+    target: {tabId: id, allFrames: true},
     func: (data, name) => {
       window[name] = data
     }
@@ -11,6 +11,8 @@ const passDataToTab = (id, name, data) => {
 }
 
 let currOptions = null
+let currOptionsWithoutSize = null
+let lastImageNodeInfo = null
 
 function resetLocalStorage() {
   chrome.storage.sync.get('options', res => {
@@ -35,6 +37,9 @@ function resetLocalStorage() {
       chrome.runtime.openOptionsPage()
     } else {
       currOptions = res.options
+      currOptionsWithoutSize = Object.assign({}, currOptions)
+      currOptionsWithoutSize.minWidth = 0
+      currOptionsWithoutSize.minHeight = 0
       console.log('Loaded options from storage.')
       console.log(res.options)
     }
@@ -43,12 +48,13 @@ function resetLocalStorage() {
 
 function addMessageHandler() {
   chrome.runtime.onMessage.addListener((request, sender, _sendResponse) => {
-    const sendResponse = data => {
-      console.log(data)
-      _sendResponse(data)
-    }
     const type = request.msg || request
     console.log('Received message: ', sender.tab.id, type)
+
+    const sendResponse = data => {
+      if (data) console.log('Send response: ', sender.tab.id, type, data)
+      _sendResponse(data)
+    }
     switch (type) {
       case 'get_options': {
         sendResponse(currOptions)
@@ -57,21 +63,28 @@ function addMessageHandler() {
       case 'update_options': {
         chrome.storage.sync.get('options', res => {
           currOptions = res.options
+          currOptionsWithoutSize = Object.assign({}, currOptions)
+          currOptionsWithoutSize.minWidth = 0
+          currOptionsWithoutSize.minHeight = 0
+          console.log('New options: ', currOptions)
           sendResponse()
         })
         return true
       }
       case 'load_utility': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, () => sendResponse(null))
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, () => sendResponse())
         return true
       }
       case 'load_script': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse(null))
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse())
         return true
       }
       case 'load_frames': {
-        const script = '/scripts/activate-iframe' + (request.filter === true ? '.js' : '-all.js')
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: [script]}, results => {
+        const newOptions = Object.assign({}, currOptions)
+        newOptions.minWidth = request.minSize
+        newOptions.minHeight = request.minSize
+        passDataToTab(sender.tab.id, 'ImageViewerOption', newOptions)
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/extract-iframe.js']}, results => {
           let args = []
           for (const result of results) {
             if (!result.result) continue
@@ -81,8 +94,18 @@ function addMessageHandler() {
         })
         return true
       }
+      case 'get_info': {
+        sendResponse(lastImageNodeInfo)
+        return true
+      }
+      case 'update_info': {
+        lastImageNodeInfo = request.data
+        console.log('New info: ', lastImageNodeInfo)
+        sendResponse()
+        return true
+      }
       case 'open_tab': {
-        chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, () => sendResponse(null))
+        chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, () => sendResponse())
         return true
       }
     }
@@ -90,61 +113,52 @@ function addMessageHandler() {
 }
 
 function createContextMenu() {
-  chrome.contextMenus.removeAll()
   chrome.contextMenus.create({
-    id: 'open_in_image_viewer',
-    title: i18n('open_in_image_viewer'),
-    contexts: ['image']
-  })
-  chrome.contextMenus.create({
-    id: 'open_image_viewer',
+    id: 'view_images_in_image_viewer',
     title: i18n('view_images_in_image_viewer'),
-    contexts: ['page']
+    contexts: ['all']
   })
   chrome.contextMenus.create({
-    id: 'open_all_image_in_image_viewer',
+    id: 'view_all_image_in_image_viewer',
     title: i18n('view_all_images_in_image_viewer'),
     contexts: ['action']
   })
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     console.log(info.menuItemId)
-    await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
     switch (info.menuItemId) {
-      case 'open_in_image_viewer': {
-        await passDataToTab(tab.id, 'ImageViewerTargetUrl', info.srcUrl)
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-image.js']})
+      case 'view_images_in_image_viewer': {
+        await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-image.js']})
         return
       }
-      case 'open_image_viewer': {
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
-        return
-      }
-      case 'open_all_image_in_image_viewer': {
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-all.js']})
+      case 'view_all_image_in_image_viewer': {
+        passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         return
       }
     }
   })
 }
 
-function addTooltipdHandler() {
+function addToolbarIconHandler() {
   chrome.action.onClicked.addListener(async tab => {
     await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
-    chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
+    chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
   })
 }
 
 function addCommandHandler() {
   chrome.commands.onCommand.addListener(async (command, tab) => {
-    await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
     switch (command) {
       case 'open-image-viewer': {
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-page.js']})
+        await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         return
       }
       case 'open-image-viewer-without-size-filter': {
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/activate-all.js']})
+        passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         return
       }
     }
@@ -155,7 +169,7 @@ function init() {
   resetLocalStorage()
   addMessageHandler()
   createContextMenu()
-  addTooltipdHandler()
+  addToolbarIconHandler()
   addCommandHandler()
   console.log('Init complete.')
 }
