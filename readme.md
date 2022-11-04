@@ -19,7 +19,7 @@ https://ko-fi.com/tonymilktea
 
 ## Installation
 
-You can install this extension on Chrome Web Store (not yet available) or follow step below.
+You can install this extension on <a href="https://chrome.google.com/webstore/detail/image-viewer/ghdcoodfcolpdebbdhbgkbodbjololfl">Chrome Web Store</a> or follow step below.
 
 1. Download the source code and place it anywhere you want.
 2. Open your browser and go to `chrome://extensions`.
