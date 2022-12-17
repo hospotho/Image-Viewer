@@ -418,6 +418,7 @@ const imageViewer = (function () {
     document.documentElement.classList.add('has-image-viewer')
 
     const shadowHolder = document.createElement('div')
+    shadowHolder.style.all = 'revert'
     shadowHolder.classList.add('__shadow__image-viewer')
     shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
     // shadowRoot = shadowHolder.attachShadow({mode: 'open'})
