@@ -84,7 +84,7 @@
         resolve(url)
       }
       img.onerror = () => {
-        console.log(new URL(src).hostname + ' block your access outside iframe')
+        console.log(new URL(srcUrl).hostname + ' block your access outside iframe')
         resolve('')
       }
 
