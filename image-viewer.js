@@ -13,11 +13,11 @@ const imageViewer = (function () {
   function closeImageViewer() {
     document.documentElement.classList.remove('has-image-viewer')
     const viewer = document.querySelector('.__shadow__image-viewer')
-    if (!viewer) return
-    viewer.addEventListener('transitionend', () => viewer.remove())
-    viewer.style.transition = 'opacity 0.1s'
-    viewer.style.opacity = '0'
-    return
+    if (viewer) {
+      viewer.addEventListener('transitionend', viewer.remove)
+      viewer.style.transition = 'opacity 0.2s'
+      viewer.style.opacity = '0'
+    }
   }
 
   function VtoM(scaleX, scaleY, rotate, moveX, moveY) {
@@ -599,11 +599,11 @@ const imageViewer = (function () {
         if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
           e.preventDefault()
           closeImageViewer()
-          return
         }
       })
     }
     function addMiddleClickKeyEvent() {
+      const openNewTab = chrome ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
       viewer.addEventListener('keydown', e => {
         if (e.key === 'Insert' || e.key === '0') {
           e.preventDefault()
@@ -612,7 +612,6 @@ const imageViewer = (function () {
           if (!imgNode) return
           const anchor = searchImgAnchor(imgNode)
           if (!anchor) return
-          const openNewTab = chrome ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
           openNewTab(anchor.href)
         }
       })
@@ -650,8 +649,7 @@ const imageViewer = (function () {
 
       viewer.addEventListener('keydown', e => {
         for (let i = urlList.length - 1; i >= 0; i--) {
-          if (hotkey[i] === '') continue
-          if (!checkKey(e, hotkey[i])) continue
+          if (hotkey[i] === '' || !checkKey(e, hotkey[i])) continue
 
           e.preventDefault()
           const imgUrl = shadowRoot.querySelector('.current img').src
@@ -676,8 +674,7 @@ const imageViewer = (function () {
       if (customHotkey.length !== customUrl.length) return
       viewer.addEventListener('keydown', e => {
         for (let i = customHotkey.length - 1; i >= 0; i--) {
-          if (customHotkey[i] === '') continue
-          if (!checkKey(e, customHotkey[i])) continue
+          if (customHotkey[i] === '' || !checkKey(e, customHotkey[i])) continue
 
           e.preventDefault()
           const imgUrl = shadowRoot.querySelector('.current img').src
@@ -711,7 +708,8 @@ const imageViewer = (function () {
           scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
           scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
         } else {
-          mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
+          // mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
+          rotateCount += mirror * ((e.deltaY > 0) * 2 - 1)
         }
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
         img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
@@ -793,52 +791,54 @@ const imageViewer = (function () {
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     const infoWidth = shadowRoot.querySelector(`.${appName}-info-width`)
     const infoHeight = shadowRoot.querySelector(`.${appName}-info-height`)
+    const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
+    const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
+
     const debouncePeriod = options.debouncePeriod === 0 ? 0 : options.debouncePeriod || 1500
     const throttlePeriod = options.throttlePeriod || 80
 
     let debounceTimeout
     let throttleTimestamp = Date.now()
     let debounceFlag = false
+
+    function moveToNode(index) {
+      current.innerHTML = index + 1
+      imageListNode.style.top = `${-index * 100}%`
+      imageListNode.querySelector('li.current')?.classList.remove('current')
+
+      const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
+      relateListItem.classList.add('current')
+
+      const relateImage = relateListItem.querySelector('img')
+      infoWidth.value = relateImage.naturalWidth
+      infoHeight.value = relateImage.naturalHeight
+    }
+
     function prevItem(repeat = false) {
       if (!repeat) {
         clearTimeout(debounceTimeout)
         debounceFlag = false
         throttleTimestamp = Date.now()
       }
-      const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
-      const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
       const currentIndex = Number(current.innerHTML) - 1
-      const imageLlength = Number(total.innerHTML)
-      const prevIndex = currentIndex === 0 ? imageLlength - 1 : currentIndex - 1
-
-      const action = () => {
-        current.innerHTML = prevIndex + 1
-        imageListNode.style.top = `${-prevIndex * 100}%`
-        imageListNode.querySelector('li.current')?.classList.remove('current')
-
-        const relateListItem = imageListNode.querySelector(`li:nth-child(${prevIndex + 1})`)
-        relateListItem.classList.add('current')
-
-        const relateImage = relateListItem.querySelector('img')
-        infoWidth.value = relateImage.naturalWidth
-        infoHeight.value = relateImage.naturalHeight
-      }
+      const imageListLength = Number(total.innerHTML)
+      const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
 
       if (!repeat) {
-        action()
+        moveToNode(prevIndex)
         return
       }
 
-      if (prevIndex === imageLlength - 1) {
+      if (prevIndex === imageListLength - 1) {
         if (!debounceFlag) {
           debounceTimeout = setTimeout(() => {
-            action()
+            moveToNode(prevIndex)
             debounceFlag = false
           }, debouncePeriod)
         }
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
-        action()
+        moveToNode(prevIndex)
         throttleTimestamp = Date.now()
       }
     }
@@ -849,40 +849,25 @@ const imageViewer = (function () {
         debounceFlag = false
         throttleTimestamp = Date.now()
       }
-      const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
-      const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
       const currentIndex = Number(current.innerHTML) - 1
-      const imageLlength = Number(total.innerHTML)
-      const nextIndex = currentIndex >= imageLlength - 1 ? 0 : currentIndex + 1
-
-      const action = () => {
-        current.innerHTML = nextIndex + 1
-        imageListNode.style.top = `${-nextIndex * 100}%`
-        imageListNode.querySelector('li.current')?.classList.remove('current')
-
-        const relateListItem = imageListNode.querySelector(`li:nth-child(${nextIndex + 1})`)
-        relateListItem.classList.add('current')
-
-        const relateImage = relateListItem.querySelector('img')
-        infoWidth.value = relateImage.naturalWidth
-        infoHeight.value = relateImage.naturalHeight
-      }
+      const imageListLength = Number(total.innerHTML)
+      const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
 
       if (!repeat) {
-        action()
+        moveToNode(nextIndex)
         return
       }
 
       if (nextIndex === 0) {
         if (!debounceFlag) {
           debounceTimeout = setTimeout(() => {
-            action()
+            moveToNode(nextIndex)
             debounceFlag = false
           }, debouncePeriod)
         }
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
-        action()
+        moveToNode(nextIndex)
         throttleTimestamp = Date.now()
       }
     }

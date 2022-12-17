@@ -2,10 +2,11 @@ const ImageViewerUtils = {
   closeImageViewer: function () {
     document.documentElement.classList.remove('has-image-viewer')
     const viewer = document.querySelector('.__shadow__image-viewer')
-    viewer.addEventListener('transitionend', () => viewer.remove())
-    viewer.style.transition = 'opacity 0.1s'
-    viewer.style.opacity = '0'
-    return
+    if (viewer) {
+      viewer.addEventListener('transitionend', viewer.remove)
+      viewer.style.transition = 'opacity 0.2s'
+      viewer.style.opacity = '0'
+    }
   },
 
   simpleUnlazyImage: async function () {
@@ -18,6 +19,38 @@ const ImageViewerUtils = {
         img.src = src
         setTimeout(() => resolve(0), 3000)
       })
+    }
+    async function checkImageAttr(img) {
+      const naturalSize = img.naturalWidth
+      for (const attr of img.attributes) {
+        if (passList.includes(attr.name)) continue
+
+        const match = [...attr.value.matchAll(regex)]
+        if (match.length === 0) continue
+        if (match.length === 1) {
+          const lazySize = await getImageSize(match[0][0])
+          if (lazySize <= naturalSize) continue
+
+          const newURL = match[0][0].replace(/https?:/, protocol)
+          img.src = newURL
+          img.srcset = newURL
+          return attr.name
+        }
+        if (match.length > 1) {
+          const first = match[0][0]
+          const last = match[match.length - 1][0]
+          const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
+          if (firstSize <= naturalSize && LastSize <= naturalSize) continue
+
+          const large = LastSize > firstSize ? last : first
+          const newURL = large.replace(/https?:/, protocol)
+          img.src = newURL
+          img.srcset = newURL
+          return attr.name
+        }
+      }
+      img.loading = 'eager'
+      return ''
     }
 
     const imgList = document.querySelectorAll('img:not(.simpleUnlazy)')
@@ -34,40 +67,7 @@ const ImageViewerUtils = {
 
     for (const img of imgList) {
       img.classList.add('simpleUnlazy')
-      asyncList.push(
-        new Promise(async resolve => {
-          const naturalSize = img.naturalWidth
-          for (const attr of img.attributes) {
-            if (passList.includes(attr.name)) continue
-
-            const match = [...attr.value.matchAll(regex)]
-            if (match.length === 0) continue
-            if (match.length === 1) {
-              const lazySize = await getImageSize(match[0][0])
-              if (lazySize <= naturalSize) continue
-
-              const newURL = match[0][0].replace(/https?:/, protocol)
-              img.src = newURL
-              img.srcset = newURL
-              resolve(attr.name)
-            }
-            if (match.length > 1) {
-              const first = match[0][0]
-              const last = match[match.length - 1][0]
-              const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
-              if (firstSize <= naturalSize && LastSize <= naturalSize) continue
-
-              const large = LastSize > firstSize ? last : first
-              const newURL = large.replace(/https?:/, protocol)
-              img.src = newURL
-              img.srcset = newURL
-              resolve(attr.name)
-            }
-          }
-          img.loading = 'eager'
-          resolve('')
-        })
-      )
+      asyncList.push(checkImageAttr(img))
     }
 
     const lazyName = (await Promise.all(asyncList)).filter(n => n)
