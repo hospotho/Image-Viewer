@@ -632,10 +632,11 @@ const imageViewer = (function () {
     function addSearchHotkeyEvent() {
       function checkKey(e, hotkey) {
         const keyList = hotkey.split('+').map(str => str.trim())
-        if (keyList.includes('Ctrl') && !e.ctrlKey) return false
-        if (keyList.includes('Alt') && !e.altKey) return false
-        if (keyList.includes('Shift') && !e.shiftKey) return false
-        return keyList[keyList.length - 1] === e.key.toUpperCase()
+        const key = keyList[keyList.length - 1] === e.key.toUpperCase()
+        const ctrl = keyList.includes('Ctrl') === e.ctrlKey
+        const alt = keyList.includes('Alt') === e.altKey
+        const shift = keyList.includes('Shift') === e.shiftKey
+        return key && ctrl && alt && shift
       }
       const openNewTab = chrome ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
 
