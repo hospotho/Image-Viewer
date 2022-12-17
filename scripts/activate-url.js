@@ -24,9 +24,11 @@
       const ptEvent = []
 
       let dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
-      console.log(dom)
       let imageInfo = extractImageInfoFromNode(dom)
-      if (imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank') return imageInfo
+      if (imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank') {
+        console.log(dom)
+        return imageInfo
+      }
 
       let baseSize = Math.min(dom.clientWidth, dom.clientHeight)
       domList.push(dom)
@@ -34,12 +36,14 @@
       dom.style.pointerEvents = 'none'
       while (true) {
         dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
-        console.log(dom)
         let currSize = Math.min(dom.clientWidth, dom.clientHeight)
-        if (dom === document.documentElement || currSize > baseSize * 1.5) break
+        if (dom === document.documentElement || dom === domList[domList.length - 1] || currSize > baseSize * 1.5) break
 
         imageInfo = extractImageInfoFromNode(dom)
-        if (imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank') break
+        if (imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank') {
+          console.log(dom)
+          break
+        }
 
         baseSize = currSize
         domList.push(dom)
