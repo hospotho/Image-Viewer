@@ -4,10 +4,15 @@
   if (window.top === window.self) return
 
   function extractImageInfoFromNode(dom) {
-    const minSize = Math.min(dom.clientWidth, dom.clientHeight)
+    if (dom.tagName === 'IMG') {
+      const minSize = Math.min(dom.naturalWidth, dom.naturalHeight, dom.clientWidth, dom.clientHeight)
+      return [dom.currentSrc, minSize, dom]
+    }
 
-    if (dom.tagName === 'IMG') return [dom.currentSrc, minSize, dom]
-    if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) return [dom.poster, minSize, dom]
+    if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
+      const minSize = Math.min(dom.clientWidth, dom.clientHeight)
+      return [dom.poster, minSize, dom]
+    }
 
     const bg = window.getComputedStyle(dom).backgroundImage
     if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
