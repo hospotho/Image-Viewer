@@ -9,8 +9,8 @@
       return [dom.currentSrc, minSize, dom]
     }
 
+    const minSize = Math.min(dom.clientWidth, dom.clientHeight)
     if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
-      const minSize = Math.min(dom.clientWidth, dom.clientHeight)
       return [dom.poster, minSize, dom]
     }
 
