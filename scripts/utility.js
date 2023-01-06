@@ -29,7 +29,7 @@ const ImageViewerUtils = {
         if (match.length === 0) continue
         if (match.length === 1) {
           const lazySize = await getImageSize(match[0][0])
-          if (lazySize <= naturalSize) continue
+          if (lazySize < naturalSize) continue
 
           const newURL = match[0][0].replace(/https?:/, protocol)
           img.src = newURL
@@ -40,7 +40,7 @@ const ImageViewerUtils = {
           const first = match[0][0]
           const last = match[match.length - 1][0]
           const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
-          if (firstSize <= naturalSize && LastSize <= naturalSize) continue
+          if (firstSize < naturalSize && LastSize < naturalSize) continue
 
           const large = LastSize > firstSize ? last : first
           const newURL = large.replace(/https?:/, protocol)
