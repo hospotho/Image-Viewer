@@ -119,7 +119,7 @@
     return result
   }
 
-  function searchImageFromTree(root) {
+  function searchImageFromTree(root, viewportPos) {
     const [mouseX, mouseY] = [viewportPos[0], viewportPos[1]]
     const relatedDomList = []
     for (const dom of root.querySelectorAll('*')) {
