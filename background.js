@@ -71,6 +71,10 @@ function addMessageHandler() {
         })
         return true
       }
+      case 'load_worker': {
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
+        return true
+      }
       case 'load_utility': {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, () => sendResponse())
         return true
