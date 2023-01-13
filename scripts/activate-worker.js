@@ -119,10 +119,27 @@
     return result
   }
 
+  function getAllChildElements(node) {
+    if (!node) return []
+
+    const result = Array.from(node.children)
+    if (node.shadowRoot) {
+      result.push(...node.shadowRoot.children)
+    }
+
+    const childElements = Array.from(result)
+    for (const child of childElements) {
+      if (child.children || child.shadowRoot) {
+        result.push(...getAllChildElements(child))
+      }
+    }
+    return result
+  }
+
   function searchImageFromTree(root, viewportPos) {
     const [mouseX, mouseY] = [viewportPos[0], viewportPos[1]]
     const relatedDomList = []
-    for (const dom of root.querySelectorAll('*')) {
+    for (const dom of getAllChildElements(root)) {
       const rect = dom.getBoundingClientRect()
       const inside = rect.left <= mouseX && rect.right >= mouseX && rect.top <= mouseY && rect.bottom >= mouseY
       if (inside) relatedDomList.push(dom)
@@ -141,13 +158,17 @@
     return imageInfoList[0]
   }
 
+  function isImageInfoValid(imageInfo) {
+    return imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
+  }
+
   function searchDomByPosition(viewportPos) {
     const domList = []
     const ptEvent = []
 
     let dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
     let imageInfo = extractImageInfoFromNode(dom)
-    if (imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank') {
+    if (isImageInfoValid(imageInfo)) {
       console.log(dom)
       return imageInfo
     }
@@ -162,7 +183,7 @@
       if (dom === document.documentElement || dom === domList[domList.length - 1] || currSize > baseSize * 1.5) break
 
       imageInfo = extractImageInfoFromNode(dom)
-      if (imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank') {
+      if (isImageInfoValid(imageInfo)) {
         console.log(dom)
         break
       }
@@ -178,11 +199,14 @@
       lastDom.style.pointerEvents = ptEvent.pop()
     }
 
-    if (imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank') {
+    if (isImageInfoValid(imageInfo)) {
       return imageInfo
     }
 
     imageInfo = searchImageFromTree(dom, viewportPos)
+    if (isImageInfoValid(imageInfo)) {
+      console.log(imageInfo[2])
+    }
     return imageInfo
   }
 
