@@ -1,22 +1,25 @@
 const ImageViewerUtils = (function () {
   const passList = ['class', 'style', 'src', 'alt', 'loading', 'crossorigin', 'height', 'width', 'sizes', 'onerror']
-  const regex = /(?:https?:\/)?\/\S+/g
+  const urlRegex = /(?:https?:\/)?\/\S+/g
+  const argsRegex = /(.+\.(?:png|jpeg|jpg|gif|bmp|tiff|webp)).+/i
   const protocol = window.location.protocol
 
   async function checkImageAttr(img) {
-    const naturalSize = img.naturalWidth
+    const bitSize = await getImageBitSize(img.src)
+    const getImageSize = bitSize ? getImageBitSize : getImageRealSize
+    const naturalSize = bitSize || img.naturalWidth
+
     for (const attr of img.attributes) {
       if (passList.includes(attr.name)) continue
 
-      const match = [...attr.value.matchAll(regex)]
+      const match = [...attr.value.matchAll(urlRegex)]
       if (match.length === 0) continue
       if (match.length === 1) {
         const lazySize = await getImageSize(match[0][0])
         if (lazySize < naturalSize) continue
 
         const newURL = match[0][0].replace(/https?:/, protocol)
-        img.src = newURL
-        img.srcset = newURL
+        updateImageSource(img, newURL)
         return attr.name
       }
       if (match.length > 1) {
@@ -27,16 +30,33 @@ const ImageViewerUtils = (function () {
 
         const large = LastSize > firstSize ? last : first
         const newURL = large.replace(/https?:/, protocol)
-        img.src = newURL
-        img.srcset = newURL
+        updateImageSource(img, newURL)
         return attr.name
       }
     }
+
+    const match = img.src.match(argsRegex)
+    if (match) {
+      const lazySize = await getImageSize(match[1])
+      if (lazySize > naturalSize) {
+        const newURL = match[1].replace(/https?:/, protocol)
+        updateImageSource(img, newURL)
+        return 'rawUrl'
+      }
+    }
+
     img.loading = 'eager'
     return ''
   }
-  
-  function getImageSize(src) {
+
+  async function getImageBitSize(src) {
+    console.log(`Fetch bit size of ${src}`)
+    const res = await fetch(src, {method: 'HEAD'})
+    const size = res.headers.get('Content-Length')
+    return typeof size === 'string' ? parseInt(size) : 0
+  }
+
+  function getImageRealSize(src) {
     return new Promise(resolve => {
       console.log(`Fetch image size of ${src}`)
       const img = new Image()
@@ -45,6 +65,18 @@ const ImageViewerUtils = (function () {
       img.src = src
       setTimeout(() => resolve(0), 3000)
     })
+  }
+
+  function updateImageSource(img, src) {
+    img.src = src
+    img.srcset = src
+
+    const picture = img.parentNode
+    if (picture.tagName !== 'PICTURE') return
+    const sources = picture.querySelectorAll('source')
+    for (const source of sources) {
+      source.srcset = src
+    }
   }
 
   return {
