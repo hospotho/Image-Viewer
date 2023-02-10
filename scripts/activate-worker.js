@@ -25,20 +25,29 @@
     }
   }
 
+  function markingDom(dom) {
+    const curr = document.querySelector('.ImageViewerLastDom')
+    curr?.classList.remove('ImageViewerLastDom')
+    dom.classList.add('ImageViewerLastDom')
+  }
+
   function extractImageInfoFromNode(dom) {
     if (dom.tagName === 'IMG') {
       const minSize = Math.min(dom.naturalWidth, dom.naturalHeight, dom.clientWidth, dom.clientHeight)
+      markingDom(dom)
       return [dom.currentSrc, minSize, dom]
     }
 
     const minSize = Math.min(dom.clientWidth, dom.clientHeight)
     if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
+      markingDom(dom)
       return [dom.poster, minSize, dom]
     }
 
     const bg = window.getComputedStyle(dom).backgroundImage
     if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
       const bgUrl = bg.substring(4, bg.length - 1).replace(/['"]/g, '')
+      markingDom(dom)
       return [bgUrl, minSize, dom]
     }
 
@@ -246,6 +255,7 @@
         // size of image maybe reduced in data URL form
         imageNodeInfo[1] -= 3
       }
+      imageNodeInfo[2] = null
       chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
     },
     true
