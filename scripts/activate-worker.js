@@ -157,7 +157,7 @@
     const imageInfoList = []
     for (const dom of relatedDomList) {
       const imageInfo = extractImageInfoFromNode(dom)
-      if (imageInfo) {
+      if (isImageInfoValid(imageInfo)) {
         imageInfoList.push(imageInfo)
       }
     }
@@ -174,27 +174,27 @@
   function searchDomByPosition(viewportPos) {
     const domList = []
     const ptEvent = []
+    const infoList = []
 
-    let dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
-    let imageInfo = extractImageInfoFromNode(dom)
+    const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
+    let baseSize = Math.min(dom.clientWidth, dom.clientHeight)
+    
+    const imageInfo = extractImageInfoFromNode(dom)
     if (isImageInfoValid(imageInfo)) {
-      console.log(dom)
-      return imageInfo
+      infoList.push(imageInfo)
     }
 
-    let baseSize = Math.min(dom.clientWidth, dom.clientHeight)
     domList.push(dom)
     ptEvent.push(dom.style.pointerEvents)
     dom.style.pointerEvents = 'none'
     while (true) {
-      dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
+      const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
       const currSize = Math.min(dom.clientWidth, dom.clientHeight)
       if (dom === document.documentElement || dom === domList[domList.length - 1] || currSize > baseSize * 1.5) break
 
-      imageInfo = extractImageInfoFromNode(dom)
+      const imageInfo = extractImageInfoFromNode(dom)
       if (isImageInfoValid(imageInfo)) {
-        console.log(dom)
-        break
+        infoList.push(imageInfo)
       }
 
       baseSize = currSize
@@ -208,15 +208,22 @@
       lastDom.style.pointerEvents = ptEvent.pop()
     }
 
-    if (isImageInfoValid(imageInfo)) {
-      return imageInfo
+    if (infoList.length) {
+      let index = 0
+      let maxSize = 0
+      for (let i = 0; i < infoList.length; i++) {
+        index = infoList[i][1] > maxSize ? i : index
+      }
+      return infoList[index]
     }
 
-    imageInfo = searchImageFromTree(dom, viewportPos)
-    if (isImageInfoValid(imageInfo)) {
-      console.log(imageInfo[2])
+    const imageInfoFromTree = searchImageFromTree(dom, viewportPos)
+    if (isImageInfoValid(imageInfoFromTree)) {
+      markingDom(imageInfoFromTree[2])
+      return imageInfoFromTree
     }
-    return imageInfo
+    
+    return null
   }
 
   function createDataUrl(srcUrl) {
@@ -249,6 +256,9 @@
       disablePtEvents()
       const imageNodeInfo = searchDomByPosition(viewportPosition)
       restorePtEvents()
+      if (!imageNodeInfo) return
+
+      console.log(imageNodeInfo[2])
       if (window.top !== window.self) {
         // use dataURL inside iframe
         imageNodeInfo[0] = await createDataUrl(imageNodeInfo[0])
