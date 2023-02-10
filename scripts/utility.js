@@ -5,48 +5,48 @@ const ImageViewerUtils = (function () {
   const protocol = window.location.protocol
 
   async function checkImageAttr(img) {
+    const argsMatch = img.src.match(argsRegex)
+    const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name))
+    if (!argsMatch || attrList.length === 0) {
+      img.loading = 'eager'
+      return ''
+    }
+
     const bitSize = await getImageBitSize(img.src)
     const getImageSize = bitSize ? getImageBitSize : getImageRealSize
     const naturalSize = bitSize || img.naturalWidth
 
-    for (const attr of img.attributes) {
-      if (passList.includes(attr.name)) continue
-
-      const match = [...attr.value.matchAll(urlRegex)]
-      if (match.length === 0) continue
-      if (match.length === 1) {
-        const lazySize = await getImageSize(match[0][0])
-        if (lazySize < naturalSize) continue
-
-        const newURL = match[0][0].replace(/https?:/, protocol)
-        updateImageSource(img, newURL)
-        return attr.name
-      }
-      if (match.length > 1) {
-        const first = match[0][0]
-        const last = match[match.length - 1][0]
-        const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
-        if (firstSize < naturalSize && LastSize < naturalSize) continue
-
-        const large = LastSize > firstSize ? last : first
-        const newURL = large.replace(/https?:/, protocol)
-        updateImageSource(img, newURL)
-        return attr.name
-      }
-    }
-
-    const match = img.src.match(argsRegex)
-    if (match) {
-      const lazySize = await getImageSize(match[1])
+    if (argsMatch) {
+      const newURL = argsMatch[1].replace(/https?:/, protocol)
+      const lazySize = await getImageSize(newURL)
       if (lazySize > naturalSize) {
-        const newURL = match[1].replace(/https?:/, protocol)
         updateImageSource(img, newURL)
         return 'rawUrl'
       }
     }
 
-    img.loading = 'eager'
-    return ''
+    for (const attr of attrList) {
+      const match = [...attr.value.matchAll(urlRegex)]
+      if (match.length === 0) continue
+      if (match.length === 1) {
+        const newURL = match[0][0].replace(/https?:/, protocol)
+        const lazySize = await getImageSize(newURL)
+        if (lazySize < naturalSize) continue
+
+        updateImageSource(img, newURL)
+        return attr.name
+      }
+      if (match.length > 1) {
+        const first = match[0][0].replace(/https?:/, protocol)
+        const last = match[match.length - 1][0].replace(/https?:/, protocol)
+        const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
+        if (firstSize < naturalSize && LastSize < naturalSize) continue
+
+        const large = LastSize > firstSize ? last : first
+        updateImageSource(img, large)
+        return attr.name
+      }
+    }
   }
 
   async function getImageBitSize(src) {
