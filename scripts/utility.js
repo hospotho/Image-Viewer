@@ -6,13 +6,13 @@ const ImageViewerUtils = (function () {
 
   async function checkImageAttr(img) {
     const argsMatch = img.src.match(argsRegex)
-    const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name))
-    if (!argsMatch || attrList.length === 0) {
+    const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name) && attr.value.match(urlRegex))
+    if (!argsMatch && attrList.length === 0) {
       img.loading = 'eager'
       return ''
     }
 
-    const bitSize = await getImageBitSize(img.src)
+    const bitSize = await getImageBitSize(img.src.replace(/https?:/, protocol))
     const getImageSize = bitSize ? getImageBitSize : getImageRealSize
     const naturalSize = bitSize || img.naturalWidth
 
@@ -51,9 +51,13 @@ const ImageViewerUtils = (function () {
 
   async function getImageBitSize(src) {
     console.log(`Fetch bit size of ${src}`)
-    const res = await fetch(src, {method: 'HEAD'})
-    const size = res.headers.get('Content-Length')
-    return typeof size === 'string' ? parseInt(size) : 0
+    try {
+      const res = await fetch(src, {method: 'HEAD'})
+      const size = res.headers.get('Content-Length')
+      return typeof size === 'string' ? parseInt(size) : 0
+    } catch (e) {
+      return 0
+    }
   }
 
   function getImageRealSize(src) {
