@@ -263,11 +263,10 @@
 
       console.log(imageNodeInfo.pop())
       if (window.top !== window.self) {
-        // use dataURL inside iframe
         imageNodeInfo[0] = await createDataUrl(imageNodeInfo[0])
-        // size of image maybe reduced in data URL form
-        imageNodeInfo[1] -= 3
       }
+      // dataURL may image maybe smaller
+      imageNodeInfo[1] -= 10
       chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
     },
     true

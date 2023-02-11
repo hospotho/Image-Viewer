@@ -250,7 +250,7 @@ const ImageViewerUtils = (function () {
       const width = []
       const height = []
       for (const div of allWrapperDivs) {
-        // most ad use same wrapper and adblock may set it to display: none
+        // ad may use same wrapper and adblock set it to display: none
         if (div.offsetParent === null && div.style.position !== 'fixed') continue
         width.push(div.clientWidth)
         height.push(div.clientHeight)
@@ -258,7 +258,7 @@ const ImageViewerUtils = (function () {
       if (new Set(width).size !== 1 || new Set(height).size !== 1) return
 
       if (width[0] * 1.5 > dom.clientHeight && height[0] * 1.5 > dom.clientHeight) {
-        return [width[0], height[0]]
+        return [width[0] - 10, height[0] - 10]
       }
     }
   }
