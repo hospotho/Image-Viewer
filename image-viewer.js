@@ -237,7 +237,7 @@ const imageViewer = (function () {
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-info {
         position: absolute;
         right: 10px;
-        top: 0;
+        top: -5px;
         margin-top: 5px;
       }
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-info li {
