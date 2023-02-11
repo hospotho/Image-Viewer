@@ -19,8 +19,8 @@
   }
 
   if (dom) {
-    const [divWidth, divHeight] = ImageViewerUtils.getWapperSize(dom)
-    if (typeof divWidth === 'number') {
+    const [divWidth, divHeight] = ImageViewerUtils.getWapperSize(dom) || []
+    if (divWidth) {
       options.minWidth = Math.min(divWidth, options.minWidth)
       options.minHeight = Math.min(divHeight, options.minHeight)
     }
