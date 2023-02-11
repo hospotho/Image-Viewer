@@ -19,7 +19,7 @@ https://ko-fi.com/tonymilktea
 
 ## Installation
 
-You can install this extension on <a href="https://chrome.google.com/webstore/detail/image-viewer/ghdcoodfcolpdebbdhbgkbodbjololfl">Chrome Web Store</a> or follow step below.
+You can install this extension on <a href="https://chrome.google.com/webstore/detail/image-viewer/ghdcoodfcolpdebbdhbgkbodbjololfl">Chrome Web Store</a> or follow steps below.
 
 1. Download the source code and place it anywhere you want.
 2. Open your browser and go to `chrome://extensions`.
@@ -34,20 +34,72 @@ After add this extension to your browser, recommended to pin this extension on t
 
 Click the icon or right click on a image and choose this extension to activate Image Viewer. Right click the icon will show a option to disable size filter.
 
-|             Action              |                           Controls                           |
-| :-----------------------------: | :----------------------------------------------------------: |
-|    view previous/next image     | arrow key<br>scroll on control bar<br>scroll on close button |
-|    scroll to original image     |    click moveTo button on control bar<br>press Enter key     |
-| middle click the original image |                  middle click on the image                   |
-|           drag image            |            click and hold anywhere of the viewer             |
-|          fitting image          |     click one of the four fitting buttons on control bar     |
-|           reset image           |             double click anywhere of the viewer              |
-|           zoom image            |                     scroll on the image                      |
-|          rotate image           |             hold alt key and scroll on the image             |
-|          mirror image           |             hold alt key and click on the image              |
-|      image reverse search       |                  press the defined hotkeys                   |
-|        close the viewer         |   click on the close button<br>press ESC or NumpadAdd key    |
-|          close the tab          | right click on close button<br>(only on tab without history) |
+<table>
+  <tr>
+    <td>Action</td>
+    <td>Controls</td>
+  </tr>
+  <tr>
+    <td rowspan="3">view previous/next image</td>
+    <td><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd><kbd>←</kbd></td>
+  </tr>
+  <tr>
+    <td><kbd>scroll</kbd> on control bar</td>
+  </tr>
+  <tr>
+    <td><kbd>scroll</kbd> on close button</td>
+  </tr>
+  <tr>
+    <td rowspan="2">view original image</td>
+    <td><kbd>Enter</kbd></td>
+  </tr>
+  <tr>
+    <td><kbd>click</kbd> moveTo button on control bar</td>
+  </tr>
+  <tr>
+    <td><kbd>middle-click</kbd> the original image</td>
+    <td><kbd>middle-click</kbd> on the image</td>
+  </tr>
+  <tr>
+    <td>drag image</td>
+    <td><kbd>click</kbd> and <kbd>drag</kbd></td>
+  </tr>
+  <tr>
+    <td>fitting image</td>
+    <td><kbd>click</kbd> fitting buttons on control bar</td>
+  </tr>
+  <tr>
+    <td>reset image</td>
+    <td><kbd>double-click</kbd> anywhere</td>
+  </tr>
+  <tr>
+    <td>zoom image</td>
+    <td><kbd>scroll</kbd></td>
+  </tr>
+  <tr>
+    <td>rotate image</td>
+    <td>hold <kbd>alt</kbd> and <kbd>scroll</kbd></td>
+  </tr>
+  <tr>
+    <td>mirror image</td>
+    <td>hold <kbd>alt</kbd> and <kbd>click</kbd></td>
+  </tr>
+  <tr>
+    <td>image reverse search</td>
+    <td>press the defined hotkeys</td>
+  </tr>
+  <tr>
+    <td rowspan="2">close the viewer</td>
+    <td><kbd>ESC</kbd> or <kbd>NumpadAdd</kbd></td>
+  </tr>
+  <tr>
+    <td><kbd>click</kbd> close button</td>
+  </tr>
+  <tr>
+    <td>close the tab</td>
+    <td><kbd>right-click</kbd> close button</td>
+  </tr>
+</table>
 
 ## Browser support
 
