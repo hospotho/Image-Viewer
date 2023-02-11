@@ -44,7 +44,8 @@
   const orderedImageUrls = ImageViewerUtils.sortImageDataList(uniqueImageUrls)
 
   if (dom) {
-    const index = orderedImageUrls.indexOf(dom.currentSrc)
+    const currentUrl = ImageViewerUtils.getDomUrl(dom)
+    const index = orderedImageUrls.indexOf(currentUrl)
     index !== -1 ? (options.index = index) : null
   } else if (srcUrl) {
     if (!srcUrl.startsWith('data')) {

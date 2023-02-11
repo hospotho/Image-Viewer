@@ -211,6 +211,14 @@ const ImageViewerUtils = (function () {
       return uniqueImage
     },
 
+    getDomUrl: function (dom) {
+      const tag = dom.tag
+      if (tag === 'IMG') return dom.currentSrc
+      if (tag === 'VIDEO') return dom.poster
+      const bg = window.getComputedStyle(dom).backgroundImage
+      return bg.substring(4, bg.length - 1).replace(/['"]/g, '')
+    },
+
     sortImageDataList: function (dataList) {
       const imageDomList = []
       for (const data of dataList) {
