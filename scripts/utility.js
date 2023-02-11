@@ -160,7 +160,8 @@ const ImageViewerUtils = (function () {
     getImageList: function (options) {
       const imageDataList = []
       for (const img of document.getElementsByTagName('img')) {
-        if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
+        const pass = (img.clientWidth >= options.minWidth || img.naturalWidth >= options.minWidth) && (img.clientHeight >= options.minHeight || img.naturalHeight >= options.minHeight)
+        if (pass || !img.complete) {
           imageDataList.push([img.currentSrc, img])
         }
       }
