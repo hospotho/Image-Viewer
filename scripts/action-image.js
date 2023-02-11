@@ -11,7 +11,7 @@
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
 
   const nodeInfo = await chrome.runtime.sendMessage('get_info')
-  const [srcUrl, minSize, _] = nodeInfo === null ? [] : nodeInfo
+  const [srcUrl, minSize] = nodeInfo === null ? [] : nodeInfo
   const dom = document.querySelector('.ImageViewerLastDom')
 
   if (srcUrl) {
