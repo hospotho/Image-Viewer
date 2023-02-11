@@ -59,6 +59,6 @@
   for (const url of imageList) {
     asyncList.push(createDataUrl(url))
   }
-  const imageDataUrls = (await Promise.all(asyncList)).filter(url => url !== '')
+  const imageDataUrls = (await Promise.all(asyncList)).filter(url => url !== '').map(url => [url, location.href])
   return imageDataUrls.length ? imageDataUrls : null
 })()

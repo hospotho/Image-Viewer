@@ -9,6 +9,14 @@ const imageViewer = (function () {
     template.innerHTML = str.trim()
     return template.content.firstChild
   }
+  function buildImageNode(data, cors) {
+    if (typeof data === 'string') {
+      return strToNode(`<li><img src="${data}" alt="" referrerpolicy="no-referrer" ${cors}></li>`)
+    }
+    if (typeof data === 'object') {
+      return strToNode(`<li><img src="${data[0]}" data-iframe-src="${data[1]}" alt="" referrerpolicy="no-referrer" ${cors}></li>`)
+    }
+  }
 
   function closeImageViewer() {
     document.documentElement.classList.remove('has-image-viewer')
@@ -68,7 +76,17 @@ const imageViewer = (function () {
     return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
   }
 
-  function searchImgNode(imgUrl) {
+  function searchImgNode(img) {
+    const iframeSrc = img.getAttribute('data-iframe-src')
+    if (iframeSrc) {
+      for (const iframe of document.getElementsByTagName('iframe')) {
+        if (iframe.src === iframeSrc) {
+          return iframe
+        }
+      }
+    }
+
+    const imgUrl = img.src
     for (const img of document.getElementsByTagName('img')) {
       if (imgUrl === img.currentSrc) {
         //check style.display by offsetParent
@@ -448,14 +466,14 @@ const imageViewer = (function () {
   function buildImageList(imageList, options) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     const cors = options.cors ? 'crossorigin="anonymous"' : ''
-    let first = strToNode(`<li><img src="${imageList[0]}" alt="" referrerpolicy="no-referrer" ${cors}></li>`)
+    let first = buildImageNode(imageList[0], cors)
     _imageList.appendChild(first)
 
     if (imageList.length === 1) return
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
     shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = imageList.length
     for (let i = 1; i < imageList.length; i++) {
-      const li = strToNode(`<li><img src="${imageList[i]}" alt="" referrerpolicy="no-referrer" ${cors}></li>`)
+      const li = buildImageNode(imageList[i], cors)
       _imageList.appendChild(li)
     }
   }
@@ -565,8 +583,8 @@ const imageViewer = (function () {
     function addMoveToButtonEvent() {
       if (!options.closeButton) return
       function moveTo() {
-        const imgUrl = shadowRoot.querySelector('.current img').src
-        const imgNode = searchImgNode(imgUrl)
+        const img = shadowRoot.querySelector('.current img')
+        const imgNode = searchImgNode(img)
         closeImageViewer()
         if (imgNode === null) {
           console.log('Image node not found')
@@ -763,7 +781,7 @@ const imageViewer = (function () {
       })
     }
     function addMiddleClickHandler(li) {
-      const imgNode = searchImgNode(li.firstChild.src)
+      const imgNode = searchImgNode(li.firstChild)
       if (!imgNode) return
       const anchor = searchImgAnchor(imgNode)
       if (!anchor) return
@@ -911,8 +929,8 @@ const imageViewer = (function () {
     addFrameEvent(options)
     addImageEvent(options)
     if (imageList.length > 1) addImageListEvent(options)
+    console.log('Image viewer initialized')
   }
 
-  console.log('Image viewer initialized')
   return imageViewer
 })()

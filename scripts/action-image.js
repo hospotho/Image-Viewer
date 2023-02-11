@@ -25,7 +25,14 @@
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
   if (!!document.querySelector('iframe')) {
     const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', minSize: minSize})
-    const uniqueIframeImage = [...new Set(iframeImage)]
+    // const uniqueIframeImage = [...new Set(iframeImage)]
+    const uniqueIframeImage = []
+    outer: for (const img of iframeImage) {
+      for (const unique of uniqueIframeImage) {
+        if (img[0] === unique[0]) continue outer
+      }
+      uniqueIframeImage.push(img)
+    }
     console.log(`loaded ${uniqueIframeImage.length} iframe images`)
     uniqueImageUrls.push(...uniqueIframeImage)
   }
