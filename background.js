@@ -110,11 +110,16 @@ function addMessageHandler() {
         return true
       }
       case 'get_info': {
-        sendResponse(lastImageNodeInfo)
+        if (lastImageNodeInfo?.id === sender.tab.id) {
+          sendResponse(lastImageNodeInfo)
+        } else {
+          sendResponse()
+        }
         return true
       }
       case 'update_info': {
         lastImageNodeInfo = request.data
+        lastImageNodeInfo.id = sender.tab.id
         console.log('New info: ', lastImageNodeInfo)
         sendResponse()
         return true
