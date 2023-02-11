@@ -13,16 +13,30 @@
     imageViewer([image.src], options)
   } else {
     if (document.visibilityState === 'visible') {
-      console.log('Init content script.')
-      chrome.runtime.sendMessage('load_worker')
+      if (document.readyState === 'complete') {
+        console.log('Init content script.')
+        chrome.runtime.sendMessage('load_worker')
+      } else {
+        window.addEventListener('load', () => {
+          console.log('Init content script.')
+          chrome.runtime.sendMessage('load_worker')
+        })
+      }
       return
     }
     console.log('Waiting user to view the page.')
     const handleEvent = () => {
-      console.log('Init content script.')
-      chrome.runtime.sendMessage('load_worker')
       document.removeEventListener('visibilitychange', handleEvent)
       window.removeEventListener('focus', handleEvent)
+      if (document.readyState === 'complete') {
+        console.log('Init content script.')
+        chrome.runtime.sendMessage('load_worker')
+      } else {
+        window.addEventListener('load', () => {
+          console.log('Init content script.')
+          chrome.runtime.sendMessage('load_worker')
+        })
+      }
     }
     document.addEventListener('visibilitychange', handleEvent)
     window.addEventListener('focus', handleEvent)
