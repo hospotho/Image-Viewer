@@ -212,7 +212,7 @@ const ImageViewerUtils = (function () {
     },
 
     getDomUrl: function (dom) {
-      const tag = dom.tag
+      const tag = dom.tagName
       if (tag === 'IMG') return dom.currentSrc
       if (tag === 'VIDEO') return dom.poster
       const bg = window.getComputedStyle(dom).backgroundImage
