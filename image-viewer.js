@@ -10,12 +10,25 @@ const imageViewer = (function () {
     return template.content.firstChild
   }
   function buildImageNode(data, cors) {
+    const li = document.createElement('li')
+    const img = document.createElement('img')
+    li.appendChild(img)
+
+    img.alt = ''
+    img.referrerPolicy = 'no-referrer'
+    img.crossorigin = cors ? 'anonymous' : null
+    img.onload = e => {
+      URL.revokeObjectURL(e.target.src)
+    }
+
     if (typeof data === 'string') {
-      return strToNode(`<li><img src="${data}" alt="" referrerpolicy="no-referrer" ${cors}></li>`)
+      img.src = data
     }
     if (typeof data === 'object') {
-      return strToNode(`<li><img src="${data[0]}" data-iframe-src="${data[1]}" alt="" referrerpolicy="no-referrer" ${cors}></li>`)
+      img.src = data[0]
+      img.setAttribute('data-iframe-src', data[1])
     }
+    return li
   }
 
   function closeImageViewer() {
@@ -39,7 +52,6 @@ const imageViewer = (function () {
     m[5] = moveY
     return `matrix(${m.map(t => t.toFixed(2))})`
   }
-
   function MtoV(str) {
     const match = str.match(/matrix\([-\d\.e, ]+\)/)
     if (!match) return
@@ -89,7 +101,7 @@ const imageViewer = (function () {
     const imgUrl = img.src
     for (const img of document.getElementsByTagName('img')) {
       if (imgUrl === img.currentSrc) {
-        //check style.display by offsetParent
+        //check visibility by offsetParent
         if (img.offsetParent === null && img.style.position !== 'fixed') continue
         return img
       }
@@ -107,7 +119,6 @@ const imageViewer = (function () {
     }
     return null
   }
-
   function searchImgAnchor(imgNode) {
     let el = imgNode
     while (el.parentElement) {
@@ -465,7 +476,7 @@ const imageViewer = (function () {
 
   function buildImageList(imageList, options) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
-    const cors = options.cors ? 'crossorigin="anonymous"' : ''
+    const cors = options.cors
     let first = buildImageNode(imageList[0], cors)
     _imageList.appendChild(first)
 
@@ -482,11 +493,17 @@ const imageViewer = (function () {
     function updateCounter() {
       const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
       const length = list.length
-      const currIndex = list.indexOf(shadowRoot.querySelector('li.current'))
-      const newCurr = currIndex === -1 ? Math.min(length, baseIndex + 1) : currIndex + 1
-      total.innerHTML = length
-      current.innerHTML = newCurr
-      imageListNode.style.top = `${-(newCurr - 1) * 100}%`
+      const current = shadowRoot.querySelector('li.current') || shadowRoot.querySelector(`.${appName} .${imageListName} li`)
+      if (!shadowRoot.querySelector('li.current')) {
+        // must in action-page mode
+        current.classList.add('current')
+        shadowRoot.querySelector(`.${appName}-info-width`).value = current.firstChild.naturalWidth
+        shadowRoot.querySelector(`.${appName}-info-height`).value = current.firstChild.naturalHeight
+      }
+      const currIndex = list.indexOf(current)
+      counterTotal.innerHTML = length
+      counterCurrent.innerHTML = currIndex + 1
+      imageListNode.style.top = `${-currIndex * 100}%`
       if (length === 0) closeImageViewer()
     }
     function removeFailedImg() {
@@ -518,8 +535,8 @@ const imageViewer = (function () {
     const baseIndex = options.index || 0
     const base = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)[baseIndex]
     base.classList.add('current')
-    const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
-    const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
+    const counterTotal = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
+    const counterCurrent = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
 
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     imageListNode.style.top = `${-baseIndex * 100}%`
