@@ -34,7 +34,7 @@
         c.width = img.naturalWidth
         c.height = img.naturalHeight
         ctx.drawImage(img, 0, 0)
-        const url = img.src.match('png') ? c.toDataURL() : c.toDataURL('image/jpeg')
+        const url = img.src.match('png') ? c.toDataURL() : img.src.match('webp') ? c.toDataURL('image/webp') : c.toDataURL('image/jpeg')
         resolve(url)
       }
       img.onerror = () => {
