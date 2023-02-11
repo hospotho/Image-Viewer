@@ -73,11 +73,13 @@
     function isImageInfoValid(imageInfo) {
       return imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
     }
-    function markingDom(dom) {
-      const curr = document.querySelector('.ImageViewerLastDom')
-      curr?.classList.remove('ImageViewerLastDom')
-      dom?.classList.add('ImageViewerLastDom')
-    }
+    const markingDom =
+      window.top === window.self
+        ? dom => {
+            document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
+            dom?.classList.add('ImageViewerLastDom')
+          }
+        : () => chrome.runtime.sendMessage('reset_dom')
 
     function checkZIndex(e1, e2) {
       const e1zIndex = parseInt(window.getComputedStyle(e1).zIndex)

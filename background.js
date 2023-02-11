@@ -109,6 +109,11 @@ function addMessageHandler() {
         })
         return true
       }
+      case 'reset_dom': {
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')})
+        sendResponse()
+        return true
+      }
       case 'get_info': {
         if (lastImageNodeInfo?.id === sender.tab.id) {
           sendResponse(lastImageNodeInfo)
