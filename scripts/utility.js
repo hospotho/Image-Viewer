@@ -4,6 +4,15 @@ const ImageViewerUtils = (function () {
   const argsRegex = /(.+\.(?:png|jpeg|jpg|gif|bmp|tiff|webp)).+/i
   const protocol = window.location.protocol
 
+  // 1. always >100 image on a page
+  // 2. most of them using some parameters eg xyz.jpg?width=500&height=300
+  // 3. page content frequently update
+  // 4. only few images are valuable
+  // 5. not very necessary for unlazy
+  // create issues on github if you want to add domain to the list
+  // may move this list to option page in the future
+  const unlazyDomainWhiteList = ['discord.com']
+
   async function checkImageAttr(img) {
     const argsMatch = img.src.match(argsRegex)
     const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name) && attr.value.match(urlRegex))
@@ -95,6 +104,8 @@ const ImageViewerUtils = (function () {
     },
 
     simpleUnlazyImage: async function () {
+      if (unlazyDomainWhiteList.includes(location.hostname)) return
+
       const imgList = document.querySelectorAll('img:not(.simpleUnlazy)')
       const listSize = imgList.length
       if (!listSize) return
