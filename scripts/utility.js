@@ -160,9 +160,8 @@ const ImageViewerUtils = (function () {
     getImageList: function (options) {
       const imageDataList = []
       for (const img of document.getElementsByTagName('img')) {
-        if (img.offsetParent === null && img.style.position !== 'fixed') continue
-        const pass = (img.clientWidth >= options.minWidth || img.naturalWidth >= options.minWidth) && (img.clientHeight >= options.minHeight || img.naturalHeight >= options.minHeight)
-        if (pass || !img.complete) {
+        // only client size should be checked in order to bypass large icon or hidden image
+        if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
           imageDataList.push([img.currentSrc, img])
         }
       }
