@@ -10,6 +10,19 @@ const passDataToTab = (id, name, data) => {
   })
 }
 
+const defaultOptions = {
+  fitMode: 'both',
+  zoomRatio: 1.2,
+  rotateDeg: 15,
+  minWidth: 150,
+  minHeight: 150,
+  svgFilter: true,
+  debouncePeriod: 1500,
+  throttlePeriod: 80,
+  hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
+  customUrl: ['https://example.com/search?query={imgSrc}&option=example_option']
+}
+
 let currOptions = null
 let currOptionsWithoutSize = null
 let lastImageNodeInfo = null
@@ -17,18 +30,6 @@ let lastImageNodeInfo = null
 function resetLocalStorage() {
   chrome.storage.sync.get('options', res => {
     if (res && Object.keys(res).length === 0 && Object.getPrototypeOf(res) === Object.prototype) {
-      const defaultOptions = {
-        fitMode: 'both',
-        zoomRatio: 1.2,
-        rotateDeg: 15,
-        minWidth: 150,
-        minHeight: 150,
-        svgFilter: true,
-        debouncePeriod: 1500,
-        throttlePeriod: 80,
-        hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
-        customUrl: ['https://example.com/search?query={imgSrc}&option=example_option']
-      }
       chrome.storage.sync.set({options: defaultOptions}, () => {
         console.log('Set options to default values.')
         console.log(defaultOptions)
@@ -45,6 +46,13 @@ function resetLocalStorage() {
       currOptionsWithoutSize.minHeight = 0
       console.log('Loaded options from storage.')
       console.log(res.options)
+
+      const defaultKeyLength = Object.keys(defaultOptions).length
+      const currKeyLength = Object.keys(currOptions).length
+      if (defaultKeyLength !== currKeyLength) {
+        console.log('New options available.')
+        chrome.runtime.openOptionsPage()
+      }
     }
   })
 }

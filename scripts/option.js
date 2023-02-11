@@ -203,6 +203,8 @@
       setValue(defaultOptions)
       resetDefaultOptions()
     })
+
+    document.querySelector('button#save').click()
   }
 
   async function init() {
