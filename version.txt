@@ -1,10 +1,11 @@
-1.9 [2023-01-13]: Improve pickup of img by right clicking and when to execute the worker script.
-1.8 [2022-10-30]: Large update, support image inside iframes and refactoring lot of code
-1.7 [2022-10-04]: Add more keyboard shortcuts and svg filter
-1.6 [2022-09-03]: Support image in iframes
-1.5 [2022-08-22]: Support using hotkey to search image
-1.4 [2022-08-10]: Add utility.js to increase performance
-1.3 [2022-07-01]: Renew activate image method
-1.2 [2022-07-01]: Add simpleUnlazyImage()
-1.1 [2022-07-01]: Replace old transform method with matrix
-1.0 [2022-06-29]: First release on github
+1.10 [2023-02-12]: Big update. Add MoveTo support for iframe image. Fix ton of bug and improve performance.
+1.9  [2023-01-13]: Improve pickup of img by right clicking and when to execute the worker script.
+1.8  [2022-10-30]: Large update, support image inside iframes and refactoring lot of code
+1.7  [2022-10-04]: Add more keyboard shortcuts and svg filter
+1.6  [2022-09-03]: Support image in iframes
+1.5  [2022-08-22]: Support using hotkey to search image
+1.4  [2022-08-10]: Add utility.js to increase performance
+1.3  [2022-07-01]: Renew activate image method
+1.2  [2022-07-01]: Add simpleUnlazyImage()
+1.1  [2022-07-01]: Replace old transform method with matrix
+1.0  [2022-06-29]: First release on github
