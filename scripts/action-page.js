@@ -20,23 +20,22 @@
   if (!!document.querySelector('iframe')) {
     const minSize = Math.min(options.minWidth, options.minHeight)
     const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', minSize: minSize})
-    // const uniqueIframeImage = [...new Set(iframeImage)]
     const uniqueIframeImage = []
     outer: for (const img of iframeImage) {
       for (const unique of uniqueIframeImage) {
         if (img[0] === unique[0]) continue outer
       }
-      uniqueIframeImage.push(img)
+      uniqueIframeImage.push([ImageViewerUtils.dataURLToObjectURL(img[0]), img[1]])
     }
-    console.log(`loaded ${uniqueIframeImage.length} iframe images`)
     uniqueImageUrls.push(...uniqueIframeImage)
   }
 
-  console.log(`${uniqueImageUrls.length} images pass filter or still loading`)
   if (uniqueImageUrls.length === 0) return
+
+  const orderedImageUrls = ImageViewerUtils.sortImageDataList(uniqueImageUrls)
 
   if (typeof imageViewer !== 'function') {
     await chrome.runtime.sendMessage('load_script')
   }
-  imageViewer(uniqueImageUrls, options)
+  imageViewer(orderedImageUrls, options)
 })()

@@ -121,32 +121,47 @@ const ImageViewerUtils = (function () {
     },
 
     getAllImage: function (options) {
-      const imageUrls = []
+      const imageDataList = []
       for (const img of document.getElementsByTagName('img')) {
-        imageUrls.push(img.currentSrc)
+        imageDataList.push([img.currentSrc, img])
       }
 
       for (const node of document.querySelectorAll('*')) {
         const bg = window.getComputedStyle(node).backgroundImage
         if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-          imageUrls.push(bg.substring(4, bg.length - 1).replace(/['"]/g, ''))
+          imageDataList.push([bg.substring(4, bg.length - 1).replace(/['"]/g, ''), node])
         }
       }
 
-      for (const img of document.querySelectorAll('video[poster]')) {
-        imageUrls.push(img.poster)
+      for (const video of document.querySelectorAll('video[poster]')) {
+        imageDataList.push([video.poster, video])
       }
 
-      return options.svgFilter
-        ? [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank' && !url.includes('.svg'))
-        : [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
+      const badImage = options.svgFilter
+        ? url => {
+            url === '' || url === 'about:blank' || url.includes('.svg')
+          }
+        : url => {
+            url === '' || url === 'about:blank'
+          }
+
+      const uniqueImage = []
+      outer: for (const img of imageDataList) {
+        if (badImage(img[0])) continue outer
+        for (const unique of uniqueImage) {
+          if (img[0] === unique[0]) continue outer
+        }
+        uniqueImage.push(img)
+      }
+
+      return uniqueImage
     },
 
     getImageList: function (options) {
-      const imageUrls = []
+      const imageDataList = []
       for (const img of document.getElementsByTagName('img')) {
         if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
-          imageUrls.push(img.currentSrc)
+          imageDataList.push([img.currentSrc, img])
         }
       }
 
@@ -154,19 +169,97 @@ const ImageViewerUtils = (function () {
         if (node.clientWidth < options.minWidth || node.clientWidth < options.minHeight) continue
         const bg = window.getComputedStyle(node).backgroundImage
         if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-          imageUrls.push(bg.substring(4, bg.length - 1).replace(/['"]/g, ''))
+          imageDataList.push([bg.substring(4, bg.length - 1).replace(/['"]/g, ''), node])
         }
       }
 
       for (const video of document.querySelectorAll('video[poster]')) {
         if (video.clientWidth >= options.minWidth && video.clientHeight >= options.minHeight) {
-          imageUrls.push(video.poster)
+          imageDataList.push([video.poster, video])
         }
       }
 
-      return options.svgFilter
-        ? [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank' && !url.includes('.svg'))
-        : [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
+      const badImage = options.svgFilter
+        ? url => {
+            url === '' || url === 'about:blank' || url.includes('.svg')
+          }
+        : url => {
+            url === '' || url === 'about:blank'
+          }
+
+      const uniqueImage = []
+      outer: for (const img of imageDataList) {
+        if (badImage(img[0])) continue outer
+        for (const unique of uniqueImage) {
+          if (img[0] === unique[0]) continue outer
+        }
+        uniqueImage.push(img)
+      }
+
+      return uniqueImage
+    },
+
+    sortImageDataList: function (dataList) {
+      const imageDomList = []
+      for (const data of dataList) {
+        if (typeof data[1] === 'string') {
+          for (const iframe of document.getElementsByTagName('iframe')) {
+            if (data[1] === iframe.src) {
+              imageDomList.push([data[0], iframe])
+            }
+          }
+        } else {
+          imageDomList.push([...data])
+        }
+      }
+
+      imageDomList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
+
+      const sortedDataList = []
+      for (const data of imageDomList) {
+        if (data[1].tagName === 'IFRAME') {
+          sortedDataList.push([data[0], data[1].src])
+        } else {
+          sortedDataList.push(data[0])
+        }
+      }
+
+      return sortedDataList
+    },
+
+    dataURLToObjectURL: function (dataURL) {
+      const arr = dataURL.split(',')
+      const mime = arr[0].match(/:(.*?);/)[1]
+      const bstr = atob(arr[1])
+      let n = bstr.length
+      const u8arr = new Uint8Array(n)
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n)
+      }
+      return URL.createObjectURL(new Blob([u8arr], {type: mime}))
+    },
+
+    getWapperSize: function (dom) {
+      const wrapper = dom.closest('div')
+      if (!wrapper || wrapper.classList.length === 0) return
+
+      const classList = '.' + [...wrapper.classList].join('.')
+      const allWrapperDivs = document.querySelectorAll(`div${classList}`)
+      if (allWrapperDivs.length < 4) return
+
+      const width = []
+      const height = []
+      for (const div of allWrapperDivs) {
+        // most ad use same wrapper and adblock may set it to display: none
+        if (div.offsetParent === null && div.style.position !== 'fixed') continue
+        width.push(div.clientWidth)
+        height.push(div.clientHeight)
+      }
+      if (new Set(width).size !== 1 || new Set(height).size !== 1) return
+
+      if (width[0] * 1.5 > dom.clientHeight && height[0] * 1.5 > dom.clientHeight) {
+        return [width[0], height[0]]
+      }
     }
   }
 })()

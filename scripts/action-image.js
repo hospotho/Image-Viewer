@@ -2,7 +2,6 @@
   'use strict'
 
   if (typeof ImageViewerUtils !== 'object') {
-    console.log('loading utility')
     await chrome.runtime.sendMessage('load_utility')
   }
 
@@ -14,10 +13,17 @@
   const [srcUrl, minSize] = nodeInfo === null ? [] : nodeInfo
   const dom = document.querySelector('.ImageViewerLastDom')
 
-  if (srcUrl) {
-    console.log('Image node found.')
+  if (minSize) {
     options.minWidth = Math.min(minSize, options.minWidth)
     options.minHeight = Math.min(minSize, options.minHeight)
+  }
+
+  if (dom) {
+    const [divWidth, divHeight] = ImageViewerUtils.getWapperSize(dom)
+    if (typeof divWidth === 'number') {
+      options.minWidth = Math.min(divWidth, options.minWidth)
+      options.minHeight = Math.min(divHeight, options.minHeight)
+    }
   }
 
   await ImageViewerUtils.simpleUnlazyImage()
@@ -25,7 +31,6 @@
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
   if (!!document.querySelector('iframe')) {
     const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', minSize: minSize})
-    // const uniqueIframeImage = [...new Set(iframeImage)]
     const uniqueIframeImage = []
     outer: for (const img of iframeImage) {
       for (const unique of uniqueIframeImage) {
@@ -33,23 +38,41 @@
       }
       uniqueIframeImage.push(img)
     }
-    console.log(`loaded ${uniqueIframeImage.length} iframe images`)
     uniqueImageUrls.push(...uniqueIframeImage)
   }
 
-  if (uniqueImageUrls.indexOf(dom?.currentSrc) !== -1) {
-    options.index = uniqueImageUrls.indexOf(dom.currentSrc)
-  } else if (uniqueImageUrls.indexOf(srcUrl) !== -1) {
-    options.index = uniqueImageUrls.indexOf(srcUrl)
+  const orderedImageUrls = ImageViewerUtils.sortImageDataList(uniqueImageUrls)
+
+  if (dom) {
+    const index = orderedImageUrls.indexOf(dom.currentSrc)
+    index !== -1 ? (options.index = index) : null
   } else if (srcUrl) {
-    uniqueImageUrls.unshift(srcUrl)
-    console.log('Image unshift to list')
+    if (!srcUrl.startsWith('data')) {
+      const index = orderedImageUrls.indexOf(srcUrl)
+      index !== -1 ? (options.index = index) : null
+    } else {
+      for (let i = 0; i < orderedImageUrls.length; i++) {
+        if (typeof orderedImageUrls[i] === 'string') continue
+        if (srcUrl === orderedImageUrls[i][0]) {
+          options.index = i
+          break
+        }
+      }
+    }
+    if (!options.index) {
+      orderedImageUrls.unshift(srcUrl)
+      console.log('Unshift Image to list')
+    }
   }
 
-  console.log(`${uniqueImageUrls.length} images pass filter or still loading`)
+  for (const data of orderedImageUrls) {
+    if (data[0].startsWith('data')) {
+      data[0] = ImageViewerUtils.dataURLToObjectURL(data[0])
+    }
+  }
 
   if (typeof imageViewer !== 'function') {
     await chrome.runtime.sendMessage('load_script')
   }
-  imageViewer(uniqueImageUrls, options)
+  imageViewer(orderedImageUrls, options)
 })()
