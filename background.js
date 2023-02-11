@@ -29,11 +29,14 @@ function resetLocalStorage() {
         hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
         customUrl: ['https://example.com/search?query={imgSrc}&option=example_option']
       }
-      currOptions = defaultOptions
       chrome.storage.sync.set({options: defaultOptions}, () => {
         console.log('Set options to default values.')
         console.log(defaultOptions)
       })
+      currOptions = defaultOptions
+      currOptionsWithoutSize = Object.assign({}, currOptions)
+      currOptionsWithoutSize.minWidth = 0
+      currOptionsWithoutSize.minHeight = 0
       chrome.runtime.openOptionsPage()
     } else {
       currOptions = res.options
