@@ -50,9 +50,6 @@
   "not_factor_of_360": {
     "message": "不是360的因数"
   },
-  "open_in_image_viewer": {
-    "message": "在Image Viewer观看"
-  },
   "options": {
     "message": "设定"
   },
@@ -90,10 +87,13 @@
     "message": "以上所有"
   },
   "view_all_images_in_image_viewer": {
-    "message": "在Image Viewer观看所有图像"
+    "message": "观看图片(无过滤)"
   },
   "view_images_in_image_viewer": {
-    "message": "在Image Viewer观看图像"
+    "message": "观看图片"
+  },
+  "view_last_right_click_image_in_image_viewer": {
+    "message": "观看图片(最后右键的图片)"
   },
   "width": {
     "message": "阔度"

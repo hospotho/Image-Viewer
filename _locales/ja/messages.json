@@ -50,9 +50,6 @@
   "not_factor_of_360": {
     "message": "360の約数ではありません"
   },
-  "open_in_image_viewer": {
-    "message": "Image Viewerで見る"
-  },
   "options": {
     "message": "オプション"
   },
@@ -90,10 +87,13 @@
     "message": "上記すべて"
   },
   "view_all_images_in_image_viewer": {
-    "message": "Image Viewerですべての画像を表示"
+    "message": "画像を表示 (フィルターなし)"
   },
   "view_images_in_image_viewer": {
-    "message": "Image Viewerで画像を表示する"
+    "message": "画像を表示"
+  },
+  "view_last_right_click_image_in_image_viewer": {
+    "message": "画像を表示 (最後に右クリックした画像)"
   },
   "width": {
     "message": "横幅"

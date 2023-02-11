@@ -148,6 +148,11 @@ function createContextMenu() {
     title: i18n('view_all_images_in_image_viewer'),
     contexts: ['action']
   })
+  chrome.contextMenus.create({
+    id: 'view_last_right_click_image_in_image_viewer',
+    title: i18n('view_last_right_click_image_in_image_viewer'),
+    contexts: ['action']
+  })
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     console.log(info.menuItemId)
@@ -160,6 +165,11 @@ function createContextMenu() {
       case 'view_all_image_in_image_viewer': {
         passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
+        return
+      }
+      case 'view_last_right_click_image_in_image_viewer': {
+        await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-image.js']})
         return
       }
     }
