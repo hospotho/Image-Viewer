@@ -200,7 +200,6 @@
         const infoList = []
 
         const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
-        let baseSize = Math.min(dom.clientWidth, dom.clientHeight)
 
         const imageInfo = extractImageInfoFromNode(dom)
         if (isImageInfoValid(imageInfo)) {
@@ -212,15 +211,13 @@
         dom.style.pointerEvents = 'none'
         while (true) {
           const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
-          const currSize = Math.min(dom.clientWidth, dom.clientHeight)
-          if (dom === document.documentElement || dom === domList[domList.length - 1] || currSize > baseSize * 1.5) break
+          if (dom === document.documentElement || dom === domList[domList.length - 1]) break
 
           const imageInfo = extractImageInfoFromNode(dom)
           if (isImageInfoValid(imageInfo)) {
             infoList.push(imageInfo)
           }
 
-          baseSize = currSize
           domList.push(dom)
           ptEvent.push(dom.style.pointerEvents)
           dom.style.pointerEvents = 'none'
@@ -237,6 +234,7 @@
           for (let i = 0; i < infoList.length; i++) {
             index = infoList[i][1] > maxSize ? i : index
           }
+          markingDom(infoList[index][2])
           return infoList[index]
         }
 
