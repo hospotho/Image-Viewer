@@ -178,7 +178,7 @@ const ImageViewerUtils = (function () {
       }
 
       for (const node of document.querySelectorAll('*')) {
-        if (node.clientWidth < options.minWidth || node.clientWidth < options.minHeight) continue
+        if (node.clientWidth < options.minWidth || node.clientHeight < options.minHeight) continue
         const bg = window.getComputedStyle(node).backgroundImage
         if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
           imageDataList.push([bg.substring(4, bg.length - 1).replace(/['"]/g, ''), node])
