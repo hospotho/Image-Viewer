@@ -148,13 +148,7 @@ const ImageViewerUtils = (function () {
         imageDataList.push([video.poster, video])
       }
 
-      const badImage = options.svgFilter
-        ? url => {
-            url === '' || url === 'about:blank' || url.includes('.svg')
-          }
-        : url => {
-            url === '' || url === 'about:blank'
-          }
+      const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.includes('.svg') : url => url === '' || url === 'about:blank'
 
       const uniqueImage = []
       outer: for (const img of imageDataList) {
