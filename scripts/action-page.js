@@ -5,14 +5,14 @@
     await chrome.runtime.sendMessage('load_utility')
   }
 
-  const options = window.ImageViewerOption
-  options.closeButton = true
-  options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
-
   if (document.documentElement.classList.contains('has-image-viewer')) {
     ImageViewerUtils.closeImageViewer()
     return
   }
+
+  const options = window.ImageViewerOption
+  options.closeButton = true
+  options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
 
   await ImageViewerUtils.simpleUnlazyImage()
 
