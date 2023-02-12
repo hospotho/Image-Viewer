@@ -9,6 +9,16 @@ const passDataToTab = (id, name, data) => {
     }
   })
 }
+const getImageBitSize = async src => {
+  try {
+    const res = await fetch(src, {method: 'HEAD'})
+    if (!res.ok) return 0
+    const size = res.headers.get('Content-Length')
+    return typeof size === 'string' ? parseInt(size) : 0
+  } catch (error) {
+    return 0
+  }
+}
 
 const defaultOptions = {
   fitMode: 'both',
@@ -68,8 +78,10 @@ function addMessageHandler() {
     const type = request.msg || request
     console.log('Received message: ', sender.tab.id, type)
 
-    const sendResponse = data => {
-      if (data) console.log('Send response: ', sender.tab.id, type, data)
+    const sendResponse = (data, display = true) => {
+      const msg = ['Send response: ', sender.tab.id, type]
+      if (data && display) msg.push(data)
+      console.log(...msg)
       _sendResponse(data)
     }
     switch (type) {
@@ -89,15 +101,15 @@ function addMessageHandler() {
         return true
       }
       case 'load_worker': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']}, sendResponse)
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
         return true
       }
       case 'load_utility': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, sendResponse)
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, () => sendResponse())
         return true
       }
       case 'load_script': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, sendResponse)
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse())
         return true
       }
       case 'extract_frames': {
@@ -130,17 +142,24 @@ function addMessageHandler() {
       }
       case 'update_info': {
         lastImageNodeInfo = request.data
-        lastImageNodeInfo.id = sender.tab.id
         console.log('New info: ', lastImageNodeInfo)
         sendResponse()
+        lastImageNodeInfo.id = sender.tab.id
         return true
       }
       case 'open_tab': {
-        chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, sendResponse)
+        chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, () => sendResponse())
         return true
       }
       case 'close_tab': {
-        chrome.tabs.remove(sender.tab.id, sendResponse)
+        chrome.tabs.remove(sender.tab.id, () => sendResponse())
+        return true
+      }
+      case 'get_size': {
+        getImageBitSize(request.url).then(size => {
+          sendResponse(size, false)
+          console.log(request.url, size)
+        })
         return true
       }
     }

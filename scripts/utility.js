@@ -59,16 +59,17 @@ const ImageViewerUtils = (function () {
   }
 
   async function getImageBitSize(src) {
-    console.log(`Fetch bit size of ${src}`)
+    let result
     try {
       const res = await fetch(src, {method: 'HEAD'})
+      if (!res.ok) result = 0
       const size = res.headers.get('Content-Length')
-      return typeof size === 'string' ? parseInt(size) : 0
-    } catch (e) {
-      return 0
+      result = typeof size === 'string' ? parseInt(size) : 0
+    } catch (error) {
+      result = 0
     }
+    return result || chrome.runtime.sendMessage({msg: 'get_size', url: src})
   }
-
   function getImageRealSize(src) {
     return new Promise(resolve => {
       console.log(`Fetch image size of ${src}`)
@@ -168,6 +169,7 @@ const ImageViewerUtils = (function () {
       }
 
       const imageDataList = []
+      
       for (const img of document.getElementsByTagName('img')) {
         // only client size should be checked in order to bypass large icon or hidden image
         if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {

@@ -48,39 +48,7 @@
   }
 
   const domSearcher = (function () {
-    function extractImageInfoFromNode(dom) {
-      if (dom.tagName === 'IMG') {
-        const minSize = Math.min(dom.naturalWidth, dom.naturalHeight, dom.clientWidth, dom.clientHeight)
-        markingDom(dom)
-        return [dom.currentSrc, minSize, dom]
-      }
-
-      const minSize = Math.min(dom.clientWidth, dom.clientHeight)
-      if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
-        markingDom(dom)
-        return [dom.poster, minSize, dom]
-      }
-
-      const bg = window.getComputedStyle(dom).backgroundImage
-      if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-        const bgUrl = bg.substring(4, bg.length - 1).replace(/['"]/g, '')
-        markingDom(dom)
-        return [bgUrl, minSize, dom]
-      }
-
-      return null
-    }
-    function isImageInfoValid(imageInfo) {
-      return imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
-    }
-    const markingDom =
-      window.top === window.self
-        ? dom => {
-            document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
-            dom?.classList.add('ImageViewerLastDom')
-          }
-        : () => chrome.runtime.sendMessage('reset_dom')
-
+    // searchImageFromTree
     function checkZIndex(e1, e2) {
       const e1zIndex = parseInt(window.getComputedStyle(e1).zIndex)
       const e2zIndex = parseInt(window.getComputedStyle(e2).zIndex)
@@ -193,25 +161,66 @@
       return imageInfoList[0]
     }
 
+    // utility
+    function extractImageInfoFromNode(dom) {
+      if (dom.tagName === 'IMG') {
+        const minSize = Math.min(dom.naturalWidth, dom.naturalHeight, dom.clientWidth, dom.clientHeight)
+        markingDom(dom)
+        return [dom.currentSrc, minSize, dom]
+      }
+
+      const minSize = Math.min(dom.clientWidth, dom.clientHeight)
+      if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
+        markingDom(dom)
+        return [dom.poster, minSize, dom]
+      }
+
+      const bg = window.getComputedStyle(dom).backgroundImage
+      if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
+        const bgUrl = bg.substring(4, bg.length - 1).replace(/['"]/g, '')
+        markingDom(dom)
+        return [bgUrl, minSize, dom]
+      }
+
+      return null
+    }
+
+    const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
+    const getImageBitSize = async src => {
+      let result
+      try {
+        const res = await fetch(src, {method: 'HEAD'})
+        if (!res.ok) result = 0
+        const size = res.headers.get('Content-Length')
+        result = typeof size === 'string' ? parseInt(size) : 0
+      } catch (error) {
+        result = 0
+      }
+      return result || chrome.runtime.sendMessage({msg: 'get_size', url: src})
+    }
+    const markingDom =
+      window.top === window.self
+        ? dom => {
+            document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
+            dom?.classList.add('ImageViewerLastDom')
+          }
+        : () => chrome.runtime.sendMessage('reset_dom')
+
     return {
-      searchDomByPosition: function (viewportPos) {
+      searchDomByPosition: async function (viewportPos) {
         const domList = []
         const ptEvent = []
         const infoList = []
 
-        const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
+        let firstVisibleDom
 
-        const imageInfo = extractImageInfoFromNode(dom)
-        if (isImageInfoValid(imageInfo)) {
-          infoList.push(imageInfo)
-        }
-
-        domList.push(dom)
-        ptEvent.push(dom.style.pointerEvents)
-        dom.style.pointerEvents = 'none'
-        while (true) {
+        while (domList.length < 5) {
           const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
           if (dom === document.documentElement || dom === domList[domList.length - 1]) break
+
+          if (dom.offsetParent !== null || dom.style.position === 'fixed') {
+            firstVisibleDom = firstVisibleDom || dom
+          }
 
           const imageInfo = extractImageInfoFromNode(dom)
           if (isImageInfoValid(imageInfo)) {
@@ -229,16 +238,31 @@
         }
 
         if (infoList.length) {
-          let index = 0
-          let maxSize = 0
-          for (let i = 0; i < infoList.length; i++) {
-            index = infoList[i][1] > maxSize ? i : index
+          if (infoList.length === 1) {
+            markingDom(infoList[0][2])
+            return infoList[0]
           }
-          markingDom(infoList[index][2])
-          return infoList[index]
+
+          let maxSize = 0
+          for (const info of infoList) {
+            maxSize = info[1] > maxSize ? info[1] : maxSize
+          }
+          const largest = infoList.filter(info => info[1] === maxSize)
+          if (largest.length === 1) {
+            markingDom(largest[0][2])
+            return largest[0]
+          }
+
+          const sizeList = []
+          for (const item of largest) {
+            sizeList.push([item, await getImageBitSize(item[0])])
+          }
+          sizeList.sort((a, b) => b[1] - a[1])
+          markingDom(sizeList[0][0][2])
+          return sizeList[0][0]
         }
 
-        const imageInfoFromTree = searchImageFromTree(dom, viewportPos)
+        const imageInfoFromTree = searchImageFromTree(firstVisibleDom, viewportPos)
         if (isImageInfoValid(imageInfoFromTree)) {
           markingDom(imageInfoFromTree[2])
           return imageInfoFromTree
@@ -255,7 +279,7 @@
     async e => {
       const viewportPosition = [e.clientX, e.clientY]
       disablePtEvents()
-      const imageNodeInfo = domSearcher.searchDomByPosition(viewportPosition)
+      const imageNodeInfo = await domSearcher.searchDomByPosition(viewportPosition)
       restorePtEvents()
       if (!imageNodeInfo) return
 
