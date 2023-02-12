@@ -131,7 +131,7 @@ const ImageViewerUtils = (function () {
       await new Promise(resolve => setTimeout(resolve, 500))
     },
 
-    getAllImage: function (options) {
+    getImageListWithoutFilter: function (options) {
       const imageDataList = []
       for (const img of document.getElementsByTagName('img')) {
         imageDataList.push([img.currentSrc, img])
@@ -169,6 +169,10 @@ const ImageViewerUtils = (function () {
     },
 
     getImageList: function (options) {
+      if (options.minWidth === 0 && options.minHeight === 0) {
+        return this.getImageListWithoutFilter(options)
+      }
+
       const imageDataList = []
       for (const img of document.getElementsByTagName('img')) {
         // only client size should be checked in order to bypass large icon or hidden image
