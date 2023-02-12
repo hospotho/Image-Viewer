@@ -9,7 +9,7 @@
     "128": "/icon/icon128.png"
   },
   "permissions": ["storage", "contextMenus", "scripting"],
-  "host_permissions": ["*://*/*"],
+  "host_permissions": ["*://*/*", "file:///*"],
   "background": {
     "service_worker": "background.js"
   },
