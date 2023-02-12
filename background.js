@@ -27,6 +27,12 @@ let currOptions = null
 let currOptionsWithoutSize = null
 let lastImageNodeInfo = null
 
+chrome.runtime.onInstalled.addListener(function (details) {
+  if (details.reason === 'update' || details.reason === 'install') {
+    chrome.windows.create({url: 'popup.html', type: 'popup'})
+  }
+})
+
 function resetLocalStorage() {
   chrome.storage.sync.get('options', res => {
     if (res && Object.keys(res).length === 0 && Object.getPrototypeOf(res) === Object.prototype) {
