@@ -100,7 +100,7 @@ function addMessageHandler() {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, sendResponse)
         return true
       }
-      case 'load_frames': {
+      case 'extract_frames': {
         const newOptions = Object.assign({}, currOptions)
         newOptions.minWidth = request.minSize
         newOptions.minHeight = request.minSize

@@ -30,7 +30,7 @@
 
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
   if (!!document.querySelector('iframe')) {
-    const iframeImage = await chrome.runtime.sendMessage({msg: 'load_frames', minSize: minSize})
+    const iframeImage = await chrome.runtime.sendMessage({msg: 'extract_frames', minSize: minSize})
     const uniqueIframeImage = []
     outer: for (const img of iframeImage) {
       for (const unique of uniqueIframeImage) {
