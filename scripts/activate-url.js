@@ -44,14 +44,14 @@
     const observer = new MutationObserver(mutations => {
       outer: for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
-          if (node.nodeName === 'IFRAME') {
+          if (node.nodeType === 1 && node.ownerDocument.querySelector('iframe')) {
             chrome.runtime.sendMessage('load_worker')
             break outer
           }
         }
       }
     })
-    
-    observer.observe(document.documentElement, {childList: true, subtree: true})
+
+    observer.observe(document, {childList: true, subtree: true})
   }
 })()
