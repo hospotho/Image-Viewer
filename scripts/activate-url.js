@@ -40,5 +40,18 @@
     }
     document.addEventListener('visibilitychange', handleEvent)
     window.addEventListener('focus', handleEvent)
+
+    const observer = new MutationObserver(mutations => {
+      outer: for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeName === 'IFRAME') {
+            chrome.runtime.sendMessage('load_worker')
+            break outer
+          }
+        }
+      }
+    })
+    
+    observer.observe(document.documentElement, {childList: true, subtree: true})
   }
 })()
