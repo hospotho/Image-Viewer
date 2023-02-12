@@ -214,7 +214,7 @@
 
         let firstVisibleDom
 
-        while (domList.length < 5) {
+        while (domList.length < 10) {
           const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
           if (dom === document.documentElement || dom === domList[domList.length - 1]) break
 
