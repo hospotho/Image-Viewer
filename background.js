@@ -165,7 +165,7 @@ function createContextMenu() {
   })
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    console.log('Context menus event: ', sender.tab.id, info.menuItemId)
+    console.log('Context menus event: ', tab.id, info.menuItemId)
     switch (info.menuItemId) {
       case 'view_images_in_image_viewer': {
         await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
