@@ -35,7 +35,7 @@
   const observer = new MutationObserver(mutations => {
     outer: for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
-        if (node.nodeType === 1 && node.ownerDocument.querySelector('iframe')) {
+        if (node.nodeType === 1 && node.outerHTML.match('iframe')) {
           console.log('New iframe')
           chrome.runtime.sendMessage('load_worker')
           break outer
