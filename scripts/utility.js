@@ -169,7 +169,7 @@ const ImageViewerUtils = (function () {
       }
 
       const imageDataList = []
-      
+
       for (const img of document.getElementsByTagName('img')) {
         // only client size should be checked in order to bypass large icon or hidden image
         if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
@@ -257,7 +257,7 @@ const ImageViewerUtils = (function () {
       const wrapper = dom.closest('div')
       if (!wrapper || wrapper.classList.length === 0) return
 
-      const classList = '.' + [...wrapper.classList].join('.')
+      const classList = '.' + [...wrapper.classList].map(CSS.escape).join('.')
       const allWrapperDivs = document.querySelectorAll(`div${classList}`)
       if (allWrapperDivs.length < 4) return
 
