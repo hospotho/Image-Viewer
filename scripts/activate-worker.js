@@ -257,6 +257,7 @@
 
     const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
     const getImageBitSize = async src => {
+      if (!src || src.startsWith('data')) return 0
       let result
       try {
         const res = await fetch(src, {method: 'HEAD'})

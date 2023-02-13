@@ -59,6 +59,7 @@ const ImageViewerUtils = (function () {
   }
 
   async function getImageBitSize(src) {
+    if (!src || src.startsWith('data')) return 0
     let result
     try {
       const res = await fetch(src, {method: 'HEAD'})
