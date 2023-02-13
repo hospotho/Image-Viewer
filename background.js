@@ -184,6 +184,7 @@ function createContextMenu() {
   })
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (!tab.url) return
     console.log('Context menus event: ', tab.id, info.menuItemId)
     switch (info.menuItemId) {
       case 'view_images_in_image_viewer': {
@@ -207,6 +208,7 @@ function createContextMenu() {
 
 function addToolbarIconHandler() {
   chrome.action.onClicked.addListener(async tab => {
+    if (!tab.url) return
     await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
     chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
   })
@@ -214,6 +216,7 @@ function addToolbarIconHandler() {
 
 function addCommandHandler() {
   chrome.commands.onCommand.addListener(async (command, tab) => {
+    if (!tab.url) return
     switch (command) {
       case 'open-image-viewer': {
         await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
