@@ -17,6 +17,20 @@
   const init = () => {
     console.log('Init content script.')
     chrome.runtime.sendMessage('load_worker')
+    
+    const observer = new MutationObserver(mutations => {
+      outer: for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === 1 && node.outerHTML.match('iframe')) {
+            console.log('New iframe')
+            chrome.runtime.sendMessage('load_worker')
+            break outer
+          }
+        }
+      }
+    })
+
+    observer.observe(document, {childList: true, subtree: true})
   }
 
   if (document.visibilityState === 'visible') {
@@ -31,18 +45,4 @@
     document.addEventListener('visibilitychange', handleEvent)
     window.addEventListener('focus', handleEvent)
   }
-
-  const observer = new MutationObserver(mutations => {
-    outer: for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeType === 1 && node.outerHTML.match('iframe')) {
-          console.log('New iframe')
-          chrome.runtime.sendMessage('load_worker')
-          break outer
-        }
-      }
-    }
-  })
-
-  observer.observe(document, {childList: true, subtree: true})
 })()
