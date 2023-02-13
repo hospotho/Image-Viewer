@@ -268,13 +268,22 @@
       }
       return result || chrome.runtime.sendMessage({msg: 'get_size', url: src})
     }
-    const markingDom =
-      window.top === window.self
+    const markingDom = (function () {
+      return window.top === window.self
         ? dom => {
             document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
             dom?.classList.add('ImageViewerLastDom')
           }
-        : () => chrome.runtime.sendMessage('reset_dom')
+        : (function () {
+            let executed = false
+            return () => {
+              if (!executed) {
+                executed = true
+                chrome.runtime.sendMessage('reset_dom')
+              }
+            }
+          })()
+    })()
 
     return {
       searchDomByPosition: function (viewportPos) {
