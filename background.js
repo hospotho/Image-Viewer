@@ -79,7 +79,7 @@ function addMessageHandler() {
     console.log('Received message: ', sender.tab.id, type)
 
     const sendResponse = (data, display = true) => {
-      const msg = ['Send response: ', sender.tab.id, type]
+      const msg = ['Send response:    ', sender.tab.id, type]
       if (data && display) msg.push(data)
       console.log(...msg)
       _sendResponse(data)
@@ -95,7 +95,7 @@ function addMessageHandler() {
           currOptionsWithoutSize = Object.assign({}, currOptions)
           currOptionsWithoutSize.minWidth = 0
           currOptionsWithoutSize.minHeight = 0
-          console.log('New options: ', currOptions)
+          console.log(currOptions)
           sendResponse()
         })
         return true
@@ -142,7 +142,7 @@ function addMessageHandler() {
       }
       case 'update_info': {
         lastImageNodeInfo = request.data
-        console.log('New info: ', lastImageNodeInfo)
+        console.log(...lastImageNodeInfo)
         sendResponse()
         lastImageNodeInfo.id = sender.tab.id
         return true
