@@ -35,11 +35,17 @@
   "fit_with_window_width": {
     "message": "Fit with window width"
   },
+  "github_link": {
+    "message": "Github user manual"
+  },
   "height": {
     "message": "Height"
   },
   "hotkey_notice": {
     "message": "When more than one search using same hotkey, all search will be traggered, built-in hotkey like 'Ctrl + W' or 'Ctrl + T' will not be overridden.<br><br>When using custom search, '{imgSrc}' will be used to replace with real URL<br><br>Soft disable hotkey without Ctrl/Alt/Shift key, change its value in DevTools to save it."
+  },
+  "kofi_link": {
+    "message": "Support me"
   },
   "min_height": {
     "message": "Min. height"
@@ -55,6 +61,12 @@
   },
   "options_title": {
     "message": "Options - Image Viewer"
+  },
+  "popup_title": {
+    "message": "Release Notes - Image Viewer"
+  },
+  "release_notes": {
+    "message": "Release notes"
   },
   "reset": {
     "message": "Reset"

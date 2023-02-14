@@ -35,11 +35,17 @@
   "fit_with_window_width": {
     "message": "ウィンドウの横幅"
   },
+  "github_link": {
+    "message": "Github ユーザマニュアル(Eng)"
+  },
   "height": {
     "message": "高度"
   },
   "hotkey_notice": {
     "message": "複数の検索で同じホットキーを使用すると、すべての検索が同時にトリガーされ、「Ctrl + W」「Ctrl + T」などの既存のショートカットキーはオーバーライドされません<br><br>カスタム検索エンジンを使用する場合、検索URLの「{imgSrc}」は実際の画像リンクに置き換えられ<br><br>Ctrl/Alt/Shiftを使用せずのホットキーは推奨しません、たがDevToolsで望みのキーに変更そして保存はできます"
+  },
+  "kofi_link": {
+    "message": "Support me"
   },
   "min_height": {
     "message": "最小高度"
@@ -55,6 +61,12 @@
   },
   "options_title": {
     "message": "オプション - Image Viewer"
+  },
+  "popup_title": {
+    "message": "リリースノート - Image Viewer"
+  },
+  "release_notes": {
+    "message": "リリースノート"
   },
   "reset": {
     "message": "リセット"

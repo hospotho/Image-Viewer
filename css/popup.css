@@ -1,0 +1,91 @@
+body {
+  font-family: Verdana, Helvetica, Arial, sans-serif;
+  padding: 0;
+  overflow-y: scroll;
+  font-size: 100%;
+}
+#title {
+  height: 50px;
+  line-height: 50px;
+  padding-left: 70px;
+  background: url(/icon/icon.png) 5px center no-repeat;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+nav > div {
+  height: 50px;
+  border: 2px solid;
+  margin-left: 5px;
+}
+
+a {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  position: relative;
+  background-color: #303030;
+}
+a > img {
+  border-right: 2px solid;
+  border-color: black;
+  background-color: white;
+}
+a > span {
+  color: orange;
+  margin: 0 5px;
+}
+
+.noet-container-group {
+  padding: 20px 20px;
+}
+
+.note-container {
+  white-space: pre;
+  border: 2px solid;
+  border-bottom: none;
+}
+.note-container:last-of-type {
+  border-bottom: 2px solid;
+}
+
+.bar {
+  background-color: rgb(120, 120, 120);
+  color: white;
+  width: 100%;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  font-family: Consolas, Monaco, monospace;
+  text-align: left;
+  font-size: 16px;
+}
+.bar:hover {
+  background-color: orange;
+}
+.bar::after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 15px;
+  float: right;
+  margin-left: 5px;
+}
+.active > .bar::after {
+  content: '\2796'; /* Unicode character for "minus" sign (-) */
+}
+
+.noteText {
+  background-color: #eff5f7;
+  overflow: hidden;
+  padding: 0 10px;
+  max-height: 0;
+  transition: max-height 0.2s ease-out;
+}
+.active > .noteText {
+  transition: max-height 0.2s ease-in;
+}

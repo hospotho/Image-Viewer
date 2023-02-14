@@ -1,0 +1,150 @@
+;(function () {
+  const rawText = `
+1.12 [2023-02-14]:
+1. Add this popup page to show release notes when install or update.
+2. Improve stability.
+3. Add domain white list for image unlazy.
+  // create issues on github if you want to add domain to the list
+  // may move to option page or just hide in sourse code
+
+1.11 [2023-02-11]:
+1. Images are now order by its real location.
+3. No longer use dataURL, ObjectURL is faster and better for the browser to render images.
+2. Min size filter will also considers wrapper of the selected image.
+4. Some website that disabled right click menu. Add "view last right click" in icon menu to handle it.
+
+1.10 [2023-02-11]:
+1. Add MoveTo support for iframe images.
+2. Improve right click image pickup
+3. Improve image check size method.
+
+1.9  [2023-01-13]:
+1. Support image pickup using right click.
+2. Delay execution of worker script to improve performance.
+
+1.8  [2022-10-30]:
+1. Improve the support of viewing images inside iframe.
+2. Refactor code to tidy up code related to iframe.
+
+1.7  [2022-10-04]:
+1. Improve support on iframe images.
+2. Improve simpleUnlazyImage().
+3. Add more keyboard shortcuts and svg filter in option.
+
+1.6  [2022-09-03]:
+1. Support images inside iframe.
+2. Improve data transfer between content script and background.
+
+1.5  [2022-08-22]:
+1. Renew simpleUnlazyImage().
+2. Improve image-viewer.js
+3. Support hotkey for reverse search image.
+
+1.4  [2022-08-10]:
+1. Improve simpleUnlazyImage().
+2. Support video element.
+3. Improve MoveTo button logic.
+4. Prevent input leak out from image viewer.
+5. Improve simpleUnlazyImage().
+6. Add utility.js to seprate utility function.
+
+1.3  [2022-07-01]:
+1. Deley loading of image-viewer.js to improve performance.
+2. Add command support.
+3. Improve image unlazy.
+4. Renew activate image method to increase readibility.
+
+1.2  [2022-07-01]:
+1. Add simpleUnlazyImage() to unlazy image before getting image list.
+2. Change CSS to pin image viewer counter .
+
+1.1  [2022-07-01]:
+1. Support mirror effect.
+2. Replace old transform method with matrix to improve performance.
+
+1.0  [2022-06-29]:
+First release on github.
+`
+  function createNotes() {
+    const data = rawText
+      .split('\n\n')
+      .map(t => t.trim())
+      .map(t => t.split('\n'))
+
+    const noteContainerGroup = document.createElement('div')
+    noteContainerGroup.classList.add('note-container-group')
+    for (const textList of data) {
+      const noteContainer = document.createElement('div')
+      noteContainer.classList.add('note-container')
+
+      const bar = document.createElement('button')
+      bar.classList.add('bar')
+      bar.textContent = textList.shift()
+
+      const noteText = document.createElement('div')
+      noteText.classList.add('noteText')
+      for (const line of textList) {
+        const p = document.createElement('p')
+        p.textContent = line
+        noteText.appendChild(p)
+      }
+
+      bar.onclick = () => {
+        if (noteContainer.classList.contains('active')) {
+          noteContainer.classList.remove('active')
+          noteText.style.maxHeight = null
+        } else {
+          noteContainer.classList.add('active')
+          noteText.style.maxHeight = noteText.scrollHeight + 'px'
+        }
+      }
+
+      noteContainer.appendChild(bar)
+      noteContainer.appendChild(noteText)
+
+      noteContainerGroup.appendChild(noteContainer)
+    }
+    document.body.appendChild(noteContainerGroup)
+  }
+
+  function toggleFirstNote() {
+    const firstNote = document.querySelector('div.note-container-group > div:nth-child(1) > button')
+    firstNote.nextElementSibling.style.transitionDuration = '0s'
+    firstNote.click()
+    setTimeout(() => (firstNote.nextElementSibling.style.transitionDuration = ''), 100)
+  }
+
+  function i18n() {
+    chrome.i18n.getAcceptLanguages(languages => {
+      const exist = ['en', 'ja', 'zh_CN', 'zh_TW']
+      let displayLanguages = 'en'
+      for (const lang of languages) {
+        if (exist.includes(lang.replace('-', '_'))) {
+          displayLanguages = lang
+          break
+        }
+        if (exist.includes(lang.slice(0, 2))) {
+          displayLanguages = lang.slice(0, 2)
+          break
+        }
+      }
+      document.documentElement.setAttribute('lang', displayLanguages)
+    })
+
+    for (const el of document.querySelectorAll('[data-i18n]')) {
+      const tag = el.getAttribute('data-i18n')
+      const message = chrome.i18n.getMessage(tag)
+      if (!message) continue
+      el.innerHTML = message
+      if (el.value !== '') el.value = message
+    }
+  }
+
+  function init() {
+    createNotes()
+    toggleFirstNote()
+    i18n()
+  }
+
+  init()
+})()

@@ -35,11 +35,17 @@
   "fit_with_window_width": {
     "message": "視窗闊度"
   },
+  "github_link": {
+    "message": "Github 用戶手冊(Eng)"
+  },
   "height": {
     "message": "高度"
   },
   "hotkey_notice": {
     "message": "多個搜索使用相同的快捷鍵時，觸發後會同時啟動，既有快捷鍵如'Ctrl + W' 'Ctrl + T'等不會被覆蓋<br><br>使用自定搜索引擎時，搜索圖片的URL會置換'{imgSrc}'成真正的圖像連結<br><br>軟性禁止沒有使用Ctrl/Alt/Shift的熱鍵，在DevTools更改成需要的鍵以保存"
+  },
+  "kofi_link": {
+    "message": "Support me"
   },
   "min_height": {
     "message": "最小高度"
@@ -55,6 +61,12 @@
   },
   "options_title": {
     "message": "設定 - Image Viewer"
+  },
+  "popup_title": {
+    "message": "發佈版本通知 - Image Viewer"
+  },
+  "release_notes": {
+    "message": "發佈版本通知"
   },
   "reset": {
     "message": "重設"
