@@ -167,20 +167,22 @@ function addMessageHandler() {
 }
 
 function createContextMenu() {
-  chrome.contextMenus.create({
-    id: 'view_images_in_image_viewer',
-    title: i18n('view_images_in_image_viewer'),
-    contexts: ['all']
-  })
-  chrome.contextMenus.create({
-    id: 'view_all_image_in_image_viewer',
-    title: i18n('view_all_images_in_image_viewer'),
-    contexts: ['action']
-  })
-  chrome.contextMenus.create({
-    id: 'view_last_right_click_image_in_image_viewer',
-    title: i18n('view_last_right_click_image_in_image_viewer'),
-    contexts: ['action']
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: 'view_images_in_image_viewer',
+      title: i18n('view_images_in_image_viewer'),
+      contexts: ['all']
+    })
+    chrome.contextMenus.create({
+      id: 'view_all_image_in_image_viewer',
+      title: i18n('view_all_images_in_image_viewer'),
+      contexts: ['action']
+    })
+    chrome.contextMenus.create({
+      id: 'view_last_right_click_image_in_image_viewer',
+      title: i18n('view_last_right_click_image_in_image_viewer'),
+      contexts: ['action']
+    })
   })
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
