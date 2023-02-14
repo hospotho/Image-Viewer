@@ -12,6 +12,7 @@
 
   const options = window.ImageViewerOption
   options.closeButton = true
+  options.referrerPolicy = !!document.querySelector('img[referrerPolicy="no-referrer"]')
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
 
   await ImageViewerUtils.simpleUnlazyImage()

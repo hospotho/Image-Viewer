@@ -9,14 +9,14 @@ const imageViewer = (function () {
     template.innerHTML = str.trim()
     return template.content.firstChild
   }
-  function buildImageNode(data, cors) {
+  function buildImageNode(data, options) {
     const li = document.createElement('li')
     const img = document.createElement('img')
     li.appendChild(img)
 
     img.alt = ''
-    img.referrerPolicy = 'no-referrer'
-    img.crossorigin = cors ? 'anonymous' : null
+    img.referrerPolicy = options.referrerPolicy ? 'no-referrer' : null
+    img.crossorigin = options.cors ? 'anonymous' : null
     img.onload = e => {
       URL.revokeObjectURL(e.target.src)
     }
@@ -477,14 +477,14 @@ const imageViewer = (function () {
   function buildImageList(imageList, options) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     const cors = options.cors
-    let first = buildImageNode(imageList[0], cors)
+    let first = buildImageNode(imageList[0], options)
     _imageList.appendChild(first)
 
     if (imageList.length === 1) return
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
     shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = imageList.length
     for (let i = 1; i < imageList.length; i++) {
-      const li = buildImageNode(imageList[i], cors)
+      const li = buildImageNode(imageList[i], options)
       _imageList.appendChild(li)
     }
   }
@@ -494,7 +494,7 @@ const imageViewer = (function () {
       const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
       const length = list.length
       const current = shadowRoot.querySelector('li.current') || shadowRoot.querySelector(`.${appName} .${imageListName} li`)
-      if (!shadowRoot.querySelector('li.current')) {
+      if (!shadowRoot.querySelector('li.current') && current) {
         // must in action-page mode
         current.classList.add('current')
         shadowRoot.querySelector(`.${appName}-info-width`).value = current.firstChild.naturalWidth
