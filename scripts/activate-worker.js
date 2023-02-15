@@ -238,19 +238,6 @@
     }
 
     const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
-    const getImageBitSize = async src => {
-      if (!src || src.startsWith('data')) return 0
-      let result
-      try {
-        const res = await fetch(src, {method: 'HEAD'})
-        if (!res.ok) result = 0
-        const size = res.headers.get('Content-Length')
-        result = typeof size === 'string' ? parseInt(size) : 0
-      } catch (error) {
-        result = 0
-      }
-      return result || chrome.runtime.sendMessage({msg: 'get_size', url: src})
-    }
     const markingDom = (function () {
       return window.top === window.self
         ? dom => {
