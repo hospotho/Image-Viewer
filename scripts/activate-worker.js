@@ -145,9 +145,9 @@
     async function searchDomByPosition(viewportPos) {
       const domList = []
       const ptEvent = []
-      const infoList = []
 
       let firstVisibleDom
+      let imageInfoFromPoint
 
       while (domList.length < 20) {
         const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
@@ -155,11 +155,12 @@
 
         if (dom.offsetParent !== null || dom.style.position === 'fixed') {
           firstVisibleDom = firstVisibleDom || dom
-        }
-
-        const imageInfo = extractImageInfoFromNode(dom)
-        if (isImageInfoValid(imageInfo)) {
-          infoList.push(imageInfo)
+          const imageInfo = extractImageInfoFromNode(dom)
+          if (isImageInfoValid(imageInfo)) {
+            console.log(`Image node found, layer ${domList.length}.`)
+            imageInfoFromPoint = imageInfo
+            break
+          }
         }
 
         domList.push(dom)
@@ -172,33 +173,14 @@
         lastDom.style.pointerEvents = ptEvent.pop()
       }
 
-      if (infoList.length) {
-        if (infoList.length === 1) {
-          markingDom(infoList[0][2])
-          return infoList[0]
-        }
-
-        let maxSize = 0
-        for (const info of infoList) {
-          maxSize = info[1] > maxSize ? info[1] : maxSize
-        }
-        const largest = infoList.filter(info => info[1] === maxSize)
-        if (largest.length === 1) {
-          markingDom(largest[0][2])
-          return largest[0]
-        }
-
-        const sizeList = []
-        for (const item of largest) {
-          sizeList.push([item, await getImageBitSize(item[0])])
-        }
-        sizeList.sort((a, b) => b[1] - a[1])
-        markingDom(sizeList[0][0][2])
-        return sizeList[0][0]
+      if (imageInfoFromPoint) {
+        markingDom(imageInfoFromPoint[2])
+        return imageInfoFromPoint
       }
 
       const imageInfoFromTree = searchImageFromTree(firstVisibleDom, viewportPos)
       if (isImageInfoValid(imageInfoFromTree)) {
+        console.log(`Image node found, hide under sub tree.`)
         markingDom(imageInfoFromTree[2])
         return imageInfoFromTree
       }
