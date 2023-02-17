@@ -26,7 +26,7 @@ You can install this extension on <a href="https://chrome.google.com/webstore/de
 3. Enable Developer Mode.
 4. Click on Load Unpacked button and select the folder of source code.
 
-Tab opened before the installaion require a reload.
+Tab opened before the installation require a reload.
 
 ## How to use
 
@@ -116,7 +116,7 @@ The prototype of this project is by Eky Kwan, MIT License. License file was lost
 
 First release v0.1 on 2012-07-05 and last release v0.1.6 on 2012-08-12
 
-The author of translate in `_locales` is unknow.
+The author of translate in `_locales` is unknown.
 
 Since I was using this extension, lot of features were added to this project. I backup the oldest version at <a href="https://github.com/hospotho/Image-Viewer-backup">here</a>, but some changes were already added me.
 
