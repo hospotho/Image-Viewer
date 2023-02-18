@@ -14,12 +14,11 @@ const ImageViewerUtils = (function () {
   const unlazyDomainWhiteList = ['discord.com']
 
   async function checkImageAttr(img) {
+    img.loading = 'eager'
+
     const argsMatch = img.src.match(argsRegex)
     const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name) && attr.value.match(urlRegex))
-    if (!argsMatch && attrList.length === 0) {
-      img.loading = 'eager'
-      return ''
-    }
+    if (!argsMatch && attrList.length === 0) return ''
 
     const bitSize = await getImageBitSize(img.src.replace(/https?:/, protocol))
     const getImageSize = bitSize ? getImageBitSize : getImageRealSize
