@@ -253,27 +253,24 @@ const ImageViewerUtils = (function () {
       return URL.createObjectURL(new Blob([u8arr], {type: mime}))
     },
 
-    getWapperSize: function (dom) {
+    getWrapperSize: function (dom) {
       const wrapper = dom.closest('div')
       if (!wrapper || wrapper.classList.length === 0) return
 
       const classList = '.' + [...wrapper.classList].map(CSS.escape).join('.')
-      const allWrapperDivs = document.querySelectorAll(`div${classList}`)
-      if (allWrapperDivs.length < 4) return
+      const wrapperDivList = document.querySelectorAll(`div${classList}`)
+      if (wrapperDivList.length < 4) return
 
       const width = []
       const height = []
-      for (const div of allWrapperDivs) {
+      for (const div of wrapperDivList) {
         // ad may use same wrapper and adblock set it to display: none
         if (div.offsetParent === null && div.style.position !== 'fixed') continue
         width.push(div.clientWidth)
         height.push(div.clientHeight)
       }
-      if (new Set(width).size !== 1 || new Set(height).size !== 1) return
 
-      if (width[0] * 1.5 > dom.clientHeight && height[0] * 1.5 > dom.clientHeight) {
-        return [width[0] - 10, height[0] - 10]
-      }
+      return [Math.min(...width), Math.min(...height)]
     }
   }
 })()

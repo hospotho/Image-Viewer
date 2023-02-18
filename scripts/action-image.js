@@ -20,7 +20,7 @@
   }
 
   if (dom) {
-    const [divWidth, divHeight] = ImageViewerUtils.getWapperSize(dom) || []
+    const [divWidth, divHeight] = ImageViewerUtils.getWrapperSize(dom) || []
     if (divWidth) {
       options.minWidth = Math.min(divWidth, options.minWidth)
       options.minHeight = Math.min(divHeight, options.minHeight)
