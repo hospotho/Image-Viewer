@@ -120,21 +120,25 @@
       return result
     }
 
-    function searchImageFromTree(root, viewportPos) {
+    function searchImageFromTree(dom, viewportPos) {
+      let root = dom
+      while (root.previousElementSibling || root.nextElementSibling) {
+        root = root.parentElement
+      }
+
       const [mouseX, mouseY] = [viewportPos[0], viewportPos[1]]
       const relatedDomList = []
       for (const dom of getAllChildElements(root)) {
         const rect = dom.getBoundingClientRect()
         const inside = rect.left <= mouseX && rect.right >= mouseX && rect.top <= mouseY && rect.bottom >= mouseY
-        if (inside) relatedDomList.push(dom)
+        const hidden = dom.offsetParent === null && dom.style.position !== 'fixed'
+        if (inside || hidden) relatedDomList.push(dom)
       }
 
       const imageInfoList = []
       for (const dom of relatedDomList) {
         const imageInfo = extractImageInfoFromNode(dom)
-        if (isImageInfoValid(imageInfo)) {
-          imageInfoList.push(imageInfo)
-        }
+        if (isImageInfoValid(imageInfo)) imageInfoList.push(imageInfo)
       }
       if (imageInfoList.length === 0) return null
 
@@ -148,6 +152,8 @@
 
       let firstVisibleDom
       let imageInfoFromPoint
+      let hiddenImageInfoFromPoint
+      let hiddenLayer
 
       while (domList.length < 20) {
         const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
@@ -157,9 +163,14 @@
           firstVisibleDom = firstVisibleDom || dom
           const imageInfo = extractImageInfoFromNode(dom)
           if (isImageInfoValid(imageInfo)) {
-            console.log(`Image node found, layer ${domList.length}.`)
             imageInfoFromPoint = imageInfo
             break
+          }
+        } else {
+          const imageInfo = extractImageInfoFromNode(dom)
+          if (isImageInfoValid(imageInfo)) {
+            hiddenImageInfoFromPoint = hiddenImageInfoFromPoint || imageInfo
+            hiddenLayer = hiddenLayer || domList.length
           }
         }
 
@@ -168,14 +179,22 @@
         dom.style.pointerEvents = 'none'
       }
 
+      const length = domList.length
       while (domList.length) {
         const lastDom = domList.pop()
         lastDom.style.pointerEvents = ptEvent.pop()
       }
 
       if (imageInfoFromPoint) {
+        console.log(`Image node found, layer ${length}.`)
         markingDom(imageInfoFromPoint[2])
         return imageInfoFromPoint
+      }
+
+      if (hiddenImageInfoFromPoint) {
+        console.log(`Hidden image node found, layer ${hiddenLayer}.`)
+        markingDom(hiddenImageInfoFromPoint[2])
+        return hiddenImageInfoFromPoint
       }
 
       const imageInfoFromTree = searchImageFromTree(firstVisibleDom, viewportPos)
