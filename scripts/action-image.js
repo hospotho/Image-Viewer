@@ -11,12 +11,12 @@
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
 
   const nodeInfo = await chrome.runtime.sendMessage('get_info')
-  const [srcUrl, minSize] = nodeInfo === null ? [] : nodeInfo
+  const [srcUrl, nodeSize] = nodeInfo === null ? [] : nodeInfo
   const dom = document.querySelector('.ImageViewerLastDom')
 
-  if (minSize) {
-    options.minWidth = Math.min(minSize, options.minWidth)
-    options.minHeight = Math.min(minSize, options.minHeight)
+  if (nodeSize) {
+    options.minWidth = Math.min(nodeSize, options.minWidth)
+    options.minHeight = Math.min(nodeSize, options.minHeight)
   }
 
   if (dom) {
@@ -31,6 +31,7 @@
 
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
   if (!!document.querySelector('iframe')) {
+    const minSize = Math.min(options.minWidth, options.minHeight)
     const iframeImage = await chrome.runtime.sendMessage({msg: 'extract_frames', minSize: minSize})
     const uniqueIframeImage = []
     outer: for (const img of iframeImage) {
