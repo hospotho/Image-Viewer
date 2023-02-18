@@ -921,7 +921,7 @@ const imageViewer = (function () {
         return
       }
     })
-    //arror button
+    //arrow button
     shadowRoot.querySelector(`.${appName}-relate .${appName}-control-prev`).addEventListener('click', prevItem)
     shadowRoot.querySelector(`.${appName}-relate .${appName}-control-next`).addEventListener('click', nextItem)
     //control bar
