@@ -235,7 +235,8 @@
 
     function extractImageInfoFromNode(dom) {
       if (dom.tagName === 'IMG') {
-        const minSize = Math.min(dom.naturalWidth, dom.naturalHeight, dom.clientWidth, dom.clientHeight)
+        const sizeList = [dom.naturalWidth, dom.naturalHeight, dom.clientWidth, dom.clientHeight]
+        const minSize = Math.min(...sizeList.filter(Boolean))
         markingDom(dom)
         return [dom.currentSrc, minSize, dom]
       }
