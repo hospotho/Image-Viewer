@@ -28,7 +28,7 @@
   function getImageList(options) {
     const imageUrls = []
     for (const img of document.getElementsByTagName('img')) {
-      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
+      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || window.getComputedStyle(img).display === 'none' || !img.complete) {
         imageUrls.push(img.currentSrc)
       }
     }
