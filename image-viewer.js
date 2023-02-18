@@ -4,11 +4,6 @@ const imageViewer = (function () {
   let shadowRoot
 
   //==========utility==========
-  function strToNode(str) {
-    const template = document.createElement('template')
-    template.innerHTML = str.trim()
-    return template.content.firstChild
-  }
   function buildImageNode(data, options) {
     const li = document.createElement('li')
     const img = document.createElement('img')
@@ -467,16 +462,16 @@ const imageViewer = (function () {
     try {
       for (const node of shadowRoot.querySelectorAll(`.${appName} [data-i18n]`)) {
         const msg = chrome.i18n.getMessage(node.getAttribute('data-i18n'))
-        if (!msg) break
-        node.innerHTML = msg
-        if (node.value !== '') node.value = msg
+        if (msg) {
+          node.innerHTML = msg
+          if (node.value !== '') node.value = msg
+        }
       }
     } catch (e) {}
   }
 
   function buildImageList(imageList, options) {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
-    const cors = options.cors
     let first = buildImageNode(imageList[0], options)
     _imageList.appendChild(first)
 
