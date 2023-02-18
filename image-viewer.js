@@ -656,6 +656,7 @@ const imageViewer = (function () {
       viewer.addEventListener('keyup', e => e.stopPropagation())
       viewer.addEventListener('keypress', e => e.stopPropagation())
       viewer.addEventListener('contextmenu', e => e.stopPropagation())
+      viewer.addEventListener('wheel', e => e.stopPropagation())
       viewer.addEventListener('mousedown', e => {
         if (e.button == 1) {
           e.preventDefault()
