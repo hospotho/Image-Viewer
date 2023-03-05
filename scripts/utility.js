@@ -59,7 +59,10 @@ const ImageViewerUtils = (function () {
 
   async function getImageBitSize(src) {
     if (!src || src === 'about:blank' || src.startsWith('data')) return 0
-    let result
+    // protocol-relative URL
+    if (src.startsWith('//')) src = protocol + src
+    
+    let result = 0
     try {
       const res = await fetch(src, {method: 'HEAD'})
       if (!res.ok) result = 0
