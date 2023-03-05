@@ -266,11 +266,19 @@ const ImageViewerUtils = (function () {
       for (const div of wrapperDivList) {
         // ad may use same wrapper and adblock set it to display: none
         if (div.offsetParent === null && div.style.position !== 'fixed') continue
-        width.push(div.clientWidth)
-        height.push(div.clientHeight)
+
+        let maxWidth = 0
+        let maxHeight = 0
+        const imgList = div.querySelectorAll('img')
+        for (const img of imgList) {
+          maxWidth = Math.max(maxWidth, img.clientWidth)
+          maxHeight = Math.max(maxHeight, img.clientHeight)
+        }
+        width.push(maxWidth || 10000)
+        height.push(maxHeight || 10000)
       }
 
-      return [Math.min(...width), Math.min(...height)]
+      return [Math.min(...width) - 3, Math.min(...height) - 3]
     }
   }
 })()
