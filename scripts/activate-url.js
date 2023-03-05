@@ -3,22 +3,6 @@
 
   const image = document.querySelector(`body img[src='${location.href}']`)
   if (image) {
-    const argsRegex = /(.+\.(?:png|jpeg|jpg|gif|bmp|tiff|webp)).+/i
-    const argsMatch = image.src.match(argsRegex)
-    if (argsMatch) {
-      const simpleFetchSize = async src => {
-        const res = await fetch(src, {method: 'HEAD'})
-        const size = res.headers.get('Content-Length')
-        return parseInt(size) || 0
-      }
-      const rawURL = argsMatch[1]
-      const currSize = await simpleFetchSize(image.src)
-      const rawSize = await simpleFetchSize(rawURL)
-      if (rawSize > currSize) {
-        location.href = rawURL
-      }
-    }
-
     const options = await chrome.runtime.sendMessage('get_options')
     options.closeButton = false
     options.minWidth = 0
