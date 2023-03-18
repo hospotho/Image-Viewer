@@ -54,9 +54,9 @@
       const index = orderedImageUrls.indexOf(srcUrl)
       index !== -1 ? (options.index = index) : null
     } else {
-      for (let i = 0; i < orderedImageUrls.length; i++) {
-        if (typeof orderedImageUrls[i] === 'string') continue
-        if (srcUrl === orderedImageUrls[i][0]) {
+      for (const data of orderedImageUrls) {
+        if (typeof data === 'string') continue
+        if (srcUrl === data[0]) {
           options.index = i
           break
         }
