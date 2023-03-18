@@ -47,20 +47,17 @@
 
       const commonParent = e1.offsetParent || e1.parentNode
       const parentPosition = commonParent.getBoundingClientRect()
-      const e1ActualPosition = {
-        x: e1Rect.x - parentPosition.x,
-        y: e1Rect.y - parentPosition.y
-      }
-      const e2ActualPosition = {
-        x: e2Rect.x - parentPosition.x,
-        y: e2Rect.y - parentPosition.y
-      }
 
-      if (e1ActualPosition.y < e2ActualPosition.y) {
+      const e1ActualPositionX = e1Rect.x - parentPosition.x
+      const e1ActualPositionY = e1Rect.y - parentPosition.y
+      const e2ActualPositionX = e2Rect.x - parentPosition.x
+      const e2ActualPositionY = e2Rect.y - parentPosition.y
+
+      if (e1ActualPositionY < e2ActualPositionY) {
         return -1
-      } else if (e1ActualPosition.y > e2ActualPosition.y) {
+      } else if (e1ActualPositionY > e2ActualPositionY) {
         return 1
-      } else if (e1ActualPosition.x < e2ActualPosition.x) {
+      } else if (e1ActualPositionX < e2ActualPositionX) {
         return -1
       } else {
         return 1
