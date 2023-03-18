@@ -522,7 +522,7 @@ const imageViewer = (function () {
             img.parentNode.remove()
             updateCounter()
           }
-        }, 2000)
+        }, 1000 * parseInt(counterTotal.innerHTML))
       }
       fitImage(options)
     }
@@ -540,7 +540,6 @@ const imageViewer = (function () {
 
     let completeFlag = false
     base.firstChild.addEventListener('load', e => {
-      completeFlag = true
       if (options.sizeCheck) {
         const minSize = Math.min(e.target.naturalWidth, e.target.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
@@ -549,10 +548,12 @@ const imageViewer = (function () {
       }
       shadowRoot.querySelector(`.${appName}-info-width`).value = e.target.naturalWidth
       shadowRoot.querySelector(`.${appName}-info-height`).value = e.target.naturalHeight
-      removeFailedImg()
+      if (!completeFlag) removeFailedImg()
+      completeFlag = true
     })
     setTimeout(() => {
       if (!completeFlag) removeFailedImg()
+      completeFlag = true
     }, 3000)
   }
 
