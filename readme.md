@@ -13,7 +13,7 @@ https://ko-fi.com/tonymilktea
 3. Disable simple lazy loading.
 4. Search and scroll to the original image on the page.
 5. Fitting, zoom, rotate and mirror the image.
-6. Hotkey for image reverse search. 
+6. Hotkey for image reverse search.
 7. Easy to use.
 8. And more...
 
@@ -30,14 +30,18 @@ Tab opened before the installation require a reload.
 
 ## How to use
 
-After add this extension to your browser, recommended to pin this extension on toolbar.
+After adding this extension to your browser, it is recommended to pin it to the toolbar.
 
-Click the icon or right click on a image and choose this extension to activate Image Viewer. Right click the icon will show a option to disable size filter.
+To activate the Image Viewer, click on the extension icon or right-click and choose this extension. Right-clicking the icon will show a menu that lets you disable the size filter or start the Image Viewer with the last picked image (use it when right click menu is disabled).
 
 <table>
   <tr>
     <td>Action</td>
     <td>Controls</td>
+  </tr>
+  <tr>
+    <td>pickup image</td>
+    <td><kbd>right click</kbd> image<br>(size filter will use this image as reference)</td>
   </tr>
   <tr>
     <td rowspan="3">view previous/next image</td>
@@ -103,7 +107,7 @@ Click the icon or right click on a image and choose this extension to activate I
 
 ## Browser support
 
-The entire project was written in Vanilla JavaScript with extension API supported by Chromium-based browsers, may work on Firefox but not yet tested. Standalone `image-viewer.js` should work on all modern browser, you can use it in your own website. You may also run your own activate script using tampermonkey or other alternatives to start `image-viewer.js` .
+The entire project was written in Vanilla JavaScript with extension API support for Chromium-based browsers. It should work on Firefox, but it has not been tested yet. The standalone `image-viewer.js` should work on all modern browsers, and you can use it on your own website. You may also run your own activation script using Tampermonkey or other alternatives to start `image-viewer.js`.
 
 ## ToDo
 
@@ -112,19 +116,19 @@ The entire project was written in Vanilla JavaScript with extension API supporte
 
 ## History
 
-The prototype of this project is by Eky Kwan, MIT License. License file was lost or not in Chrome Web Store version.
+The prototype of this project was created by Eky Kwan under the MIT License. However, the license file was either lost or not included in the Chrome Web Store version.
 
-First release v0.1 on 2012-07-05 and last release v0.1.6 on 2012-08-12
+The first release v0.1 was launched on 2012-07-05 and the last release v0.1.6 was on 2012-08-12.
 
-The author of translate in `_locales` is unknown.
+The author of the translation in `_locales` is unknown.
 
-Since I was using this extension, lot of features were added to this project. I backup the oldest version at <a href="https://github.com/hospotho/Image-Viewer-backup">here</a>, but some changes were already added me.
+Since I started using this extension, many new features have been added to the project. You can find the oldest version that I have at <a href="https://github.com/hospotho/Image-Viewer-backup">here </a>, and some mirroring websites may still have the raw version of v0.1.6.
 
-Old version is hard to extend and I felt tired to it at 2022-06. so I decided to clear up all those old style messy jQuery code and undertake a complete rewrite of it.
+The old version was hard to extend, and I felt tired of it in June 2022. Therefore, I decided to clean up all the old-style, messy jQuery code and undertake a complete rewrite of the project.
 
-The rewrite is complete and also upgraded to manifest V3.
+The rewrite is now complete and has also been upgraded to manifest V3.
 
-Currently developed and maintained by me.
+The project is currently developed and maintained by me.
 
 ## License
 
