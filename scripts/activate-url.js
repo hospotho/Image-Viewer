@@ -35,13 +35,13 @@
   }
 
   if (document.visibilityState === 'visible') {
-    document.readyState === 'complete' ? init() : window.addEventListener('load', init)
+    init()
   } else {
     console.log('Waiting user to view the page.')
     const handleEvent = () => {
       document.removeEventListener('visibilitychange', handleEvent)
       window.removeEventListener('focus', handleEvent)
-      document.readyState === 'complete' ? init() : window.addEventListener('load', init)
+      init()
     }
     document.addEventListener('visibilitychange', handleEvent)
     window.addEventListener('focus', handleEvent)
