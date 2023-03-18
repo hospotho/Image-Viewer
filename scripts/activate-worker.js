@@ -119,8 +119,14 @@
 
     function searchImageFromTree(dom, viewportPos) {
       let root = dom
-      while (root.previousElementSibling || root.nextElementSibling) {
+      let sibling = root.previousElementSibling || root.nextElementSibling
+      while (sibling && ([...sibling.classList].join() !== [...root.classList].join() || sibling.tagName !== root.tagName)) {
         root = root.parentElement
+        sibling = root.previousElementSibling || root.nextElementSibling
+      }
+
+      if (root === document.documentElement) {
+        return null
       }
 
       const [mouseX, mouseY] = viewportPos
