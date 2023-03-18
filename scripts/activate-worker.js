@@ -123,13 +123,20 @@
         root = root.parentElement
       }
 
-      const [mouseX, mouseY] = [viewportPos[0], viewportPos[1]]
+      const [mouseX, mouseY] = viewportPos
       const relatedDomList = []
       for (const dom of getAllChildElements(root)) {
+        const hidden = dom.offsetParent === null && dom.style.position !== 'fixed'
+        if (hidden) {
+          relatedDomList.push(dom)
+          continue
+        }
         const rect = dom.getBoundingClientRect()
         const inside = rect.left <= mouseX && rect.right >= mouseX && rect.top <= mouseY && rect.bottom >= mouseY
-        const hidden = dom.offsetParent === null && dom.style.position !== 'fixed'
-        if (inside || hidden) relatedDomList.push(dom)
+        if (inside) {
+          relatedDomList.push(dom)
+          continue
+        }
       }
 
       const imageInfoList = []
