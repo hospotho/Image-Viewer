@@ -59,19 +59,26 @@ const ImageViewerUtils = (function () {
 
   async function getImageBitSize(src) {
     if (!src || src === 'about:blank' || src.startsWith('data')) return 0
+
     // protocol-relative URL
-    if (src.startsWith('//')) src = protocol + src
-    
+    const url = src.startsWith('//') ? protocol + src : src
+    console.log(`Fetch bit size of ${url}`)
+
+    if (new URL(url).hostname !== location.hostname) {
+      return chrome.runtime.sendMessage({msg: 'get_size', url: url})
+    }
+
     let result = 0
     try {
-      const res = await fetch(src, {method: 'HEAD'})
-      if (!res.ok) result = 0
-      const size = res.headers.get('Content-Length')
-      result = typeof size === 'string' ? parseInt(size) : 0
+      const res = await fetch(url, {method: 'HEAD'})
+      if (res.ok) {
+        const size = res.headers.get('Content-Length')
+        result = parseInt(size) || result
+      }
     } catch (error) {
-      result = 0
+      console.log(`Fail to fetch ${url} bit size, may fallback to get real size.`)
     }
-    return result || chrome.runtime.sendMessage({msg: 'get_size', url: src})
+    return result || chrome.runtime.sendMessage({msg: 'get_size', url: url})
   }
   function getImageRealSize(src) {
     return new Promise(resolve => {
