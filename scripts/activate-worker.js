@@ -133,10 +133,7 @@
         }
         const rect = dom.getBoundingClientRect()
         const inside = rect.left <= mouseX && rect.right >= mouseX && rect.top <= mouseY && rect.bottom >= mouseY
-        if (inside) {
-          relatedDomList.push(dom)
-          continue
-        }
+        if (inside) relatedDomList.push(dom)
       }
 
       const imageInfoList = []
