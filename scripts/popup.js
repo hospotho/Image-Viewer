@@ -1,5 +1,11 @@
 ;(function () {
   const rawText = `
+1.13 [2023-03-18]:
+1. Improve right click image pickup performance.
+2. Improve stability on image unlazy.
+3. Extend the loading time limit for images inside image viewer.
+4. Fix lots of typos.
+
 1.12 [2023-02-14]:
 1. Add this popup page to show release notes when install or update.
 2. Improve stability.
@@ -79,6 +85,7 @@ First release on github.
 
       const bar = document.createElement('button')
       bar.classList.add('bar')
+      bar.type = 'button'
       bar.textContent = textList.shift()
 
       const noteText = document.createElement('div')

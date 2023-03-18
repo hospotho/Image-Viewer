@@ -82,6 +82,7 @@ a > span {
 .noteText {
   background-color: #eff5f7;
   overflow: hidden;
+  overflow-x: auto;
   padding: 0 10px;
   max-height: 0;
   transition: max-height 0.2s ease-out;
