@@ -57,7 +57,7 @@
       for (const data of orderedImageUrls) {
         if (typeof data === 'string') continue
         if (srcUrl === data[0]) {
-          options.index = i
+          options.index = orderedImageUrls.indexOf(data)
           break
         }
       }
