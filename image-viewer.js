@@ -220,8 +220,6 @@ const imageViewer = (function () {
       }
       .__crx__image-viewer .__crx__image-list li img {
         position: absolute;
-        left: 50%;
-        top: 50%;
       }      
       .__crx__image-viewer .__crx__image-viewer-control {
         position: fixed;
@@ -565,8 +563,8 @@ const imageViewer = (function () {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
       img.height = h
-      img.style.marginLeft = `${-w / 2}px`
-      img.style.marginTop = `${-h / 2}px`
+      img.style.marginLeft = `${(document.documentElement.clientWidth - w) / 2}px`
+      img.style.marginTop = `${(document.documentElement.clientHeight - h) / 2}px`
       img.style.transform = 'matrix(1,0,0,1,0,0)'
     }
     for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)) {
