@@ -21,12 +21,19 @@ const ImageViewerUtils = (function () {
     if (!argsMatch && attrList.length === 0) return ''
 
     const bitSize = await getImageBitSize(img.src.replace(/https?:/, protocol))
-    const getImageSize = bitSize ? getImageBitSize : getImageRealSize
-    const naturalSize = bitSize || img.naturalWidth
+    const naturalSize = img.naturalWidth
 
     if (argsMatch) {
       const newURL = argsMatch[1].replace(/https?:/, protocol)
-      const lazySize = await getImageSize(newURL)
+      if (bitSize) {
+        const lazySize = await getImageBitSize(newURL)
+        if (lazySize > bitSize) {
+          updateImageSource(img, newURL)
+          return 'rawUrl'
+        }
+      }
+
+      const lazySize = await getImageRealSize(newURL)
       if (lazySize > naturalSize) {
         updateImageSource(img, newURL)
         return 'rawUrl'
@@ -36,23 +43,44 @@ const ImageViewerUtils = (function () {
     for (const attr of attrList) {
       const match = [...attr.value.matchAll(urlRegex)]
       if (match.length === 0) continue
+
       if (match.length === 1) {
         const newURL = match[0][0].replace(/https?:/, protocol)
-        const lazySize = await getImageSize(newURL)
-        if (lazySize < naturalSize) continue
+        if (bitSize) {
+          const lazySize = await getImageBitSize(newURL)
+          if (lazySize > bitSize) {
+            updateImageSource(img, newURL)
+            return attr.name
+          }
+        }
 
-        updateImageSource(img, newURL)
-        return attr.name
+        const lazySize = await getImageRealSize(newURL)
+        if (lazySize > naturalSize) {
+          updateImageSource(img, newURL)
+          return attr.name
+        }
       }
+
       if (match.length > 1) {
         const first = match[0][0].replace(/https?:/, protocol)
         const last = match[match.length - 1][0].replace(/https?:/, protocol)
-        const [firstSize, LastSize] = await Promise.all([getImageSize(first), getImageSize(last)])
-        if (firstSize < naturalSize && LastSize < naturalSize) continue
+        if (bitSize) {
+          const firstSize = await getImageBitSize(first)
+          const LastSize = await getImageBitSize(last)
+          if (firstSize > bitSize || LastSize > bitSize) {
+            const large = LastSize > firstSize ? last : first
+            updateImageSource(img, large)
+            return attr.name
+          }
+        }
 
-        const large = LastSize > firstSize ? last : first
-        updateImageSource(img, large)
-        return attr.name
+        const firstSize = await getImageRealSize(first)
+        const LastSize = await getImageRealSize(last)
+        if (firstSize > naturalSize || LastSize > naturalSize) {
+          const large = LastSize > firstSize ? last : first
+          updateImageSource(img, large)
+          return attr.name
+        }
       }
     }
   }
@@ -62,27 +90,23 @@ const ImageViewerUtils = (function () {
 
     // protocol-relative URL
     const url = src.startsWith('//') ? protocol + src : src
-    console.log(`Fetch bit size of ${url}`)
 
     if (new URL(url).hostname !== location.hostname) {
       return chrome.runtime.sendMessage({msg: 'get_size', url: url})
     }
 
-    let result = 0
     try {
       const res = await fetch(url, {method: 'HEAD'})
       if (res.ok) {
         const size = res.headers.get('Content-Length')
-        result = parseInt(size) || result
+        return parseInt(size) || result
       }
-    } catch (error) {
-      console.log(`Fail to fetch ${url} bit size, may fallback to get real size.`)
-    }
-    return result || chrome.runtime.sendMessage({msg: 'get_size', url: url})
+    } catch (error) {}
+
+    return 0
   }
   function getImageRealSize(src) {
     return new Promise(resolve => {
-      console.log(`Fetch image size of ${src}`)
       const img = new Image()
       img.onload = () => resolve(img.naturalWidth)
       img.onerror = () => resolve(0)
