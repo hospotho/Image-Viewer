@@ -170,13 +170,15 @@
         const imageInfo = extractImageInfoFromNode(dom)
         if (isImageInfoValid(imageInfo)) {
           if (dom.offsetParent !== null || dom.style.position === 'fixed') {
-            imageInfoFromPoint = (await getImageRealSize(imageInfo[0])) > (await getImageRealSize(imageInfoFromPoint?.[0] || '')) ? imageInfo : imageInfoFromPoint
-            imageDomLayer = imageDomLayer || domList.length
+            if (imageInfoFromPoint === null || (await getImageRealSize(imageInfo[0])) > (await getImageRealSize(imageInfoFromPoint[0]))) {
+              imageInfoFromPoint = imageInfo
+              imageDomLayer = domList.length
+            }
           } else {
-            hiddenImageInfoFromPoint = hiddenImageInfoFromPoint || imageInfo
-            hiddenDomLayer = hiddenDomLayer || domList.length
+            hiddenImageInfoFromPoint = imageInfo
+            hiddenDomLayer = domList.length
           }
-          tryCount = Math.min(3, tryCount)
+          tryCount = Math.min(5, tryCount)
         }
 
         domList.push(dom)
@@ -292,9 +294,9 @@
     })()
 
     return {
-      searchDomByPosition: function (viewportPos) {
+      searchDomByPosition: async function (viewportPos) {
         disablePtEvents()
-        const result = searchDomByPosition(viewportPos)
+        const result = await searchDomByPosition(viewportPos)
         restorePtEvents()
         return result
       }
