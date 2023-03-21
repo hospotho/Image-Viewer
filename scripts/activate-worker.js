@@ -157,28 +157,26 @@
       const domList = []
       const ptEvent = []
 
-      let firstVisibleDom
-      let imageInfoFromPoint
-      let hiddenImageInfoFromPoint
-      let hiddenLayer
+      let imageInfoFromPoint = null
+      let imageDomLayer = 0
 
-      while (domList.length < 20) {
+      let hiddenImageInfoFromPoint = null
+      let hiddenDomLayer = 0
+
+      for (let tryCount = 20; tryCount > 0; tryCount--) {
         const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
         if (dom === document.documentElement || dom === domList[domList.length - 1]) break
 
-        if (dom.offsetParent !== null || dom.style.position === 'fixed') {
-          firstVisibleDom = firstVisibleDom || dom
-          const imageInfo = extractImageInfoFromNode(dom)
-          if (isImageInfoValid(imageInfo)) {
-            imageInfoFromPoint = imageInfo
-            break
-          }
-        } else {
-          const imageInfo = extractImageInfoFromNode(dom)
-          if (isImageInfoValid(imageInfo)) {
+        const imageInfo = extractImageInfoFromNode(dom)
+        if (isImageInfoValid(imageInfo)) {
+          if (dom.offsetParent !== null || dom.style.position === 'fixed') {
+            imageInfoFromPoint = (await getImageRealSize(imageInfo[0])) > (await getImageRealSize(imageInfoFromPoint?.[0] || '')) ? imageInfo : imageInfoFromPoint
+            imageDomLayer = imageDomLayer || domList.length
+          } else {
             hiddenImageInfoFromPoint = hiddenImageInfoFromPoint || imageInfo
-            hiddenLayer = hiddenLayer || domList.length
+            hiddenDomLayer = hiddenDomLayer || domList.length
           }
+          tryCount = Math.min(3, tryCount)
         }
 
         domList.push(dom)
@@ -186,20 +184,23 @@
         dom.style.pointerEvents = 'none'
       }
 
-      const length = domList.length
+      let firstVisibleDom = null
       while (domList.length) {
         const lastDom = domList.pop()
         lastDom.style.pointerEvents = ptEvent.pop()
+        if (lastDom.offsetParent !== null || lastDom.style.position === 'fixed') {
+          firstVisibleDom = lastDom
+        }
       }
 
       if (imageInfoFromPoint) {
-        console.log(`Image node found, layer ${length}.`)
+        console.log(`Image node found, layer ${imageDomLayer}.`)
         markingDom(imageInfoFromPoint[2])
         return imageInfoFromPoint
       }
 
       if (hiddenImageInfoFromPoint) {
-        console.log(`Hidden image node found, layer ${hiddenLayer}.`)
+        console.log(`Hidden image node found, layer ${hiddenDomLayer}.`)
         markingDom(hiddenImageInfoFromPoint[2])
         return hiddenImageInfoFromPoint
       }
@@ -265,6 +266,14 @@
     }
 
     const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
+    const getImageRealSize = url => {
+      return new Promise(resolve => {
+        const img = new Image()
+        img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
+        img.onerror = () => resolve(0)
+        img.src = url
+      })
+    }
     const markingDom = (function () {
       return window.top === window.self
         ? dom => {
