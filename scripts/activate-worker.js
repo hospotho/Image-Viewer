@@ -72,7 +72,7 @@
         if (currNode.nodeType !== 3 || !/^\s*$/.test(currNode.data)) {
           index++
         }
-        currNode = node.previousSibling
+        currNode = currNode.previousSibling
       }
       return index
     }
