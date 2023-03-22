@@ -157,9 +157,8 @@
 
     async function searchDomByPosition(viewportPos) {
       const [mouseX, mouseY] = viewportPos
-      const domList = new Array(20)
-      const ptEvent = new Array(20)
-      let arrayIndex = -1
+      const domList = []
+      const ptEvent = []
 
       let firstVisibleDom = null
       let imageInfoFromPoint = null
@@ -177,25 +176,24 @@
           if (dom.offsetParent !== null || dom.style.position === 'fixed') {
             if (imageInfoFromPoint === null || (await getImageRealSize(imageInfo[0])) > (await getImageRealSize(imageInfoFromPoint[0]))) {
               imageInfoFromPoint = imageInfo
-              imageDomLayer = arrayIndex
+              imageDomLayer = domList.length
               firstVisibleDom ??= dom
             }
           } else {
             hiddenImageInfoFromPoint = imageInfo
-            hiddenDomLayer = arrayIndex
+            hiddenDomLayer = domList.length
           }
           tryCount = Math.min(5, tryCount)
         }
 
-        arrayIndex++
-        domList[arrayIndex] = dom
-        ptEvent[arrayIndex] = dom.style.pointerEvents
+        domList.push(dom)
+        ptEvent.push(dom.style.pointerEvents)
         dom.style.pointerEvents = 'none'
       }
 
-      for (; arrayIndex >= 0; arrayIndex--) {
-        const lastDom = domList[arrayIndex]
-        lastDom.style.pointerEvents = ptEvent[arrayIndex]
+      for (let i = 0; i < domList.length; i++) {
+        const lastDom = domList[i]
+        lastDom.style.pointerEvents = ptEvent[i]
       }
 
       if (imageInfoFromPoint) {
