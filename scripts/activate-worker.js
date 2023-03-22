@@ -34,11 +34,13 @@
       const e1zIndex = parseInt(window.getComputedStyle(e1).zIndex)
       const e2zIndex = parseInt(window.getComputedStyle(e2).zIndex)
 
-      if (e1zIndex === NaN || e2zIndex === NaN) return 0
+      if (Number.isNaN(e1zIndex) || Number.isNaN(e2zIndex)) return 0
       if (e1zIndex > e2zIndex) {
         return -1
       } else if (e1zIndex < e2zIndex) {
         return 1
+      } else {
+        return 0
       }
     }
     function checkPosition(e1, e2) {
@@ -154,6 +156,7 @@
     }
 
     async function searchDomByPosition(viewportPos) {
+      const [mouseX, mouseY] = viewportPos
       const domList = new Array(20)
       const ptEvent = new Array(20)
       let arrayIndex = -1
@@ -166,7 +169,7 @@
       let hiddenDomLayer = 0
 
       for (let tryCount = 20; tryCount > 0; tryCount--) {
-        const dom = document.elementFromPoint(viewportPos[0], viewportPos[1])
+        const dom = document.elementFromPoint(mouseX, mouseY)
         if (dom === document.documentElement || dom === domList[domList.length - 1]) break
 
         const imageInfo = extractImageInfoFromNode(dom)
