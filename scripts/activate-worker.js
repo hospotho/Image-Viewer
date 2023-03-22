@@ -172,18 +172,21 @@
         if (dom === document.documentElement || dom === domList[domList.length - 1]) break
 
         const imageInfo = extractImageInfoFromNode(dom)
-        if (isImageInfoValid(imageInfo)) {
-          if (dom.offsetParent !== null || dom.style.position === 'fixed') {
-            if (imageInfoFromPoint === null || (await getImageRealSize(imageInfo[0])) > (await getImageRealSize(imageInfoFromPoint[0]))) {
-              imageInfoFromPoint = imageInfo
-              imageDomLayer = domList.length
-              firstVisibleDom ??= dom
-            }
-          } else {
+        const valid = isImageInfoValid(imageInfo)
+
+        if (dom.offsetParent !== null || dom.style.position === 'fixed') {
+          firstVisibleDom ??= dom
+          if (valid && (imageInfoFromPoint === null || (await getImageRealSize(imageInfo[0])) > (await getImageRealSize(imageInfoFromPoint[0])))) {
+            imageInfoFromPoint = imageInfo
+            imageDomLayer = domList.length
+            tryCount = Math.min(5, tryCount)
+          }
+        } else {
+          if (valid) {
             hiddenImageInfoFromPoint = imageInfo
             hiddenDomLayer = domList.length
+            tryCount = Math.min(5, tryCount)
           }
-          tryCount = Math.min(5, tryCount)
         }
 
         domList.push(dom)
