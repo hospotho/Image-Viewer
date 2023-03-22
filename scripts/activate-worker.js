@@ -154,9 +154,11 @@
     }
 
     async function searchDomByPosition(viewportPos) {
-      const domList = []
-      const ptEvent = []
+      const domList = new Array(20)
+      const ptEvent = new Array(20)
+      let arrayIndex = -1
 
+      let firstVisibleDom = null
       let imageInfoFromPoint = null
       let imageDomLayer = 0
 
@@ -172,27 +174,25 @@
           if (dom.offsetParent !== null || dom.style.position === 'fixed') {
             if (imageInfoFromPoint === null || (await getImageRealSize(imageInfo[0])) > (await getImageRealSize(imageInfoFromPoint[0]))) {
               imageInfoFromPoint = imageInfo
-              imageDomLayer = domList.length
+              imageDomLayer = arrayIndex
+              firstVisibleDom ??= dom
             }
           } else {
             hiddenImageInfoFromPoint = imageInfo
-            hiddenDomLayer = domList.length
+            hiddenDomLayer = arrayIndex
           }
           tryCount = Math.min(5, tryCount)
         }
 
-        domList.push(dom)
-        ptEvent.push(dom.style.pointerEvents)
+        arrayIndex++
+        domList[arrayIndex] = dom
+        ptEvent[arrayIndex] = dom.style.pointerEvents
         dom.style.pointerEvents = 'none'
       }
 
-      let firstVisibleDom = null
-      while (domList.length) {
-        const lastDom = domList.pop()
-        lastDom.style.pointerEvents = ptEvent.pop()
-        if (lastDom.offsetParent !== null || lastDom.style.position === 'fixed') {
-          firstVisibleDom = lastDom
-        }
+      for (; arrayIndex >= 0; arrayIndex--) {
+        const lastDom = domList[arrayIndex]
+        lastDom.style.pointerEvents = ptEvent[arrayIndex]
       }
 
       if (imageInfoFromPoint) {
