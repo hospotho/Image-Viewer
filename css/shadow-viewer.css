@@ -42,8 +42,7 @@
 }
 .__crx__image-viewer .__crx__image-list li img {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: 0px;
 }
 .__crx__image-viewer .__crx__image-viewer-control {
   position: fixed;
@@ -65,7 +64,7 @@
 .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-info {
   position: absolute;
   right: 10px;
-  top: 0;
+  top: -5px;
   margin-top: 5px;
 }
 .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-info li {

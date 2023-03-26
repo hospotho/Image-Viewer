@@ -220,6 +220,7 @@ const imageViewer = (function () {
       }
       .__crx__image-viewer .__crx__image-list li img {
         position: absolute;
+        left: 0px;
       }      
       .__crx__image-viewer .__crx__image-viewer-control {
         position: fixed;
@@ -559,12 +560,15 @@ const imageViewer = (function () {
     if (options.sizeCheck) return
 
     const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
+    // document.documentElement.clientXXX unstable in Quirks Mode
+    const trueWidth = Math.min(window.innerWidth, document.documentElement.clientWidth, document.body.clientWidth)
+    const trueHeight = Math.min(window.innerHeight, document.documentElement.clientHeight, document.body.clientHeight)
     const action = img => {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
       img.height = h
-      img.style.marginLeft = `${(document.documentElement.clientWidth - w) / 2}px`
-      img.style.marginTop = `${(document.documentElement.clientHeight - h) / 2}px`
+      img.style.marginLeft = `${(trueWidth - w) / 2}px`
+      img.style.marginTop = `${(trueHeight - h) / 2}px`
       img.style.transform = 'matrix(1,0,0,1,0,0)'
     }
     for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)) {
