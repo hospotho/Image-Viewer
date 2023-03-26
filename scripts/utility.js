@@ -288,11 +288,13 @@ const ImageViewerUtils = (function () {
     },
 
     getWrapperSize: function (dom) {
+      const domSize = Math.min(dom.clientWidth, dom.clientHeight)
+
       const wrapper = dom.closest('div')
       if (!wrapper || wrapper.classList.length === 0) return
 
-      const classList = '.' + [...wrapper.classList].map(CSS.escape).join('.')
-      const wrapperDivList = document.querySelectorAll(`div${classList}`)
+      const classList = '.' + [...wrapper.classList].map(CSS.escape).join(', .')
+      const wrapperDivList = document.querySelectorAll(`div:is(${classList})`)
       if (wrapperDivList.length < 4) return
 
       const width = []
@@ -301,18 +303,18 @@ const ImageViewerUtils = (function () {
         // ad may use same wrapper and adblock set it to display: none
         if (div.offsetParent === null && div.style.position !== 'fixed') continue
 
-        let maxWidth = 0
-        let maxHeight = 0
-        const imgList = div.querySelectorAll('img')
-        for (const img of imgList) {
-          maxWidth = Math.max(maxWidth, img.clientWidth)
-          maxHeight = Math.max(maxHeight, img.clientHeight)
-        }
-        width.push(maxWidth || 10000)
-        height.push(maxHeight || 10000)
+        const imgList = [...div.querySelectorAll('img')]
+        if (imgList.length === 0) continue
+
+        const maxWidth = Math.max(...imgList.map(img => img.clientWidth))
+        const maxHeight = Math.max(...imgList.map(img => img.clientHeight))
+        width.push(maxWidth)
+        height.push(maxHeight)
       }
 
-      return [Math.min(...width) - 3, Math.min(...height) - 3]
+      const finalWidth = Math.min(...width.filter(w => w * 2 >= domSize)) - 3
+      const finalHeight = Math.min(...height.filter(h => h * 2 >= domSize)) - 3
+      return [finalWidth, finalHeight]
     }
   }
 })()
