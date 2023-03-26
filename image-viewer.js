@@ -220,8 +220,19 @@ const imageViewer = (function () {
       }
       .__crx__image-viewer .__crx__image-list li img {
         position: absolute;
+        margin: auto;
         left: 0px;
-      }      
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+        max-width: 100%;
+        max-height: 100%;
+        text-align: center;
+      }
+      .__crx__image-viewer .__crx__image-list li img.loaded {
+        max-width: none;
+        max-height: none;
+      }
       .__crx__image-viewer .__crx__image-viewer-control {
         position: fixed;
         left: 0;
@@ -238,7 +249,7 @@ const imageViewer = (function () {
       .__crx__image-viewer .__crx__image-viewer-control:hover * {
         background: rgba(0, 0, 0, 0.8);
         visibility: visible;
-      }      
+      }
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-info {
         position: absolute;
         right: 10px;
@@ -270,7 +281,7 @@ const imageViewer = (function () {
       }
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-info input:hover {
         border-color: #aaa;
-      }      
+      }
       .__crx__image-viewer .__crx__image-viewer-button-close {
         display: none;
         position: absolute;
@@ -309,7 +320,7 @@ const imageViewer = (function () {
       }
       .__crx__image-viewer .__crx__image-viewer-button-close:after {
         transform: rotate(45deg);
-      }      
+      }
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-relate {
         position: absolute;
         left: 10px;
@@ -376,7 +387,7 @@ const imageViewer = (function () {
         margin-right: -10px;
         border-width: 12px 0 12px 18px;
         border-color: transparent transparent transparent #787878;
-      }      
+      }
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-control-buttons {
         display: flex;
         justify-content: center;
@@ -412,7 +423,7 @@ const imageViewer = (function () {
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-control-buttons li button:active,
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-control-buttons li button.on {
         box-shadow: inset 0 0 20px #fff;
-      }      
+      }
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-control-buttons li .__crx__image-viewer-control-button-both {
         background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDpFMjlCMEFGMTRDQzZFMTExOEZFQUQ0QkNGMDJGMzg3NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpCQ0YxQUQ0NEM2NTAxMUUxQjgzRUY4RjM0QUVGODRFQyIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpCQ0YxQUQ0M0M2NTAxMUUxQjgzRUY4RjM0QUVGODRFQyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkUzOUIwQUYxNENDNkUxMTE4RkVBRDRCQ0YwMkYzODc3IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkUyOUIwQUYxNENDNkUxMTE4RkVBRDRCQ0YwMkYzODc3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8++nwS+AAABB1JREFUeNrsnUtoE0EcxicaRaFKQQ8+oHqoGlvwcfNoRVBP2ouIl9ZLDz4OVqkGi1ZaWInaiyIiHrxo9eDjpMWL4llRRG2LIthDLVghYqk1BOM37ERimmQ3uzObbPJ98DFtMrPJ/n/7n53N7uxGMpmMoKpH8xgCAqEIhEAoj4qGfQXi8XgERQLusSwrwwypvPbDJ1UZekXCPOxFdixCMQKvhb/AMWTJLDOkcjquYEitgbuZIZXLjhUoxuClOS//hNcjSyaZIcGrPw+G1BL4K7us4LNjM4pDJd7fQiDBahCe7/A+gQSUHXtR7HCo1oZ6+wjEPIwFKC66rJ5A/YUEYlZH4XUu68p6RzjsNZcdy1B8ghvLaJaEmzEM/s4M0a++MmEIVb+PGaI/OzaieCu8/RiahjchS0aYIfp0WXj/ZTqq2jNDAsicgl8e2RDhcQhFIARCEQiBUARCEQiBUARCIBSBEAhFIARCEQhFIARCEQiBUD4VZQj8KR6P+2pvWZaZDMEXa4Gf1CETuc4tVZMhgLAcxXm4q04zbje8E74Bn4OnKgJEXch8DO4V5V9RWItd/2H4IDwAX4FTge3UAaMdxXv4EmH8p0YVExmbduMZAhBbhT0ZZjtjX1LN8AP4ubAnor7WCgQgVqpU7PSSVWOjo3Ne2xCLaa1XTZ+bI7nhvoRvqa7dcf5jyUtJAWKxInwabuCG70vT8AXVw/wqNuyNFgEhr409oBbQxFhqUYPqZbrUBn4XzrjdqUuKdwjDiJpUbAfLGWV1qyHcOOOnXeMqtt2ugci76sBD+DOmdkbTjKOWfUiviulQoe7KcaeeN8qaYEx9aVWhUZarnXqBRnJBETfHIZ0dHRHTQ81svWITdrLfwdTn5m2spbZoM8chOWDkgtvUkXpCHQA5fulC0l3PbRuTn5sjOVu4B34YyE8nACM/qFXYNw5Lsjf6p6SKSasXGJ6BKCgpWE6mlBP0rwl7tmu9Kq1iIGMhY5LyuiDf50MAZQqWd0yQd+gZrkMYw2rdZQym/C5M2/kLQPmAYk8dAtG6zjynXmXiOXX/PYNghtSwCIRAKAIhEIpACIQiEAKhCIRAKAKhCIRAKAIhEIpACIQikHpWWJ6O8Fj4u7rjqWVZu5gh+nRCeL8QL63as8vSJfXsj+sem99E+3cEol99ovzriH/AZ7lTN5Ml8jlS/WU2G0C7bwRiTlfhjy7rfhb2HRU47DWYJfKq8h6X1eUD738TiHkoj1A8c6j2AvXu88AwOMlpYn8c3ueReoBZ8kbYt6so9v4rAgleZ8Tc6dry/9UhXqfwAkEWTAr71h+5SuD1CQKpnOR8vuzdJsZFiB4gWZNAkA2zKE5luzD8PxN2ILUwg+oevA2+XQPrEu5Hr9aieIKKQCgCIRDKq/4KMACWrCf3M5jnFgAAAABJRU5ErkJggg==);
         background-size: cover;
@@ -560,22 +571,18 @@ const imageViewer = (function () {
     if (options.sizeCheck) return
 
     const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
-    // document.documentElement.clientXXX unstable in Quirks Mode
-    const trueWidth = Math.min(window.innerWidth, document.documentElement.clientWidth, document.body.clientWidth)
-    const trueHeight = Math.min(window.innerHeight, document.documentElement.clientHeight, document.body.clientHeight)
     const action = img => {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
       img.height = h
-      img.style.marginLeft = `${(trueWidth - w) / 2}px`
-      img.style.marginTop = `${(trueHeight - h) / 2}px`
       img.style.transform = 'matrix(1,0,0,1,0,0)'
+      img.classList.add('loaded')
     }
+    const event = new CustomEvent('resetTransform')
     for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)) {
       const img = li.firstChild
-      img.addEventListener('load', e => action(e.target))
+      img.addEventListener('load', () => action(img))
       if (img.naturalWidth) action(img)
-      const event = new CustomEvent('resetTransform')
       li.dispatchEvent(event)
     }
   }
@@ -780,21 +787,16 @@ const imageViewer = (function () {
       })
 
       //reset
-      li.addEventListener('dblclick', () => {
+      const reset = () => {
         zoomCount = 0
         rotateCount = 0
         img.style.transform = 'matrix(1,0,0,1,0,0)'
         imagePos = {x: 0, y: 0}
         startPos = {x: 0, y: 0}
-      })
+      }
+      li.addEventListener('dblclick', reset)
       //custom event
-      li.addEventListener('resetTransform', () => {
-        zoomCount = 0
-        rotateCount = 0
-        img.style.transform = 'matrix(1,0,0,1,0,0)'
-        imagePos = {x: 0, y: 0}
-        startPos = {x: 0, y: 0}
-      })
+      li.addEventListener('resetTransform', reset)
     }
     function addMiddleClickHandler(li) {
       const imgNode = searchImgNode(li.firstChild)
