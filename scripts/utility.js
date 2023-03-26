@@ -43,6 +43,7 @@ const ImageViewerUtils = (function () {
     for (const attr of attrList) {
       const match = [...attr.value.matchAll(urlRegex)]
       if (match.length === 0) continue
+      if (match[0][0] === img.src) continue
 
       if (match.length === 1) {
         const newURL = match[0][0].replace(/https?:/, protocol)
@@ -98,8 +99,11 @@ const ImageViewerUtils = (function () {
     try {
       const res = await fetch(url, {method: 'HEAD'})
       if (res.ok) {
+        const type = res.headers.get('Content-Type')
         const size = res.headers.get('Content-Length')
-        return parseInt(size) || result
+        if (type?.startsWith('image')) {
+          return parseInt(size) || 0
+        }
       }
     } catch (error) {}
 

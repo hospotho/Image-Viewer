@@ -12,12 +12,16 @@ const passDataToTab = (id, name, data) => {
 const getImageBitSize = async src => {
   try {
     const res = await fetch(src, {method: 'HEAD'})
-    if (!res.ok) return 0
-    const size = res.headers.get('Content-Length')
-    return typeof size === 'string' ? parseInt(size) : 0
-  } catch (error) {
-    return 0
-  }
+    if (res.ok) {
+      const type = res.headers.get('Content-Type')
+      const size = res.headers.get('Content-Length')
+      if (type?.startsWith('image')) {
+        return parseInt(size) || 0
+      }
+    }
+  } catch (error) {}
+
+  return 0
 }
 
 const defaultOptions = {
