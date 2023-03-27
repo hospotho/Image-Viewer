@@ -176,7 +176,7 @@
 
         if (dom.offsetParent !== null || dom.style.position === 'fixed') {
           firstVisibleDom ??= dom
-          if (valid && (imageInfoFromPoint === null || (await getImageRealSize(imageInfo[0])) > (await getImageRealSize(imageInfoFromPoint[0])))) {
+          if (valid && (await isNewImageInfoBetter(imageInfo, imageInfoFromPoint))) {
             imageInfoFromPoint = imageInfo
             imageDomLayer = domList.length
             tryCount = Math.min(5, tryCount)
@@ -272,6 +272,14 @@
     }
 
     const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
+    const isNewImageInfoBetter = async (newInfo, oldInfo) => {
+      if (oldInfo === null) return true
+      if (!newInfo[0].startsWith('data')) {
+        const [newSize, oldSize] = await Promise.all([newInfo[0], oldInfo[0]].map(getImageRealSize))
+        return newSize > oldSize
+      }
+      return false
+    }
     const getImageRealSize = url => {
       return new Promise(resolve => {
         const img = new Image()
