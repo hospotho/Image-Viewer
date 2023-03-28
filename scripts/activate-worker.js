@@ -318,6 +318,7 @@
   document.addEventListener(
     'contextmenu',
     async e => {
+      if (document.elementFromPoint(e.clientX, e.clientY) === null) return
       const viewportPosition = [e.clientX, e.clientY]
       const imageNodeInfo = await domSearcher.searchDomByPosition(viewportPosition)
       if (!imageNodeInfo) return
