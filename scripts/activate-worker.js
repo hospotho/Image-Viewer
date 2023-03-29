@@ -251,20 +251,17 @@
       if (dom.tagName === 'IMG') {
         const sizeList = [dom.naturalWidth, dom.naturalHeight, dom.clientWidth, dom.clientHeight]
         const minSize = Math.min(...sizeList.filter(Boolean))
-        markingDom(dom)
         return [dom.currentSrc, minSize, dom]
       }
 
       const minSize = Math.min(dom.clientWidth, dom.clientHeight)
       if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
-        markingDom(dom)
         return [dom.poster, minSize, dom]
       }
 
       const bg = window.getComputedStyle(dom).backgroundImage
       if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
         const bgUrl = bg.substring(4, bg.length - 1).replace(/['"]/g, '')
-        markingDom(dom)
         return [bgUrl, minSize, dom]
       }
 
@@ -294,15 +291,7 @@
             document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
             dom?.classList.add('ImageViewerLastDom')
           }
-        : (function () {
-            let executed = false
-            return () => {
-              if (!executed) {
-                executed = true
-                chrome.runtime.sendMessage('reset_dom')
-              }
-            }
-          })()
+        : () => chrome.runtime.sendMessage('reset_dom')
     })()
 
     return {
