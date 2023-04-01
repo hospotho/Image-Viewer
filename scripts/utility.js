@@ -1,7 +1,7 @@
 const ImageViewerUtils = (function () {
   const passList = ['class', 'style', 'src', 'alt', 'title', 'loading', 'crossorigin', 'height', 'width', 'sizes', 'onerror']
   const urlRegex = /(?:https?:\/)?\/\S+/g
-  const argsRegex = /(.+\.(?:png|jpeg|jpg|gif|bmp|tiff|webp)).+/i
+  const argsRegex = /(.+\/.*?\.).*(png|jpeg|jpg|gif|bmp|tiff|webp).*/i
   const protocol = window.location.protocol
 
   async function checkImageAttr(img) {
@@ -15,7 +15,7 @@ const ImageViewerUtils = (function () {
     const naturalSize = img.naturalWidth
 
     if (argsMatch) {
-      const newURL = argsMatch[1].replace(/https?:/, protocol)
+      const newURL = (argsMatch[1] + argsMatch[2]).replace(/https?:/, protocol)
       if (bitSize) {
         const lazySize = await getImageBitSize(newURL)
         if (lazySize > bitSize) {
@@ -152,7 +152,7 @@ const ImageViewerUtils = (function () {
         console.log('No lazy src attribute found')
       }
 
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 500))
     },
 
     getImageListWithoutFilter: function (options) {
