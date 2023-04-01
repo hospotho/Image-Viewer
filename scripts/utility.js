@@ -8,14 +8,14 @@ const ImageViewerUtils = (function () {
     img.loading = 'eager'
 
     const argsMatch = img.src.match(argsRegex)
-    const rawUrl = argsMatch[1] + argsMatch[2]
     const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name) && attr.value.match(urlRegex))
-    if (rawUrl === img.src && attrList.length === 0) return ''
+    if (!argsMatch && attrList.length === 0) return ''
 
     const bitSize = await getImageBitSize(img.src.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
 
-    if (rawUrl !== img.src) {
+    const rawUrl = argsMatch?.[1] + argsMatch?.[2]
+    if (argsMatch && rawUrl !== img.src) {
       const newURL = rawUrl.replace(/https?:/, protocol)
       if (bitSize) {
         const lazySize = await getImageBitSize(newURL)
