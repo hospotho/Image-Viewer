@@ -6,7 +6,7 @@
 3. Add an icon image pre-check before unlazy image to improve performance.
 4. Enhance the method of getting image wrapper size
 5. Bug fixes
-  
+
 1.13 [2023-03-18]:
 1. Improve right click image pickup performance.
 2. Improve stability on image unlazy.
