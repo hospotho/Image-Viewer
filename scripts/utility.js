@@ -15,7 +15,7 @@ const ImageViewerUtils = (function () {
     const bitSize = await getImageBitSize(img.src.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
 
-    if (argsMatch) {
+    if (rawUrl !== img.src) {
       const newURL = rawUrl.replace(/https?:/, protocol)
       if (bitSize) {
         const lazySize = await getImageBitSize(newURL)
