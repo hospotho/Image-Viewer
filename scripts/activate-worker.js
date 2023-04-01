@@ -86,7 +86,7 @@
       }
     }
     function getTopElement(e1, e2) {
-      //e1 -1, e2 1, same 0
+      // e1 -1, e2 1, same 0
       if (e1 === e2) return 0
 
       let result = checkZIndex(e1, e2)
@@ -316,7 +316,7 @@
       if (window.top !== window.self) {
         imageNodeInfo[0] = await createDataUrl(imageNodeInfo[0])
       }
-      // dataURL may image maybe smaller
+      // image size maybe decreased in dataURL
       imageNodeInfo[1] -= 10
       chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
     },

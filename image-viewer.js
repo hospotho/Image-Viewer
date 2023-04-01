@@ -54,7 +54,7 @@ const imageViewer = (function () {
       .slice(7, -1)
       .split(',')
       .map(t => Number(t))
-    //https://www.w3.org/TR/css-transforms-1/#decomposing-a-2d-matrix
+    // https://www.w3.org/TR/css-transforms-1/#decomposing-a-2d-matrix
     let row0x = m[0]
     let row0y = m[2]
     let row1x = m[1]
@@ -96,7 +96,7 @@ const imageViewer = (function () {
     const imgUrl = img.src
     for (const img of document.getElementsByTagName('img')) {
       if (imgUrl === img.currentSrc) {
-        //check visibility by offsetParent
+        // check visibility by offsetParent
         if (img.offsetParent === null && img.style.position !== 'fixed') continue
         return img
       }
@@ -739,7 +739,7 @@ const imageViewer = (function () {
       const img = li.firstChild
       let zoomCount = 0
       let rotateCount = 0
-      //zoom&rotate
+      // zoom & rotate
       li.addEventListener('wheel', e => {
         e.preventDefault()
         let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
@@ -755,7 +755,7 @@ const imageViewer = (function () {
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
         img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
-      //mirror-reflect
+      // mirror-reflect
       li.addEventListener('click', e => {
         if (!e.altKey) return
         let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
@@ -765,7 +765,7 @@ const imageViewer = (function () {
         img.style.transform = VtoM(-scaleX, scaleY, rotate, moveX, moveY)
       })
 
-      //dragging
+      // dragging
       let dragFlag = false
       let imagePos = {x: 0, y: 0}
       let startPos = {x: 0, y: 0}
@@ -786,7 +786,7 @@ const imageViewer = (function () {
         imagePos = {x: e.clientX - startPos.x, y: e.clientY - startPos.y}
       })
 
-      //reset
+      // reset
       const reset = () => {
         zoomCount = 0
         rotateCount = 0
@@ -795,7 +795,7 @@ const imageViewer = (function () {
         startPos = {x: 0, y: 0}
       }
       li.addEventListener('dblclick', reset)
-      //custom event
+      // custom event
       li.addEventListener('resetTransform', reset)
     }
     function addMiddleClickHandler(li) {
@@ -811,7 +811,7 @@ const imageViewer = (function () {
       })
     }
 
-    //resize
+    // resize
     window.addEventListener('resize', e => {
       fitImage(options)
     })
@@ -823,7 +823,6 @@ const imageViewer = (function () {
   }
 
   function addImageListEvent(options) {
-    //function
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     const infoWidth = shadowRoot.querySelector(`.${appName}-info-width`)
     const infoHeight = shadowRoot.querySelector(`.${appName}-info-height`)
@@ -908,7 +907,7 @@ const imageViewer = (function () {
       }
     }
 
-    //key event
+    // key event
     shadowRoot.querySelector(`.${appName}`).addEventListener('keydown', e => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
@@ -921,15 +920,15 @@ const imageViewer = (function () {
         return
       }
     })
-    //arrow button
+    // arrow button
     shadowRoot.querySelector(`.${appName}-relate .${appName}-control-prev`).addEventListener('click', prevItem)
     shadowRoot.querySelector(`.${appName}-relate .${appName}-control-next`).addEventListener('click', nextItem)
-    //control bar
+    // control bar
     shadowRoot.querySelector(`.${appName}-control`).addEventListener('wheel', e => {
       e.preventDefault()
       e.deltaY > 0 ? nextItem() : prevItem()
     })
-    //close button
+    // close button
     shadowRoot.querySelector(`.${appName} .${appName}-button-close`).addEventListener('wheel', e => {
       e.preventDefault()
       e.deltaY > 0 ? nextItem() : prevItem()
