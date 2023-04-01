@@ -120,7 +120,7 @@
     }
 
     function searchImageFromTree(dom, viewportPos) {
-      let root = dom
+      let root = dom.closest('div')
       let sibling = root.previousElementSibling || root.nextElementSibling
       while (sibling && ([...sibling.classList].join() !== [...root.classList].join() || sibling.tagName !== root.tagName)) {
         root = root.parentElement
