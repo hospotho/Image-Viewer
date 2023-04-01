@@ -830,8 +830,8 @@ const imageViewer = (function () {
     const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
     const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
 
-    const debouncePeriod = options.debouncePeriod === 0 ? 0 : options.debouncePeriod || 1500
-    const throttlePeriod = options.throttlePeriod || 80
+    const debouncePeriod = options.debouncePeriod ?? 1500
+    const throttlePeriod = options.throttlePeriod ?? 80
 
     let debounceTimeout
     let throttleTimestamp = Date.now()
