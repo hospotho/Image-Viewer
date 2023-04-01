@@ -7,7 +7,7 @@ const ImageViewerUtils = (function () {
   async function checkImageAttr(img) {
     img.loading = 'eager'
 
-    const argsMatch = Math.min(img.clientWidth, img.clientHeight) >= 50 && img.src.match(argsRegex)
+    const argsMatch = img.src.match(argsRegex)
     const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name) && attr.value.match(urlRegex))
     if (!argsMatch && attrList.length === 0) return ''
 
@@ -132,20 +132,18 @@ const ImageViewerUtils = (function () {
     },
 
     simpleUnlazyImage: async function () {
-      const imgList = document.querySelectorAll('img:not(.simpleUnlazy)')
+      const unlazyList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
+      unlazyList.map(img => img.classList.add('simpleUnlazy'))
+
+      const imgList = unlazyList.filter(img => Math.min(img.clientWidth, img.clientHeight) >= 50)
       const listSize = imgList.length
       if (!listSize) return
 
       console.log('Try to unlazy image')
       console.log(`${listSize} image found`)
+      const asyncList = await Promise.all(imgList.map(checkImageAttr))
+      const lazyName = asyncList.filter(n => n)
 
-      const asyncList = []
-      for (const img of imgList) {
-        img.classList.add('simpleUnlazy')
-        asyncList.push(checkImageAttr(img))
-      }
-
-      const lazyName = (await Promise.all(asyncList)).filter(n => n)
       if (lazyName.length !== 0) {
         for (const name of [...new Set(lazyName)]) {
           console.log(`Unlazy ${lazyName.filter(x => x === name).length} img with ${name} attr`)
