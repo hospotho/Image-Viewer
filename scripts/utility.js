@@ -57,19 +57,17 @@ const ImageViewerUtils = (function () {
         const first = match[0][0].replace(/https?:/, protocol)
         const last = match[match.length - 1][0].replace(/https?:/, protocol)
         if (bitSize) {
-          const firstSize = await getImageBitSize(first)
-          const LastSize = await getImageBitSize(last)
-          if (firstSize > bitSize || LastSize > bitSize) {
-            const large = LastSize > firstSize ? last : first
+          const [firstSize, lastSize] = await Promise.all([first, last].map(getImageBitSize))
+          if (firstSize > bitSize || lastSize > bitSize) {
+            const large = lastSize > firstSize ? last : first
             updateImageSource(img, large)
             return attr.name
           }
         }
 
-        const firstSize = await getImageRealSize(first)
-        const LastSize = await getImageRealSize(last)
-        if (firstSize > naturalSize || LastSize > naturalSize) {
-          const large = LastSize > firstSize ? last : first
+        const [firstSize, lastSize] = await Promise.all([first, last].map(getImageRealSize))
+        if (firstSize > naturalSize || lastSize > naturalSize) {
+          const large = lastSize > firstSize ? last : first
           updateImageSource(img, large)
           return attr.name
         }
@@ -156,7 +154,7 @@ const ImageViewerUtils = (function () {
         console.log('No lazy src attribute found')
       }
 
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 100))
     },
 
     getImageListWithoutFilter: function (options) {
