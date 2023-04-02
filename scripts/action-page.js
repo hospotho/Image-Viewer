@@ -46,6 +46,7 @@
   let currentImageList = orderedImageUrls
   let timeout
   let period = 200
+  const multiplier = 1.2
 
   const action = async () => {
     clearTimeout(timeout)
@@ -78,7 +79,7 @@
 
     imageViewer(combinedImageList, options)
 
-    period *= 1.5
+    period *= multiplier
     setTimeout(action, period)
   }
 
