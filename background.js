@@ -23,6 +23,19 @@ const getImageBitSize = async src => {
 
   return 0
 }
+const getRedirectUrl = async srcList => {
+  const asyncList = srcList.map(async src => {
+    try {
+      const res = await fetch(src)
+      return res.redirected ? res.url : src
+    } catch (error) {}
+
+    return src
+  })
+  const redirectUrlList = await Promise.all(asyncList)
+
+  return redirectUrlList
+}
 
 const defaultOptions = {
   fitMode: 'both',
@@ -88,6 +101,7 @@ function addMessageHandler() {
       console.log(...msg)
       _sendResponse(data)
     }
+
     switch (type) {
       case 'get_options': {
         sendResponse(currOptions)
@@ -164,6 +178,10 @@ function addMessageHandler() {
           sendResponse(size, false)
           console.log(request.url, size)
         })
+        return true
+      }
+      case 'get_redirect': {
+        getRedirectUrl(request.data).then(resultList => sendResponse(resultList))
         return true
       }
     }

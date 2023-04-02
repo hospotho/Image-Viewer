@@ -237,14 +237,18 @@ const ImageViewerUtils = (function () {
       return bg.substring(4, bg.length - 1).replace(/['"]/g, '')
     },
 
-    sortImageDataList: function (dataList) {
+    sortImageDataList: async function (dataList) {
       const imageDomList = []
+      const iframeList = [...document.getElementsByTagName('iframe')]
+      
+      const iframeSrcList = iframeList.map(iframe => iframe.src)
+      const iframeRedirectSrcList = await chrome.runtime.sendMessage({msg: 'get_redirect', data: iframeSrcList})
+
       for (const data of dataList) {
         if (typeof data[1] === 'string') {
-          for (const iframe of document.getElementsByTagName('iframe')) {
-            if (data[1] === iframe.src) {
-              imageDomList.push([data[0], iframe])
-            }
+          const index = iframeRedirectSrcList.indexOf(data[1])
+          if (index !== -1) {
+            imageDomList.push([data[0], iframeList[index]])
           }
         } else {
           imageDomList.push([...data])

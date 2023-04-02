@@ -30,39 +30,43 @@
   await ImageViewerUtils.simpleUnlazyImage()
 
   const uniqueImageUrls = ImageViewerUtils.getImageList(options)
+
   if (!!document.querySelector('iframe')) {
     const minSize = Math.min(options.minWidth, options.minHeight)
     const iframeImage = await chrome.runtime.sendMessage({msg: 'extract_frames', minSize: minSize})
+
     const uniqueIframeImage = []
-    outer: for (const img of iframeImage) {
-      for (const unique of uniqueIframeImage) {
-        if (img[0] === unique[0]) continue outer
+    const uniqueIframeImageUrls = new Set()
+    for (const img of iframeImage) {
+      if (!uniqueIframeImageUrls.has(img[0])) {
+        uniqueIframeImageUrls.add(img[0])
+        uniqueIframeImage.push(img)
       }
-      uniqueIframeImage.push(img)
     }
     uniqueImageUrls.push(...uniqueIframeImage)
   }
 
-  const orderedImageUrls = ImageViewerUtils.sortImageDataList(uniqueImageUrls)
+  const orderedImageUrls = await ImageViewerUtils.sortImageDataList(uniqueImageUrls)
 
+  options.index = -1
   if (dom) {
     const currentUrl = ImageViewerUtils.getDomUrl(dom)
     const index = orderedImageUrls.indexOf(currentUrl)
-    index !== -1 ? (options.index = index) : null
+    options.index = index
   } else if (srcUrl) {
     if (!srcUrl.startsWith('data')) {
       const index = orderedImageUrls.indexOf(srcUrl)
-      index !== -1 ? (options.index = index) : null
+      options.index = index
     } else {
-      for (const data of orderedImageUrls) {
-        if (typeof data === 'string') continue
-        if (srcUrl === data[0]) {
-          options.index = orderedImageUrls.indexOf(data)
+      for (let i = 0; i < orderedImageUrls.length; i++) {
+        if (typeof orderedImageUrls[i] === 'object' && srcUrl === orderedImageUrls[i][0]) {
+          options.index = i
           break
         }
       }
     }
-    if (!options.index) {
+    if (options.index === -1) {
+      options.index = 0
       orderedImageUrls.unshift(srcUrl)
       console.log('Unshift Image to list')
     }
