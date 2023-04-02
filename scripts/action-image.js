@@ -108,7 +108,7 @@
       for (const img of iframeImage) {
         if (!uniqueIframeImageUrls.has(img[0])) {
           uniqueIframeImageUrls.add(img[0])
-          uniqueIframeImage.push(img)
+          uniqueIframeImage.push([ImageViewerUtils.dataURLToObjectURL(img[0]), img[1]])
         }
       }
       uniqueImageUrls.push(...uniqueIframeImage)
