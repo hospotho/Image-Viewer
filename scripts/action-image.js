@@ -115,11 +115,12 @@
     }
 
     const newImageList = await ImageViewerUtils.sortImageDataList(uniqueImageUrls)
-
     const combinedImageList = ImageViewerUtils.combineImageList(newImageList, currentImageList)
-    currentImageList = combinedImageList
 
-    imageViewer(combinedImageList, options)
+    if (combinedImageList.length > currentImageList.length) {
+      currentImageList = combinedImageList
+      imageViewer(combinedImageList, options)
+    }
 
     period *= multiplier
     setTimeout(action, period)
