@@ -10,13 +10,19 @@ const passDataToTab = (id, name, data) => {
   })
 }
 const getImageBitSize = async src => {
+  const cache = srcBitSizeMap.get(src)
+  if (cache !== undefined) return cache
+
   try {
     const res = await fetch(src, {method: 'HEAD'})
     if (res.ok) {
       const type = res.headers.get('Content-Type')
-      const size = res.headers.get('Content-Length')
+      const length = res.headers.get('Content-Length')
       if (type?.startsWith('image')) {
-        return parseInt(size) || 0
+        const size = parseInt(length) || 0
+        srcBitSizeMap.set(src, size)
+        expired.push(src)
+        return size
       }
     }
   } catch (error) {}
@@ -36,6 +42,15 @@ const getRedirectUrl = async srcList => {
 
   return redirectUrlList
 }
+
+const srcBitSizeMap = new Map()
+const expired = []
+setInterval(() => {
+  for (const key of expired) {
+    srcBitSizeMap.delete(key)
+  }
+  expired.length = 0
+}, 1000 * 60 * 60)
 
 const defaultOptions = {
   fitMode: 'both',
