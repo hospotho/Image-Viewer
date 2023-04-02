@@ -7,6 +7,10 @@
 
   function createDataUrl(srcUrl) {
     return new Promise(resolve => {
+      chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl}).then(res => {
+        if (res !== 0) resolve(srcUrl)
+      })
+
       const img = new Image()
 
       img.onload = () => {

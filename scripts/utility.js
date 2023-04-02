@@ -270,6 +270,8 @@ const ImageViewerUtils = (function () {
     },
 
     dataURLToObjectURL: function (dataURL) {
+      if (!dataURL.startsWith('data')) return dataURL
+
       const arr = dataURL.split(',')
       const mime = arr[0].match(/:(.*?);/)[1]
       const bstr = atob(arr[1])
