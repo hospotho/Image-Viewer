@@ -95,6 +95,14 @@
 
     if (!document.documentElement.classList.contains('has-image-viewer')) return
 
+    if (dom) {
+      const [divWidth, divHeight] = ImageViewerUtils.getWrapperSize(dom) || []
+      if (divWidth) {
+        options.minWidth = Math.min(divWidth, options.minWidth)
+        options.minHeight = Math.min(divHeight, options.minHeight)
+      }
+    }
+
     await ImageViewerUtils.simpleUnlazyImage()
 
     const uniqueImageUrls = ImageViewerUtils.getImageList(options)
