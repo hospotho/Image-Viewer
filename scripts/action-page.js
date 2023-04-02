@@ -44,18 +44,13 @@
   imageViewer(orderedImageUrls, options)
 
   let currentImageList = orderedImageUrls
-  let throttleTimestamp = 0
-  const observer = new MutationObserver(async () => {
-    if (!document.documentElement.classList.contains('has-image-viewer')) {
-      observer.disconnect()
-      return
-    }
+  let timeout
+  let period = 200
 
-    if (Date.now() <= throttleTimestamp + 1000) {
-      await new Promise(resolve => setTimeout(resolve, 500))
-    }
+  const action = async () => {
+    clearTimeout(timeout)
 
-    observer.disconnect()
+    if (!document.documentElement.classList.contains('has-image-viewer')) return
 
     await ImageViewerUtils.simpleUnlazyImage()
 
@@ -82,6 +77,24 @@
     currentImageList = combinedImageList
 
     imageViewer(combinedImageList, options)
+
+    period *= 1.5
+    setTimeout(action, period)
+  }
+
+  timeout = setTimeout(action, period)
+
+  const observer = new MutationObserver(async () => {
+    if (!document.documentElement.classList.contains('has-image-viewer')) {
+      observer.disconnect()
+      return
+    }
+
+    observer.disconnect()
+
+    period = 500
+    clearTimeout(timeout)
+    timeout = setTimeout(action, period)
 
     observer.observe(document, {childList: true, subtree: true})
     throttleTimestamp = Date.now()
