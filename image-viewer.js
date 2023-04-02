@@ -2,6 +2,7 @@ const imageViewer = (function () {
   const appName = '__crx__image-viewer'
   const imageListName = '__crx__image-list'
   let shadowRoot
+  let currentImageList
 
   //==========utility==========
   function buildImageNode(data, options) {
@@ -24,6 +25,16 @@ const imageViewer = (function () {
       img.setAttribute('data-iframe-src', data[1])
     }
     return li
+  }
+  function insertImageNode(node, index) {
+    const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
+    const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
+
+    if (index === list.length) {
+      imageListNode.appendChild(node)
+    } else {
+      imageListNode.insertBefore(node, list[index])
+    }
   }
 
   function closeImageViewer() {
@@ -537,15 +548,17 @@ const imageViewer = (function () {
       fitImage(options)
     }
 
-    const baseIndex = options.index || 0
-    const base = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)[baseIndex]
+    const liList = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
+    const current = shadowRoot.querySelector(`.${appName} .${imageListName} li.current`)
+    const baseIndex = !!current ? liList.indexOf(current) : options.index || 0
+    const base = current || liList[baseIndex]
     base.classList.add('current')
-    const counterTotal = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
-    const counterCurrent = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
 
     const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     imageListNode.style.top = `${-baseIndex * 100}%`
 
+    const counterTotal = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
+    const counterCurrent = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
     updateCounter()
 
     let completeFlag = false
@@ -816,7 +829,8 @@ const imageViewer = (function () {
       fitImage(options)
     })
 
-    for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)) {
+    for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li:not(.addedImageEvent)`)) {
+      li.classList.add('addedImageEvent')
       addTransformHandler(li)
       addMiddleClickHandler(li)
     }
@@ -935,18 +949,49 @@ const imageViewer = (function () {
     })
   }
 
+  function updateImageList(imageList, options) {
+    const newIndex = currentImageList.map(curr => {
+      if (typeof curr === 'string') {
+        return imageList.indexOf(curr)
+      } else {
+        for (let i = 0; i < imageList.length; i++) {
+          const data = imageList[i]
+          if (typeof data === 'object' && curr[0] === data[0]) {
+            return i
+          }
+        }
+      }
+    })
+
+    for (let i = 0; i < imageList.length; i++) {
+      if (newIndex.includes(i)) continue
+      const node = buildImageNode(imageList[i], options)
+      insertImageNode(node, i)
+    }
+    currentImageList = imageList
+  }
+
   //==========main function==========
-  function imageViewer(imageList, _options) {
-    if (imageList.length === 0 || document.documentElement.classList.contains('has-image-viewer')) return
-    const options = _options
-    buildApp()
-    buildImageList(imageList, options)
-    initImageList(options)
-    fitImage(options)
-    addFrameEvent(options)
-    addImageEvent(options)
-    if (imageList.length > 1) addImageListEvent(options)
-    console.log('Image viewer initialized')
+  function imageViewer(imageList, options) {
+    if (imageList.length === 0) return
+
+    if (!document.documentElement.classList.contains('has-image-viewer')) {
+      currentImageList = imageList
+      buildApp()
+      buildImageList(imageList, options)
+      initImageList(options)
+      fitImage(options)
+      addFrameEvent(options)
+      addImageEvent(options)
+      addImageListEvent(options)
+      console.log('Image viewer initialized')
+    } else {
+      updateImageList(imageList, options)
+      initImageList(options)
+      fitImage(options)
+      addImageEvent(options)
+      console.log('Image viewer updated')
+    }
   }
 
   return imageViewer

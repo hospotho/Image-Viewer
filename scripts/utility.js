@@ -240,7 +240,7 @@ const ImageViewerUtils = (function () {
     sortImageDataList: async function (dataList) {
       const imageDomList = []
       const iframeList = [...document.getElementsByTagName('iframe')]
-      
+
       const iframeSrcList = iframeList.map(iframe => iframe.src)
       const iframeRedirectSrcList = await chrome.runtime.sendMessage({msg: 'get_redirect', data: iframeSrcList})
 
@@ -309,6 +309,64 @@ const ImageViewerUtils = (function () {
       const finalWidth = Math.min(...width.filter(w => w * 2 >= domSize)) - 3
       const finalHeight = Math.min(...height.filter(h => h * 2 >= domSize)) - 3
       return [finalWidth, finalHeight]
+    },
+
+    combineImageList: function (newList, oldList) {
+      const combinedImageList = new Array(newList.length + oldList.length)
+
+      let leftIndex = 0
+      let rightIndex = 0
+      let oldArrayItemIndex = 0
+      let lastNewArrayVacancyIndex = 0
+      let indexAtOldArray = -1
+
+      while (rightIndex < newList.length) {
+        const right = newList[rightIndex]
+
+        if (typeof right === 'string') {
+          indexAtOldArray = oldList.indexOf(right)
+        } else {
+          for (let i = 0; i < oldList.length; i++) {
+            const data = oldList[i]
+            if (typeof data === 'object' && right[0] === data[0]) {
+              indexAtOldArray = i
+              break
+            }
+          }
+        }
+
+        if (indexAtOldArray === -1) {
+          rightIndex++
+          continue
+        }
+
+        for (let i = 0; i < indexAtOldArray - oldArrayItemIndex; i++) {
+          combinedImageList[lastNewArrayVacancyIndex++] = oldList[oldArrayItemIndex++]
+        }
+        for (let i = 0; i < rightIndex - leftIndex; i++) {
+          combinedImageList[lastNewArrayVacancyIndex++] = newList[leftIndex++]
+        }
+        combinedImageList[lastNewArrayVacancyIndex++] = newList[rightIndex++]
+        leftIndex = rightIndex
+        oldArrayItemIndex++
+      }
+
+      if (indexAtOldArray === -1) {
+        rightIndex--
+        for (let i = 0; i < oldList.length - oldArrayItemIndex + 1; i++) {
+          combinedImageList[lastNewArrayVacancyIndex++] = oldList[oldArrayItemIndex++]
+        }
+        for (let i = 0; i < rightIndex - leftIndex; i++) {
+          combinedImageList[lastNewArrayVacancyIndex++] = newList[leftIndex++]
+        }
+        combinedImageList[lastNewArrayVacancyIndex++] = newList[rightIndex++]
+      }
+
+      for (let i = 0; i < oldList.length - oldArrayItemIndex + 1; i++) {
+        combinedImageList[lastNewArrayVacancyIndex++] = oldList[oldArrayItemIndex++]
+      }
+
+      return [...new Set(combinedImageList.filter(Boolean))]
     }
   }
 })()
