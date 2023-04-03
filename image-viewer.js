@@ -524,27 +524,24 @@ const imageViewer = (function () {
     }
     function removeFailedImg() {
       for (const img of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
-        img.addEventListener('load', e => {
-          if (e.target.naturalWidth < options.minWidth || e.target.naturalHeight < options.minHeight) {
-            e.target.parentNode.remove()
-            updateCounter()
-          }
-        })
-        img.addEventListener('error', e => {
-          e.target.parentNode.remove()
-          updateCounter()
-        })
-        if (img.complete && (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight || img.naturalWidth === 0 || img.naturalHeight === 0)) {
-          img.parentNode.remove()
-          updateCounter()
-        }
-        setTimeout(() => {
-          if (!img.complete) {
+        const action = () => {
+          if (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight) {
             img.parentNode.remove()
             updateCounter()
           }
-        }, 1000 * parseInt(counterTotal.innerHTML))
+        }
+        img.addEventListener('load', action)
+        img.addEventListener('error', action)
+        if (img.complete) action()
       }
+
+      setTimeout(() => {
+        for (const img of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
+          if (!img.complete) img.parentNode.remove()
+        }
+        updateCounter()
+      }, 5000 + 500 * parseInt(counterTotal.innerHTML))
+
       fitImage(options)
     }
 
