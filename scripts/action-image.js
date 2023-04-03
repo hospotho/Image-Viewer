@@ -149,7 +149,6 @@
     timeout = setTimeout(action, period)
 
     observer.observe(document, {childList: true, subtree: true})
-    throttleTimestamp = Date.now()
   })
 
   observer.observe(document, {childList: true, subtree: true})
