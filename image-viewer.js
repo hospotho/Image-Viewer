@@ -13,8 +13,8 @@ const imageViewer = (function () {
     img.alt = ''
     img.referrerPolicy = options.referrerPolicy ? 'no-referrer' : null
     img.crossorigin = options.cors ? 'anonymous' : null
-    img.onload = e => {
-      URL.revokeObjectURL(e.target.src)
+    img.onload = () => {
+      URL.revokeObjectURL(img.src)
     }
 
     if (typeof data === 'string') {
@@ -561,13 +561,13 @@ const imageViewer = (function () {
     let completeFlag = false
     base.firstChild.addEventListener('load', e => {
       if (options.sizeCheck) {
-        const minSize = Math.min(e.target.naturalWidth, e.target.naturalHeight)
+        const minSize = Math.min(base.naturalWidth, base.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
         options.minHeight = Math.min(minSize, options.minHeight)
         options.sizeCheck = false
       }
-      shadowRoot.querySelector(`.${appName}-info-width`).value = e.target.naturalWidth
-      shadowRoot.querySelector(`.${appName}-info-height`).value = e.target.naturalHeight
+      shadowRoot.querySelector(`.${appName}-info-width`).value = base.naturalWidth
+      shadowRoot.querySelector(`.${appName}-info-height`).value = base.naturalHeight
       if (!completeFlag) removeFailedImg()
       completeFlag = true
     })
@@ -603,11 +603,11 @@ const imageViewer = (function () {
       const currFitBtn = shadowRoot.querySelector(`.${appName}-control-button-${options.fitMode}`)
       currFitBtn?.classList.add('on')
       for (const fitBtn of shadowRoot.querySelectorAll(`.${appName}-control-buttons button[data-fit]`)) {
-        fitBtn.addEventListener('click', e => {
+        fitBtn.addEventListener('click', () => {
           shadowRoot.querySelectorAll(`.${appName}-control-buttons button`).forEach(btn => btn.classList.remove('on'))
-          e.target.classList.add('on')
-          let newOptions = options
-          newOptions.fitMode = e.target.getAttribute('data-fit')
+          fitBtn.classList.add('on')
+          const newOptions = options
+          newOptions.fitMode = fitBtn.getAttribute('data-fit')
           fitImage(newOptions)
         })
       }

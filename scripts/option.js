@@ -90,7 +90,7 @@
     for (const input of document.querySelectorAll('input.hotkey')) {
       input.addEventListener('keydown', e => {
         e.preventDefault()
-        e.target.value = keyToString(e)
+        input.value = keyToString(e)
       })
     }
   }
@@ -140,14 +140,14 @@
 
   //==========main==========
   function initFormEvent() {
-    zoom.addEventListener('input', e => {
-      document.querySelector('span#zoomDisplay').innerHTML = e.target.value
+    zoom.addEventListener('input', () => {
+      document.querySelector('span#zoomDisplay').innerHTML = zoom.value
     })
 
-    rotate.addEventListener('input', e => {
+    rotate.addEventListener('input', () => {
       const span = document.querySelector('span#rotateDisplay')
-      span.innerHTML = e.target.value
-      span.nextElementSibling.style = 360 % e.target.value !== 0 ? 'display: inline' : ''
+      span.innerHTML = rotate.value
+      span.nextElementSibling.style = 360 % rotate.value !== 0 ? 'display: inline' : ''
     })
 
     const debounceDesc = document.querySelector('li#debounceDesc')
@@ -161,7 +161,7 @@
     for (const input of document.querySelectorAll('input.hotkey')) {
       input.addEventListener('keydown', e => {
         e.preventDefault()
-        e.target.value = keyToString(e)
+        input.value = keyToString(e)
       })
     }
 
