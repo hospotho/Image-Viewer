@@ -564,8 +564,8 @@ const imageViewer = (function () {
         options.minHeight = Math.min(minSize, options.minHeight)
         options.sizeCheck = false
       }
-      shadowRoot.querySelector(`.${appName}-info-width`).value = base.naturalWidth
-      shadowRoot.querySelector(`.${appName}-info-height`).value = base.naturalHeight
+      shadowRoot.querySelector(`.${appName}-info-width`).value = base.firstChild.naturalWidth
+      shadowRoot.querySelector(`.${appName}-info-height`).value = base.firstChild.naturalHeight
       if (!completeFlag) removeFailedImg()
       completeFlag = true
     })
