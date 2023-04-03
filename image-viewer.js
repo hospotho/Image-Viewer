@@ -541,8 +541,6 @@ const imageViewer = (function () {
         }
         updateCounter()
       }, 5000 + 500 * parseInt(counterTotal.innerHTML))
-
-      fitImage(options)
     }
 
     const liList = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
@@ -577,7 +575,7 @@ const imageViewer = (function () {
     }, 3000)
   }
 
-  function fitImage(options) {
+  function fitImage(options, update = false) {
     if (options.sizeCheck) return
 
     const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
@@ -589,7 +587,7 @@ const imageViewer = (function () {
       img.classList.add('loaded')
     }
     const event = new CustomEvent('resetTransform')
-    for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)) {
+    for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li${update ? ':not(.addedImageEvent)' : ''}`)) {
       const img = li.firstChild
       img.addEventListener('load', () => action(img))
       if (img.naturalWidth) action(img)
@@ -985,7 +983,7 @@ const imageViewer = (function () {
     } else {
       updateImageList(imageList, options)
       initImageList(options)
-      fitImage(options)
+      fitImage(options, true)
       addImageEvent(options)
       console.log('Image viewer updated')
     }
