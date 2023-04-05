@@ -3,6 +3,7 @@ const imageViewer = (function () {
   const imageListName = '__crx__image-list'
   let shadowRoot
   let currentImageList
+  let removeTimeout
 
   //==========utility==========
   function buildImageNode(data, options) {
@@ -535,7 +536,8 @@ const imageViewer = (function () {
         if (img.complete) action()
       }
 
-      setTimeout(() => {
+      if (removeTimeout) clearTimeout(removeTimeout)
+      removeTimeout = setTimeout(() => {
         for (const img of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
           if (!img.complete) img.parentNode.remove()
         }
