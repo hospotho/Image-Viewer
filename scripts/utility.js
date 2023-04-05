@@ -127,6 +127,18 @@ const ImageViewerUtils = (function () {
     }
   }
 
+  function getImageIndex(array, data) {
+    if (typeof data === 'string') {
+      return array.indexOf(data)
+    }
+    for (let i = 0; i < array.length; i++) {
+      if (typeof data === 'object' && data[0] === array[i][0]) {
+        return i
+      }
+    }
+    return -1
+  }
+
   return {
     closeImageViewer: function () {
       document.documentElement.classList.remove('has-image-viewer')
