@@ -946,26 +946,24 @@ const imageViewer = (function () {
     })
   }
 
-  function updateImageList(imageList, options) {
-    const newIndex = currentImageList.map(curr => {
-      if (typeof curr === 'string') {
-        return imageList.indexOf(curr)
-      } else {
-        for (let i = 0; i < imageList.length; i++) {
-          const data = imageList[i]
-          if (typeof data === 'object' && curr[0] === data[0]) {
-            return i
-          }
-        }
+  function updateImageList(newList, options) {
+    const newIndex = newList.map(data => {
+      if (typeof data === 'string') {
+        return currentImageList.indexOf(data)
       }
+      for (let i = 0; i < currentImageList.length; i++) {
+        if (currentImageList[i]?.[0] === data[0]) return i
+      }
+      return -1
     })
 
-    for (let i = 0; i < imageList.length; i++) {
-      if (newIndex.includes(i)) continue
-      const node = buildImageNode(imageList[i], options)
-      insertImageNode(node, i)
+    for (let i = 0; i < newList.length; i++) {
+      if (newIndex[i] === -1) {
+        const node = buildImageNode(newList[i], options)
+        insertImageNode(node, i)
+      }
     }
-    currentImageList = imageList
+    currentImageList = newList
   }
 
   //==========main function==========

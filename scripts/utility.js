@@ -132,9 +132,7 @@ const ImageViewerUtils = (function () {
       return array.indexOf(data)
     }
     for (let i = 0; i < array.length; i++) {
-      if (typeof data === 'object' && data[0] === array[i][0]) {
-        return i
-      }
+      if (array[i]?.[0] === data[0]) return i
     }
     return -1
   }
