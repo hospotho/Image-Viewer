@@ -111,7 +111,7 @@ const ImageViewerUtils = (function () {
       img.onload = () => resolve(img.naturalWidth)
       img.onerror = () => resolve(0)
       img.src = src
-      setTimeout(() => resolve(0), 3000)
+      setTimeout(() => resolve(0), 1000)
     })
   }
 
