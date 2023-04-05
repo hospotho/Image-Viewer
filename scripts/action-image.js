@@ -61,17 +61,17 @@
       options.index = index
     } else {
       for (let i = 0; i < orderedImageUrls.length; i++) {
-        if (typeof orderedImageUrls[i] === 'object' && srcUrl === orderedImageUrls[i][0]) {
+        if (orderedImageUrls[i]?.[0] === srcUrl) {
           options.index = i
           break
         }
       }
     }
-    if (options.index === -1) {
-      options.index = 0
-      orderedImageUrls.unshift(srcUrl)
-      console.log('Unshift Image to list')
-    }
+  }
+  if (options.index === -1) {
+    options.index = 0
+    orderedImageUrls.unshift(srcUrl)
+    console.log('Unshift Image to list')
   }
 
   for (const data of orderedImageUrls) {
