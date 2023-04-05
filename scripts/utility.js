@@ -3,6 +3,7 @@ const ImageViewerUtils = (function () {
   const urlRegex = /(?:https?:\/)?\/\S+/g
   const argsRegex = /(.+\/.*?\.).*(png|jpeg|jpg|gif|bmp|tiff|webp).*/i
   const protocol = window.location.protocol
+  const srcBitSizeMap = new Map()
 
   async function checkImageAttr(img) {
     img.loading = 'eager'
@@ -79,6 +80,9 @@ const ImageViewerUtils = (function () {
   async function getImageBitSize(src) {
     if (!src || src === 'about:blank' || src.startsWith('data')) return 0
 
+    const cache = srcBitSizeMap.get(src)
+    if (cache !== undefined) return cache
+
     // protocol-relative URL
     const url = src.startsWith('//') ? protocol + src : src
 
@@ -90,9 +94,11 @@ const ImageViewerUtils = (function () {
       const res = await fetch(url, {method: 'HEAD'})
       if (res.ok) {
         const type = res.headers.get('Content-Type')
-        const size = res.headers.get('Content-Length')
+        const length = res.headers.get('Content-Length')
         if (type?.startsWith('image')) {
-          return parseInt(size) || 0
+          const size = parseInt(length) || 0
+          srcBitSizeMap.set(src, size)
+          return size
         }
       }
     } catch (error) {}
