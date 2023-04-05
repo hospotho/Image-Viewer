@@ -7,7 +7,7 @@ const ImageViewerUtils = (function () {
   async function checkImageAttr(img) {
     img.loading = 'eager'
 
-    const argsMatch =  !img.src.startsWith('data') && img.src.match(argsRegex)
+    const argsMatch = !img.src.startsWith('data') && img.src.match(argsRegex)
     const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name) && attr.value.match(urlRegex))
     if (!argsMatch && attrList.length === 0) return ''
 
