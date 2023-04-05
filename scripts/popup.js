@@ -1,5 +1,13 @@
 ;(function () {
   const rawText = `
+1.15 [2023-04-05]:
+Large Update
+1. Add support on update image in the viewer
+2. Solve the problem for image viewer can't be open on some websites
+3. Fix CORS issues for iframe images
+4. Fix other issues in rare situations
+5. Improve performance and fix some bugs
+
 1.14 [2023-04-01]:
 1. Improve CSS of image viewer
 2. Improve performance of right click image pickup.
@@ -11,7 +19,7 @@
 1. Improve right click image pickup performance.
 2. Improve stability on image unlazy.
 3. Extend the loading time limit for images inside image viewer.
-4. Fix lots of typos.
+4. Fix lot of typos and bugs.
 
 1.12 [2023-02-14]:
 1. Add this popup page to show release notes when install or update.

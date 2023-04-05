@@ -1,3 +1,11 @@
+1.15 [2023-04-05]:
+Large Update
+1. Add support on update image in the viewer
+2. Solve the problem for image viewer can't be open on some websites
+3. Fix CORS issues for iframe images
+4. Fix other issues in rare situations
+5. Improve performance and fix some bugs
+
 1.14 [2023-04-01]:
 1. Improve CSS of image viewer
 2. Improve performance of right click image pickup.
