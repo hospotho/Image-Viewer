@@ -336,57 +336,57 @@ const ImageViewerUtils = (function () {
 
       let leftIndex = 0
       let rightIndex = 0
-      let oldArrayItemIndex = 0
-      let lastNewArrayVacancyIndex = 0
       let indexAtOldArray = -1
+      let indexAtCombinedArray = -1
+      let vacancyIndex = 0
+      let oldArrayLastIndex = 0
+      let distance = 0
 
       while (rightIndex < newList.length) {
         const right = newList[rightIndex]
 
-        if (typeof right === 'string') {
-          indexAtOldArray = oldList.indexOf(right)
-        } else {
-          for (let i = 0; i < oldList.length; i++) {
-            const data = oldList[i]
-            if (typeof data === 'object' && right[0] === data[0]) {
-              indexAtOldArray = i
-              break
-            }
-          }
-        }
+        indexAtOldArray = getImageIndex(oldList, right)
+        indexAtCombinedArray = getImageIndex(combinedImageList, right)
 
-        if (indexAtOldArray === -1) {
+        // right is not a anchor
+        if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
           rightIndex++
           continue
         }
 
-        for (let i = 0; i < indexAtOldArray - oldArrayItemIndex; i++) {
-          combinedImageList[lastNewArrayVacancyIndex++] = oldList[oldArrayItemIndex++]
+        // fill list with oldList (exclude right)
+        distance = indexAtOldArray - oldArrayLastIndex
+        for (let i = 0; i < distance; i++) {
+          combinedImageList[vacancyIndex++] = oldList[oldArrayLastIndex++]
         }
-        for (let i = 0; i < rightIndex - leftIndex; i++) {
-          combinedImageList[lastNewArrayVacancyIndex++] = newList[leftIndex++]
+
+        // fill list with newList from left index to right index
+        distance = rightIndex - leftIndex + 1
+        for (let i = 0; i < distance; i++) {
+          combinedImageList[vacancyIndex++] = newList[leftIndex++]
         }
-        combinedImageList[lastNewArrayVacancyIndex++] = newList[rightIndex++]
-        leftIndex = rightIndex
-        oldArrayItemIndex++
+        rightIndex = leftIndex
+        oldArrayLastIndex++
       }
 
-      if (indexAtOldArray === -1) {
+      // last element of newList is not a anchor
+      if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
         rightIndex--
-        for (let i = 0; i < oldList.length - oldArrayItemIndex + 1; i++) {
-          combinedImageList[lastNewArrayVacancyIndex++] = oldList[oldArrayItemIndex++]
+
+        // fill list with remained oldList
+        distance = oldList.length - oldArrayLastIndex
+        for (let i = 0; i < distance; i++) {
+          combinedImageList[vacancyIndex++] = oldList[oldArrayLastIndex++]
         }
-        for (let i = 0; i < rightIndex - leftIndex; i++) {
-          combinedImageList[lastNewArrayVacancyIndex++] = newList[leftIndex++]
+
+        // fill list with remained newList
+        distance = newList.length - leftIndex
+        for (let i = 0; i < distance; i++) {
+          combinedImageList[vacancyIndex++] = newList[leftIndex++]
         }
-        combinedImageList[lastNewArrayVacancyIndex++] = newList[rightIndex++]
       }
 
-      for (let i = 0; i < oldList.length - oldArrayItemIndex + 1; i++) {
-        combinedImageList[lastNewArrayVacancyIndex++] = oldList[oldArrayItemIndex++]
-      }
-
-      return [...new Set(combinedImageList.filter(Boolean))]
+      return [...new Set(combinedImageList)]
     }
   }
 })()
