@@ -367,16 +367,14 @@ const ImageViewerUtils = (function () {
         oldArrayLastIndex++
       }
 
+      // fill list with remained oldList
+      distance = oldList.length - oldArrayLastIndex
+      for (let i = 0; i < distance; i++) {
+        combinedImageList[vacancyIndex++] = oldList[oldArrayLastIndex++]
+      }
+
       // last element of newList is not a anchor
       if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
-        rightIndex--
-
-        // fill list with remained oldList
-        distance = oldList.length - oldArrayLastIndex
-        for (let i = 0; i < distance; i++) {
-          combinedImageList[vacancyIndex++] = oldList[oldArrayLastIndex++]
-        }
-
         // fill list with remained newList
         distance = newList.length - leftIndex
         for (let i = 0; i < distance; i++) {
@@ -384,7 +382,7 @@ const ImageViewerUtils = (function () {
         }
       }
 
-      return [...new Set(combinedImageList)]
+      return [...new Set(combinedImageList.filter(Boolean))]
     }
   }
 })()
