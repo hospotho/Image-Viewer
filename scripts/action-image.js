@@ -16,113 +16,42 @@
   const [srcUrl, nodeSize] = nodeInfo === null ? [] : nodeInfo
   const dom = document.querySelector('.ImageViewerLastDom')
 
+  let currentImageList = []
+  let timeout
+  let period = 200
+  const multiplier = 1.2
+
   if (nodeSize > 0) {
     options.minWidth = Math.min(nodeSize, options.minWidth)
     options.minHeight = Math.min(nodeSize, options.minHeight)
   }
 
-  if (dom) {
-    const [divWidth, divHeight] = ImageViewerUtils.getWrapperSize(dom) || []
-    if (divWidth) {
-      options.minWidth = Math.min(divWidth, options.minWidth)
-      options.minHeight = Math.min(divHeight, options.minHeight)
-    }
-  }
+  ImageViewerUtils.updateWrapperSize(dom, options)
 
-  await ImageViewerUtils.simpleUnlazyImage()
+  const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
 
-  const uniqueImageUrls = ImageViewerUtils.getImageList(options)
-
-  if (!!document.querySelector('iframe')) {
-    const minSize = Math.min(options.minWidth, options.minHeight)
-    const iframeImage = await chrome.runtime.sendMessage({msg: 'extract_frames', minSize: minSize})
-
-    const uniqueIframeImage = []
-    const uniqueIframeImageUrls = new Set()
-    for (const img of iframeImage) {
-      if (!uniqueIframeImageUrls.has(img[0])) {
-        uniqueIframeImageUrls.add(img[0])
-        uniqueIframeImage.push(img)
-      }
-    }
-    uniqueImageUrls.push(...uniqueIframeImage)
-  }
-
-  const orderedImageUrls = await ImageViewerUtils.sortImageDataList(uniqueImageUrls)
-
-  options.index = -1
-  if (dom) {
-    const currentUrl = ImageViewerUtils.getDomUrl(dom)
-    const index = orderedImageUrls.indexOf(currentUrl)
-    options.index = index
-  } else if (srcUrl) {
-    if (!srcUrl.startsWith('data')) {
-      const index = orderedImageUrls.indexOf(srcUrl)
-      options.index = index
-    } else {
-      for (let i = 0; i < orderedImageUrls.length; i++) {
-        if (orderedImageUrls[i]?.[0] === srcUrl) {
-          options.index = i
-          break
-        }
-      }
-    }
-  }
+  options.index = ImageViewerUtils.searchImageInfoIndex(dom || srcUrl, orderedImageUrls)
   if (options.index === -1) {
     options.index = 0
     orderedImageUrls.unshift(srcUrl)
-    console.log('Unshift Image to list')
+    console.log('Unshift image to list')
   }
 
-  for (const data of orderedImageUrls) {
-    if (data[0].startsWith('data')) {
-      data[0] = ImageViewerUtils.dataURLToObjectURL(data[0])
-    }
-  }
+  currentImageList = orderedImageUrls
 
   if (typeof imageViewer !== 'function') {
     await chrome.runtime.sendMessage('load_script')
   }
-  imageViewer(orderedImageUrls, options)
-
-  let currentImageList = orderedImageUrls
-  let timeout
-  let period = 200
-  const multiplier = 1.2
+  imageViewer(currentImageList, options)
 
   const action = async () => {
     clearTimeout(timeout)
 
     if (!document.documentElement.classList.contains('has-image-viewer')) return
 
-    if (dom) {
-      const [divWidth, divHeight] = ImageViewerUtils.getWrapperSize(dom) || []
-      if (divWidth) {
-        options.minWidth = Math.min(divWidth, options.minWidth)
-        options.minHeight = Math.min(divHeight, options.minHeight)
-      }
-    }
+    ImageViewerUtils.updateWrapperSize(dom, options)
 
-    await ImageViewerUtils.simpleUnlazyImage()
-
-    const uniqueImageUrls = ImageViewerUtils.getImageList(options)
-
-    if (!!document.querySelector('iframe')) {
-      const minSize = Math.min(options.minWidth, options.minHeight)
-      const iframeImage = await chrome.runtime.sendMessage({msg: 'extract_frames', minSize: minSize})
-
-      const uniqueIframeImage = []
-      const uniqueIframeImageUrls = new Set()
-      for (const img of iframeImage) {
-        if (!uniqueIframeImageUrls.has(img[0])) {
-          uniqueIframeImageUrls.add(img[0])
-          uniqueIframeImage.push([ImageViewerUtils.dataURLToObjectURL(img[0]), img[1]])
-        }
-      }
-      uniqueImageUrls.push(...uniqueIframeImage)
-    }
-
-    const newImageList = await ImageViewerUtils.sortImageDataList(uniqueImageUrls)
+    const newImageList = await ImageViewerUtils.getOrderedImageUrls(options)
     const combinedImageList = ImageViewerUtils.combineImageList(newImageList, currentImageList)
 
     if (combinedImageList.length > currentImageList.length) {
@@ -136,13 +65,9 @@
 
   timeout = setTimeout(action, period)
 
-  const observer = new MutationObserver(async () => {
-    if (!document.documentElement.classList.contains('has-image-viewer')) {
-      observer.disconnect()
-      return
-    }
-
+  const observer = new MutationObserver(() => {
     observer.disconnect()
+    if (!document.documentElement.classList.contains('has-image-viewer')) return
 
     period = 500
     clearTimeout(timeout)

@@ -5,6 +5,54 @@ const ImageViewerUtils = (function () {
   const protocol = window.location.protocol
   const srcBitSizeMap = new Map()
 
+  async function getImageBitSize(src) {
+    if (!src || src === 'about:blank' || src.startsWith('data')) return 0
+
+    const cache = srcBitSizeMap.get(src)
+    if (cache !== undefined) return cache
+
+    // protocol-relative URL
+    const url = src.startsWith('//') ? protocol + src : src
+
+    if (new URL(url).hostname !== location.hostname) {
+      return chrome.runtime.sendMessage({msg: 'get_size', url: url})
+    }
+
+    try {
+      const res = await fetch(url, {method: 'HEAD'})
+      if (res.ok) {
+        const type = res.headers.get('Content-Type')
+        const length = res.headers.get('Content-Length')
+        if (type?.startsWith('image')) {
+          const size = parseInt(length) || 0
+          srcBitSizeMap.set(src, size)
+          return size
+        }
+      }
+    } catch (error) {}
+
+    return 0
+  }
+  function getImageRealSize(src) {
+    return new Promise(resolve => {
+      const img = new Image()
+      img.onload = () => resolve(img.naturalWidth)
+      img.onerror = () => resolve(0)
+      img.src = src
+      setTimeout(() => resolve(0), 1000)
+    })
+  }
+  function updateImageSource(img, src) {
+    img.src = src
+    img.srcset = src
+
+    const picture = img.parentNode
+    if (picture.tagName !== 'PICTURE') return
+    const sources = picture.querySelectorAll('source')
+    for (const source of sources) {
+      source.srcset = src
+    }
+  }
   async function checkImageAttr(img) {
     img.loading = 'eager'
 
@@ -76,58 +124,142 @@ const ImageViewerUtils = (function () {
       }
     }
   }
+  async function simpleUnlazyImage() {
+    const unlazyList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
+    unlazyList.map(img => img.classList.add('simpleUnlazy'))
 
-  async function getImageBitSize(src) {
-    if (!src || src === 'about:blank' || src.startsWith('data')) return 0
+    const imgList = unlazyList.filter(img => Math.min(img.clientWidth, img.clientHeight) >= 50)
+    const listSize = imgList.length
+    if (!listSize) return
 
-    const cache = srcBitSizeMap.get(src)
-    if (cache !== undefined) return cache
+    console.log('Try to unlazy image')
+    console.log(`${listSize} image found`)
+    const asyncList = await Promise.all(imgList.map(checkImageAttr))
+    const lazyName = asyncList.filter(n => n)
 
-    // protocol-relative URL
-    const url = src.startsWith('//') ? protocol + src : src
-
-    if (new URL(url).hostname !== location.hostname) {
-      return chrome.runtime.sendMessage({msg: 'get_size', url: url})
-    }
-
-    try {
-      const res = await fetch(url, {method: 'HEAD'})
-      if (res.ok) {
-        const type = res.headers.get('Content-Type')
-        const length = res.headers.get('Content-Length')
-        if (type?.startsWith('image')) {
-          const size = parseInt(length) || 0
-          srcBitSizeMap.set(src, size)
-          return size
-        }
+    if (lazyName.length !== 0) {
+      for (const name of [...new Set(lazyName)]) {
+        console.log(`Unlazy ${lazyName.filter(x => x === name).length} img with ${name} attr`)
       }
-    } catch (error) {}
-
-    return 0
-  }
-  function getImageRealSize(src) {
-    return new Promise(resolve => {
-      const img = new Image()
-      img.onload = () => resolve(img.naturalWidth)
-      img.onerror = () => resolve(0)
-      img.src = src
-      setTimeout(() => resolve(0), 1000)
-    })
-  }
-
-  function updateImageSource(img, src) {
-    img.src = src
-    img.srcset = src
-
-    const picture = img.parentNode
-    if (picture.tagName !== 'PICTURE') return
-    const sources = picture.querySelectorAll('source')
-    for (const source of sources) {
-      source.srcset = src
+    } else {
+      console.log('No lazy src attribute found')
     }
+
+    await new Promise(resolve => setTimeout(resolve, 500))
   }
 
-  function getImageIndex(array, data) {
+  function getImageListWithoutFilter(options) {
+    const imageDataList = []
+    for (const img of document.getElementsByTagName('img')) {
+      imageDataList.push([img.currentSrc, img])
+    }
+
+    for (const node of document.querySelectorAll('*')) {
+      const bg = window.getComputedStyle(node).backgroundImage
+      if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
+        imageDataList.push([bg.substring(4, bg.length - 1).replace(/['"]/g, ''), node])
+      }
+    }
+
+    for (const video of document.querySelectorAll('video[poster]')) {
+      imageDataList.push([video.poster, video])
+    }
+
+    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.includes('.svg') : url => url === '' || url === 'about:blank'
+
+    const uniqueImage = []
+    outer: for (const img of imageDataList) {
+      if (badImage(img[0])) continue outer
+      for (const unique of uniqueImage) {
+        if (img[0] === unique[0]) continue outer
+      }
+      uniqueImage.push(img)
+    }
+
+    return uniqueImage
+  }
+  function getImageList(options) {
+    if (options.minWidth === 0 && options.minHeight === 0) {
+      return getImageListWithoutFilter(options)
+    }
+
+    const imageDataList = []
+
+    for (const img of document.getElementsByTagName('img')) {
+      // only client size should be checked in order to bypass large icon or hidden image
+      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
+        imageDataList.push([img.currentSrc, img])
+      }
+    }
+
+    for (const node of document.querySelectorAll('*')) {
+      if (node.clientWidth < options.minWidth || node.clientHeight < options.minHeight) continue
+      const bg = window.getComputedStyle(node).backgroundImage
+      if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
+        imageDataList.push([bg.substring(4, bg.length - 1).replace(/['"]/g, ''), node])
+      }
+    }
+
+    for (const video of document.querySelectorAll('video[poster]')) {
+      if (video.clientWidth >= options.minWidth && video.clientHeight >= options.minHeight) {
+        imageDataList.push([video.poster, video])
+      }
+    }
+
+    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.includes('.svg') : url => url === '' || url === 'about:blank'
+
+    const uniqueImage = []
+    const uniqueImageUrls = new Set()
+    for (const img of imageDataList) {
+      if (!badImage(img[0]) && !uniqueImageUrls.has(img[0])) {
+        uniqueImageUrls.add(img[0])
+        uniqueImage.push(img)
+      }
+    }
+
+    return uniqueImage
+  }
+  async function sortImageDataList(dataList) {
+    const imageDomList = []
+    const iframeList = [...document.getElementsByTagName('iframe')]
+
+    const iframeSrcList = iframeList.map(iframe => iframe.src)
+    const iframeRedirectSrcList = await chrome.runtime.sendMessage({msg: 'get_redirect', data: iframeSrcList})
+
+    for (const data of dataList) {
+      if (typeof data[1] === 'string') {
+        const index = iframeRedirectSrcList.indexOf(data[1])
+        if (index !== -1) {
+          imageDomList.push([data[0], iframeList[index]])
+        }
+      } else {
+        imageDomList.push([...data])
+      }
+    }
+
+    imageDomList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
+
+    const sortedDataList = []
+    for (const data of imageDomList) {
+      if (data[1].tagName === 'IFRAME') {
+        sortedDataList.push([data[0], data[1].src])
+      } else {
+        sortedDataList.push(data[0])
+      }
+    }
+
+    return sortedDataList
+  }
+
+  function getDomUrl(dom) {
+    const tag = dom.tagName
+    if (tag === 'IMG') return dom.currentSrc
+    if (tag === 'VIDEO') return dom.poster
+    const bg = window.getComputedStyle(dom).backgroundImage
+    return bg.substring(4, bg.length - 1).replace(/['"]/g, '')
+  }
+
+  function getImageInfoIndex(array, data) {
     if (typeof data === 'string') {
       return array.indexOf(data)
     }
@@ -148,158 +280,9 @@ const ImageViewerUtils = (function () {
       }
     },
 
-    simpleUnlazyImage: async function () {
-      const unlazyList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
-      unlazyList.map(img => img.classList.add('simpleUnlazy'))
+    updateWrapperSize: function (dom, options) {
+      if (!dom) return
 
-      const imgList = unlazyList.filter(img => Math.min(img.clientWidth, img.clientHeight) >= 50)
-      const listSize = imgList.length
-      if (!listSize) return
-
-      console.log('Try to unlazy image')
-      console.log(`${listSize} image found`)
-      const asyncList = await Promise.all(imgList.map(checkImageAttr))
-      const lazyName = asyncList.filter(n => n)
-
-      if (lazyName.length !== 0) {
-        for (const name of [...new Set(lazyName)]) {
-          console.log(`Unlazy ${lazyName.filter(x => x === name).length} img with ${name} attr`)
-        }
-      } else {
-        console.log('No lazy src attribute found')
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 500))
-    },
-
-    getImageListWithoutFilter: function (options) {
-      const imageDataList = []
-      for (const img of document.getElementsByTagName('img')) {
-        imageDataList.push([img.currentSrc, img])
-      }
-
-      for (const node of document.querySelectorAll('*')) {
-        const bg = window.getComputedStyle(node).backgroundImage
-        if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-          imageDataList.push([bg.substring(4, bg.length - 1).replace(/['"]/g, ''), node])
-        }
-      }
-
-      for (const video of document.querySelectorAll('video[poster]')) {
-        imageDataList.push([video.poster, video])
-      }
-
-      const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.includes('.svg') : url => url === '' || url === 'about:blank'
-
-      const uniqueImage = []
-      outer: for (const img of imageDataList) {
-        if (badImage(img[0])) continue outer
-        for (const unique of uniqueImage) {
-          if (img[0] === unique[0]) continue outer
-        }
-        uniqueImage.push(img)
-      }
-
-      return uniqueImage
-    },
-
-    getImageList: function (options) {
-      if (options.minWidth === 0 && options.minHeight === 0) {
-        return this.getImageListWithoutFilter(options)
-      }
-
-      const imageDataList = []
-
-      for (const img of document.getElementsByTagName('img')) {
-        // only client size should be checked in order to bypass large icon or hidden image
-        if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
-          imageDataList.push([img.currentSrc, img])
-        }
-      }
-
-      for (const node of document.querySelectorAll('*')) {
-        if (node.clientWidth < options.minWidth || node.clientHeight < options.minHeight) continue
-        const bg = window.getComputedStyle(node).backgroundImage
-        if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-          imageDataList.push([bg.substring(4, bg.length - 1).replace(/['"]/g, ''), node])
-        }
-      }
-
-      for (const video of document.querySelectorAll('video[poster]')) {
-        if (video.clientWidth >= options.minWidth && video.clientHeight >= options.minHeight) {
-          imageDataList.push([video.poster, video])
-        }
-      }
-
-      const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.includes('.svg') : url => url === '' || url === 'about:blank'
-
-      const uniqueImage = []
-      outer: for (const img of imageDataList) {
-        if (badImage(img[0])) continue outer
-        for (const unique of uniqueImage) {
-          if (img[0] === unique[0]) continue outer
-        }
-        uniqueImage.push(img)
-      }
-
-      return uniqueImage
-    },
-
-    getDomUrl: function (dom) {
-      const tag = dom.tagName
-      if (tag === 'IMG') return dom.currentSrc
-      if (tag === 'VIDEO') return dom.poster
-      const bg = window.getComputedStyle(dom).backgroundImage
-      return bg.substring(4, bg.length - 1).replace(/['"]/g, '')
-    },
-
-    sortImageDataList: async function (dataList) {
-      const imageDomList = []
-      const iframeList = [...document.getElementsByTagName('iframe')]
-
-      const iframeSrcList = iframeList.map(iframe => iframe.src)
-      const iframeRedirectSrcList = await chrome.runtime.sendMessage({msg: 'get_redirect', data: iframeSrcList})
-
-      for (const data of dataList) {
-        if (typeof data[1] === 'string') {
-          const index = iframeRedirectSrcList.indexOf(data[1])
-          if (index !== -1) {
-            imageDomList.push([data[0], iframeList[index]])
-          }
-        } else {
-          imageDomList.push([...data])
-        }
-      }
-
-      imageDomList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
-
-      const sortedDataList = []
-      for (const data of imageDomList) {
-        if (data[1].tagName === 'IFRAME') {
-          sortedDataList.push([data[0], data[1].src])
-        } else {
-          sortedDataList.push(data[0])
-        }
-      }
-
-      return sortedDataList
-    },
-
-    dataURLToObjectURL: function (dataURL) {
-      if (!dataURL.startsWith('data')) return dataURL
-
-      const arr = dataURL.split(',')
-      const mime = arr[0].match(/:(.*?);/)[1]
-      const bstr = atob(arr[1])
-      let n = bstr.length
-      const u8arr = new Uint8Array(n)
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n)
-      }
-      return URL.createObjectURL(new Blob([u8arr], {type: mime}))
-    },
-
-    getWrapperSize: function (dom) {
       const domSize = Math.min(dom.clientWidth, dom.clientHeight)
 
       const wrapper = dom.closest('div')
@@ -307,7 +290,6 @@ const ImageViewerUtils = (function () {
 
       const classList = '.' + [...wrapper.classList].map(CSS.escape).join(', .')
       const wrapperDivList = document.querySelectorAll(`div:is(${classList})`)
-      if (wrapperDivList.length < 4) return
 
       const width = []
       const height = []
@@ -326,7 +308,45 @@ const ImageViewerUtils = (function () {
 
       const finalWidth = Math.min(...width.filter(w => w * 2 >= domSize)) - 3
       const finalHeight = Math.min(...height.filter(h => h * 2 >= domSize)) - 3
-      return [finalWidth, finalHeight]
+
+      options.minWidth = Math.min(finalWidth, options.minWidth)
+      options.minHeight = Math.min(finalHeight, options.minHeight)
+    },
+
+    getOrderedImageUrls: async function (options) {
+      await simpleUnlazyImage()
+
+      const uniqueImageUrls = getImageList(options)
+
+      if (!!document.querySelector('iframe')) {
+        const minSize = Math.min(options.minWidth, options.minHeight)
+        const iframeImage = await chrome.runtime.sendMessage({msg: 'extract_frames', minSize: minSize})
+
+        const uniqueIframeImage = []
+        const uniqueIframeImageUrls = new Set()
+        for (const img of iframeImage) {
+          if (!uniqueIframeImageUrls.has(img[0])) {
+            uniqueIframeImageUrls.add(img[0])
+            uniqueIframeImage.push(img)
+          }
+        }
+        uniqueImageUrls.push(...uniqueIframeImage)
+      }
+
+      if (uniqueImageUrls.length === 0) return []
+
+      const orderedImageUrls = await sortImageDataList(uniqueImageUrls)
+      return orderedImageUrls
+    },
+
+    searchImageInfoIndex: function (input, imageList) {
+      if (typeof input === 'object') {
+        const currentUrl = getDomUrl(input)
+        return imageList.indexOf(currentUrl)
+      }
+
+      const data = input.startsWith('data') ? [input] : input
+      return getImageInfoIndex(imageList, data)
     },
 
     combineImageList: function (newList, oldList) {
@@ -343,8 +363,8 @@ const ImageViewerUtils = (function () {
       while (rightIndex < newList.length) {
         const right = newList[rightIndex]
 
-        indexAtOldArray = getImageIndex(oldList, right)
-        indexAtCombinedArray = getImageIndex(combinedImageList, right)
+        indexAtOldArray = getImageInfoIndex(oldList, right)
+        indexAtCombinedArray = getImageInfoIndex(combinedImageList, right)
 
         // right is not a anchor
         if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
