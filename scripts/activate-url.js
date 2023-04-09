@@ -19,7 +19,9 @@
     const safeHref = 'about:blank'
     const iframeList = document.querySelectorAll('iframe')
     for (const iframe of iframeList) {
-      iframe.src = iframe.src.startsWith('javascript') ? safeHref : iframe.src
+      if (iframe.src.startsWith('javascript')) {
+        iframe.src = safeHref
+      }
       iframe.classList.add('loadedWorker')
       iframe.classList.add('safeHref')
     }
@@ -33,7 +35,9 @@
 
       const iframeList = document.querySelectorAll('iframe:not(.safeHref)')
       for (const iframe of iframeList) {
-        iframe.src = iframe.src.startsWith('javascript') ? safeHref : iframe.src
+        if (iframe.src.startsWith('javascript')) {
+          iframe.src = safeHref
+        }
         iframe.classList.add('safeHref')
       }
 
