@@ -1,20 +1,21 @@
-;(async function () {
+;(function () {
   'use strict'
 
-  const image = document.querySelector(`body img[src='${location.href}']`)
-  if (image) {
-    const options = await chrome.runtime.sendMessage('get_options')
-    options.closeButton = false
-    options.minWidth = 0
-    options.minHeight = 0
+  const init = async () => {
+    if (document.body.children.length === 1 && document.body.children[0].tagName === 'IMG') {
+      const image = document.body.children[0]
 
-    await chrome.runtime.sendMessage('load_script')
-    image.style.display = 'none'
-    imageViewer([image.src], options)
-    return
-  }
+      const options = await chrome.runtime.sendMessage('get_options')
+      options.closeButton = false
+      options.minWidth = 0
+      options.minHeight = 0
 
-  const init = () => {
+      await chrome.runtime.sendMessage('load_script')
+      image.style.display = 'none'
+      imageViewer([image.src], options)
+      return
+    }
+
     // chrome.scripting.executeScript never return on invalid iframe
     const safeHref = 'about:blank'
     const iframeList = document.querySelectorAll('iframe')
