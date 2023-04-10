@@ -320,10 +320,22 @@
   })()
 
   let timeout
+  const enableHover = () => {
+    clearTimeout(timeout)
+    document.body.classList.remove('disable-hover')
+  }
+  const disableHover = () => {
+    clearTimeout(timeout)
+    document.body.classList.add('disable-hover')
+    timeout = setTimeout(() => document.body.classList.remove('disable-hover'), 2000)
+  }
+
   document.addEventListener(
     'contextmenu',
     async e => {
+      enableHover()
       if (document.elementFromPoint(e.clientX, e.clientY) === null) return
+
       const viewportPosition = [e.clientX, e.clientY]
       const imageNodeInfo = await domSearcher.searchDomByPosition(viewportPosition)
       if (!imageNodeInfo) return
@@ -336,10 +348,9 @@
       imageNodeInfo[1] -= 10
       chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
 
-      clearTimeout(timeout)
-      document.body.classList.add('disable-hover')
-      timeout = setTimeout(() => document.body.classList.remove('disable-hover'), 2000)
+      disableHover()
     },
     true
   )
+  document.addEventListener('click', enableHover, true)
 })()
