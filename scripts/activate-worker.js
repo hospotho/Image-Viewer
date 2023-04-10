@@ -338,7 +338,7 @@
 
       clearTimeout(timeout)
       document.body.classList.add('disable-hover')
-      timeout = setTimeout(() => document.body.classList.remove('disable-hover'), 3000)
+      timeout = setTimeout(() => document.body.classList.remove('disable-hover'), 2000)
     },
     true
   )
