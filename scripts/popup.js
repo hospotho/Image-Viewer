@@ -1,5 +1,14 @@
 ;(function () {
   const rawText = `
+1.16 [2023-04-10]:
+1. Image viewer now collects images after website adding new content.
+  // usually website update is toggled by scroll to the end of the page 
+  // you can archive it by scrolling on the scrollbar or press "End" key on keyboard
+  // you may also use other "next page" script/extension
+2. Fix issues for youtube thumbnail
+3. Fix bugs related to last update
+4. Refactor code to improving program structure 
+
 1.15 [2023-04-05]:
 Large Update
 1. Add support on update image in the viewer
