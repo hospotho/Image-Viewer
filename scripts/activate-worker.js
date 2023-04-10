@@ -353,4 +353,5 @@
     true
   )
   document.addEventListener('click', enableHover, true)
+  document.addEventListener('auxclick', enableHover, true)
 })()
