@@ -5,6 +5,16 @@
 
   document.documentElement.classList.add('has-image-viewer-worker')
 
+  if (window.top === window.self) {
+    const styles = `.disable-hover,
+    .disable-hover * {
+      pointer-events: none !important;
+    }`
+    const styleSheet = document.createElement('style')
+    styleSheet.innerText = styles
+    document.head.appendChild(styleSheet)
+  }
+
   function createDataUrl(srcUrl) {
     return new Promise(resolve => {
       chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl}).then(res => {
@@ -309,6 +319,7 @@
     }
   })()
 
+  let timeout
   document.addEventListener(
     'contextmenu',
     async e => {
@@ -324,6 +335,10 @@
       // image size maybe decreased in dataURL
       imageNodeInfo[1] -= 10
       chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
+
+      clearTimeout(timeout)
+      document.body.classList.add('disable-hover')
+      timeout = setTimeout(() => document.body.classList.remove('disable-hover'), 3000)
     },
     true
   )
