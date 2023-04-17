@@ -12,14 +12,15 @@ const ImageViewerUtils = (function () {
     if (cache !== undefined) return cache
 
     // protocol-relative URL
-    const url = src.startsWith('//') ? protocol + src : src
+    const url = new URL(src, document.baseURI)
+    const href = url.href
 
-    if (new URL(url).hostname !== location.hostname) {
-      return chrome.runtime.sendMessage({msg: 'get_size', url: url})
+    if (url.hostname !== location.hostname) {
+      return chrome.runtime.sendMessage({msg: 'get_size', url: href})
     }
 
     try {
-      const res = await fetch(url, {method: 'HEAD'})
+      const res = await fetch(href, {method: 'HEAD'})
       if (res.ok) {
         const type = res.headers.get('Content-Type')
         const length = res.headers.get('Content-Length')
