@@ -657,8 +657,8 @@ const imageViewer = (function () {
       viewer.addEventListener('keydown', e => {
         if (e.key === 'Insert' || e.key === '0') {
           e.preventDefault()
-          const imgUrl = shadowRoot.querySelector('.current img').src
-          const imgNode = searchImgNode(imgUrl)
+          const img = shadowRoot.querySelector('.current img')
+          const imgNode = searchImgNode(img)
           if (!imgNode) return
           const anchor = searchImgAnchor(imgNode)
           if (!anchor) return
