@@ -135,17 +135,33 @@
 
     function searchImageFromTree(dom, viewportPos) {
       if (!dom) return null
-      let root = dom.closest('div')
-      let sibling = root.previousElementSibling || root.nextElementSibling
-      while (sibling && ([...sibling.classList].join() !== [...root.classList].join() || sibling.tagName !== root.tagName)) {
+
+      let root = dom.parentElement
+      let prevSibling = root.previousElementSibling
+      let nextSibling = root.nextElementSibling
+
+      let rootClassList = root.classList.toString()
+      let prevClassList = prevSibling && prevSibling.classList.toString()
+      let nextClassList = nextSibling && nextSibling.classList.toString()
+
+      let hasSameKindSibling = false
+      hasSameKindSibling ||= prevSibling ? prevClassList === rootClassList || prevSibling.tagName === root.tagName : false
+      hasSameKindSibling ||= nextSibling ? nextClassList === rootClassList || nextSibling.tagName === root.tagName : false
+      while (!hasSameKindSibling) {
+        if (root === document.documentElement) return null
         root = root.parentElement
-        sibling = root.previousElementSibling || root.nextElementSibling
-      }
+        prevSibling = root.previousElementSibling
+        nextSibling = root.nextElementSibling
 
-      if (root === document.documentElement) {
-        return null
-      }
+        rootClassList = root.classList.toString()
+        prevClassList = prevSibling && prevSibling.classList.toString()
+        nextClassList = nextSibling && nextSibling.classList.toString()
 
+        hasSameKindSibling ||= prevSibling ? prevClassList === rootClassList || prevSibling.tagName === root.tagName : false
+        hasSameKindSibling ||= nextSibling ? nextClassList === rootClassList || nextSibling.tagName === root.tagName : false
+      }
+      
+      root = root.parentElement
       const [mouseX, mouseY] = viewportPos
       const relatedDomList = []
       for (const dom of getAllChildElements(root)) {
