@@ -4,6 +4,17 @@ const ImageViewerUtils = (function () {
   const argsRegex = /(.+\/.*?\.).*(png|jpeg|jpg|gif|bmp|tiff|webp).*/i
   const protocol = window.location.protocol
   const srcBitSizeMap = new Map()
+  const mutex = (() => {
+    let promise = Promise.resolve()
+    return {
+      acquire: async () => {
+        await promise
+        let release
+        promise = new Promise(resolve => (release = resolve))
+        return release
+      }
+    }
+  })()
 
   async function getImageBitSize(src) {
     if (!src || src === 'about:blank' || src.startsWith('data')) return 0
@@ -126,6 +137,7 @@ const ImageViewerUtils = (function () {
     }
   }
   async function simpleUnlazyImage() {
+    const release = await mutex.lock()
     const unlazyList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
     unlazyList.map(img => img.classList.add('simpleUnlazy'))
 
@@ -146,6 +158,7 @@ const ImageViewerUtils = (function () {
       console.log('No lazy src attribute found')
     }
 
+    release()
     await new Promise(resolve => setTimeout(resolve, 500))
   }
 
