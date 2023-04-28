@@ -70,7 +70,7 @@ const ImageViewerUtils = (function () {
 
     const argsMatch = !img.src.startsWith('data') && img.src.match(argsRegex)
     const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name) && attr.value.match(urlRegex))
-    if (!argsMatch && attrList.length === 0) return ''
+    if (!argsMatch && attrList.length === 0) return null
 
     const bitSize = await getImageBitSize(img.src.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
@@ -135,6 +135,8 @@ const ImageViewerUtils = (function () {
         }
       }
     }
+
+    return null
   }
   async function simpleUnlazyImage() {
     const release = await mutex.acquire()
