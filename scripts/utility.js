@@ -150,7 +150,7 @@ const ImageViewerUtils = (function () {
     console.log('Try to unlazy image')
     console.log(`${listSize} image found`)
     const asyncList = await Promise.all(imgList.map(checkImageAttr))
-    const lazyName = asyncList.filter(n => n)
+    const lazyName = asyncList.filter(Boolean)
 
     if (lazyName.length !== 0) {
       for (const name of [...new Set(lazyName)]) {
