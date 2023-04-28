@@ -137,7 +137,7 @@ const ImageViewerUtils = (function () {
     }
   }
   async function simpleUnlazyImage() {
-    const release = await mutex.lock()
+    const release = await mutex.acquire()
     const unlazyList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
     unlazyList.map(img => img.classList.add('simpleUnlazy'))
 
