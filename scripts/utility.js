@@ -57,7 +57,9 @@ const ImageViewerUtils = (function () {
   function updateImageSource(img, src) {
     return new Promise(resolve => {
       function checkSrc() {
-        if (img.currentSrc === src) {
+        const currentUrl = new URL(img.currentSrc, window.location.href)
+        const targetUrl = new URL(src, window.location.href)
+        if (currentUrl.href === targetUrl.href) {
           resolve()
         } else {
           setTimeout(checkSrc, 50)
