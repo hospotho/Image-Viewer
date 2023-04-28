@@ -160,7 +160,7 @@
         hasSameKindSibling ||= prevSibling ? prevClassList === rootClassList || prevSibling.tagName === root.tagName : false
         hasSameKindSibling ||= nextSibling ? nextClassList === rootClassList || nextSibling.tagName === root.tagName : false
       }
-      
+
       root = root.parentElement
       const [mouseX, mouseY] = viewportPos
       const relatedDomList = []
@@ -302,6 +302,7 @@
     const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
     const isNewImageInfoBetter = async (newInfo, oldInfo) => {
       if (oldInfo === null) return true
+      if (oldInfo[2].tagName === 'IMG' && newInfo[2].tagName !== 'IMG') return false
       if (!newInfo[0].startsWith('data')) {
         const [newSize, oldSize] = await Promise.all([newInfo[0], oldInfo[0]].map(getImageRealSize))
         return newSize > oldSize
