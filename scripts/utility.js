@@ -55,15 +55,28 @@ const ImageViewerUtils = (function () {
     })
   }
   function updateImageSource(img, src) {
-    img.src = src
-    img.srcset = src
+    return new Promise(resolve => {
+      function checkSrc() {
+        if (img.currentSrc === src) {
+          resolve()
+        } else {
+          setTimeout(checkSrc, 50)
+        }
+      }
 
-    const picture = img.parentNode
-    if (picture.tagName !== 'PICTURE') return
-    const sources = picture.querySelectorAll('source')
-    for (const source of sources) {
-      source.srcset = src
-    }
+      img.src = src
+      img.srcset = src
+
+      const picture = img.parentNode
+      if (picture.tagName === 'PICTURE') {
+        const sources = picture.querySelectorAll('source')
+        for (const source of sources) {
+          source.srcset = src
+        }
+      }
+
+      checkSrc()
+    })
   }
   async function checkImageAttr(img) {
     img.loading = 'eager'
@@ -81,14 +94,14 @@ const ImageViewerUtils = (function () {
       if (bitSize) {
         const lazySize = await getImageBitSize(newURL)
         if (lazySize > bitSize) {
-          updateImageSource(img, newURL)
+          await updateImageSource(img, newURL)
           return 'rawUrl'
         }
       }
 
       const lazySize = await getImageRealSize(newURL)
       if (lazySize > naturalSize) {
-        updateImageSource(img, newURL)
+        await updateImageSource(img, newURL)
         return 'rawUrl'
       }
     }
@@ -103,14 +116,14 @@ const ImageViewerUtils = (function () {
         if (bitSize) {
           const lazySize = await getImageBitSize(newURL)
           if (lazySize > bitSize) {
-            updateImageSource(img, newURL)
+            await updateImageSource(img, newURL)
             return attr.name
           }
         }
 
         const lazySize = await getImageRealSize(newURL)
         if (lazySize > naturalSize) {
-          updateImageSource(img, newURL)
+          await updateImageSource(img, newURL)
           return attr.name
         }
       }
@@ -122,7 +135,7 @@ const ImageViewerUtils = (function () {
           const [firstSize, lastSize] = await Promise.all([first, last].map(getImageBitSize))
           if (firstSize > bitSize || lastSize > bitSize) {
             const large = lastSize > firstSize ? last : first
-            updateImageSource(img, large)
+            await updateImageSource(img, large)
             return attr.name
           }
         }
@@ -130,7 +143,7 @@ const ImageViewerUtils = (function () {
         const [firstSize, lastSize] = await Promise.all([first, last].map(getImageRealSize))
         if (firstSize > naturalSize || lastSize > naturalSize) {
           const large = lastSize > firstSize ? last : first
-          updateImageSource(img, large)
+          await updateImageSource(img, large)
           return attr.name
         }
       }
@@ -139,9 +152,7 @@ const ImageViewerUtils = (function () {
     return null
   }
   async function simpleUnlazyImage() {
-    const release = await mutex.acquire()
     const unlazyList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
-    unlazyList.map(img => img.classList.add('simpleUnlazy'))
 
     const imgList = unlazyList.filter(img => Math.min(img.clientWidth, img.clientHeight) >= 50)
     const listSize = imgList.length
@@ -160,7 +171,7 @@ const ImageViewerUtils = (function () {
       console.log('No lazy src attribute found')
     }
 
-    release()
+    unlazyList.map(img => img.classList.add('simpleUnlazy'))
     await new Promise(resolve => setTimeout(resolve, 500))
   }
 
@@ -330,6 +341,8 @@ const ImageViewerUtils = (function () {
     },
 
     getOrderedImageUrls: async function (options) {
+      const release = await mutex.acquire()
+
       await simpleUnlazyImage()
 
       const uniqueImageUrls = getImageList(options)
@@ -352,6 +365,8 @@ const ImageViewerUtils = (function () {
       if (uniqueImageUrls.length === 0) return []
 
       const orderedImageUrls = await sortImageDataList(uniqueImageUrls)
+
+      release()
       return orderedImageUrls
     },
 
