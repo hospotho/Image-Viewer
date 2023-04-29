@@ -174,7 +174,6 @@ const ImageViewerUtils = (function () {
     }
 
     unlazyList.map(img => img.classList.add('simpleUnlazy'))
-    await new Promise(resolve => setTimeout(resolve, 500))
   }
 
   function getImageListWithoutFilter(options) {
