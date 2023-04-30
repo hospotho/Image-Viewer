@@ -964,6 +964,9 @@ const imageViewer = (function () {
       }
     }
     currentImageList = newList
+
+    shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
+    shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = currentImageList.length
   }
 
   //==========main function==========
