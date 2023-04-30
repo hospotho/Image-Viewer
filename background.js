@@ -9,25 +9,28 @@ const passDataToTab = (id, name, data) => {
     }
   })
 }
-const getImageBitSize = async src => {
-  const cache = srcBitSizeMap.get(src)
-  if (cache !== undefined) return cache
+const getImageBitSize = src => {
+  return new Promise(async resolve => {
+    const cache = srcBitSizeMap.get(src)
+    if (cache !== undefined) resolve(cache)
 
-  try {
-    const res = await fetch(src, {method: 'HEAD'})
-    if (res.ok) {
-      const type = res.headers.get('Content-Type')
-      const length = res.headers.get('Content-Length')
-      if (type?.startsWith('image')) {
-        const size = parseInt(length) || 0
-        srcBitSizeMap.set(src, size)
-        expired.push(src)
-        return size
+    setTimeout(() => resolve(0), 5000)
+    try {
+      const res = await fetch(src, {method: 'HEAD'})
+      if (res.ok) {
+        const type = res.headers.get('Content-Type')
+        const length = res.headers.get('Content-Length')
+        if (type?.startsWith('image')) {
+          const size = parseInt(length) || 0
+          srcBitSizeMap.set(src, size)
+          expired.push(src)
+          resolve(size)
+        }
       }
-    }
-  } catch (error) {}
+    } catch (error) {}
 
-  return 0
+    resolve(0)
+  })
 }
 const getRedirectUrl = async srcList => {
   const asyncList = srcList.map(async src => {
