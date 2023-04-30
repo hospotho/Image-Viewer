@@ -559,7 +559,7 @@ const imageViewer = (function () {
     updateCounter()
 
     let completeFlag = false
-    base.firstChild.addEventListener('load', e => {
+    base.firstChild.addEventListener('load', () => {
       if (options.sizeCheck) {
         const minSize = Math.min(base.naturalWidth, base.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
