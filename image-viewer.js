@@ -561,7 +561,7 @@ const imageViewer = (function () {
     let completeFlag = false
     base.firstChild.addEventListener('load', () => {
       if (options.sizeCheck) {
-        const minSize = Math.min(base.naturalWidth, base.naturalHeight)
+        const minSize = Math.min(base.firstChild.naturalWidth, base.firstChild.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
         options.minHeight = Math.min(minSize, options.minHeight)
         options.sizeCheck = false
