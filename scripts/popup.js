@@ -1,5 +1,11 @@
 ;(function () {
   const rawText = `
+1.17 [2023-04-30]:
+Stability update
+1. Add some code to increase the stability
+2. Add handle to more edge cases
+3. Fix bugs
+
 1.16 [2023-04-10]:
 1. Image viewer now collects images after website adding new content.
   // usually website update is toggled by scroll to the end of the page 
