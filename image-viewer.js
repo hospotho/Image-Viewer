@@ -565,6 +565,7 @@ const imageViewer = (function () {
         options.minWidth = Math.min(minSize, options.minWidth)
         options.minHeight = Math.min(minSize, options.minHeight)
         options.sizeCheck = false
+        fitImage(options)
       }
       shadowRoot.querySelector(`.${appName}-info-width`).value = base.firstChild.naturalWidth
       shadowRoot.querySelector(`.${appName}-info-height`).value = base.firstChild.naturalHeight
