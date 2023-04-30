@@ -14,7 +14,12 @@ const getImageBitSize = src => {
     const cache = srcBitSizeMap.get(src)
     if (cache !== undefined) resolve(cache)
 
-    setTimeout(() => resolve(0), 5000)
+    setTimeout(() => {
+      srcBitSizeMap.set(src, 0)
+      expired.push(src)
+      resolve(0)
+    }, 5000)
+
     try {
       const res = await fetch(src, {method: 'HEAD'})
       if (res.ok) {
@@ -29,6 +34,8 @@ const getImageBitSize = src => {
       }
     } catch (error) {}
 
+    srcBitSizeMap.set(src, 0)
+    expired.push(src)
     resolve(0)
   })
 }
