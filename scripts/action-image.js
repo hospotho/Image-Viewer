@@ -15,7 +15,7 @@
   const nodeInfo = await chrome.runtime.sendMessage('get_info')
   const [srcUrl, nodeSize] = nodeInfo === null ? [] : nodeInfo
   const dom = document.querySelector('.ImageViewerLastDom')
-  if (dom.tagName !== 'IMG') {
+  if (dom?.tagName !== 'IMG') {
     options.sizeCheck = true
   }
 
