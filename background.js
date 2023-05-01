@@ -41,6 +41,8 @@ const getImageBitSize = src => {
 }
 const getRedirectUrl = async srcList => {
   const asyncList = srcList.map(async src => {
+    if (src === 'about:blank') return src
+
     try {
       const res = await fetch(src)
       return res.redirected ? res.url : src
