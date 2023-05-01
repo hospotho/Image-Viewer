@@ -118,7 +118,7 @@ function resetLocalStorage() {
 }
 
 function addMessageHandler() {
-  chrome.runtime.onMessage.addListener((request, sender, _sendResponse) => {
+  chrome.runtime.onMessage.addListener(async (request, sender, _sendResponse) => {
     const type = request.msg || request
     console.log('Received message: ', sender.tab.id, type)
 
@@ -161,15 +161,14 @@ function addMessageHandler() {
         const newOptions = Object.assign({}, currOptions)
         newOptions.minWidth = request.minSize
         newOptions.minHeight = request.minSize
-        passDataToTab(sender.tab.id, 'ImageViewerOption', newOptions)
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/extract-iframe.js']}, results => {
-          let args = []
-          for (const result of results) {
-            if (!result.result) continue
-            args.push(...result.result)
-          }
-          sendResponse(args)
-        })
+        await passDataToTab(sender.tab.id, 'ImageViewerOption', newOptions)
+        const results = await chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/extract-iframe.js']})
+        const args = []
+        for (const result of results) {
+          if (!result.result) continue
+          args.push(...result.result)
+        }
+        sendResponse(args)
         return true
       }
       case 'reset_dom': {
@@ -201,14 +200,14 @@ function addMessageHandler() {
         return true
       }
       case 'get_size': {
-        getImageBitSize(request.url).then(size => {
-          sendResponse(size, false)
-          console.log(request.url, size)
-        })
+        const size = await getImageBitSize(request.url)
+        sendResponse(size, false)
+        console.log(request.url, size)
         return true
       }
       case 'get_redirect': {
-        getRedirectUrl(request.data).then(resultList => sendResponse(resultList))
+        const resultList = await getRedirectUrl(request.data)
+        sendResponse(resultList)
         return true
       }
     }
