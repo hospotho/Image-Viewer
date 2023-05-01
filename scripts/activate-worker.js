@@ -5,16 +5,6 @@
 
   document.documentElement.classList.add('has-image-viewer-worker')
 
-  if (window.top === window.self) {
-    const styles = `.disable-hover,
-    .disable-hover * {
-      pointer-events: none !important;
-    }`
-    const styleSheet = document.createElement('style')
-    styleSheet.innerText = styles
-    document.head.appendChild(styleSheet)
-  }
-
   function createDataUrl(srcUrl) {
     return new Promise(resolve => {
       chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl}).then(res => {
@@ -336,39 +326,53 @@
     }
   })()
 
-  let timeout
-  const enableHover = () => {
-    clearTimeout(timeout)
-    document.body.classList.remove('disable-hover')
+  const rightClickHandler = async e => {
+    if (document.elementFromPoint(e.clientX, e.clientY) === null) return
+
+    const viewportPosition = [e.clientX, e.clientY]
+    const imageNodeInfo = await domSearcher.searchDomByPosition(viewportPosition)
+    if (!imageNodeInfo) return
+
+    console.log(imageNodeInfo.pop())
+    if (window.top !== window.self) {
+      imageNodeInfo[0] = await createDataUrl(imageNodeInfo[0])
+    }
+    // image size maybe decreased in dataURL
+    imageNodeInfo[1] -= 10
+    chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
   }
-  const disableHover = () => {
-    clearTimeout(timeout)
-    document.body.classList.add('disable-hover')
-    timeout = setTimeout(() => document.body.classList.remove('disable-hover'), 2000)
+
+  if (location.hostname === 'www.youtube.com') {
+    if (window.top === window.self) {
+      const styles = '.disable-hover, .disable-hover * {pointer-events: none !important;}'
+      const styleSheet = document.createElement('style')
+      styleSheet.innerText = styles
+      document.head.appendChild(styleSheet)
+    }
+    let timeout
+    const enableHover = () => {
+      clearTimeout(timeout)
+      document.body.classList.remove('disable-hover')
+    }
+    const disableHover = () => {
+      clearTimeout(timeout)
+      document.body.classList.add('disable-hover')
+      timeout = setTimeout(() => document.body.classList.remove('disable-hover'), 2000)
+    }
+
+    document.addEventListener(
+      'contextmenu',
+      async e => {
+        enableHover()
+        await rightClickHandler(e)
+        disableHover()
+      },
+      true
+    )
+    document.addEventListener('click', enableHover, true)
+    document.addEventListener('auxclick', enableHover, true)
+    return
   }
 
-  document.addEventListener(
-    'contextmenu',
-    async e => {
-      enableHover()
-      if (document.elementFromPoint(e.clientX, e.clientY) === null) return
-
-      const viewportPosition = [e.clientX, e.clientY]
-      const imageNodeInfo = await domSearcher.searchDomByPosition(viewportPosition)
-      if (!imageNodeInfo) return
-
-      console.log(imageNodeInfo.pop())
-      if (window.top !== window.self) {
-        imageNodeInfo[0] = await createDataUrl(imageNodeInfo[0])
-      }
-      // image size maybe decreased in dataURL
-      imageNodeInfo[1] -= 10
-      chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
-
-      disableHover()
-    },
-    true
-  )
-  document.addEventListener('click', enableHover, true)
-  document.addEventListener('auxclick', enableHover, true)
+  document.addEventListener('contextmenu', rightClickHandler, true)
 })()
