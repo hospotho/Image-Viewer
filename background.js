@@ -118,7 +118,7 @@ function resetLocalStorage() {
 }
 
 function addMessageHandler() {
-  chrome.runtime.onMessage.addListener(async (request, sender, _sendResponse) => {
+  chrome.runtime.onMessage.addListener((request, sender, _sendResponse) => {
     const type = request.msg || request
     console.log('Received message: ', sender.tab.id, type)
 
@@ -135,14 +135,15 @@ function addMessageHandler() {
         return true
       }
       case 'update_options': {
-        chrome.storage.sync.get('options', res => {
+        ;(async () => {
+          const res = await chrome.storage.sync.get('options')
           currOptions = res.options
           currOptionsWithoutSize = Object.assign({}, currOptions)
           currOptionsWithoutSize.minWidth = 0
           currOptionsWithoutSize.minHeight = 0
           console.log(currOptions)
           sendResponse()
-        })
+        })()
         return true
       }
       case 'load_worker': {
@@ -158,17 +159,19 @@ function addMessageHandler() {
         return true
       }
       case 'extract_frames': {
-        const newOptions = Object.assign({}, currOptions)
-        newOptions.minWidth = request.minSize
-        newOptions.minHeight = request.minSize
-        await passDataToTab(sender.tab.id, 'ImageViewerOption', newOptions)
-        const results = await chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/extract-iframe.js']})
-        const args = []
-        for (const result of results) {
-          if (!result.result) continue
-          args.push(...result.result)
-        }
-        sendResponse(args)
+        ;(async () => {
+          const newOptions = Object.assign({}, currOptions)
+          newOptions.minWidth = request.minSize
+          newOptions.minHeight = request.minSize
+          await passDataToTab(sender.tab.id, 'ImageViewerOption', newOptions)
+          const results = await chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/extract-iframe.js']})
+          const args = []
+          for (const result of results) {
+            if (!result.result) continue
+            args.push(...result.result)
+          }
+          sendResponse(args)
+        })()
         return true
       }
       case 'reset_dom': {
@@ -200,14 +203,18 @@ function addMessageHandler() {
         return true
       }
       case 'get_size': {
-        const size = await getImageBitSize(request.url)
-        sendResponse(size, false)
-        console.log(request.url, size)
+        ;(async () => {
+          const size = await getImageBitSize(request.url)
+          sendResponse(size, false)
+          console.log(request.url, size)
+        })()
         return true
       }
       case 'get_redirect': {
-        const resultList = await getRedirectUrl(request.data)
-        sendResponse(resultList)
+        ;(async () => {
+          const resultList = await getRedirectUrl(request.data)
+          sendResponse(resultList)
+        })()
         return true
       }
     }
