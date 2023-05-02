@@ -5,31 +5,11 @@
 
   document.documentElement.classList.add('has-image-viewer-worker')
 
-  function createDataUrl(srcUrl) {
-    return new Promise(resolve => {
-      chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl}).then(res => {
-        if (res !== 0) resolve(srcUrl)
-      })
-
-      const img = new Image()
-
-      img.onload = () => {
-        const c = document.createElement('canvas')
-        const ctx = c.getContext('2d')
-        c.width = img.naturalWidth
-        c.height = img.naturalHeight
-        ctx.drawImage(img, 0, 0)
-        const url = img.src.match('png') ? c.toDataURL() : img.src.match('webp') ? c.toDataURL('image/webp') : c.toDataURL('image/jpeg')
-        resolve(url)
-      }
-      img.onerror = () => {
-        console.log(new URL(srcUrl).hostname + ' block your access outside iframe')
-        resolve('')
-      }
-
-      img.crossOrigin = 'anonymous'
-      img.src = srcUrl
-    })
+  if (window.top === window.self) {
+    const styles = '.disable-hover, .disable-hover * {pointer-events: none !important;}'
+    const styleSheet = document.createElement('style')
+    styleSheet.innerText = styles
+    document.head.appendChild(styleSheet)
   }
 
   const domSearcher = (function () {
@@ -176,8 +156,7 @@
       return imageInfoList[0]
     }
 
-    async function searchDomByPosition(viewportPos) {
-      const [mouseX, mouseY] = viewportPos
+    async function searchDomByPosition(elementList) {
       const domList = []
       const ptEvent = []
 
@@ -188,8 +167,9 @@
       let hiddenImageInfoFromPoint = null
       let hiddenDomLayer = 0
 
-      for (let tryCount = 20; tryCount > 0; tryCount--) {
-        const dom = document.elementFromPoint(mouseX, mouseY)
+      const maxTry = Math.min(20, elementList.length)
+      for (let tryCount = 0; tryCount < maxTry; tryCount++) {
+        const dom = elementList[tryCount]
         if (dom === document.documentElement || dom === domList[domList.length - 1]) break
 
         const imageInfo = extractImageInfoFromNode(dom)
@@ -326,53 +306,68 @@
     }
   })()
 
-  const rightClickHandler = async e => {
-    if (document.elementFromPoint(e.clientX, e.clientY) === null) return
+  async function getOrderedElement(e) {
+    const elementsBeforeDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
+    document.body.classList.add('disable-hover')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    document.body.classList.remove('disable-hover')
+    const elementsAfterDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
 
-    const viewportPosition = [e.clientX, e.clientY]
-    const imageNodeInfo = await domSearcher.searchDomByPosition(viewportPosition)
-    if (!imageNodeInfo) return
-
-    console.log(imageNodeInfo.pop())
-    if (window.top !== window.self) {
-      imageNodeInfo[0] = await createDataUrl(imageNodeInfo[0])
+    const stableElements = []
+    const unstableElements = []
+    for (const elem of elementsBeforeDisableHover) {
+      if (elementsAfterDisableHover.includes(elem)) {
+        stableElements.push(elem)
+      } else {
+        unstableElements.push(elem)
+      }
     }
-    // image size maybe decreased in dataURL
-    imageNodeInfo[1] -= 10
-    chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
+    const orderedElements = stableElements.concat(unstableElements)
+    return orderedElements
   }
 
-  if (location.hostname === 'www.youtube.com') {
-    if (window.top === window.self) {
-      const styles = '.disable-hover, .disable-hover * {pointer-events: none !important;}'
-      const styleSheet = document.createElement('style')
-      styleSheet.innerText = styles
-      document.head.appendChild(styleSheet)
-    }
-    let timeout
-    const enableHover = () => {
-      clearTimeout(timeout)
-      document.body.classList.remove('disable-hover')
-    }
-    const disableHover = () => {
-      clearTimeout(timeout)
-      document.body.classList.add('disable-hover')
-      timeout = setTimeout(() => document.body.classList.remove('disable-hover'), 2000)
-    }
+  function createDataUrl(srcUrl) {
+    return new Promise(resolve => {
+      chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl}).then(res => {
+        if (res !== 0) resolve(srcUrl)
+      })
 
-    document.addEventListener(
-      'contextmenu',
-      async e => {
-        enableHover()
-        await rightClickHandler(e)
-        disableHover()
-      },
-      true
-    )
-    document.addEventListener('click', enableHover, true)
-    document.addEventListener('auxclick', enableHover, true)
-    return
+      const img = new Image()
+
+      img.onload = () => {
+        const c = document.createElement('canvas')
+        const ctx = c.getContext('2d')
+        c.width = img.naturalWidth
+        c.height = img.naturalHeight
+        ctx.drawImage(img, 0, 0)
+        const url = img.src.match('png') ? c.toDataURL() : img.src.match('webp') ? c.toDataURL('image/webp') : c.toDataURL('image/jpeg')
+        resolve(url)
+      }
+      img.onerror = () => {
+        console.log(new URL(srcUrl).hostname + ' block your access outside iframe')
+        resolve('')
+      }
+
+      img.crossOrigin = 'anonymous'
+      img.src = srcUrl
+    })
   }
 
-  document.addEventListener('contextmenu', rightClickHandler, true)
+  document.addEventListener(
+    'contextmenu',
+    async e => {
+      const orderedElements = await getOrderedElement(e)
+      const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements)
+      if (!imageNodeInfo) return
+
+      console.log(imageNodeInfo.pop())
+      if (window.top !== window.self) {
+        imageNodeInfo[0] = await createDataUrl(imageNodeInfo[0])
+      }
+      // image size maybe decreased in dataURL
+      imageNodeInfo[1] -= 10
+      chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
+    },
+    true
+  )
 })()
