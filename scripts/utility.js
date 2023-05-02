@@ -15,6 +15,16 @@ const ImageViewerUtils = (function () {
       }
     }
   })()
+  const unlazyObserver = new MutationObserver(mutationsList => {
+    for (const mutation of mutationsList) {
+      const element = mutation.target
+      if (mutation.type !== 'attributes' || !element.classList.contains('simpleUnlazy')) continue
+      if (mutation.attributeName === 'src' || mutation.attributeName === 'srcset') {
+        checkImageAttr(element)
+      }
+    }
+  })
+  unlazyObserver.observe(document.documentElement, {attributes: true, subtree: true})
 
   async function getImageBitSize(src) {
     if (!src || src === 'about:blank' || src.startsWith('data')) return 0
