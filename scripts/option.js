@@ -77,15 +77,14 @@
 
   function addNewCustom() {
     const custom = document.querySelectorAll('input.customSearchUrl')
-    const length = custom.length
-    const last = custom[length - 1]
-    const tr = last.parentNode.parentNode
+    const last = custom[custom.length - 1]
+    const li = last.parentNode
 
     const i18n = [chrome.i18n.getMessage('custom_search'), chrome.i18n.getMessage('custom_search_url')]
     const htmlStr =
       `<li><label for="customSearch${length + 1}"><span>${i18n[0]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearch hotkey"></li>` +
       `<li><label for="customSearchUrl${length + 1}"><span>${i18n[1]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearchUrl"></li>`
-    tr.insertAdjacentHTML('afterend', htmlStr)
+    li.insertAdjacentHTML('afterend', htmlStr)
 
     for (const input of document.querySelectorAll('input.hotkey')) {
       input.addEventListener('keydown', e => {
