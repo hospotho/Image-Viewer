@@ -1,11 +1,11 @@
-;(function () {
+;(async function () {
   'use strict'
 
   if (document.documentElement.classList.contains('has-image-viewer-worker')) return
 
   document.documentElement.classList.add('has-image-viewer-worker')
 
-  const options = window.ImageViewerOption
+  const options = await chrome.runtime.sendMessage({msg: 'get_options'})
   const domainList = []
   const regexList = []
   for (const str of options.hoverCheckDisableList) {

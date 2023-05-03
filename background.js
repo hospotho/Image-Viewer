@@ -54,6 +54,7 @@ const getRedirectUrl = async srcList => {
 
   return redirectUrlList
 }
+const resetLabel = () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
 
 const srcBitSizeMap = new Map()
 const expired = []
@@ -150,17 +151,23 @@ function addMessageHandler() {
       }
       case 'load_worker': {
         ;(async () => {
-          await passDataToTab(sender.tab.id, 'ImageViewerOption', currOptions)
-          chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']}, sendResponse)
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']})
+          sendResponse()
         })()
         return true
       }
       case 'load_utility': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, sendResponse)
+        ;(async () => {
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']})
+          sendResponse()
+        })()
         return true
       }
       case 'load_script': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, sendResponse)
+        ;(async () => {
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']})
+          sendResponse()
+        })()
         return true
       }
       case 'extract_frames': {
@@ -180,8 +187,10 @@ function addMessageHandler() {
         return true
       }
       case 'reset_dom': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')})
-        sendResponse()
+        ;(async () => {
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: resetLabel})
+          sendResponse()
+        })()
         return true
       }
       case 'get_info': {
@@ -200,11 +209,17 @@ function addMessageHandler() {
         return true
       }
       case 'open_tab': {
-        chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, sendResponse)
+        ;(async () => {
+          await chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url})
+          sendResponse()
+        })()
         return true
       }
       case 'close_tab': {
-        chrome.tabs.remove(sender.tab.id, sendResponse)
+        ;(async () => {
+          await chrome.tabs.remove(sender.tab.id)
+          sendResponse()
+        })()
         return true
       }
       case 'get_size': {
