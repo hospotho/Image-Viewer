@@ -17,6 +17,9 @@
   const ascii2d = document.querySelector('input#ascii2dSearch')
   const useAll = document.querySelector('input#useAllSearch')
 
+  const hoverCheck = document.querySelector('textarea#hoverCheckDisableList')
+  const autoScroll = document.querySelector('textarea#autoScrollEnableList')
+
   const defaultOptions = {
     fitMode: 'both',
     zoomRatio: 1.2,
@@ -27,7 +30,9 @@
     debouncePeriod: 1500,
     throttlePeriod: 80,
     hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
-    customUrl: ['https://example.com/search?query={imgSrc}&option=example_option']
+    customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
+    hoverCheckDisableList: [],
+    autoScrollEnableList: ['twitter.com', 'instagram.com', 'facebook.com']
   }
 
   //==========utility==========
@@ -129,6 +134,9 @@
           customUrl[i].value = ''
         }
       }
+
+      hoverCheck.value = options.hoverCheckDisableList.join('\n')
+      autoScroll.value = options.autoScrollEnableList.join('\n')
     } catch (e) {
       console.log(e)
       alert('Failed to use existing options')
@@ -190,6 +198,11 @@
       }
       options.hotkey = hotkeyList
       options.customUrl = customUrlList
+
+      const hoverCheckDisableList = hoverCheck.value.split('\n')
+      const autoScrollEnableList = autoScroll.value.split('\n')
+      options.hoverCheckDisableList = hoverCheckDisableList
+      options.autoScrollEnableList = autoScrollEnableList
 
       chrome.storage.sync.set({options: options}, () => {
         console.log('Options have been save.')

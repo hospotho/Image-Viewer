@@ -47,9 +47,7 @@ input.customSearchUrl {
   width: 500px;
 }
 
-span#notFactor {
-  display: none;
-}
+span#notFactor,
 li#debounceDesc,
 li#throttleDesc {
   display: none;

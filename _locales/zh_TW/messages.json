@@ -112,5 +112,23 @@
   },
   "zoom_ratio": {
     "message": "縮放倍率"
+  },
+  "domain_specific":{
+    "message": "網域特定設定"
+  },
+  "hover_disable_list":{
+    "message": "停用懸停檢查"
+  },
+  "hover_check_desc":{
+    "message": "Image Viewer允許您透過按滑鼠右鍵來選擇圖像<br>為了選擇影片縮圖，預設情況下會移除懸停元素<br>如果要保留懸停元素，請停用此行為"
+  },
+  "auto_scroll_enable_list":{
+    "message": "啟用自動捲動"
+  },
+  "auto_scroll_desc":{
+    "message": "一些網頁會在往下捲動時載入更多內容<br>如果您想讓Image Viewer自動捲動並載入內容，請啟用此選項"
+  },
+  "domain_settings_example":{
+    "message": "範例設定（支援正則表示式）：<br />example.com<br />sub.example.com<br />another.com<br />/^https.*regex\\.com/"
   }
 }

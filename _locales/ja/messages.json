@@ -112,5 +112,23 @@
   },
   "zoom_ratio": {
     "message": "ズームの倍率"
+  },
+  "domain_specific":{
+    "message": "ドメイン固有の設定"
+  },
+  "hover_disable_list":{
+    "message": "ホバーチェックを無効にする"
+  },
+  "hover_check_desc":{
+    "message": "Image Viewerは、右クリックで画像を選択できます<br>ビデオのサムネイルを選択するには、デフォルトでホバー要素を削除します<br>ホバー要素を保持したい場合は、この動作を無効にしてください"
+  },
+  "auto_scroll_enable_list":{
+    "message": "自動スクロールを有効にする"
+  },
+  "auto_scroll_desc":{
+    "message": "一部のWebページでは、スクロールダウンするとコンテンツが追加で読み込まれます<br>Image Viewerに自動的にスクロールしてコンテンツを読み込んでもらいたい場合は、このオプションを有効にしてください"
+  },
+  "domain_settings_example":{
+    "message": "設定例（正規表現対応）：<br>example.com<br>sub.example.com<br>another.com<br>/^https.*regex\\.com/"
   }
 }
