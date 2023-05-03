@@ -80,7 +80,7 @@ const ImageViewerUtils = (function () {
       img.srcset = src
 
       const picture = img.parentNode
-      if (picture.tagName === 'PICTURE') {
+      if (picture?.tagName === 'PICTURE') {
         const sources = picture.querySelectorAll('source')
         for (const source of sources) {
           source.srcset = src
