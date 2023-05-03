@@ -307,6 +307,17 @@ const ImageViewerUtils = (function () {
     return -1
   }
 
+  function throttle(callback, delay) {
+    let canExecute = true
+    return () => {
+      if (canExecute) {
+        callback()
+        canExecute = false
+        setTimeout(() => (canExecute = true), delay)
+      }
+    }
+  }
+
   return {
     closeImageViewer: function () {
       document.documentElement.classList.remove('has-image-viewer')
@@ -443,6 +454,47 @@ const ImageViewerUtils = (function () {
       }
 
       return [...new Set(combinedImageList.filter(Boolean))]
+    },
+
+    checkAndStartAutoScroll: function (options) {
+      const domainList = []
+      const regexList = []
+      for (const str of options.autoScrollEnableList) {
+        if (str[0] === '/' && str[str.length - 1] === '/') {
+          regexList.push(new RegExp(str.slice(1, -1)))
+        } else {
+          domainList.push(str)
+        }
+      }
+      let enableAutoScroll = domainList.includes(location.hostname.replace('www.', ''))
+      enableAutoScroll ||= regexList.map(regex => regex.test(location.href)).filter(Boolean).length
+      if (!enableAutoScroll) return
+
+      const startX = window.scrollX
+      const startY = window.scrollY
+      let screenHeight = window.screen.height
+      let currentHeight = startY
+
+      let interval
+      let count = 0
+      const eventHandler = () => (count = 0)
+      document.documentElement.addEventListener('DOMNodeInserted', eventHandler)
+
+      const observer = new MutationObserver(() => {
+        if (!document.documentElement.classList.contains('has-image-viewer')) {
+          clearInterval(interval)
+          document.documentElement.removeEventListener('DOMNodeInserted', throttle(eventHandler), 3000)
+          window.scrollTo(startX, startY)
+          observer.disconnect()
+        }
+      })
+      observer.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
+
+      interval = setInterval(() => {
+        if (count++ > 5) clearInterval(interval)
+        window.scrollBy({top: screenHeight, behavior: 'smooth'})
+        currentHeight = Math.min(currentHeight + screenHeight, document.body.scrollHeight)
+      }, 500)
     }
   }
 })()
