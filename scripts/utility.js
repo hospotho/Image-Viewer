@@ -480,12 +480,14 @@ const ImageViewerUtils = (function () {
       const eventHandler = () => (count = 0)
       document.documentElement.addEventListener('DOMNodeInserted', eventHandler)
 
+      let scrollFlag = true
       const observer = new MutationObserver(() => {
         if (!document.documentElement.classList.contains('has-image-viewer')) {
           clearInterval(interval)
           document.documentElement.removeEventListener('DOMNodeInserted', throttle(eventHandler), 3000)
-          window.scrollTo(startX, startY)
           observer.disconnect()
+          if (scrollFlag) window.scrollTo(startX, startY)
+          setTimeout(() => (Element.prototype.scrollIntoView = originalScrollIntoView), 100)
         }
       })
       observer.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
@@ -495,6 +497,13 @@ const ImageViewerUtils = (function () {
         window.scrollBy({top: screenHeight, behavior: 'smooth'})
         currentHeight = Math.min(currentHeight + screenHeight, document.body.scrollHeight)
       }, 500)
+
+      const originalScrollIntoView = Element.prototype.scrollIntoView
+      Element.prototype.scrollIntoView = function (...args) {
+        scrollFlag = false
+        originalScrollIntoView.call(this, ...args)
+        Element.prototype.scrollIntoView = originalScrollIntoView
+      }
     }
   }
 })()
