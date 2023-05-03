@@ -1,5 +1,11 @@
 ;(function () {
   const rawText = `
+1.18 [2023-05-04]:
+1. Support auto scroll
+2. Add options to enable auto scroll and disable hover check
+3. Refactor code for better readability
+4. Fix bug related to hover check and other minor bugs
+
 1.17 [2023-04-30]:
 Stability update
 1. Add some code to increase the stability
