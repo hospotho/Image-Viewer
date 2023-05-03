@@ -318,10 +318,8 @@ const ImageViewerUtils = (function () {
       }
     },
 
-    updateWrapperSize: function (dom, options) {
-      if (!dom) return
-
-      const domSize = Math.min(dom.clientWidth, dom.clientHeight)
+    updateWrapperSize: function (dom, domSize, options) {
+      if (!dom || domSize === 0) return
 
       const wrapper = dom.closest('div')
       if (!wrapper || wrapper.classList.length === 0) return

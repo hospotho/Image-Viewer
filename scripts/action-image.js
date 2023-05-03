@@ -15,21 +15,16 @@
   const nodeInfo = await chrome.runtime.sendMessage('get_info')
   const [srcUrl, nodeSize] = nodeInfo === null ? [] : nodeInfo
   const dom = document.querySelector('.ImageViewerLastDom')
-  if (dom?.tagName !== 'IMG') {
-    options.sizeCheck = true
-  }
-
-  let currentImageList = []
-  let timeout
-  let period = 200
-  const multiplier = 1.2
-
+  const domSize = Math.min(dom?.clientWidth, dom?.clientHeight) || 0
   if (nodeSize > 0) {
     options.minWidth = Math.min(nodeSize, options.minWidth)
     options.minHeight = Math.min(nodeSize, options.minHeight)
   }
-
-  ImageViewerUtils.updateWrapperSize(dom, options)
+  if (dom?.tagName === 'IMG') {
+    ImageViewerUtils.updateWrapperSize(dom, domSize, options)
+  } else {
+    options.sizeCheck = true
+  }
 
   const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
 
@@ -52,8 +47,7 @@
 
     if (!document.documentElement.classList.contains('has-image-viewer')) return
 
-    ImageViewerUtils.updateWrapperSize(dom, options)
-
+    ImageViewerUtils.updateWrapperSize(dom, domSize, options)
     const newImageList = await ImageViewerUtils.getOrderedImageUrls(options)
     const combinedImageList = ImageViewerUtils.combineImageList(newImageList, currentImageList)
 
