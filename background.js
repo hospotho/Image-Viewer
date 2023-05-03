@@ -150,24 +150,15 @@ function addMessageHandler() {
         return true
       }
       case 'load_worker': {
-        ;(async () => {
-          await chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']})
-          sendResponse()
-        })()
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
         return true
       }
       case 'load_utility': {
-        ;(async () => {
-          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']})
-          sendResponse()
-        })()
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, sendResponse)
         return true
       }
       case 'load_script': {
-        ;(async () => {
-          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']})
-          sendResponse()
-        })()
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, sendResponse)
         return true
       }
       case 'extract_frames': {
@@ -187,10 +178,7 @@ function addMessageHandler() {
         return true
       }
       case 'reset_dom': {
-        ;(async () => {
-          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: resetLabel})
-          sendResponse()
-        })()
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: resetLabel}, sendResponse)
         return true
       }
       case 'get_info': {
@@ -209,17 +197,11 @@ function addMessageHandler() {
         return true
       }
       case 'open_tab': {
-        ;(async () => {
-          await chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url})
-          sendResponse()
-        })()
+        chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, sendResponse)
         return true
       }
       case 'close_tab': {
-        ;(async () => {
-          await chrome.tabs.remove(sender.tab.id)
-          sendResponse()
-        })()
+        chrome.tabs.remove(sender.tab.id, sendResponse)
         return true
       }
       case 'get_size': {
