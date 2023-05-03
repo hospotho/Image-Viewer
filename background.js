@@ -74,7 +74,9 @@ const defaultOptions = {
   debouncePeriod: 1500,
   throttlePeriod: 80,
   hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
-  customUrl: ['https://example.com/search?query={imgSrc}&option=example_option']
+  customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
+  hoverCheckDisableList: [],
+  autoScrollEnableList: ['twitter.com', 'instagram.com', 'facebook.com']
 }
 
 let currOptions = null
@@ -147,7 +149,10 @@ function addMessageHandler() {
         return true
       }
       case 'load_worker': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']}, sendResponse)
+        ;(async () => {
+          await passDataToTab(sender.tab.id, 'ImageViewerOption', currOptions)
+          chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']}, sendResponse)
+        })()
         return true
       }
       case 'load_utility': {

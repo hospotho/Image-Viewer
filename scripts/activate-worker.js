@@ -5,7 +5,20 @@
 
   document.documentElement.classList.add('has-image-viewer-worker')
 
-  if (window.top === window.self) {
+  const options = window.ImageViewerOption
+  const domainList = []
+  const regexList = []
+  for (const str of options.hoverCheckDisableList) {
+    if (str[0] === '/' && str[str.length - 1] === '/') {
+      regexList.push(str)
+    } else {
+      domainList.push(str)
+    }
+  }
+  let disableHoverCheck = domainList.includes(location.hostname.replace('www.', ''))
+  disableHoverCheck ||= regexList.map(regex => regex.test(location.href)).filter(Boolean).length
+
+  if (window.top === window.self && !disableHoverCheck) {
     const styles = '.disable-hover, .disable-hover * {pointer-events: none !important;}'
     const styleSheet = document.createElement('style')
     styleSheet.innerText = styles
@@ -156,7 +169,7 @@
       return imageInfoList[0]
     }
 
-    async function searchDomByPosition(elementList) {
+    async function searchDomByPosition(elementList, viewportPos) {
       const domList = []
       const ptEvent = []
 
@@ -297,34 +310,38 @@
     })()
 
     return {
-      searchDomByPosition: async function (viewportPos) {
+      searchDomByPosition: async function (orderedElements, viewportPos) {
         disablePtEvents()
-        const result = await searchDomByPosition(viewportPos)
+        const result = await searchDomByPosition(orderedElements, viewportPos)
         restorePtEvents()
         return result
       }
     }
   })()
 
-  async function getOrderedElement(e) {
-    const elementsBeforeDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
-    document.body.classList.add('disable-hover')
-    await new Promise(resolve => setTimeout(resolve, 0))
-    document.body.classList.remove('disable-hover')
-    const elementsAfterDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
+  const getOrderedElement = (function () {
+    return disableHoverCheck
+      ? e => document.elementsFromPoint(e.clientX, e.clientY)
+      : async e => {
+          const elementsBeforeDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
+          document.body.classList.add('disable-hover')
+          await new Promise(resolve => setTimeout(resolve, 0))
+          document.body.classList.remove('disable-hover')
+          const elementsAfterDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
 
-    const stableElements = []
-    const unstableElements = []
-    for (const elem of elementsBeforeDisableHover) {
-      if (elementsAfterDisableHover.includes(elem)) {
-        stableElements.push(elem)
-      } else {
-        unstableElements.push(elem)
-      }
-    }
-    const orderedElements = stableElements.concat(unstableElements)
-    return orderedElements
-  }
+          const stableElements = []
+          const unstableElements = []
+          for (const elem of elementsBeforeDisableHover) {
+            if (elementsAfterDisableHover.includes(elem)) {
+              stableElements.push(elem)
+            } else {
+              unstableElements.push(elem)
+            }
+          }
+          const orderedElements = stableElements.concat(unstableElements)
+          return orderedElements
+        }
+  })()
 
   function createDataUrl(srcUrl) {
     return new Promise(resolve => {
@@ -356,8 +373,9 @@
   document.addEventListener(
     'contextmenu',
     async e => {
+      const viewportPosition = [e.clientX, e.clientY]
       const orderedElements = await getOrderedElement(e)
-      const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements)
+      const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements, viewportPosition)
       if (!imageNodeInfo) return
 
       console.log(imageNodeInfo.pop())
