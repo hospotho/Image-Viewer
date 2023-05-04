@@ -50,11 +50,12 @@
   const multiplier = 1.2
   const action = async () => {
     clearTimeout(timeout)
-    if (!document.documentElement.classList.contains('has-image-viewer')) return
 
     ImageViewerUtils.updateWrapperSize(dom, domSize, options)
     const newImageList = await ImageViewerUtils.getOrderedImageUrls(options)
     const combinedImageList = ImageViewerUtils.combineImageList(newImageList, currentImageList)
+
+    if (!document.documentElement.classList.contains('has-image-viewer')) return
     if (combinedImageList.length > currentImageList.length) {
       currentImageList = combinedImageList
       imageViewer(combinedImageList, options)
