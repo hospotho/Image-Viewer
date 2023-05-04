@@ -49,7 +49,7 @@
       }
     })
 
-    observer.observe(document, {childList: true, subtree: true})
+    observer.observe(document.documentElement, {childList: true, subtree: true})
     // for some rare case
     setTimeout(() => chrome.runtime.sendMessage('load_worker'), 3000)
   }

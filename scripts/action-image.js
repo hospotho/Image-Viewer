@@ -67,14 +67,14 @@
   timeout = setTimeout(action, period)
   const observer = new MutationObserver(() => {
     observer.disconnect()
+    clearTimeout(timeout)
     if (!document.documentElement.classList.contains('has-image-viewer')) return
 
     period = 500
-    clearTimeout(timeout)
     timeout = setTimeout(action, period)
-    observer.observe(document, {childList: true, subtree: true})
+    observer.observe(document.documentElement, {childList: true, subtree: true})
   })
-  observer.observe(document, {childList: true, subtree: true})
+  observer.observe(document.documentElement, {childList: true, subtree: true})
 
   // auto scroll
   ImageViewerUtils.checkAndStartAutoScroll(options)
