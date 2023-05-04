@@ -1,4 +1,6 @@
 const imageViewer = (function () {
+  'use strict'
+
   const appName = '__crx__image-viewer'
   const imageListName = '__crx__image-list'
   let shadowRoot

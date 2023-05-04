@@ -1,4 +1,6 @@
 ;(function () {
+  'use strict'
+
   const rawText = `
 1.18 [2023-05-04]:
 1. Support auto scroll

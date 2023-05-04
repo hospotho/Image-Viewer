@@ -1,4 +1,6 @@
 const ImageViewerUtils = (function () {
+  'use strict'
+
   const passList = ['class', 'style', 'src', 'alt', 'title', 'loading', 'crossorigin', 'height', 'width', 'sizes', 'onerror']
   const urlRegex = /(?:https?:\/)?\/\S+/g
   const argsRegex = /(.+\/.*?\.).*(png|jpeg|jpg|gif|bmp|tiff|webp).*/i
