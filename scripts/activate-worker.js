@@ -170,9 +170,6 @@
     }
 
     async function searchDomByPosition(elementList, viewportPos) {
-      const domList = []
-      const ptEvent = []
-
       let firstVisibleDom = null
       let imageInfoFromPoint = null
       let imageDomLayer = 0
@@ -183,8 +180,6 @@
       const maxTry = Math.min(20, elementList.length)
       for (let tryCount = 0; tryCount < maxTry; tryCount++) {
         const dom = elementList[tryCount]
-        if (dom === document.documentElement || dom === domList[domList.length - 1]) break
-
         const imageInfo = extractImageInfoFromNode(dom)
         const valid = isImageInfoValid(imageInfo)
 
@@ -192,25 +187,16 @@
           firstVisibleDom ??= dom
           if (valid && (await isNewImageInfoBetter(imageInfo, imageInfoFromPoint))) {
             imageInfoFromPoint = imageInfo
-            imageDomLayer = domList.length
+            imageDomLayer = tryCount
             tryCount = Math.min(5, tryCount)
           }
         } else {
           if (valid) {
             hiddenImageInfoFromPoint = imageInfo
-            hiddenDomLayer = domList.length
+            hiddenDomLayer = tryCount
             tryCount = Math.min(5, tryCount)
           }
         }
-
-        domList.push(dom)
-        ptEvent.push(dom.style.pointerEvents)
-        dom.style.pointerEvents = 'none'
-      }
-
-      for (let i = 0; i < domList.length; i++) {
-        const lastDom = domList[i]
-        lastDom.style.pointerEvents = ptEvent[i]
       }
 
       if (imageInfoFromPoint) {
@@ -237,30 +223,6 @@
     }
 
     // utility
-    function disablePtEvents() {
-      for (const dom of document.querySelectorAll('*')) {
-        if (dom.style.pointerEvents === 'none') {
-          dom.style.pointerEvents = 'auto'
-          dom.classList.add('noneToAuto')
-        }
-        const style = window.getComputedStyle(dom)
-        if (style.pointerEvents === 'none') {
-          dom.style.pointerEvents = 'auto'
-          dom.classList.add('nullToAuto')
-        }
-      }
-    }
-    function restorePtEvents() {
-      for (const dom of document.querySelectorAll('.noneToAuto')) {
-        dom.style.pointerEvents = 'none'
-        dom.classList.remove('noneToAuto')
-      }
-      for (const dom of document.querySelectorAll('.nullToAuto')) {
-        dom.style.pointerEvents = ''
-        dom.classList.remove('nullToAuto')
-      }
-    }
-
     function extractImageInfoFromNode(dom) {
       if (dom.tagName === 'IMG') {
         const sizeList = [dom.naturalWidth, dom.naturalHeight, dom.clientWidth, dom.clientHeight]
@@ -311,9 +273,7 @@
 
     return {
       searchDomByPosition: async function (orderedElements, viewportPos) {
-        disablePtEvents()
         const result = await searchDomByPosition(orderedElements, viewportPos)
-        restorePtEvents()
         return result
       }
     }
