@@ -169,59 +169,6 @@
       return imageInfoList[0]
     }
 
-    async function searchDomByPosition(elementList, viewportPos) {
-      let firstVisibleDom = null
-      let imageInfoFromPoint = null
-      let imageDomLayer = 0
-
-      let hiddenImageInfoFromPoint = null
-      let hiddenDomLayer = 0
-
-      const maxTry = Math.min(20, elementList.length)
-      for (let tryCount = 0; tryCount < maxTry; tryCount++) {
-        const dom = elementList[tryCount]
-        const imageInfo = extractImageInfoFromNode(dom)
-        const valid = isImageInfoValid(imageInfo)
-
-        if (dom.offsetParent !== null || dom.style.position === 'fixed') {
-          firstVisibleDom ??= dom
-          if (valid && (await isNewImageInfoBetter(imageInfo, imageInfoFromPoint))) {
-            imageInfoFromPoint = imageInfo
-            imageDomLayer = tryCount
-            tryCount = Math.min(5, tryCount)
-          }
-        } else {
-          if (valid) {
-            hiddenImageInfoFromPoint = imageInfo
-            hiddenDomLayer = tryCount
-            tryCount = Math.min(5, tryCount)
-          }
-        }
-      }
-
-      if (imageInfoFromPoint) {
-        console.log(`Image node found, layer ${imageDomLayer}.`)
-        markingDom(imageInfoFromPoint[2])
-        return imageInfoFromPoint
-      }
-
-      if (hiddenImageInfoFromPoint) {
-        console.log(`Hidden image node found, layer ${hiddenDomLayer}.`)
-        markingDom(hiddenImageInfoFromPoint[2])
-        return hiddenImageInfoFromPoint
-      }
-
-      const imageInfoFromTree = searchImageFromTree(firstVisibleDom, viewportPos)
-      if (isImageInfoValid(imageInfoFromTree)) {
-        console.log(`Image node found, hide under sub tree.`)
-        markingDom(imageInfoFromTree[2])
-        return imageInfoFromTree
-      }
-
-      markingDom()
-      return null
-    }
-
     // utility
     function extractImageInfoFromNode(dom) {
       if (dom.tagName === 'IMG') {
@@ -272,9 +219,57 @@
     })()
 
     return {
-      searchDomByPosition: async function (orderedElements, viewportPos) {
-        const result = await searchDomByPosition(orderedElements, viewportPos)
-        return result
+      searchDomByPosition: async function (elementList, viewportPos) {
+        let firstVisibleDom = null
+        let imageInfoFromPoint = null
+        let imageDomLayer = 0
+
+        let hiddenImageInfoFromPoint = null
+        let hiddenDomLayer = 0
+
+        const maxTry = Math.min(20, elementList.length)
+        for (let tryCount = 0; tryCount < maxTry; tryCount++) {
+          const dom = elementList[tryCount]
+          const imageInfo = extractImageInfoFromNode(dom)
+          const valid = isImageInfoValid(imageInfo)
+
+          if (dom.offsetParent !== null || dom.style.position === 'fixed') {
+            firstVisibleDom ??= dom
+            if (valid && (await isNewImageInfoBetter(imageInfo, imageInfoFromPoint))) {
+              imageInfoFromPoint = imageInfo
+              imageDomLayer = tryCount
+              tryCount = Math.min(5, tryCount)
+            }
+          } else {
+            if (valid) {
+              hiddenImageInfoFromPoint = imageInfo
+              hiddenDomLayer = tryCount
+              tryCount = Math.min(5, tryCount)
+            }
+          }
+        }
+
+        if (imageInfoFromPoint) {
+          console.log(`Image node found, layer ${imageDomLayer}.`)
+          markingDom(imageInfoFromPoint[2])
+          return imageInfoFromPoint
+        }
+
+        if (hiddenImageInfoFromPoint) {
+          console.log(`Hidden image node found, layer ${hiddenDomLayer}.`)
+          markingDom(hiddenImageInfoFromPoint[2])
+          return hiddenImageInfoFromPoint
+        }
+
+        const imageInfoFromTree = searchImageFromTree(firstVisibleDom, viewportPos)
+        if (isImageInfoValid(imageInfoFromTree)) {
+          console.log(`Image node found, hide under sub tree.`)
+          markingDom(imageInfoFromTree[2])
+          return imageInfoFromTree
+        }
+
+        markingDom()
+        return null
       }
     }
   })()
