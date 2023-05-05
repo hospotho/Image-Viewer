@@ -6,6 +6,7 @@ const ImageViewerUtils = (function () {
   const argsRegex = /(.+\/.*?\.).*(png|jpeg|jpg|gif|bmp|tiff|webp).*/i
   const protocol = window.location.protocol
   const srcBitSizeMap = new Map()
+  const srcRealSizeMap = new Map()
   const mutex = (() => {
     let promise = Promise.resolve()
     return {
@@ -59,11 +60,23 @@ const ImageViewerUtils = (function () {
   }
   function getImageRealSize(src) {
     return new Promise(resolve => {
+      const cache = srcRealSizeMap.get(src)
+      if (cache !== undefined) resolve(cache)
+
       const img = new Image()
-      img.onload = () => resolve(img.naturalWidth)
-      img.onerror = () => resolve(0)
+      img.onload = () => {
+        srcRealSizeMap.set(src, img.naturalWidth)
+        resolve(img.naturalWidth)
+      }
+      img.onerror = () => {
+        srcRealSizeMap.set(src, 0)
+        resolve(0)
+      }
       img.src = src
-      setTimeout(() => resolve(0), 1000)
+      setTimeout(() => {
+        srcRealSizeMap.set(src, 0)
+        resolve(0)
+      }, 1000)
     })
   }
   function updateImageSource(img, src) {
