@@ -335,7 +335,7 @@ const ImageViewerUtils = (function () {
     const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length
     return enableAutoScroll
   }
-  function stopAutoScrollOnExit(interval, eventHandler, startX, startY) {
+  function stopAutoScrollOnExit(interval, newNodeObserver, startX, startY) {
     let scrollFlag = true
     const originalScrollIntoView = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = function (...args) {
@@ -343,16 +343,16 @@ const ImageViewerUtils = (function () {
       originalScrollIntoView.call(this, ...args)
       Element.prototype.scrollIntoView = originalScrollIntoView
     }
-    const observer = new MutationObserver(() => {
+    const imageViewerObserver = new MutationObserver(() => {
       if (!document.documentElement.classList.contains('has-image-viewer')) {
-        observer.disconnect()
+        imageViewerObserver.disconnect()
+        newNodeObserver.disconnect()
         clearInterval(interval)
-        document.documentElement.removeEventListener('DOMNodeInserted', eventHandler)
         if (scrollFlag) window.scrollTo(startX, startY)
         setTimeout(() => (Element.prototype.scrollIntoView = originalScrollIntoView), 100)
       }
     })
-    observer.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
+    imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
   }
 
   return {
@@ -506,9 +506,9 @@ const ImageViewerUtils = (function () {
       }, 500)
       window.scrollTo(startX, document.body.scrollHeight)
 
-      const eventHandler = () => (count = 0)
-      document.documentElement.addEventListener('DOMNodeInserted', eventHandler)
-      stopAutoScrollOnExit(interval, eventHandler, startX, startY)
+      const newNodeObserver = new MutationObserver(() => (count = 0))
+      newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+      stopAutoScrollOnExit(interval, newNodeObserver, startX, startY)
     }
   }
 })()
