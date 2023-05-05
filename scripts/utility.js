@@ -19,15 +19,27 @@ const ImageViewerUtils = (function () {
     }
   })()
   const unlazyObserver = new MutationObserver(mutationsList => {
+    const updatedSet = new Set()
+    const modifiedSet = new Set()
     for (const mutation of mutationsList) {
       const element = mutation.target
-      if (mutation.type !== 'attributes' || !element.classList.contains('simpleUnlazy')) continue
-      if (mutation.attributeName === 'src' || mutation.attributeName === 'srcset') {
-        checkImageAttr(element)
+      if (element.classList.contains('updateByObserver')) {
+        updatedSet.add(element)
+        continue
+      }
+      if (element.classList.contains('simpleUnlazy')) {
+        modifiedSet.add(element)
       }
     }
+    for (const img of updatedSet) {
+      img.classList.remove('updateByObserver')
+    }
+    for (const img of modifiedSet) {
+      img.classList.add('updateByObserver')
+      checkImageAttr(img)
+    }
   })
-  unlazyObserver.observe(document.documentElement, {attributes: true, subtree: true})
+  unlazyObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
 
   async function getImageBitSize(src) {
     if (!src || src === 'about:blank' || src.startsWith('data')) return 0
