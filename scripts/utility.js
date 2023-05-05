@@ -120,15 +120,15 @@ const ImageViewerUtils = (function () {
   async function checkImageAttr(img) {
     img.loading = 'eager'
 
-    const argsMatch = !img.src.startsWith('data') && img.src.match(argsRegex)
+    const argsMatch = !img.currentSrc.startsWith('data') && img.currentSrc.match(argsRegex)
     const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name) && attr.value.match(urlRegex))
-    if (!argsMatch && attrList.length === 0) return null
+    if (!argsMatch && img.currentSrc === img.srcset && attrList.length === 0) return null
 
-    const bitSize = await getImageBitSize(img.src.replace(/https?:/, protocol))
+    const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
 
     const rawUrl = argsMatch?.[1] + argsMatch?.[2]
-    if (argsMatch && rawUrl !== img.src) {
+    if (argsMatch && rawUrl !== img.currentSrc) {
       const newURL = rawUrl.replace(/https?:/, protocol)
       if (bitSize) {
         const lazySize = await getImageBitSize(newURL)
@@ -148,9 +148,9 @@ const ImageViewerUtils = (function () {
     for (const attr of attrList) {
       const match = [...attr.value.matchAll(urlRegex)]
       if (match.length === 0) continue
-      if (match[0][0] === img.src) continue
 
       if (match.length === 1) {
+        if (match[0][0] === img.currentSrc) continue
         const newURL = match[0][0].replace(/https?:/, protocol)
         if (bitSize) {
           const lazySize = await getImageBitSize(newURL)
