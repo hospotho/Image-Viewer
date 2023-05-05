@@ -309,15 +309,37 @@ const ImageViewerUtils = (function () {
     return -1
   }
 
-  function throttle(callback, delay) {
-    let canExecute = true
-    return () => {
-      if (canExecute) {
-        callback()
-        canExecute = false
-        setTimeout(() => (canExecute = true), delay)
+  function isEnableAutoScroll(options) {
+    const domainList = []
+    const regexList = []
+    for (const str of options.autoScrollEnableList) {
+      if (str[0] === '/' && str[str.length - 1] === '/') {
+        regexList.push(new RegExp(str.slice(1, -1)))
+      } else {
+        domainList.push(str)
       }
     }
+    const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length
+    return enableAutoScroll
+  }
+  function stopAutoScrollOnExit(interval, eventHandler, startX, startY) {
+    let scrollFlag = true
+    const originalScrollIntoView = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function (...args) {
+      scrollFlag = false
+      originalScrollIntoView.call(this, ...args)
+      Element.prototype.scrollIntoView = originalScrollIntoView
+    }
+    const observer = new MutationObserver(() => {
+      if (!document.documentElement.classList.contains('has-image-viewer')) {
+        observer.disconnect()
+        clearInterval(interval)
+        document.documentElement.removeEventListener('DOMNodeInserted', eventHandler)
+        if (scrollFlag) window.scrollTo(startX, startY)
+        setTimeout(() => (Element.prototype.scrollIntoView = originalScrollIntoView), 100)
+      }
+    })
+    observer.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
   }
 
   return {
@@ -459,53 +481,21 @@ const ImageViewerUtils = (function () {
     },
 
     checkAndStartAutoScroll: function (options) {
-      const domainList = []
-      const regexList = []
-      for (const str of options.autoScrollEnableList) {
-        if (str[0] === '/' && str[str.length - 1] === '/') {
-          regexList.push(new RegExp(str.slice(1, -1)))
-        } else {
-          domainList.push(str)
-        }
-      }
-      let enableAutoScroll = domainList.includes(location.hostname.replace('www.', ''))
-      enableAutoScroll ||= regexList.map(regex => regex.test(location.href)).filter(Boolean).length
-      if (!enableAutoScroll) return
+      if (!isEnableAutoScroll(options)) return
 
       const startX = window.scrollX
       const startY = window.scrollY
-      let screenHeight = window.screen.height
-      let currentHeight = startY
-
-      let interval
+      const screenHeight = window.screen.height
       let count = 0
-      const eventHandler = () => (count = 0)
-      document.documentElement.addEventListener('DOMNodeInserted', eventHandler)
-
-      let scrollFlag = true
-      const observer = new MutationObserver(() => {
-        if (!document.documentElement.classList.contains('has-image-viewer')) {
-          clearInterval(interval)
-          document.documentElement.removeEventListener('DOMNodeInserted', throttle(eventHandler), 3000)
-          observer.disconnect()
-          if (scrollFlag) window.scrollTo(startX, startY)
-          setTimeout(() => (Element.prototype.scrollIntoView = originalScrollIntoView), 100)
-        }
-      })
-      observer.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
-
-      interval = setInterval(() => {
+      let interval = setInterval(() => {
         if (count++ > 5) clearInterval(interval)
         window.scrollBy({top: screenHeight, behavior: 'smooth'})
-        currentHeight = Math.min(currentHeight + screenHeight, document.body.scrollHeight)
       }, 500)
+      window.scrollTo(startX, document.body.scrollHeight)
 
-      const originalScrollIntoView = Element.prototype.scrollIntoView
-      Element.prototype.scrollIntoView = function (...args) {
-        scrollFlag = false
-        originalScrollIntoView.call(this, ...args)
-        Element.prototype.scrollIntoView = originalScrollIntoView
-      }
+      const eventHandler = () => (count = 0)
+      document.documentElement.addEventListener('DOMNodeInserted', eventHandler)
+      stopAutoScrollOnExit(interval, eventHandler, startX, startY)
     }
   }
 })()
