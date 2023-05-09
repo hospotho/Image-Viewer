@@ -339,7 +339,7 @@
         imageNodeInfo[0] = await createDataUrl(imageNodeInfo[0])
       }
       // image size maybe decreased in dataURL
-      imageNodeInfo[1] -= 10
+      imageNodeInfo[1] -= 3
       chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
     },
     true
