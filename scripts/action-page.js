@@ -29,6 +29,7 @@
   const action = async () => {
     clearTimeout(timeout)
 
+    if (!document.documentElement.classList.contains('has-image-viewer')) return
     const newImageList = await ImageViewerUtils.getOrderedImageUrls(options)
     const combinedImageList = ImageViewerUtils.combineImageList(newImageList, currentImageList)
 
