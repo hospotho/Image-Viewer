@@ -328,6 +328,7 @@
   document.addEventListener(
     'contextmenu',
     async e => {
+      await new Promise(resolve => setTimeout(resolve, 0))
       const viewportPosition = [e.clientX, e.clientY]
       const orderedElements = await getOrderedElement(e)
       const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements, viewportPosition)
