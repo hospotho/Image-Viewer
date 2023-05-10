@@ -881,6 +881,9 @@ const imageViewer = (function () {
       if (prevIndex === imageListLength - 1) {
         if (!debounceFlag) {
           debounceTimeout = setTimeout(() => {
+            const currentIndex = Number(current.innerHTML) - 1
+            const imageListLength = Number(total.innerHTML)
+            const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
             moveToNode(prevIndex)
             debounceFlag = false
           }, debouncePeriod)
@@ -910,6 +913,9 @@ const imageViewer = (function () {
       if (nextIndex === 0) {
         if (!debounceFlag) {
           debounceTimeout = setTimeout(() => {
+            const currentIndex = Number(current.innerHTML) - 1
+            const imageListLength = Number(total.innerHTML)
+            const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
             moveToNode(nextIndex)
             debounceFlag = false
           }, debouncePeriod)
