@@ -438,7 +438,10 @@ const ImageViewerUtils = (function () {
         uniqueImageUrls.push(...uniqueIframeImage)
       }
 
-      if (uniqueImageUrls.length === 0) return []
+      if (uniqueImageUrls.length === 0) {
+        release()
+        return []
+      }
 
       const orderedImageUrls = await sortImageDataList(uniqueImageUrls)
 
