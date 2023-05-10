@@ -350,9 +350,16 @@ const ImageViewerUtils = (function () {
   function stopAutoScrollOnExit(interval, newNodeObserver, startX, startY) {
     let scrollFlag = true
     const originalScrollIntoView = Element.prototype.scrollIntoView
-    Element.prototype.scrollIntoView = function (...args) {
+    Element.prototype.scrollIntoView = function () {
       scrollFlag = false
-      originalScrollIntoView.call(this, ...args)
+      let currX = window.scrollX
+      let currY = window.scrollY
+      originalScrollIntoView.apply(this, arguments)
+      while (currX !== window.scrollX || currY !== window.scrollY) {
+        currX = window.scrollX
+        currY = window.scrollY
+        originalScrollIntoView.apply(this, arguments)
+      }
       Element.prototype.scrollIntoView = originalScrollIntoView
     }
     const imageViewerObserver = new MutationObserver(() => {
