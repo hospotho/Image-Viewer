@@ -182,8 +182,10 @@
         return [dom.poster, minSize, dom]
       }
 
-      const bg = window.getComputedStyle(dom).backgroundImage
-      if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
+      const backgroundImage = window.getComputedStyle(dom).backgroundImage
+      if (backgroundImage === 'none') return null
+      const bg = backgroundImage.split(', ')[0]
+      if (bg.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
         const bgUrl = bg.substring(4, bg.length - 1).replace(/['"]/g, '')
         return [bgUrl, minSize, dom]
       }

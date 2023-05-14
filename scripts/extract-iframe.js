@@ -39,8 +39,10 @@
 
     for (const node of document.querySelectorAll('*')) {
       if (node.clientWidth < options.minWidth || node.clientHeight < options.minHeight) continue
-      const bg = window.getComputedStyle(node).backgroundImage
-      if (bg?.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
+      const backgroundImage = window.getComputedStyle(node).backgroundImage
+      if (backgroundImage === 'none') continue
+      const bg = backgroundImage.split(', ')[0]
+      if (bg.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
         imageUrls.push(bg.substring(4, bg.length - 1).replace(/['"]/g, ''))
       }
     }

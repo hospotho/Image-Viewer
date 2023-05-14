@@ -121,7 +121,9 @@ const imageViewer = (function () {
       }
     }
     for (const node of document.getElementsByTagName('*')) {
-      const bg = window.getComputedStyle(node).backgroundImage
+      const backgroundImage = window.getComputedStyle(node).backgroundImage
+      if (backgroundImage === 'none') continue
+      const bg = backgroundImage.split(', ')[0]
       if (bg !== 'none' && imgUrl === bg.substring(4, bg.length - 1).replace(/['"]/g, '')) {
         return node
       }
