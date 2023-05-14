@@ -228,8 +228,10 @@
         let hiddenDomLayer = 0
 
         const maxTry = Math.min(20, elementList.length)
-        for (let tryCount = 0; tryCount < maxTry; tryCount++) {
-          const dom = elementList[tryCount]
+        let index = 0
+        let tryCount = 0
+        while (tryCount < maxTry) {
+          const dom = elementList[index]
           const imageInfo = extractImageInfoFromNode(dom)
           const valid = isImageInfoValid(imageInfo)
 
@@ -237,16 +239,19 @@
             firstVisibleDom ??= dom
             if (valid && (await isNewImageInfoBetter(imageInfo, imageInfoFromPoint))) {
               imageInfoFromPoint = imageInfo
-              imageDomLayer = tryCount
-              tryCount = Math.min(5, tryCount)
+              imageDomLayer = index
+              tryCount = Math.max(maxTry - 5, tryCount)
             }
           } else {
             if (valid) {
               hiddenImageInfoFromPoint = imageInfo
-              hiddenDomLayer = tryCount
-              tryCount = Math.min(5, tryCount)
+              hiddenDomLayer = index
+              tryCount = Math.max(maxTry - 5, tryCount)
             }
           }
+
+          index++
+          tryCount++
         }
 
         if (imageInfoFromPoint) {
