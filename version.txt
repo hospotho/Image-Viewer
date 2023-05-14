@@ -1,3 +1,8 @@
+1.19 [2023-05-14]:
+1. Improve the stability of auto scroll
+2. Improve the code logic for better performance
+3. Fix a lot of bugs
+
 1.18 [2023-05-04]:
 1. Support auto scroll
 2. Add options to enable auto scroll and disable hover check
