@@ -352,7 +352,7 @@ const ImageViewerUtils = (function () {
     const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length
     return enableAutoScroll
   }
-  function stopAutoScrollOnExit(interval, newNodeObserver, startX, startY) {
+  function stopAutoScrollOnExit(getTimeout, newNodeObserver, startX, startY) {
     let scrollFlag = true
     const originalScrollIntoView = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = function () {
@@ -367,11 +367,12 @@ const ImageViewerUtils = (function () {
       }
       Element.prototype.scrollIntoView = originalScrollIntoView
     }
+
     const imageViewerObserver = new MutationObserver(() => {
       if (!document.documentElement.classList.contains('has-image-viewer')) {
         imageViewerObserver.disconnect()
         newNodeObserver.disconnect()
-        clearInterval(interval)
+        clearTimeout(getTimeout())
         if (scrollFlag) window.scrollTo(startX, startY)
         setTimeout(() => (Element.prototype.scrollIntoView = originalScrollIntoView), 100)
       }
@@ -526,16 +527,31 @@ const ImageViewerUtils = (function () {
       const startX = window.scrollX
       const startY = window.scrollY
       const screenHeight = window.screen.height
-      let count = 0
-      let interval = setInterval(() => {
-        if (count++ > 5) clearInterval(interval)
-        window.scrollBy({top: screenHeight, behavior: 'smooth'})
-      }, 500)
-      window.scrollTo(startX, document.body.scrollHeight)
 
-      const newNodeObserver = new MutationObserver(() => (count = 0))
+      const period = 250
+      let timeout
+      const action = () => {
+        window.scrollBy({top: screenHeight * 3, behavior: 'smooth'})
+        if (window.scrollY + screenHeight * 3 < document.body.scrollHeight) {
+          clearTimeout(timeout)
+          timeout = setTimeout(action, period)
+        }
+      }
+      timeout = setTimeout(action, period)
+
+      let existNewDom = false
+      const newNodeObserver = new MutationObserver(() => {
+        existNewDom = true
+        clearTimeout(timeout)
+        timeout = setTimeout(action, period)
+      })
       newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
-      stopAutoScrollOnExit(interval, newNodeObserver, startX, startY)
+      setTimeout(() => {
+        if (!existNewDom) window.scrollTo(startX, document.body.scrollHeight)
+      }, 1000)
+
+      const getTimeout = () => timeout
+      stopAutoScrollOnExit(getTimeout, newNodeObserver, startX, startY)
     }
   }
 })()
