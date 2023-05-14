@@ -67,13 +67,11 @@
 
   timeout = setTimeout(action, period)
   const observer = new MutationObserver(() => {
-    observer.disconnect()
-    clearTimeout(timeout)
-    if (!document.documentElement.classList.contains('has-image-viewer')) return
-
-    period = 500
-    timeout = setTimeout(action, period)
-    observer.observe(document.documentElement, {childList: true, subtree: true})
+    if (!document.documentElement.classList.contains('has-image-viewer')) {
+      observer.disconnect()
+      return
+    }
+    period = 200
   })
   observer.observe(document.documentElement, {childList: true, subtree: true})
 
