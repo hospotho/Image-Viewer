@@ -254,7 +254,7 @@ const ImageViewerUtils = (function () {
 
     for (const img of document.querySelectorAll('img.simpleUnlazy')) {
       // only client size should be checked in order to bypass large icon or hidden image
-      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || !img.complete) {
+      if (img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) {
         imageDataList.push([img.currentSrc, img])
       }
     }
