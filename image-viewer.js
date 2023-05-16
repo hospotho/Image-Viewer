@@ -702,7 +702,7 @@ const imageViewer = (function () {
 
       if (!options.hotkey || options.hotkey.length < 5) return
       const hotkey = options.hotkey
-      const googleUrl = String.raw`https://www.google.com/searchbyimage?image_url={imgSrc}`
+      const googleUrl = String.raw`https://lens.google.com/uploadbyurl?url={imgSrc}`
       const yandexUrl = String.raw`https://yandex.com/images/search?family=yes&rpt=imageview&url={imgSrc}`
       const saucenaoUrl = String.raw`https://saucenao.com/search.php?db=999&url={imgSrc}`
       const ascii2dUrl = String.raw`https://ascii2d.net/search/url/{imgSrc}`
