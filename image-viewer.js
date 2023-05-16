@@ -528,16 +528,21 @@ const imageViewer = (function () {
       if (length === 0) closeImageViewer()
     }
     function removeFailedImg() {
-      for (const img of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
-        const action = () => {
-          if (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight) {
-            img.parentNode.remove()
-            updateCounter()
-          }
+      const action = e => {
+        const img = e?.target ?? e
+        if (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight) {
+          img.parentNode.remove()
+          updateCounter()
         }
-        img.addEventListener('load', action)
-        img.addEventListener('error', action)
-        if (img.complete) action()
+      }
+
+      for (const img of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
+        if (img.complete) {
+          action(img)
+        } else {
+          img.addEventListener('load', action)
+          img.addEventListener('error', action)
+        }
       }
 
       if (removeTimeout) clearTimeout(removeTimeout)
