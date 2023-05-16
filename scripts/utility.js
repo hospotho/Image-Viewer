@@ -288,35 +288,40 @@ const ImageViewerUtils = (function () {
 
     return uniqueImage
   }
-  async function sortImageDataList(dataList) {
-    const imageDomList = []
+  async function mapSrcToIframe(dataList) {
     const iframeList = [...document.getElementsByTagName('iframe')]
+    if (iframeList.length === 0) return dataList
 
     const iframeSrcList = iframeList.map(iframe => iframe.src)
     const iframeRedirectSrcList = await chrome.runtime.sendMessage({msg: 'get_redirect', data: iframeSrcList})
 
+    const imageDomList = []
     for (const data of dataList) {
-      if (typeof data[1] === 'string') {
-        const index = iframeRedirectSrcList.indexOf(data[1])
+      const iframeSrc = data[1]
+      if (typeof iframeSrc === 'string') {
+        const index = iframeRedirectSrcList.indexOf(iframeSrc)
         if (index !== -1) {
           imageDomList.push([data[0], iframeList[index]])
         }
       } else {
-        imageDomList.push([...data])
+        imageDomList.push(data)
       }
     }
-
+    return imageDomList
+  }
+  async function sortImageDataList(dataList) {
+    const imageDomList = await mapSrcToIframe(dataList)
     imageDomList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
 
     const sortedDataList = []
     for (const data of imageDomList) {
-      if (data[1].tagName === 'IFRAME') {
-        sortedDataList.push([data[0], data[1].src])
+      const dom = data[1]
+      if (dom.tagName === 'IFRAME') {
+        sortedDataList.push([data[0], dom.src])
       } else {
         sortedDataList.push(data[0])
       }
     }
-
     return sortedDataList
   }
 
