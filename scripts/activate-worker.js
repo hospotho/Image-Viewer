@@ -287,7 +287,7 @@
       : async e => {
           const elementsBeforeDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
           document.body.classList.add('disable-hover')
-          await new Promise(resolve => setTimeout(resolve, 5))
+          await new Promise(resolve => setTimeout(resolve, 0))
           document.body.classList.remove('disable-hover')
           const elementsAfterDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
 
@@ -335,7 +335,6 @@
   document.addEventListener(
     'contextmenu',
     async e => {
-      await new Promise(resolve => setTimeout(resolve, 0))
       const viewportPosition = [e.clientX, e.clientY]
       const orderedElements = await getOrderedElement(e)
       const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements, viewportPosition)
