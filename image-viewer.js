@@ -6,6 +6,7 @@ const imageViewer = (function () {
   let shadowRoot
   let currentImageList
   let removeTimeout
+  let lastUpdateTime
 
   //==========utility==========
   function buildImageNode(data, options) {
@@ -500,6 +501,8 @@ const imageViewer = (function () {
     const _imageList = shadowRoot.querySelector(`.${appName} .${imageListName}`)
     let first = buildImageNode(imageList[0], options)
     _imageList.appendChild(first)
+    currentImageList = imageList
+    lastUpdateTime = Date.now()
 
     if (imageList.length === 1) return
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
@@ -887,13 +890,16 @@ const imageViewer = (function () {
 
       if (prevIndex === imageListLength - 1) {
         if (!debounceFlag) {
-          debounceTimeout = setTimeout(() => {
-            const currentIndex = Number(current.innerHTML) - 1
-            const imageListLength = Number(total.innerHTML)
-            const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
-            moveToNode(prevIndex)
-            debounceFlag = false
-          }, debouncePeriod)
+          debounceTimeout = setTimeout(
+            () => {
+              const currentIndex = Number(current.innerHTML) - 1
+              const imageListLength = Number(total.innerHTML)
+              const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
+              moveToNode(prevIndex)
+              debounceFlag = false
+            },
+            Date.now() - lastUpdateTime > 3000 ? debouncePeriod : 3000
+          )
         }
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
@@ -919,13 +925,16 @@ const imageViewer = (function () {
 
       if (nextIndex === 0) {
         if (!debounceFlag) {
-          debounceTimeout = setTimeout(() => {
-            const currentIndex = Number(current.innerHTML) - 1
-            const imageListLength = Number(total.innerHTML)
-            const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
-            moveToNode(nextIndex)
-            debounceFlag = false
-          }, debouncePeriod)
+          debounceTimeout = setTimeout(
+            () => {
+              const currentIndex = Number(current.innerHTML) - 1
+              const imageListLength = Number(total.innerHTML)
+              const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
+              moveToNode(nextIndex)
+              debounceFlag = false
+            },
+            Date.now() - lastUpdateTime > 3000 ? debouncePeriod : 3000
+          )
         }
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
@@ -980,6 +989,7 @@ const imageViewer = (function () {
       }
     }
     currentImageList = newList
+    lastUpdateTime = Date.now()
 
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
     shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = currentImageList.length
@@ -990,7 +1000,6 @@ const imageViewer = (function () {
     if (imageList.length === 0) return
 
     if (!document.documentElement.classList.contains('has-image-viewer')) {
-      currentImageList = imageList
       buildApp()
       buildImageList(imageList, options)
       initImageList(options)
