@@ -287,7 +287,7 @@
       : async e => {
           const elementsBeforeDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
           document.body.classList.add('disable-hover')
-          await new Promise(resolve => setTimeout(resolve, 0))
+          await new Promise(resolve => setTimeout(resolve, 5))
           document.body.classList.remove('disable-hover')
           const elementsAfterDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
 
