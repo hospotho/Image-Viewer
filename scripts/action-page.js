@@ -23,26 +23,24 @@
   imageViewer(currentImageList, options)
 
   // auto update
-  let timeout
   let period = 200
   const multiplier = 1.2
   const action = async () => {
-    clearTimeout(timeout)
+    while (document.documentElement.classList.contains('has-image-viewer')) {
+      const newImageList = await ImageViewerUtils.getOrderedImageUrls(options)
+      const combinedImageList = ImageViewerUtils.combineImageList(newImageList, currentImageList)
 
-    if (!document.documentElement.classList.contains('has-image-viewer')) return
-    const newImageList = await ImageViewerUtils.getOrderedImageUrls(options)
-    const combinedImageList = ImageViewerUtils.combineImageList(newImageList, currentImageList)
-
-    if (!document.documentElement.classList.contains('has-image-viewer')) return
-    if (combinedImageList.length > currentImageList.length) {
-      currentImageList = combinedImageList
-      imageViewer(combinedImageList, options)
+      if (!document.documentElement.classList.contains('has-image-viewer')) return
+      if (combinedImageList.length > currentImageList.length) {
+        currentImageList = combinedImageList
+        imageViewer(combinedImageList, options)
+      }
+      period *= multiplier
+      await new Promise(resolve => setTimeout(resolve, period))
     }
-    period *= multiplier
-    setTimeout(action, period)
   }
 
-  timeout = setTimeout(action, period)
+  setTimeout(action, period)
   const observer = new MutationObserver(() => {
     if (!document.documentElement.classList.contains('has-image-viewer')) {
       observer.disconnect()
