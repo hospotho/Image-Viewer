@@ -39,6 +39,30 @@ const getImageBitSize = src => {
     resolve(0)
   })
 }
+const getImageLocalBitSize = (id, srcUrl) => {
+  return new Promise(resolve => {
+    const listener = (request, sender, sendResponse) => {
+      if (request.msg === 'reply' && sender.tab.id === id) {
+        sendResponse()
+        chrome.runtime.onMessage.removeListener(listener)
+        resolve(request.size)
+        return true
+      }
+    }
+    chrome.runtime.onMessage.addListener(listener)
+
+    chrome.scripting.executeScript({
+      args: [srcUrl],
+      target: {tabId: id},
+      func: srcUrl => {
+        const img = new Image()
+        img.onload = () => chrome.runtime.sendMessage({msg: 'reply', size: img.naturalWidth})
+        img.onerror = () => chrome.runtime.sendMessage({msg: 'reply', size: 0})
+        img.src = srcUrl
+      }
+    })
+  })
+}
 const getRedirectUrl = async srcList => {
   const asyncList = srcList.map(async src => {
     if (src === 'about:blank') return src
@@ -207,6 +231,14 @@ function addMessageHandler() {
       case 'get_size': {
         ;(async () => {
           const size = await getImageBitSize(request.url)
+          sendResponse(size, false)
+          console.log(request.url, size)
+        })()
+        return true
+      }
+      case 'get_local_size': {
+        ;(async () => {
+          const size = await getImageLocalBitSize(sender.tab.id, request.url)
           sendResponse(size, false)
           console.log(request.url, size)
         })()

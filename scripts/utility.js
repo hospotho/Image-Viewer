@@ -335,13 +335,9 @@ const ImageViewerUtils = (function () {
   }
 
   function getImageInfoIndex(array, data) {
-    if (typeof data === 'string') {
-      return array.indexOf(data)
-    }
-    for (let i = 0; i < array.length; i++) {
-      if (array[i]?.[0] === data[0]) return i
-    }
-    return -1
+    const srcArray = array.map(item => (typeof item === 'string' ? item : item[0]))
+    const query = typeof data === 'string' ? data : data[0]
+    return srcArray.indexOf(query)
   }
 
   function isEnableAutoScroll(options) {
