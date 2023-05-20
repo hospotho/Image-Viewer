@@ -35,13 +35,15 @@
   function getImageList(options) {
     const imageUrls = []
     for (const img of document.getElementsByTagName('img')) {
-      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || window.getComputedStyle(img).display === 'none' || !img.complete) {
+      const {width, height} = img.getBoundingClientRect()
+      if ((width >= options.minWidth && height >= options.minHeight) || window.getComputedStyle(img).display === 'none' || !img.complete) {
         imageUrls.push(img.currentSrc)
       }
     }
 
-    for (const node of document.querySelectorAll('*')) {
-      if (node.clientWidth < options.minWidth || node.clientHeight < options.minHeight) continue
+    for (const node of document.getElementsByTagName('*')) {
+      const {width, height} = node.getBoundingClientRect()
+      if (width < options.minWidth || height < options.minHeight) continue
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
@@ -51,7 +53,8 @@
     }
 
     for (const video of document.querySelectorAll('video[poster]')) {
-      if (video.clientWidth >= options.minWidth && video.clientHeight >= options.minHeight) {
+      const {width, height} = video.getBoundingClientRect()
+      if (width >= options.minWidth && height >= options.minHeight) {
         imageUrls.push(video.poster)
       }
     }

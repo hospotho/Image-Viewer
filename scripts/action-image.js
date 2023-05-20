@@ -17,7 +17,7 @@
   const nodeInfo = await chrome.runtime.sendMessage('get_info')
   const [srcUrl, nodeSize] = nodeInfo === null ? [] : nodeInfo
   const dom = document.querySelector('.ImageViewerLastDom')
-  const domSize = Math.min(dom?.clientWidth, dom?.clientHeight) || 0
+  const domSize = dom ? Math.min(dom.clientWidth, dom.clientHeight) : 0
   if (nodeSize > 0) {
     options.minWidth = Math.min(nodeSize, options.minWidth)
     options.minHeight = Math.min(nodeSize, options.minHeight)

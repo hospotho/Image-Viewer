@@ -171,13 +171,14 @@
 
     // utility
     function extractImageInfoFromNode(dom) {
+      const {width, height} = dom.getBoundingClientRect()
       if (dom.tagName === 'IMG') {
-        const sizeList = [dom.naturalWidth, dom.naturalHeight, dom.clientWidth, dom.clientHeight]
+        const sizeList = [dom.naturalWidth, dom.naturalHeight, width, height]
         const minSize = Math.min(...sizeList.filter(Boolean))
         return [dom.currentSrc, minSize, dom]
       }
 
-      const minSize = Math.min(dom.clientWidth, dom.clientHeight)
+      const minSize = Math.min(width, height)
       if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
         return [dom.poster, minSize, dom]
       }

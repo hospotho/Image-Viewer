@@ -1,7 +1,7 @@
 const ImageViewerUtils = (function () {
   'use strict'
 
-  const passList = ['class', 'style', 'src', 'alt', 'title', 'loading', 'crossorigin', 'height', 'width', 'sizes', 'onerror', 'data-error']
+  const passList = new Set(['class', 'style', 'src', 'alt', 'title', 'loading', 'crossorigin', 'height', 'width', 'sizes', 'onerror', 'data-error'])
   const urlRegex = /(?:https?:\/)?\/\S+/g
   const argsRegex = /(.+\/.*?\.).*(png|jpeg|jpg|gif|bmp|tiff|webp).*/i
   const protocol = window.location.protocol
@@ -121,7 +121,12 @@ const ImageViewerUtils = (function () {
     img.loading = 'eager'
 
     const argsMatch = !img.currentSrc.startsWith('data') && img.currentSrc.match(argsRegex)
-    const attrList = [...img.attributes].filter(attr => !passList.includes(attr.name) && attr.value.match(urlRegex))
+    const attrList = []
+    for (const attr of img.attributes) {
+      if (!passList.has(attr.name) && attr.value.match(urlRegex)) {
+        attrList.push(attr)
+      }
+    }
     if (!argsMatch && img.currentSrc === img.srcset && attrList.length === 0) return null
 
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
@@ -193,7 +198,11 @@ const ImageViewerUtils = (function () {
   async function simpleUnlazyImage() {
     const unlazyList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
 
-    const imgList = unlazyList.filter(img => Math.min(img.clientWidth, img.clientHeight) >= 50)
+    const imgList = []
+    for (const img of unlazyList) {
+      const {width, height} = img.getBoundingClientRect()
+      if (Math.min(width, height) >= 50) imgList.push(img)
+    }
     const listSize = imgList.length
     if (!listSize) return
 
@@ -254,13 +263,15 @@ const ImageViewerUtils = (function () {
 
     for (const img of document.querySelectorAll('img.simpleUnlazy')) {
       // only client size should be checked in order to bypass large icon or hidden image
-      if ((img.clientWidth >= options.minWidth && img.clientHeight >= options.minHeight) || img.classList.contains('ImageViewerLastDom')) {
+      const {width, height} = img.getBoundingClientRect()
+      if ((width >= options.minWidth && height >= options.minHeight) || img.classList.contains('ImageViewerLastDom')) {
         imageDataList.push([img.currentSrc, img])
       }
     }
 
-    for (const node of document.querySelectorAll('*')) {
-      if (node.clientWidth < options.minWidth || node.clientHeight < options.minHeight) continue
+    for (const node of document.getElementsByTagName('*')) {
+      const {width, height} = node.getBoundingClientRect()
+      if (width < options.minWidth || height < options.minHeight) continue
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
@@ -270,7 +281,8 @@ const ImageViewerUtils = (function () {
     }
 
     for (const video of document.querySelectorAll('video[poster]')) {
-      if (video.clientWidth >= options.minWidth && video.clientHeight >= options.minHeight) {
+      const {width, height} = video.getBoundingClientRect()
+      if (width >= options.minWidth && height >= options.minHeight) {
         imageDataList.push([video.poster, video])
       }
     }
@@ -410,8 +422,15 @@ const ImageViewerUtils = (function () {
         const imgList = [...div.querySelectorAll('img')]
         if (imgList.length === 0) continue
 
-        const maxWidth = Math.max(...imgList.map(img => img.clientWidth))
-        const maxHeight = Math.max(...imgList.map(img => img.clientHeight))
+        const widthList = []
+        const heightList = []
+        for (const img of imgList) {
+          const {width, height} = img.getBoundingClientRect()
+          widthList.push(width)
+          heightList.push(height)
+        }
+        const maxWidth = Math.max(...widthList)
+        const maxHeight = Math.max(...heightList)
         width.push(maxWidth)
         height.push(maxHeight)
       }
