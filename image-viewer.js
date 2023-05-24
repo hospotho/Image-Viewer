@@ -121,7 +121,7 @@ const imageViewer = (function () {
         return video
       }
     }
-    for (const node of document.getElementsByTagName('*')) {
+    for (const node of document.querySelectorAll('*')) {
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]

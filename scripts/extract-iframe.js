@@ -41,7 +41,7 @@
       }
     }
 
-    for (const node of document.getElementsByTagName('*')) {
+    for (const node of document.querySelectorAll('*')) {
       const {width, height} = node.getBoundingClientRect()
       if (width < options.minWidth || height < options.minHeight) continue
       const backgroundImage = window.getComputedStyle(node).backgroundImage
