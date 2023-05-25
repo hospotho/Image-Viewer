@@ -9,13 +9,22 @@ const ImageViewerUtils = (function () {
   const srcRealSizeMap = new Map()
   const mutex = (() => {
     let promise = Promise.resolve()
+    let busy = false
     return {
       acquire: async () => {
         await promise
         let release
-        promise = new Promise(resolve => (release = resolve))
+        promise = new Promise(
+          resolve =>
+            (release = () => {
+              busy = false
+              resolve()
+            })
+        )
+        busy = true
         return release
-      }
+      },
+      isBusy: () => busy
     }
   })()
   const unlazyObserver = new MutationObserver(mutationsList => {
@@ -576,9 +585,10 @@ const ImageViewerUtils = (function () {
 
       const period = 250
       let timeout
-      const action = () => {
+      const action = async () => {
         window.scrollBy({top: screenHeight * 3, behavior: 'smooth'})
         if (window.scrollY + screenHeight * 3 < document.body.scrollHeight) {
+          while (mutex.isBusy()) await new Promise(resolve => setTimeout(resolve, 50))
           clearTimeout(timeout)
           timeout = setTimeout(action, period)
         }
