@@ -69,18 +69,20 @@ const ImageViewerUtils = (function () {
       }
 
       try {
-        fetch(href, {method: 'HEAD'}).then(res => {
-          if (!res.ok) {
-            updateComplete()
-            return
-          }
-          const type = res.headers.get('Content-Type')
-          const length = res.headers.get('Content-Length')
-          if (type?.startsWith('image')) {
-            const size = parseInt(length)
-            size ? resolve(size) : updateComplete()
-          }
-        })
+        fetch(href, {method: 'HEAD'})
+          .then(res => {
+            if (!res.ok) {
+              updateComplete()
+              return
+            }
+            const type = res.headers.get('Content-Type')
+            const length = res.headers.get('Content-Length')
+            if (type?.startsWith('image')) {
+              const size = parseInt(length)
+              size ? resolve(size) : updateComplete()
+            }
+          })
+          .catch(updateComplete)
       } catch (error) {
         updateComplete()
       }
