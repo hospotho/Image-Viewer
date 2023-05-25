@@ -5,7 +5,8 @@
 
   document.documentElement.classList.add('has-image-viewer-worker')
 
-  const options = await chrome.runtime.sendMessage({msg: 'get_options'})
+  await chrome.runtime.sendMessage({msg: 'get_options'})
+  const options = window.ImageViewerOption
   const domainList = []
   const regexList = []
   for (const str of options.hoverCheckDisableList) {

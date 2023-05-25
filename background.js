@@ -158,7 +158,10 @@ function addMessageHandler() {
 
     switch (type) {
       case 'get_options': {
-        sendResponse(currOptions)
+        ;(async () => {
+          await passDataToTab(sender.tab.id, 'ImageViewerOption', currOptions)
+          sendResponse()
+        })()
         return true
       }
       case 'update_options': {

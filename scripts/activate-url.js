@@ -5,10 +5,32 @@
     if (document.body.children.length === 1 && document.body.children[0].tagName === 'IMG') {
       const image = document.body.children[0]
 
-      const options = await chrome.runtime.sendMessage('get_options')
+      await chrome.runtime.sendMessage('get_options')
+      const options = window.ImageViewerOption
       options.closeButton = false
       options.minWidth = 0
       options.minHeight = 0
+
+      const argsRegex = /(.+\/.*?\.).*(png|jpeg|jpg|gif|bmp|tiff|webp).*/i
+      const argsMatch = image.src.match(argsRegex)
+
+      if (argsMatch) {
+        const rawUrl = argsMatch?.[1] + argsMatch?.[2]
+        const currSize = image.naturalWidth
+        const rawSize = await new Promise(resolve => {
+          const img = new Image()
+          img.onload = () => resolve(img.naturalWidth)
+          img.onerror = () => resolve(0)
+          img.src = rawUrl
+        })
+
+        if (rawSize > currSize) {
+          await chrome.runtime.sendMessage('load_script')
+          image.style.display = 'none'
+          imageViewer([rawUrl], options)
+          return
+        }
+      }
 
       await chrome.runtime.sendMessage('load_script')
       image.style.display = 'none'
