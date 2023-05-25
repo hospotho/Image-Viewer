@@ -115,14 +115,14 @@ const ImageViewerUtils = (function () {
   }
   function updateImageSource(img, src) {
     return new Promise(resolve => {
-      function checkSrc() {
-        const currentUrl = new URL(img.currentSrc, window.location.href)
-        const targetUrl = new URL(src, window.location.href)
-        if (currentUrl.href === targetUrl.href) {
-          resolve()
-        } else {
-          setTimeout(checkSrc, 50)
+      async function checkSrc() {
+        const srcUrl = new URL(img.src, window.location.href)
+        let currentUrl = new URL(img.currentSrc, window.location.href)
+        while (srcUrl.href !== currentUrl.href) {
+          await new Promise(resolve => setTimeout(resolve, 20))
+          currentUrl = new URL(img.currentSrc, window.location.href)
         }
+        resolve()
       }
 
       img.src = src
