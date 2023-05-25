@@ -217,8 +217,7 @@ const ImageViewerUtils = (function () {
     const listSize = imgList.length
     if (!listSize) return
 
-    console.log('Try to unlazy image')
-    console.log(`${listSize} image found`)
+    console.log(`Try to unlazy ${listSize} image`)
     const asyncList = await Promise.all(imgList.map(checkImageAttr))
     const lazyName = asyncList.filter(Boolean)
 
@@ -227,7 +226,7 @@ const ImageViewerUtils = (function () {
         console.log(`Unlazy ${lazyName.filter(x => x === name).length} img with ${name} attr`)
       }
     } else {
-      console.log('No lazy src attribute found')
+      console.log('No lazy image found')
     }
 
     unlazyList.map(img => img.classList.add('simpleUnlazy'))
