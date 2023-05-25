@@ -3,7 +3,7 @@ const ImageViewerUtils = (function () {
 
   const passList = new Set(['class', 'style', 'src', 'alt', 'title', 'loading', 'crossorigin', 'height', 'width', 'sizes', 'onerror', 'data-error'])
   const urlRegex = /(?:https?:\/)?\/\S+/g
-  const argsRegex = /(.+\/.*?\.).*(png|jpeg|jpg|gif|bmp|tiff|webp).*/i
+  const argsRegex = /(.+(?:png|jpeg|jpg|gif|bmp|tiff|webp)).*/i
   const protocol = window.location.protocol
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
@@ -145,7 +145,7 @@ const ImageViewerUtils = (function () {
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
 
-    const rawUrl = argsMatch?.[1] + argsMatch?.[2]
+    const rawUrl = argsMatch?.[1]
     if (argsMatch && rawUrl !== img.currentSrc) {
       const newURL = rawUrl.replace(/https?:/, protocol)
       if (bitSize) {
