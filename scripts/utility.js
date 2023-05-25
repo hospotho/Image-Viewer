@@ -41,54 +41,65 @@ const ImageViewerUtils = (function () {
   })
   unlazyObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
 
-  async function getImageBitSize(src) {
+  function getImageBitSize(src) {
     if (!src || src === 'about:blank' || src.startsWith('data')) return 0
 
     const cache = srcBitSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    // protocol-relative URL
-    const url = new URL(src, document.baseURI)
-    const href = url.href
-
-    if (url.hostname !== location.hostname) {
-      return chrome.runtime.sendMessage({msg: 'get_size', url: href})
-    }
-
-    try {
-      const res = await fetch(href, {method: 'HEAD'})
-      if (res.ok) {
-        const type = res.headers.get('Content-Type')
-        const length = res.headers.get('Content-Length')
-        if (type?.startsWith('image')) {
-          const size = parseInt(length) || 0
-          srcBitSizeMap.set(src, size)
-          return size
-        }
+    return new Promise(_resolve => {
+      const resolve = size => {
+        srcBitSizeMap.set(src, size)
+        _resolve(size)
       }
-    } catch (error) {}
 
-    return 0
+      let complete = false
+      const updateComplete = () => {
+        !complete ? (complete = true) : resolve(0)
+      }
+
+      // protocol-relative URL
+      const url = new URL(src, document.baseURI)
+      const href = url.href
+
+      if (url.hostname !== location.hostname) {
+        chrome.runtime.sendMessage({msg: 'get_size', url: href}).then(reply => {
+          reply ? resolve(reply) : updateComplete()
+        })
+      }
+
+      try {
+        fetch(href, {method: 'HEAD'}).then(res => {
+          if (!res.ok) {
+            updateComplete()
+            return
+          }
+          const type = res.headers.get('Content-Type')
+          const length = res.headers.get('Content-Length')
+          if (type?.startsWith('image')) {
+            const size = parseInt(length)
+            size ? resolve(size) : updateComplete()
+          }
+        })
+      } catch (error) {
+        updateComplete()
+      }
+    })
   }
   function getImageRealSize(src) {
-    return new Promise(resolve => {
-      const cache = srcRealSizeMap.get(src)
-      if (cache !== undefined) resolve(cache)
+    const cache = srcRealSizeMap.get(src)
+    if (cache !== undefined) return cache
+
+    return new Promise(_resolve => {
+      const resolve = size => {
+        srcBitSizeMap.set(src, size)
+        _resolve(size)
+      }
 
       const img = new Image()
-      img.onload = () => {
-        srcRealSizeMap.set(src, img.naturalWidth)
-        resolve(img.naturalWidth)
-      }
-      img.onerror = () => {
-        srcRealSizeMap.set(src, 0)
-        resolve(0)
-      }
+      img.onload = () => resolve(img.naturalWidth)
+      img.onerror = () => resolve(0)
       img.src = src
-      setTimeout(() => {
-        srcRealSizeMap.set(src, 0)
-        resolve(0)
-      }, 1000)
     })
   }
   function updateImageSource(img, src) {
@@ -220,6 +231,8 @@ const ImageViewerUtils = (function () {
     }
 
     unlazyList.map(img => img.classList.add('simpleUnlazy'))
+    // wait currentSrc update
+    await new Promise(resolve => setTimeout(resolve, 50))
   }
 
   function getImageListWithoutFilter(options) {
