@@ -110,7 +110,7 @@ const imageViewer = (function () {
 
     const imgUrl = img.src
     for (const img of document.getElementsByTagName('img')) {
-      if (imgUrl === img.currentSrc) {
+      if (imgUrl === img.currentSrc || imgUrl === img.src) {
         // check visibility by offsetParent
         if (img.offsetParent === null && img.style.position !== 'fixed') continue
         return img
@@ -627,13 +627,40 @@ const imageViewer = (function () {
     }
     function addMoveToButtonEvent() {
       if (!options.closeButton) return
-      function moveTo() {
+
+      const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
+      const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
+
+      const index = options.index || 0
+      const img = shadowRoot.querySelector('.current img')
+      const imgNode = searchImgNode(img)
+      const startTop = imgNode ? imgNode.getBoundingClientRect().top : 0
+
+      async function moveTo() {
         const img = shadowRoot.querySelector('.current img')
-        const imgNode = searchImgNode(img)
+        let imgNode = searchImgNode(img)
         closeImageViewer()
         if (imgNode === null) {
-          console.log('Image node not found')
-          return
+          await new Promise(resolve => {
+            const currIndex = Number(current.innerHTML) - 1
+            const imageListLength = Number(total.innerHTML)
+            const ratio = currIndex / (imageListLength - index)
+
+            const totalHeight = document.body.scrollHeight
+            const targetTop = (totalHeight - startTop) * ratio + startTop
+
+            const newNodeObserver = new MutationObserver(() => {
+              newNodeObserver.disconnect()
+              imgNode = searchImgNode(img)
+              resolve()
+            })
+            newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+            window.scrollTo(window.scrollX, targetTop)
+          })
+          if (imgNode === null) {
+            console.log('Image node not found')
+            return
+          }
         }
         console.log('Move to image node')
         imgNode.scrollIntoView({block: 'center'})

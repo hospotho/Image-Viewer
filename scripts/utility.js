@@ -366,13 +366,15 @@ const ImageViewerUtils = (function () {
     return enableAutoScroll
   }
   function stopAutoScrollOnExit(getTimeout, newNodeObserver, startX, startY) {
-    let scrollFlag = true
+    let scrollFlag = false
+
     const originalScrollIntoView = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = function () {
-      scrollFlag = false
+      scrollFlag = true
       let currX = window.scrollX
       let currY = window.scrollY
       originalScrollIntoView.apply(this, arguments)
+      // for unknown reason can't move to correct position with single scroll
       while (currX !== window.scrollX || currY !== window.scrollY) {
         currX = window.scrollX
         currY = window.scrollY
@@ -381,13 +383,23 @@ const ImageViewerUtils = (function () {
       Element.prototype.scrollIntoView = originalScrollIntoView
     }
 
+    const originalScrollTo = window.scrollTo
+    window.scrollTo = function () {
+      scrollFlag = true
+      originalScrollTo.apply(this, arguments)
+      window.scrollTo = originalScrollTo
+    }
+
     const imageViewerObserver = new MutationObserver(() => {
       if (!document.documentElement.classList.contains('has-image-viewer')) {
         imageViewerObserver.disconnect()
         newNodeObserver.disconnect()
         clearTimeout(getTimeout())
-        if (scrollFlag) window.scrollTo(startX, startY)
-        setTimeout(() => (Element.prototype.scrollIntoView = originalScrollIntoView), 100)
+        setTimeout(() => {
+          if (!scrollFlag) window.scrollTo(startX, startY)
+          Element.prototype.scrollIntoView = originalScrollIntoView
+          window.scrollTo = originalScrollTo
+        }, 100)
       }
     })
     imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
