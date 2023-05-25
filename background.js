@@ -10,15 +10,16 @@ const passDataToTab = (id, name, data) => {
   })
 }
 const getImageBitSize = src => {
-  return new Promise(async resolve => {
-    const cache = srcBitSizeMap.get(src)
-    if (cache !== undefined) resolve(cache)
+  const cache = srcBitSizeMap.get(src)
+  if (cache !== undefined) return cache
 
-    setTimeout(() => {
-      srcBitSizeMap.set(src, 0)
+  return new Promise(async _resolve => {
+    const resolve = size => {
+      srcBitSizeMap.set(src, size)
       expired.push(src)
-      resolve(0)
-    }, 5000)
+      _resolve(size)
+    }
+    setTimeout(() => resolve(0), 5000)
 
     try {
       const res = await fetch(src, {method: 'HEAD'})
@@ -27,19 +28,15 @@ const getImageBitSize = src => {
         const length = res.headers.get('Content-Length')
         if (type?.startsWith('image')) {
           const size = parseInt(length) || 0
-          srcBitSizeMap.set(src, size)
-          expired.push(src)
           resolve(size)
         }
       }
     } catch (error) {}
 
-    srcBitSizeMap.set(src, 0)
-    expired.push(src)
     resolve(0)
   })
 }
-const getImageLocalBitSize = (id, srcUrl) => {
+const getImageLocalRealSize = (id, srcUrl) => {
   return new Promise(resolve => {
     const listener = (request, sender, sendResponse) => {
       if (request.msg === 'reply' && sender.tab.id === id) {
@@ -241,7 +238,7 @@ function addMessageHandler() {
       }
       case 'get_local_size': {
         ;(async () => {
-          const size = await getImageLocalBitSize(sender.tab.id, request.url)
+          const size = await getImageLocalRealSize(sender.tab.id, request.url)
           sendResponse(size, false)
           console.log(request.url, size)
         })()
