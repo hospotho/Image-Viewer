@@ -68,6 +68,9 @@
   const imageList = getImageList(options)
 
   const asyncList = await Promise.all(imageList.map(createDataUrl))
-  const imageDataUrls = asyncList.filter(url => url !== '').map(url => [url, location.href])
-  return imageDataUrls.length ? imageDataUrls : null
+  const imageDataUrls = asyncList.filter(url => url !== '')
+  const subFrame = document.getElementsByTagName('iframe')
+  const subFrameHref = [...subFrame].map(iframe => iframe.src)
+  const subFrameRedirectedHref = await chrome.runtime.sendMessage({msg: 'get_redirect', data: subFrameHref})
+  return [location.href, subFrameRedirectedHref, imageDataUrls]
 })()
