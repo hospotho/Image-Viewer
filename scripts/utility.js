@@ -640,7 +640,7 @@ const ImageViewerUtils = (function () {
       newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
       setTimeout(() => {
         if (!existNewDom) window.scrollTo(startX, document.body.scrollHeight)
-      }, 1000)
+      }, 3000)
 
       const getTimeout = () => timeout
       stopAutoScrollOnExit(getTimeout, newNodeObserver, startX, startY)
