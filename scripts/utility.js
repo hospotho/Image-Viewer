@@ -608,26 +608,45 @@ const ImageViewerUtils = (function () {
 
       const startX = window.scrollX
       const startY = window.scrollY
-      const screenHeight = window.screen.height
 
-      const period = 250
-      let timeout
+      const period = 500
+      let stopFlag = true
       const action = async () => {
-        if (!document.documentElement.classList.contains('has-image-viewer')) return
         while (mutex.isBusy()) await new Promise(resolve => setTimeout(resolve, 50))
-        window.scrollBy({top: screenHeight * 3, behavior: 'smooth'})
-        if (window.scrollY + screenHeight * 3 < document.body.scrollHeight) {
-          clearTimeout(timeout)
-          timeout = setTimeout(action, period)
+
+        const allImage = document.getElementsByTagName('img')
+        let currBottom = 0
+        let bottomImg = null
+        for (const img of allImage) {
+          const {bottom} = img.getBoundingClientRect()
+          if (bottom > currBottom) {
+            currBottom = bottom
+            bottomImg = img
+          }
         }
+
+        bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
+        await new Promise(resolve => setTimeout(resolve, period))
       }
-      timeout = setTimeout(action, period)
+      const timer = async () => {
+        stopFlag = false
+        let lastY = window.scrollY
+        let count = 0
+        while (lastY < document.body.scrollHeight) {
+          if (count > 5 || !document.documentElement.classList.contains('has-image-viewer')) break
+          await action()
+          if (lastY === window.scrollY) count++
+          lastY = window.scrollY
+        }
+        stopFlag = true
+      }
+
+      timer()
 
       let existNewDom = false
       const newNodeObserver = new MutationObserver(() => {
         existNewDom = true
-        clearTimeout(timeout)
-        timeout = setTimeout(action, period)
+        if (stopFlag) timer()
       })
       newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
       setTimeout(() => {
