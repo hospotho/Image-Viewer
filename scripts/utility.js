@@ -269,15 +269,22 @@ const ImageViewerUtils = (function () {
     const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
     const imageUrlSet = new Set(filteredDataList.map(data => data[0]))
 
-    const uniqueImage = []
     for (const data of filteredDataList) {
       const url = data[0]
       const rawUrl = getRawUrl(url)
-      if (url !== rawUrl && imageUrlSet.has(rawUrl)) continue
-      uniqueImage.push(data)
+      if (url !== rawUrl && imageUrlSet.has(rawUrl)) imageUrlSet.delete(url)
     }
 
-    return uniqueImage
+    const uniqueDataList = []
+    for (const data of filteredDataList) {
+      const url = data[0]
+      if (imageUrlSet.has(url)) {
+        imageUrlSet.delete(url)
+        uniqueDataList.push(data)
+      }
+    }
+
+    return uniqueDataList
   }
   function getImageList(options) {
     if (options.minWidth === 0 && options.minHeight === 0) {
@@ -317,15 +324,22 @@ const ImageViewerUtils = (function () {
     const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
     const imageUrlSet = new Set(filteredDataList.map(data => data[0]))
 
-    const uniqueImage = []
     for (const data of filteredDataList) {
       const url = data[0]
       const rawUrl = getRawUrl(url)
-      if (url !== rawUrl && imageUrlSet.has(rawUrl)) continue
-      uniqueImage.push(data)
+      if (url !== rawUrl && imageUrlSet.has(rawUrl)) imageUrlSet.delete(url)
     }
 
-    return uniqueImage
+    const uniqueDataList = []
+    for (const data of filteredDataList) {
+      const url = data[0]
+      if (imageUrlSet.has(url)) {
+        imageUrlSet.delete(url)
+        uniqueDataList.push(data)
+      }
+    }
+
+    return uniqueDataList
   }
   async function mapSrcToIframe(dataList) {
     const iframeList = [...document.getElementsByTagName('iframe')]
@@ -517,7 +531,7 @@ const ImageViewerUtils = (function () {
     searchImageInfoIndex: function (input, imageList) {
       if (typeof input === 'object') {
         const currentUrl = getDomUrl(input)
-        return imageList.indexOf(currentUrl)
+        return imageList.indexOf(getRawUrl(currentUrl))
       }
 
       const data = input.startsWith('data') ? [input] : input
