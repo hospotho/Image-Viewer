@@ -540,6 +540,32 @@ const ImageViewerUtils = (function () {
     },
 
     combineImageList: function (newList, oldList) {
+      const tempList = newList.concat(oldList)
+      const tempImageUrlSet = new Set(tempList)
+      for (const url of tempList) {
+        if (typeof url !== 'string') continue
+        const rawUrl = getRawUrl(url)
+        if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) tempImageUrlSet.delete(url)
+      }
+
+      for (let i = 0; i < newList.length; i++) {
+        const url = newList[i]
+        if (typeof url !== 'string') continue
+        const rawUrl = getRawUrl(url)
+        if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) {
+          newList[i] = rawUrl
+        }
+      }
+
+      for (let i = 0; i < oldList.length; i++) {
+        const url = oldList[i]
+        if (typeof url !== 'string') continue
+        const rawUrl = getRawUrl(url)
+        if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) {
+          oldList[i] = rawUrl
+        }
+      }
+
       const combinedImageList = new Array(newList.length + oldList.length)
 
       let leftIndex = 0
@@ -594,12 +620,6 @@ const ImageViewerUtils = (function () {
 
       const finalList = combinedImageList.filter(Boolean)
       const imageUrlSet = new Set(finalList)
-
-      for (const url of finalList) {
-        const rawUrl = getRawUrl(url)
-        if (url !== rawUrl && imageUrlSet.has(rawUrl)) imageUrlSet.delete(url)
-      }
-
       return Array.from(imageUrlSet)
     },
 
