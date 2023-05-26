@@ -666,6 +666,12 @@ const imageViewer = (function () {
             let timeout
             const newNodeObserver = new MutationObserver(() => {
               clearTimeout(timeout)
+              imgNode = searchImgNode(img)
+              if (imgNode !== null) {
+                newNodeObserver.disconnect()
+                resolve()
+                return
+              }
               timeout = setTimeout(() => {
                 newNodeObserver.disconnect()
                 imgNode = searchImgNode(img)
