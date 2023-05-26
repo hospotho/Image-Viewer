@@ -99,6 +99,7 @@ const imageViewer = (function () {
   }
 
   function getRawUrl(src) {
+    if (typeof src !== 'string') return src
     const argsRegex = /(.*?(?:png|jpeg|jpg|gif|bmp|tiff|webp)).*/i
     const argsMatch = !src.startsWith('data') && src.match(argsRegex)
     if (argsMatch) {
