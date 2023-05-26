@@ -609,6 +609,7 @@ const ImageViewerUtils = (function () {
       const startX = window.scrollX
       const startY = window.scrollY
 
+      const originalScrollIntoView = Element.prototype.scrollIntoView
       const period = 500
       let stopFlag = true
       const action = async () => {
@@ -625,7 +626,7 @@ const ImageViewerUtils = (function () {
           }
         }
 
-        bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
+        originalScrollIntoView.apply(bottomImg, {behavior: 'instant', block: 'start'})
         await new Promise(resolve => setTimeout(resolve, period))
       }
       const timer = async () => {
