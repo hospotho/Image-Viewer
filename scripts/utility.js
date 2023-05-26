@@ -274,13 +274,15 @@ const ImageViewerUtils = (function () {
 
     const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.includes('.svg') : url => url === '' || url === 'about:blank'
 
+    const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
+    const imageUrlSet = new Set(filteredDataList.map(data => data[0]))
+
     const uniqueImage = []
-    outer: for (const img of imageDataList) {
-      if (badImage(img[0])) continue outer
-      for (const unique of uniqueImage) {
-        if (img[0] === unique[0]) continue outer
-      }
-      uniqueImage.push(img)
+    for (const data of filteredDataList) {
+      const url = data[0]
+      const rawUrl = getRawUrl(url)
+      if (url !== rawUrl && imageUrlSet.has(rawUrl)) continue
+      uniqueImage.push(data)
     }
 
     return uniqueImage
@@ -320,13 +322,15 @@ const ImageViewerUtils = (function () {
 
     const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.includes('.svg') : url => url === '' || url === 'about:blank'
 
+    const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
+    const imageUrlSet = new Set(filteredDataList.map(data => data[0]))
+
     const uniqueImage = []
-    const uniqueImageUrls = new Set()
-    for (const img of imageDataList) {
-      if (!badImage(img[0]) && !uniqueImageUrls.has(img[0])) {
-        uniqueImageUrls.add(img[0])
-        uniqueImage.push(img)
-      }
+    for (const data of filteredDataList) {
+      const url = data[0]
+      const rawUrl = getRawUrl(url)
+      if (url !== rawUrl && imageUrlSet.has(rawUrl)) continue
+      uniqueImage.push(data)
     }
 
     return uniqueImage
