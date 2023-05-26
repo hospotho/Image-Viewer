@@ -40,6 +40,26 @@ const imageViewer = (function () {
       imageListNode.insertBefore(node, list[index])
     }
   }
+  function updateCounter() {
+    const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
+    const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
+    const length = list.length
+    const current = shadowRoot.querySelector('li.current') || shadowRoot.querySelector(`.${appName} .${imageListName} li`)
+    if (!shadowRoot.querySelector('li.current') && current) {
+      // must in action-page mode
+      current.classList.add('current')
+      shadowRoot.querySelector(`.${appName}-info-width`).value = current.firstChild.naturalWidth
+      shadowRoot.querySelector(`.${appName}-info-height`).value = current.firstChild.naturalHeight
+    }
+
+    const counterTotal = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
+    const counterCurrent = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
+    const currIndex = list.indexOf(current)
+    counterTotal.innerHTML = length
+    counterCurrent.innerHTML = currIndex + 1
+    imageListNode.style.top = `${-currIndex * 100}%`
+    if (length === 0) closeImageViewer()
+  }
 
   function closeImageViewer() {
     document.documentElement.classList.remove('has-image-viewer')
@@ -528,22 +548,6 @@ const imageViewer = (function () {
   }
 
   function initImageList(options) {
-    function updateCounter() {
-      const list = [...shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)]
-      const length = list.length
-      const current = shadowRoot.querySelector('li.current') || shadowRoot.querySelector(`.${appName} .${imageListName} li`)
-      if (!shadowRoot.querySelector('li.current') && current) {
-        // must in action-page mode
-        current.classList.add('current')
-        shadowRoot.querySelector(`.${appName}-info-width`).value = current.firstChild.naturalWidth
-        shadowRoot.querySelector(`.${appName}-info-height`).value = current.firstChild.naturalHeight
-      }
-      const currIndex = list.indexOf(current)
-      counterTotal.innerHTML = length
-      counterCurrent.innerHTML = currIndex + 1
-      imageListNode.style.top = `${-currIndex * 100}%`
-      if (length === 0) closeImageViewer()
-    }
     function removeFailedImg() {
       const action = e => {
         const img = e?.target ?? e
@@ -581,7 +585,6 @@ const imageViewer = (function () {
     imageListNode.style.top = `${-baseIndex * 100}%`
 
     const counterTotal = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
-    const counterCurrent = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
     updateCounter()
 
     let completeFlag = false
@@ -1023,6 +1026,11 @@ const imageViewer = (function () {
   }
 
   function updateImageList(newList, options) {
+    for (const imgNode of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
+      if (newList.indexOf(imgNode.src) === -1) imgNode.parentElement.remove()
+    }
+    updateCounter()
+
     const newIndex = newList.map(data => {
       if (typeof data === 'string') {
         return currentImageList.indexOf(data)
