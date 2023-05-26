@@ -176,7 +176,15 @@ const ImageViewerUtils = (function () {
     return result
   }
   async function checkImageAttr(img) {
+    const loadingType = img.loading
     img.loading = 'eager'
+    if (loadingType === 'lazy') {
+      await new Promise(resolve => {
+        img.onload = resolve
+        img.onerror = resolve
+        if (img.complete) resolve()
+      })
+    }
 
     const rawUrl = getRawUrl(img.currentSrc)
     const attrList = []
