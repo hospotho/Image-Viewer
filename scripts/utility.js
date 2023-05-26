@@ -658,6 +658,7 @@ const ImageViewerUtils = (function () {
           await action()
           if (lastY === window.scrollY) {
             count++
+            window.scrollBy(0, -100)
             window.scrollBy({top: window.screen.height})
           } else {
             count = 0
