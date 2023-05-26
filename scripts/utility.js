@@ -116,7 +116,7 @@ const ImageViewerUtils = (function () {
 
     return new Promise(_resolve => {
       const resolve = size => {
-        srcBitSizeMap.set(src, size)
+        srcRealSizeMap.set(src, size)
         _resolve(size)
       }
 
