@@ -137,23 +137,33 @@ const ImageViewerUtils = (function () {
       checkSrc()
     })
   }
+  function getRawUrl(src) {
+    const argsMatch = !src.startsWith('data') && src.match(argsRegex)
+    if (argsMatch) {
+      const rawUrl = argsMatch[1]
+      if (rawUrl !== src) return rawUrl
+    }
+    const url = new URL(src)
+    const noSearch = url.origin + url.pathname
+    if (noSearch !== src) return noSearch
+    return url
+  }
   async function checkImageAttr(img) {
     img.loading = 'eager'
 
-    const argsMatch = !img.currentSrc.startsWith('data') && img.currentSrc.match(argsRegex)
+    const rawUrl = getRawUrl(img.currentSrc)
     const attrList = []
     for (const attr of img.attributes) {
       if (!passList.has(attr.name) && attr.value.match(urlRegex)) {
         attrList.push(attr)
       }
     }
-    if (!argsMatch && img.currentSrc === img.srcset && attrList.length === 0) return null
+    if (rawUrl === img.currentSrc && img.currentSrc === img.srcset && attrList.length === 0) return null
 
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
 
-    const rawUrl = argsMatch?.[1]
-    if (argsMatch && rawUrl !== img.currentSrc) {
+    if (rawUrl !== img.currentSrc) {
       const newURL = rawUrl.replace(/https?:/, protocol)
       if (bitSize) {
         const lazySize = await getImageBitSize(newURL)
