@@ -98,6 +98,20 @@ const imageViewer = (function () {
     return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
   }
 
+  function getRawUrl(src) {
+    const argsRegex = /(.*?(?:png|jpeg|jpg|gif|bmp|tiff|webp)).*/i
+    const argsMatch = !src.startsWith('data') && src.match(argsRegex)
+    if (argsMatch) {
+      const rawUrl = argsMatch[1]
+      if (rawUrl !== src) return rawUrl
+    }
+    try {
+      const url = new URL(src)
+      const noSearch = url.origin + url.pathname
+      if (noSearch !== src) return noSearch
+    } catch (error) {}
+    return src
+  }
   function searchImgNode(img) {
     const iframeSrc = img.getAttribute('data-iframe-src')
     if (iframeSrc) {
@@ -110,7 +124,7 @@ const imageViewer = (function () {
 
     const imgUrl = img.src
     for (const img of document.getElementsByTagName('img')) {
-      if (imgUrl === img.currentSrc || imgUrl === img.src) {
+      if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) {
         // check visibility by offsetParent
         if (img.offsetParent === null && img.style.position !== 'fixed') continue
         return img
@@ -649,10 +663,14 @@ const imageViewer = (function () {
             const totalHeight = document.body.scrollHeight
             const targetTop = (totalHeight - startTop) * ratio + startTop
 
+            let timeout
             const newNodeObserver = new MutationObserver(() => {
-              newNodeObserver.disconnect()
-              imgNode = searchImgNode(img)
-              resolve()
+              clearTimeout(timeout)
+              timeout = setTimeout(() => {
+                newNodeObserver.disconnect()
+                imgNode = searchImgNode(img)
+                resolve()
+              }, 200)
             })
             newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
             window.scrollTo(window.scrollX, targetTop)
