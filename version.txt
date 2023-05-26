@@ -1,8 +1,14 @@
+1.21 [2023-05-27]:
+1. Fixed a bug when getting the image list, so it won't repeat the same image with different sizes
+2. Fixed the "moveTo" button, now it functions correctly on websites like Instagram and Twitter
+3. Fixed the image update, so it won't jump back to the first image when updating
+4. Fixed a bug related to image looping, now it will wait for an image update when it reaches the end
+
 1.20 [2023-05-26]:
-1. Improved auto update and auto scroll.
-2. More stability on image file URLs.
-3. Added support for more iframe images.
-4. Improved performance and fixed bugs.
+1. Improved auto update and auto scroll
+2. More stability on image file URLs
+3. Added support for more iframe images
+4. Improved performance and fixed bugs
 
 1.19 [2023-05-14]:
 1. Improve the stability of auto scroll
