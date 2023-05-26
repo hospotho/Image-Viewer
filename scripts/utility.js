@@ -593,7 +593,23 @@ const ImageViewerUtils = (function () {
         }
       }
 
-      return [...new Set(combinedImageList.filter(Boolean))]
+      const finalList = combinedImageList.filter(Boolean)
+      const imageUrlSet = new Set(finalList)
+
+      for (const url of finalList) {
+        const rawUrl = getRawUrl(url)
+        if (url !== rawUrl && imageUrlSet.has(rawUrl)) imageUrlSet.delete(url)
+      }
+
+      const uniqueDataList = []
+      for (const url of finalList) {
+        if (imageUrlSet.has(url)) {
+          imageUrlSet.delete(url)
+          uniqueDataList.push(url)
+        }
+      }
+
+      return uniqueDataList
     },
 
     checkAndStartAutoScroll: function (options) {
@@ -606,9 +622,9 @@ const ImageViewerUtils = (function () {
       const period = 250
       let timeout
       const action = async () => {
+        while (mutex.isBusy()) await new Promise(resolve => setTimeout(resolve, 50))
         window.scrollBy({top: screenHeight * 3, behavior: 'smooth'})
         if (window.scrollY + screenHeight * 3 < document.body.scrollHeight) {
-          while (mutex.isBusy()) await new Promise(resolve => setTimeout(resolve, 50))
           clearTimeout(timeout)
           timeout = setTimeout(action, period)
         }
