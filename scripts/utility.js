@@ -656,7 +656,12 @@ const ImageViewerUtils = (function () {
         while (lastY < document.body.scrollHeight) {
           if (count > 5 || !document.documentElement.classList.contains('has-image-viewer')) break
           await action()
-          if (lastY === window.scrollY) count++
+          if (lastY === window.scrollY) {
+            count++
+            window.scrollBy({top: window.screen.height})
+          } else {
+            count = 0
+          }
           lastY = window.scrollY
         }
         stopFlag = true
