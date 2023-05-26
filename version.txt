@@ -1,3 +1,9 @@
+1.20 [2023-05-26]:
+1. Improved auto update and auto scroll.
+2. More stability on image file URLs.
+3. Added support for more iframe images.
+4. Improved performance and fixed bugs.
+
 1.19 [2023-05-14]:
 1. Improve the stability of auto scroll
 2. Improve the code logic for better performance
