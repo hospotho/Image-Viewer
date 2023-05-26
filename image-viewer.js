@@ -952,12 +952,14 @@ const imageViewer = (function () {
               moveToNode(prevIndex)
               debounceFlag = false
             },
-            Date.now() - lastUpdateTime > 3000 ? debouncePeriod : 3000
+            Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
           )
         }
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
         moveToNode(prevIndex)
+        clearTimeout(debounceTimeout)
+        debounceFlag = false
         throttleTimestamp = Date.now()
       }
     }
@@ -987,12 +989,14 @@ const imageViewer = (function () {
               moveToNode(nextIndex)
               debounceFlag = false
             },
-            Date.now() - lastUpdateTime > 3000 ? debouncePeriod : 3000
+            Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
           )
         }
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
         moveToNode(nextIndex)
+        clearTimeout(debounceTimeout)
+        debounceFlag = false
         throttleTimestamp = Date.now()
       }
     }
