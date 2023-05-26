@@ -1030,10 +1030,15 @@ const imageViewer = (function () {
   }
 
   function updateImageList(newList, options) {
+    const current = shadowRoot.querySelector('li.current img')
+    const currentSrc = current.src
+
     for (const imgNode of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
-      if (newList.indexOf(imgNode.src) === -1) imgNode.parentElement.remove()
+      if (newList.indexOf(imgNode.src) === -1) {
+        imgNode.parentElement.remove()
+        updateCounter()
+      }
     }
-    updateCounter()
 
     const newIndex = newList.map(data => {
       if (typeof data === 'string') {
@@ -1053,6 +1058,19 @@ const imageViewer = (function () {
     }
     currentImageList = newList
     lastUpdateTime = Date.now()
+
+    if (!current) {
+      shadowRoot.querySelector('li.current').classList.remove('current')
+      const counterCurrent = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
+      const imageListNode = shadowRoot.querySelector(`.${appName} .${imageListName}`)
+
+      const rawUrl = getRawUrl(currentSrc)
+      const currIndex = currentImageList.indexOf(rawUrl)
+      const li = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li`)[currIndex]
+      li.classList.add('current')
+      counterCurrent.innerHTML = currIndex + 1
+      imageListNode.style.top = `${-currIndex * 100}%`
+    }
 
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
     shadowRoot.querySelector(`.${appName}-relate-counter-total`).innerHTML = currentImageList.length
