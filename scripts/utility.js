@@ -600,15 +600,7 @@ const ImageViewerUtils = (function () {
         if (url !== rawUrl && imageUrlSet.has(rawUrl)) imageUrlSet.delete(url)
       }
 
-      const uniqueDataList = []
-      for (const url of finalList) {
-        if (imageUrlSet.has(url)) {
-          imageUrlSet.delete(url)
-          uniqueDataList.push(url)
-        }
-      }
-
-      return uniqueDataList
+      return Array.from(imageUrlSet)
     },
 
     checkAndStartAutoScroll: function (options) {
