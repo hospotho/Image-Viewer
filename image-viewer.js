@@ -1028,6 +1028,24 @@ const imageViewer = (function () {
   }
 
   function updateImageList(newList, options) {
+    // update
+    const imgList = shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)
+    for (let i = 0; i < currentImageList.length; i++) {
+      const data = currentImageList[i]
+      if (typeof data === 'string') {
+        const index = newList.indexOf(data)
+        if (index !== -1) continue
+
+        const rawUrl = getRawUrl(data)
+        const rawIndex = newList.indexOf(rawUrl)
+        if (rawIndex !== -1) {
+          currentImageList[i] = rawUrl
+          imgList[i].src = rawUrl
+        }
+      }
+    }
+
+    // insert
     const newIndex = newList.map(data => {
       if (typeof data === 'string') {
         return currentImageList.indexOf(data)
@@ -1045,24 +1063,29 @@ const imageViewer = (function () {
       }
     }
 
-    const current = shadowRoot.querySelector('li.current img')
-    const currentSrc = current.src
-    if (newList.indexOf(currentSrc) === -1) {
-      current.parentElement.remove()
-      const rawUrl = getRawUrl(currentSrc)
-      for (const imgNode of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
-        if (imgNode.src === rawUrl) {
-          imgNode.parentElement.classList.add('current')
-          break
-        }
-      }
-    }
+    // This extension never remove old image from the list 
+    // fork and uncomment below code when you have need it
+    // // delete
+    // const current = shadowRoot.querySelector('li.current img')
+    // const currentSrc = current.src
+    // if (newList.indexOf(currentSrc) === -1) {
+    //   current.parentElement.remove()
+    //   const rawUrl = getRawUrl(currentSrc)
+    //   for (const imgNode of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
+    //     if (imgNode.src === rawUrl) {
+    //       imgNode.parentElement.classList.add('current')
+    //       break
+    //     }
+    //   }
+    // }
 
-    for (const imgNode of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
-      if (newList.indexOf(imgNode.src) === -1) imgNode.parentElement.remove()
-    }
+    // for (const imgNode of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li img`)) {
+    //   if (newList.indexOf(imgNode.src) === -1) {
+    //     imgNode.parentElement.remove()
+    //   }
+    // }
 
-    currentImageList = newList
+    currentImageList = Array.from(newList)
     lastUpdateTime = Date.now()
 
     shadowRoot.querySelector(`.${appName}-relate`).style.display = 'inline'
