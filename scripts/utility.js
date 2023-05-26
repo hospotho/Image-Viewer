@@ -530,11 +530,11 @@ const ImageViewerUtils = (function () {
 
     searchImageInfoIndex: function (input, imageList) {
       if (typeof input === 'object') {
-        const currentUrl = getDomUrl(input)
-        return imageList.indexOf(getRawUrl(currentUrl))
+        const currentUrl = getRawUrl(getDomUrl(input))
+        return imageList.indexOf(currentUrl)
       }
 
-      const data = input.startsWith('data') ? [input] : input
+      const data = input.startsWith('data') ? [input] : getRawUrl(input)
       return getImageInfoIndex(imageList, data)
     },
 
