@@ -11,11 +11,23 @@
       options.minWidth = 0
       options.minHeight = 0
 
-      const argsRegex = /(.+\/.*?\.).*(png|jpeg|jpg|gif|bmp|tiff|webp).*/i
-      const argsMatch = image.src.match(argsRegex)
+      const getRawUrl = src => {
+        const argsRegex = /(.*?(?:png|jpeg|jpg|gif|bmp|tiff|webp)).*/i
+        const argsMatch = !src.startsWith('data') && src.match(argsRegex)
+        if (argsMatch) {
+          const rawUrl = argsMatch[1]
+          if (rawUrl !== src) return rawUrl
+        }
+        try {
+          const url = new URL(src)
+          const noSearch = url.origin + url.pathname
+          if (noSearch !== src) return noSearch
+        } catch (error) {}
+        return src
+      }
 
-      if (argsMatch) {
-        const rawUrl = argsMatch?.[1] + argsMatch?.[2]
+      const rawUrl = getRawUrl(image.src)
+      if (rawUrl !== image.src) {
         const currSize = image.naturalWidth
         const rawSize = await new Promise(resolve => {
           const img = new Image()
