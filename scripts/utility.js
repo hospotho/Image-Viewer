@@ -406,7 +406,7 @@ const ImageViewerUtils = (function () {
     const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length
     return enableAutoScroll
   }
-  function stopAutoScrollOnExit(getTimeout, newNodeObserver, startX, startY) {
+  function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
     let scrollFlag = false
 
     const originalScrollIntoView = Element.prototype.scrollIntoView
@@ -435,7 +435,6 @@ const ImageViewerUtils = (function () {
       if (!document.documentElement.classList.contains('has-image-viewer')) {
         imageViewerObserver.disconnect()
         newNodeObserver.disconnect()
-        clearTimeout(getTimeout())
         setTimeout(() => {
           if (!scrollFlag) window.scrollTo(startX, startY)
           Element.prototype.scrollIntoView = originalScrollIntoView
@@ -622,6 +621,7 @@ const ImageViewerUtils = (function () {
       const period = 250
       let timeout
       const action = async () => {
+        if (!document.documentElement.classList.contains('has-image-viewer')) return
         while (mutex.isBusy()) await new Promise(resolve => setTimeout(resolve, 50))
         window.scrollBy({top: screenHeight * 3, behavior: 'smooth'})
         if (window.scrollY + screenHeight * 3 < document.body.scrollHeight) {
@@ -642,8 +642,7 @@ const ImageViewerUtils = (function () {
         if (!existNewDom) window.scrollTo(startX, document.body.scrollHeight)
       }, 3000)
 
-      const getTimeout = () => timeout
-      stopAutoScrollOnExit(getTimeout, newNodeObserver, startX, startY)
+      stopAutoScrollOnExit(newNodeObserver, startX, startY)
     }
   }
 })()
