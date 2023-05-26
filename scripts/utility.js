@@ -388,7 +388,9 @@ const ImageViewerUtils = (function () {
   function getImageInfoIndex(array, data) {
     const srcArray = array.map(item => (typeof item === 'string' ? item : item[0]))
     const query = typeof data === 'string' ? data : data[0]
-    return srcArray.indexOf(query)
+    const result = srcArray.indexOf(query)
+    if (result !== -1) return result
+    return srcArray.indexOf(getRawUrl(query))
   }
 
   function isEnableAutoScroll(options) {
@@ -528,11 +530,13 @@ const ImageViewerUtils = (function () {
 
     searchImageInfoIndex: function (input, imageList) {
       if (typeof input === 'object') {
-        const currentUrl = getRawUrl(getDomUrl(input))
-        return imageList.indexOf(currentUrl)
+        const currentUrl = getDomUrl(input)
+        const currIndex = imageList.indexOf(currentUrl)
+        if (currIndex !== -1) return currIndex
+        return imageList.indexOf(getDomUrl(currentUrl))
       }
 
-      const data = input.startsWith('data') ? [input] : getRawUrl(input)
+      const data = input.startsWith('data') ? [input] : input
       return getImageInfoIndex(imageList, data)
     },
 
