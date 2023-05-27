@@ -701,26 +701,25 @@ const imageViewer = (function () {
     function addFitButtonEvent() {
       const currFitBtn = shadowRoot.querySelector(`.${appName}-control-button-${options.fitMode}`)
       currFitBtn?.classList.add('on')
-      for (const fitBtn of shadowRoot.querySelectorAll(`.${appName}-control-buttons button[data-fit]`)) {
+      const fitBtnList = shadowRoot.querySelectorAll(`.${appName}-control-buttons button[data-fit]`)
+      for (const fitBtn of fitBtnList) {
         fitBtn.addEventListener('click', () => {
-          shadowRoot.querySelectorAll(`.${appName}-control-buttons button`).forEach(btn => btn.classList.remove('on'))
+          for (const btn of fitBtnList) {
+            btn.classList.remove('on')
+          }
           fitBtn.classList.add('on')
-          const newOptions = options
-          newOptions.fitMode = fitBtn.getAttribute('data-fit')
-          fitImage(newOptions)
+          options.fitMode = fitBtn.getAttribute('data-fit')
+          fitImage(options)
         })
       }
+      window.addEventListener('resize', () => fitImage(options))
     }
     function addMoveToButtonEvent() {
       if (!options.closeButton) return
 
       const current = shadowRoot.querySelector(`.${appName}-relate-counter-current`)
       const total = shadowRoot.querySelector(`.${appName}-relate-counter-total`)
-
       const index = options.index || 0
-      const img = shadowRoot.querySelector('.current img')
-      const imgNode = searchImgNode(img)
-      const startTop = imgNode ? imgNode.getBoundingClientRect().top : 0
 
       async function moveTo() {
         const img = shadowRoot.querySelector('.current img')
@@ -733,7 +732,7 @@ const imageViewer = (function () {
             const ratio = currIndex / (imageListLength - index)
 
             const totalHeight = window.screenY
-            const targetTop = (totalHeight - startTop) * ratio + startTop
+            const targetTop = totalHeight * ratio
 
             let timeout
             let disconnect
@@ -817,16 +816,23 @@ const imageViewer = (function () {
       })
     }
     function addMiddleClickKeyEvent() {
-      const openNewTab = chrome ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
+      const action = () => {
+        const img = shadowRoot.querySelector('.current img')
+        const imgNode = searchImgNode(img)
+        if (!imgNode) return
+        const anchor = searchImgAnchor(imgNode)
+        if (!anchor) return
+        anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
+      }
       viewer.addEventListener('keydown', e => {
         if (e.key === 'Insert' || e.key === '0') {
           e.preventDefault()
-          const img = shadowRoot.querySelector('.current img')
-          const imgNode = searchImgNode(img)
-          if (!imgNode) return
-          const anchor = searchImgAnchor(imgNode)
-          if (!anchor) return
-          openNewTab(anchor.href)
+          action()
+        }
+      })
+      viewer.addEventListener('auxclick', e => {
+        if (e.button === 1) {
+          action()
         }
       })
     }
@@ -972,26 +978,10 @@ const imageViewer = (function () {
       // custom event
       li.addEventListener('resetTransform', reset)
     }
-    function addMiddleClickHandler(li) {
-      const imgNode = searchImgNode(li.firstChild)
-      if (!imgNode) return
-      const anchor = searchImgAnchor(imgNode)
-      if (!anchor) return
-
-      li.addEventListener('auxclick', e => {
-        if (e.button === 1) {
-          anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
-        }
-      })
-    }
-
-    // resize
-    window.addEventListener('resize', () => fitImage(options))
 
     for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li:not(.addedImageEvent)`)) {
       li.classList.add('addedImageEvent')
       addTransformHandler(li)
-      addMiddleClickHandler(li)
     }
   }
 
