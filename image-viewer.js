@@ -788,7 +788,7 @@ const imageViewer = (function () {
     }
     function addCloseButtonEvent() {
       if (!options.closeButton) return
-      const closeButton = shadowRoot.querySelector('.' + appName + ' .' + appName + '-button-close')
+      const closeButton = shadowRoot.querySelector(`.${appName} .${appName}-button-close`)
       closeButton.classList.add('show')
       closeButton.addEventListener('click', closeImageViewer)
       closeButton.addEventListener('contextmenu', e => {
