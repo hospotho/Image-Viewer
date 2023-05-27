@@ -213,28 +213,41 @@ const imageViewer = (function () {
     return nearestPageNode
   }
 
-  const fitFuncDict = {
-    both: (imageWidth, imageHeight) => {
+  const fitFuncDict = (function () {
+    function both() {
       const windowWidth = document.documentElement.clientWidth
       const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
       const windowRatio = windowWidth / windowHeight
-      const imgRatio = imageWidth / imageHeight
-      return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
-    },
-    width: (imageWidth, imageHeight) => {
-      const windowWidth = document.documentElement.clientWidth
-      const imgRatio = imageWidth / imageHeight
-      return [windowWidth, windowWidth / imgRatio]
-    },
-    height: (imageWidth, imageHeight) => {
-      const windowHeight = document.doctype ? document.documentElement.clientHeight : document.body.clientHeight
-      const imgRatio = imageWidth / imageHeight
-      return [windowHeight * imgRatio, windowHeight]
-    },
-    none: (imageWidth, imageHeight) => {
-      return [imageWidth, imageHeight]
+      return (imageWidth, imageHeight) => {
+        const imgRatio = imageWidth / imageHeight
+        return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
+      }
     }
-  }
+    function width() {
+      const windowWidth = document.documentElement.clientWidth
+      return (imageWidth, imageHeight) => {
+        const imgRatio = imageWidth / imageHeight
+        return [windowWidth, windowWidth / imgRatio]
+      }
+    }
+    function height() {
+      const windowHeight = document.doctype ? document.documentElement.clientHeight : document.body.clientHeight
+      return (imageWidth, imageHeight) => {
+        const imgRatio = imageWidth / imageHeight
+        return [windowHeight * imgRatio, windowHeight]
+      }
+    }
+    function none() {
+      return (imageWidth, imageHeight) => [imageWidth, imageHeight]
+    }
+    const dict = {both: both, width: width, height: height, none: none}
+    return {
+      get: function (funcName) {
+        const fitFuncFactory = dict[funcName]
+        return fitFuncFactory ? fitFuncFactory() : null
+      }
+    }
+  })()
 
   //==========html&style==========
   const frame = () => {
@@ -666,7 +679,7 @@ const imageViewer = (function () {
   function fitImage(options, update = false) {
     if (options.sizeCheck) return
 
-    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
+    const fitFunc = fitFuncDict.get(options.fitMode) || fitFuncDict.get('both')
     const action = img => {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
