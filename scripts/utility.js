@@ -50,6 +50,7 @@ const ImageViewerUtils = (function () {
   })
   unlazyObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
 
+  // base function
   function getRawUrl(src) {
     const argsMatch = !src.startsWith('data') && src.match(argsRegex)
     if (argsMatch) {
@@ -62,6 +63,46 @@ const ImageViewerUtils = (function () {
       if (noSearch !== src) return noSearch
     } catch (error) {}
     return src
+  }
+  function getDomUrl(dom) {
+    const tag = dom.tagName
+    if (tag === 'IMG') return dom.currentSrc
+    if (tag === 'VIDEO') return dom.poster
+    const backgroundImage = window.getComputedStyle(dom).backgroundImage
+    const bg = backgroundImage.split(', ')[0]
+    return bg.substring(4, bg.length - 1).replace(/['"]/g, '')
+  }
+  function getImageInfoIndex(array, data) {
+    const srcArray = array.map(item => (typeof item === 'string' ? item : item[0]))
+    const query = typeof data === 'string' ? data : data[0]
+    const result = srcArray.indexOf(query)
+    if (result !== -1) return result
+    return srcArray.indexOf(getRawUrl(query))
+  }
+
+  // unlazy
+  async function waitSrcUpdate(img, _resolve) {
+    const srcUrl = new URL(img.src, document.baseURI)
+    while (srcUrl.href !== img.currentSrc) {
+      await new Promise(resolve => setTimeout(resolve, 20))
+    }
+    _resolve()
+  }
+  function updateImageSource(img, src) {
+    return new Promise(resolve => {
+      img.src = src
+      img.srcset = src
+
+      const picture = img.parentNode
+      if (picture?.tagName === 'PICTURE') {
+        const sources = picture.querySelectorAll('source')
+        for (const source of sources) {
+          source.srcset = src
+        }
+      }
+
+      waitSrcUpdate(img, resolve)
+    })
   }
   function getImageBitSize(src) {
     if (!src || src === 'about:blank' || src.startsWith('data')) return 0
@@ -126,30 +167,6 @@ const ImageViewerUtils = (function () {
       img.onload = () => resolve(img.naturalWidth)
       img.onerror = () => resolve(0)
       img.src = src
-    })
-  }
-  function updateImageSource(img, src) {
-    return new Promise(resolve => {
-      async function checkSrc() {
-        const srcUrl = new URL(img.src, document.baseURI)
-        while (srcUrl.href !== img.currentSrc) {
-          await new Promise(resolve => setTimeout(resolve, 20))
-        }
-        resolve()
-      }
-
-      img.src = src
-      img.srcset = src
-
-      const picture = img.parentNode
-      if (picture?.tagName === 'PICTURE') {
-        const sources = picture.querySelectorAll('source')
-        for (const source of sources) {
-          source.srcset = src
-        }
-      }
-
-      checkSrc()
     })
   }
   async function checkUrlSize(img, size, getSizeFunction, url) {
@@ -253,6 +270,7 @@ const ImageViewerUtils = (function () {
     unlazyList.map(img => img.classList.add('simpleUnlazy'))
   }
 
+  // get image
   function getImageListWithoutFilter(options) {
     const imageDataList = []
     for (const img of document.querySelectorAll('img.simpleUnlazy')) {
@@ -349,6 +367,8 @@ const ImageViewerUtils = (function () {
 
     return uniqueDataList
   }
+
+  // sort image list
   async function mapSrcToIframe(dataList) {
     const iframeList = [...document.getElementsByTagName('iframe')]
     if (iframeList.length === 0) return dataList
@@ -386,23 +406,36 @@ const ImageViewerUtils = (function () {
     return sortedDataList
   }
 
-  function getDomUrl(dom) {
-    const tag = dom.tagName
-    if (tag === 'IMG') return dom.currentSrc
-    if (tag === 'VIDEO') return dom.poster
-    const backgroundImage = window.getComputedStyle(dom).backgroundImage
-    const bg = backgroundImage.split(', ')[0]
-    return bg.substring(4, bg.length - 1).replace(/['"]/g, '')
+  // combine image list
+  function removeRepeatNonRaw(newList, oldList) {
+    const tempList = newList.concat(oldList)
+    const tempImageUrlSet = new Set(tempList)
+    for (const url of tempList) {
+      if (typeof url !== 'string') continue
+      const rawUrl = getRawUrl(url)
+      if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) tempImageUrlSet.delete(url)
+    }
+
+    for (let i = 0; i < newList.length; i++) {
+      const url = newList[i]
+      if (typeof url !== 'string') continue
+      const rawUrl = getRawUrl(url)
+      if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) {
+        newList[i] = rawUrl
+      }
+    }
+
+    for (let i = 0; i < oldList.length; i++) {
+      const url = oldList[i]
+      if (typeof url !== 'string') continue
+      const rawUrl = getRawUrl(url)
+      if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) {
+        oldList[i] = rawUrl
+      }
+    }
   }
 
-  function getImageInfoIndex(array, data) {
-    const srcArray = array.map(item => (typeof item === 'string' ? item : item[0]))
-    const query = typeof data === 'string' ? data : data[0]
-    const result = srcArray.indexOf(query)
-    if (result !== -1) return result
-    return srcArray.indexOf(getRawUrl(query))
-  }
-
+  // auto scroll
   function isEnableAutoScroll(options) {
     const domainList = []
     const regexList = []
@@ -550,31 +583,7 @@ const ImageViewerUtils = (function () {
     },
 
     combineImageList: function (newList, oldList) {
-      const tempList = newList.concat(oldList)
-      const tempImageUrlSet = new Set(tempList)
-      for (const url of tempList) {
-        if (typeof url !== 'string') continue
-        const rawUrl = getRawUrl(url)
-        if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) tempImageUrlSet.delete(url)
-      }
-
-      for (let i = 0; i < newList.length; i++) {
-        const url = newList[i]
-        if (typeof url !== 'string') continue
-        const rawUrl = getRawUrl(url)
-        if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) {
-          newList[i] = rawUrl
-        }
-      }
-
-      for (let i = 0; i < oldList.length; i++) {
-        const url = oldList[i]
-        if (typeof url !== 'string') continue
-        const rawUrl = getRawUrl(url)
-        if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) {
-          oldList[i] = rawUrl
-        }
-      }
+      removeRepeatNonRaw(newList, oldList)
 
       const combinedImageList = new Array(newList.length + oldList.length)
 
