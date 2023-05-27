@@ -113,7 +113,7 @@ const imageViewer = (function () {
     } catch (error) {}
     return src
   }
-  function searchImgNode(img) {
+  function searchImgNode(img, options = null) {
     const iframeSrc = img.getAttribute('data-iframe-src')
     if (iframeSrc) {
       for (const iframe of document.getElementsByTagName('iframe')) {
@@ -124,13 +124,18 @@ const imageViewer = (function () {
     }
 
     const imgUrl = img.src
+    const minWidth = options ? options.minWidth : 0
+    const minHeight = options ? options.minHeight : 0
+
     let lastWidth = 0
     let lastNode = null
     for (const img of document.getElementsByTagName('img')) {
       if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) {
         // check visibility by offsetParent
         if (img.offsetParent === null && img.style.position !== 'fixed') continue
-        const {width} = img.getBoundingClientRect()
+
+        const {width, height} = img.getBoundingClientRect()
+        if (width < minWidth || height < minHeight) continue
         if (width > lastWidth) {
           lastWidth = width
           lastNode = img
@@ -141,7 +146,8 @@ const imageViewer = (function () {
 
     for (const video of document.getElementsByTagName('video')) {
       if (imgUrl === video.poster) {
-        const {width} = video.getBoundingClientRect()
+        const {width, height} = video.getBoundingClientRect()
+        if (width < minWidth || height < minHeight) continue
         if (width > lastWidth) {
           lastWidth = width
           lastNode = video
@@ -155,7 +161,8 @@ const imageViewer = (function () {
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
       if (bg !== 'none' && imgUrl === bg.substring(4, bg.length - 1).replace(/['"]/g, '')) {
-        const {width} = node.getBoundingClientRect()
+        const {width, height} = node.getBoundingClientRect()
+        if (width < minWidth || height < minHeight) continue
         if (width > lastWidth) {
           lastWidth = width
           lastNode = node
@@ -174,10 +181,15 @@ const imageViewer = (function () {
     }
     return null
   }
-  function searchNearestPageImgNode(img) {
+  function searchNearestPageImgNode(img, options) {
+    const minWidth = options.minWidth
+    const minHeight = options.minHeight
     const imgUrlList = [...shadowRoot.querySelectorAll('img')].map(img => img.src)
-    const pageImgList = document.getElementsByTagName('img')
-    const pageImgUrlList = [...pageImgList].map(img => getRawUrl(img.src))
+    const pageImgList = [...document.getElementsByTagName('img')].filter(img => {
+      const {width, height} = img.getBoundingClientRect()
+      return width > minWidth && height > minHeight
+    })
+    const pageImgUrlList = pageImgList.map(img => getRawUrl(img.src))
 
     const foundList = []
     for (const url of pageImgUrlList) {
@@ -698,7 +710,7 @@ const imageViewer = (function () {
 
       async function moveTo() {
         const img = shadowRoot.querySelector('.current img')
-        let imgNode = searchImgNode(img)
+        let imgNode = searchImgNode(img, options)
         closeImageViewer()
         if (imgNode === null) {
           await new Promise(resolve => {
@@ -715,18 +727,18 @@ const imageViewer = (function () {
               clearTimeout(timeout)
               clearTimeout(disconnect)
               timeout = setTimeout(() => {
-                imgNode = searchImgNode(img)
+                imgNode = searchImgNode(img, options)
                 if (imgNode !== null) {
                   newNodeObserver.disconnect()
                   resolve()
                   return
                 }
-                const nearest = searchNearestPageImgNode(img)
+                const nearest = searchNearestPageImgNode(img, options)
                 nearest.scrollIntoView({block: 'center'})
               }, 100)
               disconnect = setTimeout(() => {
                 newNodeObserver.disconnect()
-                imgNode = searchImgNode(img)
+                imgNode = searchImgNode(img, options)
                 resolve()
               }, 200)
             })
