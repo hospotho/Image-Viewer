@@ -212,7 +212,7 @@ const ImageViewerUtils = (function () {
         attrList.push(attr)
       }
     }
-    if (rawUrl === img.currentSrc && img.currentSrc === img.srcset && attrList.length === 0) return null
+    if (rawUrl === img.currentSrc && !img.srcset && img.currentSrc === img.srcset && attrList.length === 0) return null
 
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
@@ -244,13 +244,15 @@ const ImageViewerUtils = (function () {
 
     return null
   }
-  async function simpleUnlazyImage() {
+  async function simpleUnlazyImage(options) {
     const unlazyList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
 
+    const minWidth = Math.max(options.minWidth, 50)
+    const minHeight = Math.max(options.minHeight, 50)
     const imgList = []
     for (const img of unlazyList) {
       const {width, height} = img.getBoundingClientRect()
-      if (Math.min(width, height) >= 50) imgList.push(img)
+      if (width > minWidth && height > minHeight) imgList.push(img)
     }
     const listSize = imgList.length
     if (!listSize) return
@@ -267,7 +269,7 @@ const ImageViewerUtils = (function () {
       console.log('No lazy image found')
     }
 
-    unlazyList.map(img => img.classList.add('simpleUnlazy'))
+    imgList.map(img => img.classList.add('simpleUnlazy'))
   }
 
   // get image
@@ -313,7 +315,9 @@ const ImageViewerUtils = (function () {
     return uniqueDataList
   }
   function getImageList(options) {
-    if (options.minWidth === 0 && options.minHeight === 0) {
+    const minWidth = options.minWidth
+    const minHeight = options.minHeight
+    if (minWidth === 0 && minHeight === 0) {
       return getImageListWithoutFilter(options)
     }
 
@@ -322,14 +326,14 @@ const ImageViewerUtils = (function () {
     for (const img of document.querySelectorAll('img.simpleUnlazy')) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
-      if ((width >= options.minWidth && height >= options.minHeight) || img.classList.contains('ImageViewerLastDom')) {
+      if ((width >= minWidth && height >= minHeight) || img.classList.contains('ImageViewerLastDom')) {
         imageDataList.push([img.currentSrc, img])
       }
     }
 
     for (const node of document.querySelectorAll('*')) {
       const {width, height} = node.getBoundingClientRect()
-      if (width < options.minWidth || height < options.minHeight) continue
+      if (width < minWidth || height < minHeight) continue
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
@@ -340,7 +344,7 @@ const ImageViewerUtils = (function () {
 
     for (const video of document.querySelectorAll('video[poster]')) {
       const {width, height} = video.getBoundingClientRect()
-      if (width >= options.minWidth && height >= options.minHeight) {
+      if (width >= minWidth && height >= minHeight) {
         imageDataList.push([video.poster, video])
       }
     }
@@ -540,7 +544,7 @@ const ImageViewerUtils = (function () {
     getOrderedImageUrls: async function (options) {
       const release = await mutex.acquire()
 
-      await simpleUnlazyImage()
+      await simpleUnlazyImage(options)
 
       const uniqueImageUrls = getImageList(options)
 
