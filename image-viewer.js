@@ -124,26 +124,46 @@ const imageViewer = (function () {
     }
 
     const imgUrl = img.src
+    let lastWidth = 0
+    let lastNode = null
     for (const img of document.getElementsByTagName('img')) {
       if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) {
         // check visibility by offsetParent
         if (img.offsetParent === null && img.style.position !== 'fixed') continue
-        return img
+        const {width} = img.getBoundingClientRect()
+        if (width > lastWidth) {
+          lastWidth = width
+          lastNode = img
+        }
       }
     }
+    if (lastNode) return lastNode
+
     for (const video of document.getElementsByTagName('video')) {
       if (imgUrl === video.poster) {
-        return video
+        const {width} = video.getBoundingClientRect()
+        if (width > lastWidth) {
+          lastWidth = width
+          lastNode = video
+        }
       }
     }
+    if (lastNode) return lastNode
+
     for (const node of document.querySelectorAll('*')) {
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
       if (bg !== 'none' && imgUrl === bg.substring(4, bg.length - 1).replace(/['"]/g, '')) {
-        return node
+        const {width} = node.getBoundingClientRect()
+        if (width > lastWidth) {
+          lastWidth = width
+          lastNode = node
+        }
       }
     }
+    if (lastNode) return lastNode
+
     return null
   }
   function searchImgAnchor(imgNode) {
