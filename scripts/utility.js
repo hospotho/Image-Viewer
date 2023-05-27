@@ -665,6 +665,7 @@ const ImageViewerUtils = (function () {
           }
         }
 
+        if (!document.documentElement.classList.contains('has-image-viewer')) return
         originalScrollIntoView.apply(bottomImg, {behavior: 'instant', block: 'start'})
         await new Promise(resolve => setTimeout(resolve, period))
       }
