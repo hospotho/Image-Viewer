@@ -685,15 +685,19 @@ const imageViewer = (function () {
             const targetTop = (totalHeight - startTop) * ratio + startTop
 
             let timeout
+            let disconnect
             const newNodeObserver = new MutationObserver(() => {
               clearTimeout(timeout)
-              imgNode = searchImgNode(img)
-              if (imgNode !== null) {
-                newNodeObserver.disconnect()
-                resolve()
-                return
-              }
+              clearTimeout(disconnect)
               timeout = setTimeout(() => {
+                imgNode = searchImgNode(img)
+                if (imgNode !== null) {
+                  newNodeObserver.disconnect()
+                  resolve()
+                  return
+                }
+              }, 100)
+              disconnect = setTimeout(() => {
                 newNodeObserver.disconnect()
                 imgNode = searchImgNode(img)
                 resolve()
@@ -1095,7 +1099,7 @@ const imageViewer = (function () {
       }
     }
 
-    // This extension never remove old image from the list 
+    // This extension never remove old image from the list
     // fork and uncomment below code when you have need it
     // // delete
     // const current = shadowRoot.querySelector('li.current img')
