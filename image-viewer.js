@@ -757,14 +757,16 @@ const imageViewer = (function () {
         const border = document.createElement('div')
         const setBorderPosition = () => {
           const {top, left, width, height} = imgNode.getBoundingClientRect()
-          border.style.transform = `translate(${left + window.scrollX - 3}px, ${top + window.scrollY - 3}px)`
-          border.style.width = `${width - 4}px`
-          border.style.height = `${height - 4}px`
+          const {x, y} = document.body.getBoundingClientRect()
+          border.style.transform = `translate(${left - x - 1}px, ${top - y - 1}px)`
+          border.style.width = `${width + 4}px`
+          border.style.height = `${height + 4}px`
         }
         border.style.position = 'absolute'
         border.style.top = '0px'
         border.style.left = '0px'
         border.style.border = '5px solid red'
+        border.style.boxSizing = 'border-box'
         setBorderPosition()
 
         const observer = new MutationObserver(setBorderPosition)
