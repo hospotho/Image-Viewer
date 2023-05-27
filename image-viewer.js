@@ -709,9 +709,21 @@ const imageViewer = (function () {
         }
         console.log('Move to image node')
         imgNode.scrollIntoView({block: 'center'})
-        const temp = imgNode.style.border
-        imgNode.style.border = '5px solid red'
-        setTimeout(() => (imgNode.style.border = temp), 1000)
+        await new Promise(resolve => setTimeout(resolve, 50))
+
+        const tempDiv = document.createElement('div')
+        const {top, left, width, height} = imgNode.getBoundingClientRect()
+
+        tempDiv.style.position = 'absolute'
+        tempDiv.style.transform = `translate(${left + window.scrollX - 3}px, ${top + window.scrollY - 3}px)`
+        tempDiv.style.top = '0px'
+        tempDiv.style.left = '0px'
+        tempDiv.style.width = `${width - 4}px`
+        tempDiv.style.height = `${height - 4}px`
+        tempDiv.style.border = '5px solid red'
+
+        document.body.appendChild(tempDiv)
+        setTimeout(() => tempDiv.parentNode.removeChild(tempDiv), 1000)
       }
       shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', moveTo)
       viewer.addEventListener('keydown', e => {
