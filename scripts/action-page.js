@@ -15,6 +15,7 @@
   options.closeButton = true
   options.referrerPolicy = !!document.querySelector('img[referrerPolicy="no-referrer"]')
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
+  document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
 
   let currentImageList = await ImageViewerUtils.getOrderedImageUrls(options)
   if (typeof imageViewer !== 'function') {
