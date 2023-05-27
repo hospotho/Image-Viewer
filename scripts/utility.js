@@ -75,7 +75,7 @@ const ImageViewerUtils = (function () {
         _resolve(size)
       }
 
-      let complete = false
+      let complete = true
       const updateComplete = () => {
         !complete ? (complete = true) : resolve(0)
       }
@@ -85,6 +85,7 @@ const ImageViewerUtils = (function () {
       const href = url.href
 
       if (url.hostname !== location.hostname) {
+        complete = false
         chrome.runtime.sendMessage({msg: 'get_size', url: href}).then(reply => {
           reply ? resolve(reply) : updateComplete()
         })
