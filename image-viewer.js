@@ -681,7 +681,7 @@ const imageViewer = (function () {
             const imageListLength = Number(total.innerHTML)
             const ratio = currIndex / (imageListLength - index)
 
-            const totalHeight = document.body.scrollHeight
+            const totalHeight = window.screenY
             const targetTop = (totalHeight - startTop) * ratio + startTop
 
             let timeout
