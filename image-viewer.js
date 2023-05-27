@@ -973,9 +973,7 @@ const imageViewer = (function () {
     }
 
     // resize
-    window.addEventListener('resize', e => {
-      fitImage(options)
-    })
+    window.addEventListener('resize', () => fitImage(options))
 
     for (const li of shadowRoot.querySelectorAll(`.${appName} .${imageListName} li:not(.addedImageEvent)`)) {
       li.classList.add('addedImageEvent')
