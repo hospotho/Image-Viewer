@@ -742,20 +742,28 @@ const imageViewer = (function () {
         imgNode.scrollIntoView({block: 'center'})
         await new Promise(resolve => setTimeout(resolve, 50))
 
-        const tempDiv = document.createElement('div')
-        const {top, left, width, height} = imgNode.getBoundingClientRect()
+        const border = document.createElement('div')
+        const setBorderPosition = () => {
+          const {top, left, width, height} = imgNode.getBoundingClientRect()
+          border.style.transform = `translate(${left + window.scrollX - 3}px, ${top + window.scrollY - 3}px)`
+          border.style.width = `${width - 4}px`
+          border.style.height = `${height - 4}px`
+        }
+        border.style.position = 'absolute'
+        border.style.top = '0px'
+        border.style.left = '0px'
+        border.style.border = '5px solid red'
+        setBorderPosition()
 
-        tempDiv.style.position = 'absolute'
-        tempDiv.style.transform = `translate(${left + window.scrollX - 3}px, ${top + window.scrollY - 3}px)`
-        tempDiv.style.top = '0px'
-        tempDiv.style.left = '0px'
-        tempDiv.style.width = `${width - 4}px`
-        tempDiv.style.height = `${height - 4}px`
-        tempDiv.style.border = '5px solid red'
-
-        document.body.appendChild(tempDiv)
-        setTimeout(() => tempDiv.parentNode.removeChild(tempDiv), 1000)
+        const observer = new MutationObserver(setBorderPosition)
+        document.body.appendChild(border)
+        setTimeout(() => {
+          border.parentNode.removeChild(border)
+          observer.disconnect()
+        }, 1000)
+        observer.observe(document.documentElement, {childList: true, subtree: true})
       }
+
       shadowRoot.querySelector(`.${appName}-button-moveto`).addEventListener('click', moveTo)
       viewer.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
