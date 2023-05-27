@@ -2,6 +2,13 @@
   'use strict'
 
   const rawText = `
+1.22 [2023-05-28]:
+1. Support deeper-layer iframes
+2. Enhance the moveTo function
+3. Revamp border display following moveTo
+4. Support additional edge cases
+5. Improve performance and fix bugs
+
 1.21 [2023-05-27]:
 1. Fixed a bug when getting the image list, so it won't repeat the same image with different sizes
 2. Fixed the "moveTo" button, now it functions correctly on websites like Instagram and Twitter
