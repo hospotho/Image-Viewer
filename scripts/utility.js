@@ -542,7 +542,7 @@ const ImageViewerUtils = (function () {
         const currentUrl = getDomUrl(input)
         const currIndex = imageList.indexOf(currentUrl)
         if (currIndex !== -1) return currIndex
-        return imageList.indexOf(getDomUrl(currentUrl))
+        return imageList.indexOf(getRawUrl(currentUrl))
       }
 
       const data = input.startsWith('data') ? [input] : input
