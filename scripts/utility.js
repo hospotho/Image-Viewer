@@ -52,7 +52,8 @@ const ImageViewerUtils = (function () {
 
   // base function
   function getRawUrl(src) {
-    const argsMatch = !src.startsWith('data') && src.match(argsRegex)
+    if (src.startsWith('data')) return src
+    const argsMatch = src.match(argsRegex)
     if (argsMatch) {
       const rawUrl = argsMatch[1]
       if (rawUrl !== src) return rawUrl
