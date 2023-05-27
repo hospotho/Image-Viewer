@@ -212,7 +212,7 @@ const ImageViewerUtils = (function () {
         attrList.push(attr)
       }
     }
-    if (rawUrl === img.currentSrc && !img.srcset && img.currentSrc === img.srcset && attrList.length === 0) return null
+    if (rawUrl === img.currentSrc && !(img.srcset && img.currentSrc !== img.srcset) && attrList.length === 0) return null
 
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
