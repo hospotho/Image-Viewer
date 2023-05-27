@@ -174,6 +174,31 @@ const imageViewer = (function () {
     }
     return null
   }
+  function searchNearestPageImgNode(img) {
+    const imgUrlList = [...shadowRoot.querySelectorAll('img')].map(img => img.src)
+    const pageImgList = document.getElementsByTagName('img')
+    const pageImgUrlList = [...pageImgList].map(img => getRawUrl(img.src))
+
+    const foundList = []
+    for (const url of pageImgUrlList) {
+      foundList.push(imgUrlList.indexOf(url))
+    }
+
+    const currentIndex = imgUrlList.indexOf(img.src)
+    let nearestSrc = null
+    let distance = imgUrlList.length
+    for (const index of foundList) {
+      const currDistance = Math.abs(currentIndex - index)
+      if (distance > currDistance) {
+        distance = currDistance
+        nearestSrc = imgUrlList[index]
+      }
+    }
+
+    const pageIndex = pageImgUrlList.indexOf(nearestSrc)
+    const nearestPageNode = pageImgList[pageIndex]
+    return nearestPageNode
+  }
 
   const fitFuncDict = {
     both: (imageWidth, imageHeight) => {
@@ -696,6 +721,8 @@ const imageViewer = (function () {
                   resolve()
                   return
                 }
+                const nearest = searchNearestPageImgNode(img)
+                nearest.scrollIntoView({block: 'center'})
               }, 100)
               disconnect = setTimeout(() => {
                 newNodeObserver.disconnect()
