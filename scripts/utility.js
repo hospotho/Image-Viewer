@@ -3,7 +3,7 @@ const ImageViewerUtils = (function () {
 
   const passList = new Set(['class', 'style', 'src', 'alt', 'title', 'loading', 'crossorigin', 'height', 'width', 'sizes', 'onerror', 'data-error'])
   const urlRegex = /(?:https?:\/)?\/\S+/g
-  const argsRegex = /(.*?(?:png|jpeg|jpg|gif|bmp|tiff|webp)).*/i
+  const argsRegex = /(.*?(?:jpeg|jpg|png|gif|webp|bmp|tiff|avif)).*/i
   const protocol = window.location.protocol
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
@@ -100,10 +100,11 @@ const ImageViewerUtils = (function () {
             }
             const type = res.headers.get('Content-Type')
             const length = res.headers.get('Content-Length')
-            if (type?.startsWith('image')) {
+            if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
               const size = parseInt(length)
               size ? resolve(size) : updateComplete()
             }
+            updateComplete()
           })
           .catch(updateComplete)
       } catch (error) {
