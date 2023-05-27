@@ -45,8 +45,8 @@
   imageViewer(currentImageList, options)
 
   // auto update
-  let period = 200
-  const multiplier = 1.2
+  const period = 500
+  let releaser
   const action = async () => {
     while (document.documentElement.classList.contains('has-image-viewer')) {
       ImageViewerUtils.updateWrapperSize(dom, domSize, options)
@@ -58,20 +58,21 @@
         currentImageList = combinedImageList
         imageViewer(combinedImageList, options)
       }
-      period *= multiplier
-      await new Promise(resolve => setTimeout(resolve, period))
+      await new Promise(resolve => {
+        setTimeout(resolve, period)
+        releaser = resolve
+      })
     }
   }
-
-  setTimeout(action, period)
   const observer = new MutationObserver(() => {
     if (!document.documentElement.classList.contains('has-image-viewer')) {
       observer.disconnect()
       return
     }
-    period = 200
+    if (typeof release === 'function') release()
   })
   observer.observe(document.documentElement, {childList: true, subtree: true})
+  action()
 
   // auto scroll
   ImageViewerUtils.checkAndStartAutoScroll(options)
