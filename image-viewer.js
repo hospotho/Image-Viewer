@@ -705,21 +705,19 @@ const imageViewer = (function () {
 
       const current = shadowRoot.querySelector('#iv-counter-current')
       const total = shadowRoot.querySelector('#iv-counter-total')
-      const index = options.index || 0
 
       async function moveTo() {
         const img = shadowRoot.querySelector('li.current img')
         let imgNode = searchImgNode(img, options)
-        closeImageViewer()
         if (imgNode === null) {
+          const currIndex = Number(current.innerHTML) - 1
+          const imageListLength = Number(total.innerHTML)
+          const ratio = currIndex / imageListLength
+          const totalHeight = window.scrollY
+          const targetTop = totalHeight * ratio
+          closeImageViewer()
+
           await new Promise(resolve => {
-            const currIndex = Number(current.innerHTML) - 1
-            const imageListLength = Number(total.innerHTML)
-            const ratio = currIndex / (imageListLength - index)
-
-            const totalHeight = window.screenY
-            const targetTop = totalHeight * ratio
-
             let timeout
             let disconnect
             const newNodeObserver = new MutationObserver(() => {
@@ -734,6 +732,7 @@ const imageViewer = (function () {
                 }
                 const nearest = searchNearestPageImgNode(img, options)
                 nearest.scrollIntoView({block: 'center'})
+                clearTimeout(disconnect)
               }, 100)
               disconnect = setTimeout(() => {
                 newNodeObserver.disconnect()
@@ -744,11 +743,13 @@ const imageViewer = (function () {
             newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
             window.scrollTo(window.scrollX, targetTop)
           })
+
           if (imgNode === null) {
             console.log('Image node not found')
             return
           }
         }
+        closeImageViewer()
         console.log('Move to image node')
         imgNode.scrollIntoView({block: 'center'})
         await new Promise(resolve => setTimeout(resolve, 50))
