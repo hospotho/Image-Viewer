@@ -435,8 +435,9 @@ const imageViewer = (function () {
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-relate .__crx__image-viewer-relate-counter span {
         display: inline-block;
         font-family: Verdana, Helvetica, Arial, sans-serif;
-        color: #ddd;
-        font-size: 16px;
+        color: #fff;
+        text-shadow: -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
+        font-size: 20px;
         visibility: visible;
       }
       .__crx__image-viewer .__crx__image-viewer-control .__crx__image-viewer-relate ul {
