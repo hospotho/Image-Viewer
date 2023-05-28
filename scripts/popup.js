@@ -2,7 +2,7 @@
   'use strict'
 
   const rawText = `
-1.23 [2023-06-01]:
+1.23 [2023-05-29]:
 1. Add temporary image list storage
 2. Significantly reduced startup time by approximately 3-10 times
 3. Refine UI

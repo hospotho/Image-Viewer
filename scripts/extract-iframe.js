@@ -33,17 +33,19 @@
     })
   }
   function getImageList(options) {
+    const minWidth = options.minWidth || 0
+    const minHeight = options.minHeight || 0
     const imageUrls = []
     for (const img of document.getElementsByTagName('img')) {
       const {width, height} = img.getBoundingClientRect()
-      if ((width >= options.minWidth && height >= options.minHeight) || window.getComputedStyle(img).display === 'none' || !img.complete) {
+      if ((width >= minWidth && height >= minHeight) || window.getComputedStyle(img).display === 'none' || !img.complete) {
         imageUrls.push(img.currentSrc)
       }
     }
 
     for (const node of document.querySelectorAll('*')) {
       const {width, height} = node.getBoundingClientRect()
-      if (width < options.minWidth || height < options.minHeight) continue
+      if (width < minWidth || height < minHeight) continue
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
@@ -54,7 +56,7 @@
 
     for (const video of document.querySelectorAll('video[poster]')) {
       const {width, height} = video.getBoundingClientRect()
-      if (width >= options.minWidth && height >= options.minHeight) {
+      if (width >= minWidth && height >= minHeight) {
         imageUrls.push(video.poster)
       }
     }
