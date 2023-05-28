@@ -192,11 +192,11 @@ function addMessageHandler() {
           newOptions.minHeight = request.minSize
           await passDataToTab(sender.tab.id, 'ImageViewerOption', newOptions)
           const results = await chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/extract-iframe.js']})
-          results.shift()
 
           const relation = new Map()
           const imageDataList = []
           for (const result of results) {
+            if (!result.result) continue
             const [href, subHrefList, imageList] = result.result
             for (const subHref of subHrefList) {
               relation.set(subHref, href)
