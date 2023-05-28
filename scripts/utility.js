@@ -496,11 +496,11 @@ const ImageViewerUtils = (function () {
   return {
     closeImageViewer: function () {
       document.documentElement.classList.remove('has-image-viewer')
-      const viewer = document.querySelector('.__shadow__image-viewer')
-      if (viewer) {
-        viewer.addEventListener('transitionend', viewer.remove)
-        viewer.style.transition = 'opacity 0.2s'
-        viewer.style.opacity = '0'
+      const root = document.querySelector('#image-viewer-root')
+      if (root) {
+        root.addEventListener('transitionend', root.remove)
+        root.style.transition = 'opacity 0.2s'
+        root.style.opacity = '0'
       }
     },
 
