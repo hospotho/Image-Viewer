@@ -17,12 +17,14 @@
   // update image size filter
   const nodeInfo = await chrome.runtime.sendMessage('get_info')
   const [srcUrl, nodeSize] = nodeInfo === null ? [] : nodeInfo
-  const dom = document.querySelector('.ImageViewerLastDom')
-  const domSize = dom ? Math.min(dom.clientWidth, dom.clientHeight) : 0
   if (nodeSize > 0) {
     options.minWidth = Math.min(nodeSize, options.minWidth)
     options.minHeight = Math.min(nodeSize, options.minHeight)
   }
+
+  const dom = document.querySelector('.ImageViewerLastDom')
+  const domRect = dom?.getBoundingClientRect()
+  const domSize = domRect ? [domRect.width, domRect.height] : [0, 0]
   if (dom?.tagName === 'IMG') {
     ImageViewerUtils.updateWrapperSize(dom, domSize, options)
   } else {
@@ -52,7 +54,9 @@
   let releaser
   const action = async () => {
     while (document.documentElement.classList.contains('has-image-viewer')) {
-      ImageViewerUtils.updateWrapperSize(dom, domSize, options)
+      if (dom?.tagName === 'IMG') {
+        ImageViewerUtils.updateWrapperSize(dom, domSize, options)
+      }
       const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
       const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
 

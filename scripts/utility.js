@@ -505,7 +505,8 @@ const ImageViewerUtils = (function () {
     },
 
     updateWrapperSize: function (dom, domSize, options) {
-      if (!dom || domSize === 0) return
+      const [domWidth, domHeight] = domSize
+      if (!dom || !document.contains(dom) || domWidth === 0) return
 
       const wrapper = dom.closest('div')
       if (!wrapper || wrapper.classList.length === 0) return
@@ -535,8 +536,8 @@ const ImageViewerUtils = (function () {
         height.push(maxHeight)
       }
 
-      const finalWidth = Math.min(...width.filter(w => w * 2 >= domSize)) - 3
-      const finalHeight = Math.min(...height.filter(h => h * 2 >= domSize)) - 3
+      const finalWidth = Math.min(...width.filter(w => w * 2 >= domWidth)) - 3
+      const finalHeight = Math.min(...height.filter(h => h * 2 >= domHeight)) - 3
 
       options.minWidth = Math.min(finalWidth, options.minWidth)
       options.minHeight = Math.min(finalHeight, options.minHeight)
