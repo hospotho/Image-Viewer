@@ -12,6 +12,7 @@
   options.closeButton = true
   options.referrerPolicy = !!document.querySelector('img[referrerPolicy="no-referrer"]')
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
+  window.backupImageUrlList ??= []
 
   // update image size filter
   const nodeInfo = await chrome.runtime.sendMessage('get_info')
@@ -29,20 +30,22 @@
   }
 
   const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
+  const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
+  const expired = orderedImageUrls.length + window.backupImageUrlList.length === combinedImageList.length
+  window.backupImageUrlList = expired ? orderedImageUrls : combinedImageList
 
   // find image index
-  options.index = ImageViewerUtils.searchImageInfoIndex(dom || srcUrl, orderedImageUrls)
+  options.index = ImageViewerUtils.searchImageInfoIndex(dom || srcUrl, window.backupImageUrlList)
   if (options.index === -1) {
     options.index = 0
-    orderedImageUrls.unshift(srcUrl)
+    window.backupImageUrlList.unshift(srcUrl)
     console.log('Unshift image to list')
   }
 
-  let currentImageList = orderedImageUrls
   if (typeof imageViewer !== 'function') {
     await chrome.runtime.sendMessage('load_script')
   }
-  imageViewer(currentImageList, options)
+  imageViewer(window.backupImageUrlList, options)
 
   // auto update
   const period = 500
@@ -50,12 +53,12 @@
   const action = async () => {
     while (document.documentElement.classList.contains('has-image-viewer')) {
       ImageViewerUtils.updateWrapperSize(dom, domSize, options)
-      const newImageList = await ImageViewerUtils.getOrderedImageUrls(options)
-      const combinedImageList = ImageViewerUtils.combineImageList(newImageList, currentImageList)
+      const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
+      const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
 
       if (!document.documentElement.classList.contains('has-image-viewer')) return
-      if (combinedImageList.length > currentImageList.length) {
-        currentImageList = combinedImageList
+      if (combinedImageList.length > window.backupImageUrlList.length) {
+        window.backupImageUrlList = combinedImageList
         imageViewer(combinedImageList, options)
       }
       await new Promise(resolve => {

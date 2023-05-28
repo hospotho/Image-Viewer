@@ -588,6 +588,8 @@ const ImageViewerUtils = (function () {
     },
 
     combineImageList: function (newList, oldList) {
+      if (newList.length === 0 || oldList.length === 0) return newList.concat(oldList)
+
       removeRepeatNonRaw(newList, oldList)
 
       const combinedImageList = new Array(newList.length + oldList.length)
