@@ -272,7 +272,7 @@
 
         const imageInfoFromTree = searchImageFromTree(firstVisibleDom, viewportPos)
         if (isImageInfoValid(imageInfoFromTree)) {
-          console.log(`Image node found, hide under sub tree.`)
+          console.log('Image node found, hide under sub tree.')
           markingDom(imageInfoFromTree[2])
           return imageInfoFromTree
         }
