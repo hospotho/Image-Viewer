@@ -290,11 +290,11 @@ const imageViewer = (function () {
         left = currLeft
         IObserver.observe(imgNode)
       }
-      if (count++ > 20) {
+      if (count++ > 10) {
         clearInterval(interval)
         border.remove()
       }
-    }, 50)
+    }, 100)
   }
 
   const fitFuncDict = (function () {
