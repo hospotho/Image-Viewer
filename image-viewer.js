@@ -180,6 +180,7 @@ const imageViewer = (function () {
     }
     return null
   }
+
   function searchNearestPageImgNode(img, options) {
     const minWidth = options.minWidth
     const minHeight = options.minHeight
@@ -209,6 +210,48 @@ const imageViewer = (function () {
     const pageIndex = pageImgUrlList.indexOf(nearestSrc)
     const nearestPageNode = pageImgList[pageIndex]
     return nearestPageNode
+  }
+  function deepSearchImgNode(img, options) {
+    const current = shadowRoot.querySelector('#iv-counter-current')
+    const total = shadowRoot.querySelector('#iv-counter-total')
+    const currIndex = Number(current.innerHTML) - 1
+    const imageListLength = Number(total.innerHTML)
+    closeImageViewer()
+
+    const ratio = currIndex / imageListLength
+    const totalHeight = window.scrollY
+    const targetTop = totalHeight * ratio
+
+    return new Promise(resolve => {
+      let timeout
+      let disconnect
+      const newNodeObserver = new MutationObserver(() => {
+        clearTimeout(timeout)
+        clearTimeout(disconnect)
+
+        timeout = setTimeout(() => {
+          const imgNode = searchImgNode(img, options)
+          if (imgNode !== null) {
+            newNodeObserver.disconnect()
+            resolve(imgNode)
+            return
+          }
+
+          const nearest = searchNearestPageImgNode(img, options)
+          nearest.scrollIntoView({block: 'center'})
+          clearTimeout(disconnect)
+        }, 100)
+
+        disconnect = setTimeout(() => {
+          newNodeObserver.disconnect()
+          const imgNode = searchImgNode(img, options)
+          resolve(imgNode)
+        }, 200)
+      })
+
+      newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+      window.scrollTo(window.scrollX, targetTop)
+    })
   }
 
   const fitFuncDict = (function () {
@@ -703,47 +746,11 @@ const imageViewer = (function () {
     function addMoveToButtonEvent() {
       if (!options.closeButton) return
 
-      const current = shadowRoot.querySelector('#iv-counter-current')
-      const total = shadowRoot.querySelector('#iv-counter-total')
-
       async function moveTo() {
         const img = shadowRoot.querySelector('li.current img')
         let imgNode = searchImgNode(img, options)
         if (imgNode === null) {
-          const currIndex = Number(current.innerHTML) - 1
-          const imageListLength = Number(total.innerHTML)
-          const ratio = currIndex / imageListLength
-          const totalHeight = window.scrollY
-          const targetTop = totalHeight * ratio
-          closeImageViewer()
-
-          await new Promise(resolve => {
-            let timeout
-            let disconnect
-            const newNodeObserver = new MutationObserver(() => {
-              clearTimeout(timeout)
-              clearTimeout(disconnect)
-              timeout = setTimeout(() => {
-                imgNode = searchImgNode(img, options)
-                if (imgNode !== null) {
-                  newNodeObserver.disconnect()
-                  resolve()
-                  return
-                }
-                const nearest = searchNearestPageImgNode(img, options)
-                nearest.scrollIntoView({block: 'center'})
-                clearTimeout(disconnect)
-              }, 100)
-              disconnect = setTimeout(() => {
-                newNodeObserver.disconnect()
-                imgNode = searchImgNode(img, options)
-                resolve()
-              }, 200)
-            })
-            newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
-            window.scrollTo(window.scrollX, targetTop)
-          })
-
+          imgNode = await deepSearchImgNode(img, options)
           if (imgNode === null) {
             console.log('Image node not found')
             return
