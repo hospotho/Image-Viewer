@@ -239,7 +239,6 @@ const imageViewer = (function () {
 
           const nearest = searchNearestPageImgNode(img, options)
           nearest.scrollIntoView({block: 'center'})
-          clearTimeout(disconnect)
         }, 100)
 
         disconnect = setTimeout(() => {
