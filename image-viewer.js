@@ -274,7 +274,7 @@ const imageViewer = (function () {
       IObserver.unobserve(imgNode)
 
       setTimeout(() => {
-        border?.parentNode.removeChild(border)
+        border.parentNode?.removeChild(border)
       }, 1000)
     }
 
@@ -295,7 +295,7 @@ const imageViewer = (function () {
     setTimeout(() => {
       IObserver.unobserve(imgNode)
       MObserver.disconnect()
-      border?.parentNode.removeChild(border)
+      border.parentNode?.removeChild(border)
     }, 2000)
   }
 
