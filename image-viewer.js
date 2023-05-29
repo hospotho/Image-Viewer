@@ -719,7 +719,7 @@ const imageViewer = (function () {
 
     const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
     const current = shadowRoot.querySelector('#iv-image-list li.current')
-    const baseIndex = !!current ? liList.indexOf(current) : options.index || 0
+    const baseIndex = current ? liList.indexOf(current) : options.index || 0
     const base = current || liList[baseIndex]
     base.classList.add('current')
 
