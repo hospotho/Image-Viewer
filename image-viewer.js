@@ -277,25 +277,24 @@ const imageViewer = (function () {
       border.style.width = `${width + 4}px`
       border.style.height = `${height + 4}px`
       IObserver.unobserve(imgNode)
-
-      setTimeout(() => {
-        border.parentNode?.removeChild(border)
-      }, 1000)
     }
-
     const IObserver = new IntersectionObserver(action)
     IObserver.observe(imgNode)
 
-    const MObserver = new MutationObserver(() => {
-      IObserver.observe(imgNode)
-    })
-    MObserver.observe(document.documentElement, {childList: true, subtree: true})
-
-    setTimeout(() => {
-      IObserver.unobserve(imgNode)
-      MObserver.disconnect()
-      border.parentNode?.removeChild(border)
-    }, 2000)
+    let count = 0
+    let {top, left} = imgNode.getBoundingClientRect()
+    const interval = setInterval(() => {
+      const {top: currTop, left: currLeft} = imgNode.getBoundingClientRect()
+      if (top !== currTop || left !== currLeft) {
+        top = currTop
+        left = currLeft
+        IObserver.observe(imgNode)
+      }
+      if (count++ > 20) {
+        clearInterval(interval)
+        border.remove()
+      }
+    }, 50)
   }
 
   const fitFuncDict = (function () {
