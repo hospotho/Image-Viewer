@@ -253,6 +253,51 @@ const imageViewer = (function () {
       window.scrollTo(window.scrollX, targetTop)
     })
   }
+  function displayBorder(imgNode) {
+    const border = document.createElement('div')
+    border.style.position = 'absolute'
+    border.style.top = '0px'
+    border.style.left = '0px'
+    border.style.border = '5px solid red'
+    border.style.boxSizing = 'border-box'
+    border.style.zIndex = '2147483647'
+    document.body.appendChild(border)
+
+    const action = entryList => {
+      const entry = entryList[0]
+      const rect = entry.intersectionRect
+      const {top, left, width, height} = rect
+      const {x, y} = document.body.getBoundingClientRect()
+      border.style.transform = `translate(${left - x - 1}px, ${top - y - 1}px)`
+      border.style.width = `${width + 4}px`
+      border.style.height = `${height + 4}px`
+      IObserver.unobserve(imgNode)
+
+      setTimeout(() => {
+        border?.parentNode.removeChild(border)
+      }, 1000)
+    }
+
+    const option = {
+      root: null,
+      rootMargin: '0px',
+      threshold: [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
+    }
+
+    const IObserver = new IntersectionObserver(action, option)
+    IObserver.observe(imgNode)
+
+    const MObserver = new MutationObserver(() => {
+      IObserver.observe(imgNode)
+    })
+    MObserver.observe(document.documentElement, {childList: true, subtree: true})
+
+    setTimeout(() => {
+      IObserver.unobserve(imgNode)
+      MObserver.disconnect()
+      border?.parentNode.removeChild(border)
+    }, 2000)
+  }
 
   const fitFuncDict = (function () {
     function both() {
@@ -760,29 +805,7 @@ const imageViewer = (function () {
         console.log('Move to image node')
         imgNode.scrollIntoView({block: 'center'})
         await new Promise(resolve => setTimeout(resolve, 50))
-
-        const border = document.createElement('div')
-        const setBorderPosition = () => {
-          const {top, left, width, height} = imgNode.getBoundingClientRect()
-          const {x, y} = document.body.getBoundingClientRect()
-          border.style.transform = `translate(${left - x - 1}px, ${top - y - 1}px)`
-          border.style.width = `${width + 4}px`
-          border.style.height = `${height + 4}px`
-        }
-        border.style.position = 'absolute'
-        border.style.top = '0px'
-        border.style.left = '0px'
-        border.style.border = '5px solid red'
-        border.style.boxSizing = 'border-box'
-        setBorderPosition()
-
-        const observer = new MutationObserver(setBorderPosition)
-        document.body.appendChild(border)
-        setTimeout(() => {
-          border.parentNode.removeChild(border)
-          observer.disconnect()
-        }, 1000)
-        observer.observe(document.documentElement, {childList: true, subtree: true})
+        displayBorder(imgNode)
       }
 
       shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
