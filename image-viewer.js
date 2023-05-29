@@ -224,34 +224,23 @@ const imageViewer = (function () {
 
     return new Promise(resolve => {
       let timeout
-      let disconnect
       let lastNearest
-      let count = 0
+      let repeatCount = 0
+
+      const search = () => {
+        const imgNode = searchImgNode(img, options)
+        if (imgNode !== null || repeatCount > 5) {
+          newNodeObserver.disconnect()
+          resolve(imgNode)
+          return
+        }
+        const nearest = searchNearestPageImgNode(img, options)
+        nearest.scrollIntoView({block: 'center'})
+        nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
+      }
       const newNodeObserver = new MutationObserver(() => {
         clearTimeout(timeout)
-        clearTimeout(disconnect)
-
-        timeout = setTimeout(() => {
-          const imgNode = searchImgNode(img, options)
-          if (imgNode !== null || count++ > 10) {
-            newNodeObserver.disconnect()
-            resolve(imgNode)
-            return
-          }
-
-          const nearest = searchNearestPageImgNode(img, options)
-          nearest.scrollIntoView({block: 'center'})
-          if (nearest !== lastNearest) {
-            lastNearest = nearest
-            clearTimeout(disconnect)
-          }
-        }, 100)
-
-        disconnect = setTimeout(() => {
-          newNodeObserver.disconnect()
-          const imgNode = searchImgNode(img, options)
-          resolve(imgNode)
-        }, 200)
+        timeout = setTimeout(search, 100)
       })
 
       newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
