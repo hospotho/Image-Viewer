@@ -225,13 +225,15 @@ const imageViewer = (function () {
     return new Promise(resolve => {
       let timeout
       let disconnect
+      let lastNearest
+      let count = 0
       const newNodeObserver = new MutationObserver(() => {
         clearTimeout(timeout)
         clearTimeout(disconnect)
 
         timeout = setTimeout(() => {
           const imgNode = searchImgNode(img, options)
-          if (imgNode !== null) {
+          if (imgNode !== null || count++ > 10) {
             newNodeObserver.disconnect()
             resolve(imgNode)
             return
@@ -239,6 +241,10 @@ const imageViewer = (function () {
 
           const nearest = searchNearestPageImgNode(img, options)
           nearest.scrollIntoView({block: 'center'})
+          if (nearest !== lastNearest) {
+            lastNearest = nearest
+            clearTimeout(disconnect)
+          }
         }, 100)
 
         disconnect = setTimeout(() => {
