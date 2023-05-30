@@ -111,6 +111,7 @@ const ImageViewerUtils = (function () {
           if (width > minWidth && height > minHeight) lazyList.push(container)
         }
 
+        lazyList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
         for (let i = 0; i < lazyList.length; i++) {
           const container = lazyList[i]
           setTimeout(() => container.scrollIntoView({block: 'center'}), i * 100)
