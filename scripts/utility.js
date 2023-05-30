@@ -88,7 +88,6 @@ const ImageViewerUtils = (function () {
     const release = await mutex.acquire()
     release()
 
-    console.log('try deep unlazy')
     const currentX = window.scrollX
     const currentY = window.scrollY
     let domChanged = false
@@ -96,6 +95,7 @@ const ImageViewerUtils = (function () {
       scrollObserver.disconnect()
       domChanged = true
 
+      console.log('try deep unlazy')
       let found = false
       for (const mutation of mutationsList) {
         const element = mutation.target
@@ -111,12 +111,28 @@ const ImageViewerUtils = (function () {
           if (width > minWidth && height > minHeight) lazyList.push(container)
         }
 
-        lazyList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
+        const topList = []
         for (let i = 0; i < lazyList.length; i++) {
           const container = lazyList[i]
-          setTimeout(() => container.scrollIntoView({block: 'center'}), i * 100)
+          const {top} = container.getBoundingClientRect()
+          topList.push(top)
         }
-        setTimeout(() => window.scrollTo(currentX, currentY), lazyList.length * 100)
+        topList.sort((a, b) => a - b)
+
+        const screenHeight = window.screen.height
+        const scrollY = document.body.scrollHeight
+        let lastTop = 0
+        let scrollCount = 1
+        for (let i = 0; i < topList.length; i++) {
+          const top = topList[i]
+          if (top > lastTop + screenHeight / 2 || i === topList.length - 1) {
+            setTimeout(() => window.scrollTo(currentX, top), scrollCount * 100)
+            lastTop = top
+            scrollCount++
+          }
+        }
+        setTimeout(() => window.scrollBy({top: scrollY}), scrollCount * 100)
+        setTimeout(() => window.scrollTo(currentX, currentY), (scrollCount + 1) * 100)
         return
       }
       window.scrollTo(currentX, currentY)
