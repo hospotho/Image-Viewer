@@ -25,8 +25,10 @@
       if (result[i] === false) {
         const src = testList[i]
         const iframe = document.querySelector(`iframe[src="${src}"]`)
-        iframe.classList.add('updateByTest')
-        iframe.src = 'about:blank'
+        if (iframe) {
+          iframe.classList.add('updateByTest')
+          iframe.src = 'about:blank'
+        }
       }
     }
   }
