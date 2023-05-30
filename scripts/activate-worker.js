@@ -183,7 +183,7 @@
         }
       }
 
-      if (dom.children) {
+      if (dom.children.length < 5) {
         for (const children of dom.children) {
           const info = extractImageInfoFromNode(children)
           if (info) return info
