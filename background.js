@@ -16,7 +16,7 @@ const getImageBitSize = src => {
   return new Promise(async _resolve => {
     const resolve = size => {
       srcBitSizeMap.set(src, size)
-      expired.push(src)
+      BitSizeExpired.push(src)
       _resolve(size)
     }
     setTimeout(() => resolve(0), 5000)
@@ -37,7 +37,16 @@ const getImageBitSize = src => {
   })
 }
 const getImageLocalRealSize = (id, srcUrl) => {
-  return new Promise(resolve => {
+  const cache = srcLocalRealSizeMap.get(srcUrl)
+  if (cache !== undefined) return cache
+
+  return new Promise(_resolve => {
+    const resolve = size => {
+      srcLocalRealSizeMap.set(srcUrl, size)
+      LocalRealSizeExpired.push(srcUrl)
+      _resolve(size)
+    }
+
     const listener = (request, sender, sendResponse) => {
       if (request.msg === 'reply' && sender.tab.id === id) {
         sendResponse()
@@ -78,10 +87,15 @@ const getRedirectUrl = async srcList => {
 const resetLabel = () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
 
 const srcBitSizeMap = new Map()
-const expired = []
+const srcLocalRealSizeMap = new Map()
+const BitSizeExpired = []
+const LocalRealSizeExpired = []
 setInterval(() => {
-  for (const key of expired) {
+  for (const key of BitSizeExpired) {
     srcBitSizeMap.delete(key)
+  }
+  for (const key of LocalRealSizeExpired) {
+    srcLocalRealSizeMap.delete(key)
   }
   expired.length = 0
 }, 1000 * 60 * 60)
