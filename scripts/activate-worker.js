@@ -63,27 +63,17 @@
         return 1
       }
     }
-    function getNodeTreeIndex(node) {
-      let index = 0
-      let currNode = node.previousSibling
-      while (currNode) {
-        if (currNode.nodeType !== 3 || !/^\s*$/.test(currNode.data)) {
-          index++
-        }
-        currNode = currNode.previousSibling
-      }
-      return index
-    }
-    function checkTreeIndex(e1, e2) {
-      const e1Order = getNodeTreeIndex(e1)
-      const e2Order = getNodeTreeIndex(e2)
+    function checkTreeIndex(e1, e2, dom) {
+      const childrenList = [...dom.children]
+      const e1Order = childrenList.indexOf(e1)
+      const e2Order = childrenList.indexOf(e2)
       if (e1Order > e2Order) {
         return -1
       } else {
         return 1
       }
     }
-    function getTopElement(e1, e2) {
+    function getTopElement(e1, e2, dom) {
       // e1 -1, e2 1, same 0
       if (e1 === e2) return 0
 
@@ -95,7 +85,7 @@
       if (e1Position === 'absolute' || e2Position === 'absolute') {
         result = checkPosition(e1, e2)
       } else {
-        result = checkTreeIndex(e1, e2)
+        result = checkTreeIndex(e1, e2, dom)
       }
       return result
     }
@@ -120,7 +110,7 @@
     function searchImageFromTree(dom, viewportPos) {
       if (!dom) return null
 
-      let root = dom.parentElement
+      let root = dom
       let prevSibling = root.previousElementSibling
       let nextSibling = root.nextElementSibling
 
@@ -166,7 +156,7 @@
       }
       if (imageInfoList.length === 0) return null
 
-      imageInfoList.sort((a, b) => getTopElement(a[2], b[2]))
+      imageInfoList.sort((a, b) => getTopElement(a[2], b[2], dom))
       return imageInfoList[0]
     }
 
@@ -185,11 +175,19 @@
       }
 
       const backgroundImage = window.getComputedStyle(dom).backgroundImage
-      if (backgroundImage === 'none') return null
-      const bg = backgroundImage.split(', ')[0]
-      if (bg.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-        const bgUrl = bg.substring(4, bg.length - 1).replace(/['"]/g, '')
-        return [bgUrl, minSize, dom]
+      if (backgroundImage !== 'none') {
+        const bg = backgroundImage.split(', ')[0]
+        if (bg.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
+          const bgUrl = bg.substring(4, bg.length - 1).replace(/['"]/g, '')
+          return [bgUrl, minSize, dom]
+        }
+      }
+
+      if (dom.children) {
+        for (const children of dom.children) {
+          const info = extractImageInfoFromNode(children)
+          if (info) return info
+        }
       }
 
       return null
