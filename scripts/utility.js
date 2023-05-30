@@ -456,7 +456,7 @@ const ImageViewerUtils = (function () {
   // combine image list
   function removeRepeatNonRaw(newList, oldList) {
     const tempList = newList.concat(oldList)
-    const tempImageUrlSet = new Set(tempList)
+    const tempImageUrlSet = new Set(tempList.map(data => (typeof data === 'string' ? data : data[0])))
     for (const url of tempList) {
       if (typeof url !== 'string') continue
       const rawUrl = getRawUrl(url)
@@ -688,8 +688,17 @@ const ImageViewerUtils = (function () {
       }
 
       const finalList = combinedImageList.filter(Boolean)
-      const imageUrlSet = new Set(finalList)
-      return Array.from(imageUrlSet)
+
+      const imageUrlSet = new Set()
+      const uniqueFinalList = []
+      for (const data of finalList) {
+        const url = typeof data === 'string' ? data : data[0]
+        if (!imageUrlSet.has(url)) {
+          imageUrlSet.add(url)
+          uniqueFinalList.push(data)
+        }
+      }
+      return uniqueFinalList
     },
 
     checkAndStartAutoScroll: function (options) {
