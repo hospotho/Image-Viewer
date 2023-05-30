@@ -1,3 +1,9 @@
+1.24 [2023-06-01]:
+1. Introduces method for old style lazy image
+2. Enhance the moveTo function and label border
+3. Improve stability of the extension
+4. Fix bugs and improve performance
+
 1.23 [2023-05-29]:
 1. Add temporary image list storage
 2. Significantly reduced startup time by approximately 3-10 times
