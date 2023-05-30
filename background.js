@@ -177,12 +177,47 @@ function addMessageHandler() {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
         return true
       }
+      case 'load_main_worker': {
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
+        return true
+      }
       case 'load_utility': {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, sendResponse)
         return true
       }
       case 'load_script': {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, sendResponse)
+        return true
+      }
+      case 'check_iframes': {
+        ;(async () => {
+          const iframeUrlList = request.data
+          const asyncList = []
+          for (const url of iframeUrlList) {
+            asyncList.push(
+              new Promise(resolve => {
+                setTimeout(() => resolve(false), 1000)
+                fetch(url).then(res => {
+                  if (res.ok) {
+                    const options = res.headers.get('X-Frame-Options')
+                    if (!options) {
+                      resolve(true)
+                    } else if (options === 'DENY') {
+                      resolve(false)
+                    } else if (options === 'SAMEORIGIN') {
+                      const target = new URL(res.url).origin
+                      const origin = new URL(sender.tab.url).origin
+                      resolve(target === origin)
+                    }
+                  }
+                  resolve(false)
+                })
+              })
+            )
+          }
+          const result = await Promise.all(asyncList)
+          sendResponse(result, false)
+        })()
         return true
       }
       case 'extract_frames': {
