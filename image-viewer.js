@@ -261,8 +261,7 @@ const imageViewer = (function () {
       const entry = entryList[0]
       const rect = entry.intersectionRect
       const {top, left, width, height} = rect
-      const {x, y} = document.body.getBoundingClientRect()
-      border.style.transform = `translate(${left - x - 1}px, ${top - y - 1}px)`
+      border.style.transform = `translate(${left + window.scrollX - 1}px, ${top + window.scrollY - 1}px)`
       border.style.width = `${width + 4}px`
       border.style.height = `${height + 4}px`
       IObserver.unobserve(imgNode)
