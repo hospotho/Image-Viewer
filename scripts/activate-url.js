@@ -1,7 +1,36 @@
 ;(function () {
   'use strict'
 
-  const init = async () => {
+  function testIframe(iframe) {
+    const safeHref = 'about:blank'
+    if (iframe.src.startsWith('javascript')) {
+      iframe.src = safeHref
+      return
+    }
+    return new Promise(resolve => {
+      const dummy = document.createElement('iframe')
+      let timeout = setTimeout(() => {
+        iframe.src = safeHref
+        resolve()
+      }, 1000)
+      dummy.onload = () => {
+        clearTimeout(timeout)
+        resolve()
+      }
+      dummy.src = iframe.src
+    })
+  }
+  async function removeFailedIframe() {
+    const iframeList = document.querySelectorAll('iframe:not(.loadedWorker)')
+    const testList = []
+    for (const iframe of iframeList) {
+      iframe.classList.add('loadedWorker')
+      testList.push(testIframe(iframe))
+    }
+    await Promise.all(testList)
+  }
+
+  async function init() {
     if (document.body.children.length === 1 && document.body.children[0].tagName === 'IMG') {
       const image = document.body.children[0]
 
@@ -51,41 +80,22 @@
     }
 
     // chrome.scripting.executeScript never return on invalid iframe
-    const safeHref = 'about:blank'
-    const iframeList = document.querySelectorAll('iframe')
-    for (const iframe of iframeList) {
-      if (iframe.src.startsWith('javascript')) {
-        iframe.src = safeHref
-      }
-      iframe.classList.add('loadedWorker')
-      iframe.classList.add('safeHref')
-    }
-
+    await removeFailedIframe()
     console.log('Init content script.')
     chrome.runtime.sendMessage('load_worker')
 
-    const observer = new MutationObserver(() => {
-      const newIframeList = document.querySelectorAll('iframe:not(.loadedWorker)')
-      if (newIframeList.length === 0) return
-
-      const iframeList = document.querySelectorAll('iframe:not(.safeHref)')
-      for (const iframe of iframeList) {
-        if (iframe.src.startsWith('javascript')) {
-          iframe.src = safeHref
-        }
-        iframe.classList.add('safeHref')
-      }
-
-      console.log('New iframe')
+    const observer = new MutationObserver(async () => {
+      if (!document.querySelector('iframe:not(.loadedWorker)')) return
+      await removeFailedIframe()
       chrome.runtime.sendMessage('load_worker')
-      for (const iframe of newIframeList) {
-        iframe.classList.add('loadedWorker')
-      }
     })
-
     observer.observe(document.documentElement, {childList: true, subtree: true})
+
     // for some rare case
-    setTimeout(() => chrome.runtime.sendMessage('load_worker'), 3000)
+    setTimeout(async () => {
+      await removeFailedIframe()
+      chrome.runtime.sendMessage('load_worker')
+    }, 3000)
   }
 
   if (document.visibilityState === 'visible') {
