@@ -91,8 +91,10 @@ const ImageViewerUtils = (function () {
     console.log('try deep unlazy')
     const currentX = window.scrollX
     const currentY = window.scrollY
+    let domChanged = false
     const scrollObserver = new MutationObserver(mutationsList => {
       scrollObserver.disconnect()
+      domChanged = true
 
       let found = false
       for (const mutation of mutationsList) {
@@ -113,10 +115,17 @@ const ImageViewerUtils = (function () {
           const container = lazyList[i]
           setTimeout(() => container.scrollIntoView({block: 'center'}), i * 100)
         }
-        setTimeout(() => window.scrollTo(currentX, currentY + window.screenY), lazyList.length * 100)
+        setTimeout(() => window.scrollTo(currentX, currentY), lazyList.length * 100)
+        return
       }
+      window.scrollTo(currentX, currentY)
     })
+
     scrollObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
+    setTimeout(() => {
+      scrollObserver.disconnect()
+      if (!domChanged) window.scrollTo(currentX, currentY)
+    }, 1000)
     window.scrollBy({top: window.screen.height})
   }
   async function waitSrcUpdate(img, _resolve) {
