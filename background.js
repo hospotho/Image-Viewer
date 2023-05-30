@@ -97,7 +97,8 @@ setInterval(() => {
   for (const key of LocalRealSizeExpired) {
     srcLocalRealSizeMap.delete(key)
   }
-  expired.length = 0
+  BitSizeExpired.length = 0
+  LocalRealSizeExpired.length = 0
 }, 1000 * 60 * 60)
 
 const defaultOptions = {
