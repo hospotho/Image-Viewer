@@ -20,8 +20,7 @@
 
   const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-  const expired = orderedImageUrls.length + window.backupImageUrlList.length === combinedImageList.length
-  window.backupImageUrlList = expired ? orderedImageUrls : combinedImageList
+  window.backupImageUrlList = combinedImageList
 
   if (typeof imageViewer !== 'function') {
     await chrome.runtime.sendMessage('load_script')

@@ -33,8 +33,7 @@
 
   const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-  const expired = orderedImageUrls.length + window.backupImageUrlList.length === combinedImageList.length
-  window.backupImageUrlList = expired ? orderedImageUrls : combinedImageList
+  window.backupImageUrlList = combinedImageList
 
   // find image index
   options.index = ImageViewerUtils.searchImageInfoIndex(dom || srcUrl, window.backupImageUrlList)
