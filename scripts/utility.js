@@ -84,7 +84,9 @@ const ImageViewerUtils = (function () {
   }
 
   // unlazy
-  async function scrollUnlazy(minWidth, minHeight) {
+  async function scrollUnlazy(options, minWidth, minHeight) {
+    if (isEnableAutoScroll(options)) return
+
     const release = await mutex.acquire()
     release()
 
@@ -337,7 +339,7 @@ const ImageViewerUtils = (function () {
 
     if (firstUnlazyScrollFlag === false) {
       firstUnlazyScrollFlag = true
-      setTimeout(() => scrollUnlazy(minWidth, minHeight), 0)
+      setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 0)
     }
   }
 
@@ -527,7 +529,9 @@ const ImageViewerUtils = (function () {
 
     const originalScrollIntoView = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = function () {
-      scrollFlag = true
+      if (!document.documentElement.classList.contains('has-image-viewer')) {
+        scrollFlag = true
+      }
       let currX = window.scrollX
       let currY = window.scrollY
       originalScrollIntoView.apply(this, arguments)
@@ -537,14 +541,14 @@ const ImageViewerUtils = (function () {
         currY = window.scrollY
         originalScrollIntoView.apply(this, arguments)
       }
-      Element.prototype.scrollIntoView = originalScrollIntoView
     }
 
     const originalScrollTo = window.scrollTo
     window.scrollTo = function () {
-      scrollFlag = true
+      if (!document.documentElement.classList.contains('has-image-viewer')) {
+        scrollFlag = true
+      }
       originalScrollTo.apply(this, arguments)
-      window.scrollTo = originalScrollTo
     }
 
     const imageViewerObserver = new MutationObserver(() => {
@@ -733,7 +737,6 @@ const ImageViewerUtils = (function () {
       const startX = window.scrollX
       const startY = window.scrollY
 
-      const originalScrollIntoView = Element.prototype.scrollIntoView
       const period = 500
       let stopFlag = true
       const action = async () => {
@@ -751,7 +754,7 @@ const ImageViewerUtils = (function () {
         }
 
         if (!document.documentElement.classList.contains('has-image-viewer')) return
-        originalScrollIntoView.apply(bottomImg, {behavior: 'instant', block: 'start'})
+        bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
         await new Promise(resolve => setTimeout(resolve, period))
       }
       const timer = async () => {
