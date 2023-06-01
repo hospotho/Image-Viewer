@@ -340,10 +340,10 @@ const ImageViewerUtils = (function () {
     if (firstUnlazyScrollFlag === false) {
       firstUnlazyScrollFlag = true
       if (document.readyState === 'complete') {
-        setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 0)
+        setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 500)
       } else {
         window.addEventListener('load', () => {
-          setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 0)
+          setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 500)
         })
       }
     }
