@@ -857,7 +857,7 @@ const imageViewer = (function () {
         const keyList = hotkey.split('+').map(str => str.trim())
         const key = keyList[keyList.length - 1] === e.key.toUpperCase()
         const ctrl = keyList.includes('Ctrl') === e.ctrlKey
-        const alt = keyList.includes('Alt') === e.altKey
+        const alt = keyList.includes('Alt') === e.altKey || e.getModifierState('AltGraph')
         const shift = keyList.includes('Shift') === e.shiftKey
         return key && ctrl && alt && shift
       }
@@ -927,7 +927,7 @@ const imageViewer = (function () {
         e.preventDefault()
         let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
         const mirror = Math.sign(scaleX) * Math.sign(scaleY)
-        if (!e.altKey) {
+        if (!e.altKey && !e.getModifierState('AltGraph')) {
           e.deltaY > 0 ? zoomCount-- : zoomCount++
           scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
           scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
@@ -940,7 +940,7 @@ const imageViewer = (function () {
       })
       // mirror-reflect
       li.addEventListener('click', e => {
-        if (!e.altKey) return
+        if (!e.altKey && !e.getModifierState('AltGraph')) return
         let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
         const mirror = Math.sign(scaleX) * Math.sign(scaleY)
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
