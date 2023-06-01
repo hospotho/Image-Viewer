@@ -117,7 +117,6 @@ const ImageViewerUtils = (function () {
         for (let i = 0; i < lazyList.length; i++) {
           const container = lazyList[i]
           const {top} = container.getBoundingClientRect()
-          if (top > window.screen.height * 5) break
           topList.push(top)
         }
         topList.sort((a, b) => a - b)
@@ -340,7 +339,13 @@ const ImageViewerUtils = (function () {
 
     if (firstUnlazyScrollFlag === false) {
       firstUnlazyScrollFlag = true
-      setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 0)
+      if (document.readyState === 'complete') {
+        setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 0)
+      } else {
+        window.addEventListener('load', () => {
+          setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 0)
+        })
+      }
     }
   }
 
