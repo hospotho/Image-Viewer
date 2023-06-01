@@ -117,6 +117,7 @@ const ImageViewerUtils = (function () {
         for (let i = 0; i < lazyList.length; i++) {
           const container = lazyList[i]
           const {top} = container.getBoundingClientRect()
+          if (top > window.screen.height * 5) break
           topList.push(top)
         }
         topList.sort((a, b) => a - b)
