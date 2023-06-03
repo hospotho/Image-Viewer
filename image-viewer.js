@@ -673,7 +673,7 @@ const imageViewer = (function () {
       const currIndex = list.indexOf(current)
       counterTotal.innerHTML = length
       counterCurrent.innerHTML = currIndex + 1
-      imageListNode.style.translate= `0 ${-currIndex * 100}%`
+      imageListNode.style.translate = `0 ${-currIndex * 100}%`
       if (length === 0) closeImageViewer()
     }
     function removeFailedImg() {
@@ -710,7 +710,7 @@ const imageViewer = (function () {
     base.classList.add('current')
 
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    imageListNode.style.translate= `0 ${-baseIndex * 100}%`
+    imageListNode.style.translate = `0 ${-baseIndex * 100}%`
 
     const counterTotal = shadowRoot.querySelector('#iv-counter-total')
     const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
@@ -928,13 +928,17 @@ const imageViewer = (function () {
         let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
         const mirror = Math.sign(scaleX) * Math.sign(scaleY)
         if (!e.altKey && !e.getModifierState('AltGraph')) {
-          e.deltaY > 0 ? zoomCount-- : zoomCount++
-          scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
-          scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
+          const newZoomCount = e.deltaY > 0 ? zoomCount - 1 : zoomCount + 1
+          scaleX = Math.sign(scaleX) * options.zoomRatio ** newZoomCount
+          scaleY = Math.sign(scaleY) * options.zoomRatio ** newZoomCount
+          moveX = moveX * options.zoomRatio ** (newZoomCount - zoomCount)
+          moveY = moveY * options.zoomRatio ** (newZoomCount - zoomCount)
+          zoomCount = newZoomCount
         } else {
           // mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
           rotateCount += mirror * ((e.deltaY > 0) * 2 - 1)
         }
+        // rotate value must be reset every time after updating the transform matrix
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
         img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
@@ -954,20 +958,20 @@ const imageViewer = (function () {
       let startPos = {x: 0, y: 0}
       li.addEventListener('mousedown', e => {
         dragFlag = true
-        startPos = {x: e.clientX - imagePos.x, y: e.clientY - imagePos.y}
+        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        imagePos = {x: moveX, y: moveY}
+        startPos = {x: e.clientX, y: e.clientY}
       })
       li.addEventListener('mousemove', e => {
         if (!dragFlag) return
         let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
-        rotate = options.rotateDeg * rotateCount
-        moveX = e.clientX - startPos.x
-        moveY = e.clientY - startPos.y
+        moveX = imagePos.x + e.clientX - startPos.x
+        moveY = imagePos.y + e.clientY - startPos.y
+        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+        rotate = (mirror * options.rotateDeg * rotateCount) % 360
         img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
-      li.addEventListener('mouseup', e => {
-        dragFlag = false
-        imagePos = {x: e.clientX - startPos.x, y: e.clientY - startPos.y}
-      })
+      li.addEventListener('mouseup', () => (dragFlag = false))
 
       // reset
       const reset = () => {
@@ -1004,7 +1008,7 @@ const imageViewer = (function () {
 
     function moveToNode(index) {
       current.innerHTML = index + 1
-      imageListNode.style.translate= `0 ${-index * 100}%`
+      imageListNode.style.translate = `0 ${-index * 100}%`
       imageListNode.querySelector('li.current')?.classList.remove('current')
 
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
