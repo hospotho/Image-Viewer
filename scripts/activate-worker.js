@@ -20,7 +20,7 @@
   disableHoverCheck ||= regexList.map(regex => regex.test(location.href)).filter(Boolean).length
 
   if (window.top === window.self && !disableHoverCheck) {
-    const styles = '.disable-hover, .disable-hover * {pointer-events: none !important;}'
+    const styles = '.disable-hover {pointer-events: none !important;}'
     const styleSheet = document.createElement('style')
     styleSheet.innerText = styles
     document.head.appendChild(styleSheet)
@@ -286,9 +286,13 @@
       ? e => document.elementsFromPoint(e.clientX, e.clientY)
       : async e => {
           const elementsBeforeDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
-          document.body.classList.add('disable-hover')
+          for (const element of elementsBeforeDisableHover) {
+            element.classList.add('disable-hover')
+          }
           await new Promise(resolve => setTimeout(resolve, 0))
-          document.body.classList.remove('disable-hover')
+          for (const element of elementsBeforeDisableHover) {
+            element.classList.remove('disable-hover')
+          }
           const elementsAfterDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
 
           const stableElements = []
