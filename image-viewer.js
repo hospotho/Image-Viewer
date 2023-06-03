@@ -700,7 +700,7 @@ const imageViewer = (function () {
           if (!img.complete) img.parentNode.remove()
         }
         updateCounter()
-      }, 5000 + 500 * parseInt(counterTotal.innerHTML))
+      }, 5000 + 500 * Number(counterTotal.innerHTML))
     }
 
     const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]

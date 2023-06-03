@@ -27,7 +27,7 @@ const getImageBitSize = src => {
         const type = res.headers.get('Content-Type')
         const length = res.headers.get('Content-Length')
         if (type?.startsWith('image')) {
-          const size = parseInt(length) || 0
+          const size = Number(length) || 0
           resolve(size)
         }
       }

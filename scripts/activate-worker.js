@@ -29,8 +29,8 @@
   const domSearcher = (function () {
     // searchImageFromTree
     function checkZIndex(e1, e2) {
-      const e1zIndex = parseInt(window.getComputedStyle(e1).zIndex)
-      const e2zIndex = parseInt(window.getComputedStyle(e2).zIndex)
+      const e1zIndex = Number(window.getComputedStyle(e1).zIndex)
+      const e2zIndex = Number(window.getComputedStyle(e2).zIndex)
 
       if (Number.isNaN(e1zIndex) || Number.isNaN(e2zIndex)) return 0
       if (e1zIndex > e2zIndex) {
