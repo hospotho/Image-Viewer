@@ -673,7 +673,7 @@ const imageViewer = (function () {
       const currIndex = list.indexOf(current)
       counterTotal.innerHTML = length
       counterCurrent.innerHTML = currIndex + 1
-      imageListNode.style.top = `${-currIndex * 100}%`
+      imageListNode.style.translate= `0 ${-currIndex * 100}%`
       if (length === 0) closeImageViewer()
     }
     function removeFailedImg() {
@@ -710,7 +710,7 @@ const imageViewer = (function () {
     base.classList.add('current')
 
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    imageListNode.style.top = `${-baseIndex * 100}%`
+    imageListNode.style.translate= `0 ${-baseIndex * 100}%`
 
     const counterTotal = shadowRoot.querySelector('#iv-counter-total')
     const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
@@ -1004,7 +1004,7 @@ const imageViewer = (function () {
 
     function moveToNode(index) {
       current.innerHTML = index + 1
-      imageListNode.style.top = `${-index * 100}%`
+      imageListNode.style.translate= `0 ${-index * 100}%`
       imageListNode.querySelector('li.current')?.classList.remove('current')
 
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
