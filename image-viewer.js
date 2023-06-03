@@ -1127,12 +1127,10 @@ const imageViewer = (function () {
     for (let i = 0; i < currentImageList.length; i++) {
       const data = currentImageList[i]
       if (typeof data === 'string') {
-        const index = newList.indexOf(data)
-        if (index !== -1) continue
+        if (newList.includes(data)) continue
 
         const rawUrl = getRawUrl(data)
-        const rawIndex = newList.indexOf(rawUrl)
-        if (rawIndex !== -1) {
+        if (newList.includes(rawUrl)) {
           currentImageList[i] = rawUrl
           imgList[i].src = rawUrl
         }
@@ -1140,16 +1138,17 @@ const imageViewer = (function () {
     }
 
     // insert
-    const newIndex = newList.map(data => {
-      if (typeof data === 'string') {
-        return currentImageList.indexOf(data)
-      }
-      for (let i = 0; i < currentImageList.length; i++) {
-        if (currentImageList[i]?.[0] === data[0]) return i
-      }
-      return -1
-    })
-
+    const currentUrlList = []
+    for (const data of currentImageList) {
+      const url = typeof data === 'string' ? data : data[0]
+      currentUrlList.push(url)
+    }
+    const newIndex = []
+    for (const data of newList) {
+      const url = typeof data === 'string' ? data : data[0]
+      const index = currentUrlList.indexOf(url)
+      newIndex.push(index)
+    }
     for (let i = 0; i < newList.length; i++) {
       if (newIndex[i] === -1) {
         const node = buildImageNode(newList[i], options)
@@ -1158,7 +1157,7 @@ const imageViewer = (function () {
     }
 
     // This extension never remove old image from the list
-    // fork and uncomment below code when you have need it
+    // fork and uncomment below code if you need it
     // // delete
     // const current = shadowRoot.querySelector('li.current img')
     // const currentSrc = current.src
