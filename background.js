@@ -84,6 +84,27 @@ const getRedirectUrl = async srcList => {
 
   return redirectUrlList
 }
+const checkIframeUrl = url => {
+  return new Promise(async resolve => {
+    setTimeout(() => resolve(false), 5000)
+    try {
+      const res = await fetch(url)
+      if (res.ok) {
+        const options = res.headers.get('X-Frame-Options')
+        if (!options) {
+          resolve(true)
+        } else if (options === 'DENY') {
+          resolve(false)
+        } else if (options === 'SAMEORIGIN') {
+          const target = new URL(res.url).origin
+          const origin = new URL(sender.tab.url).origin
+          resolve(target === origin)
+        }
+      }
+    } catch (error) {}
+    resolve(false)
+  })
+}
 const resetLabel = () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
 
 const srcBitSizeMap = new Map()
@@ -207,29 +228,7 @@ function addMessageHandler() {
       case 'check_iframes': {
         ;(async () => {
           const iframeUrlList = request.data
-          const asyncList = []
-          for (const url of iframeUrlList) {
-            asyncList.push(
-              new Promise(resolve => {
-                setTimeout(() => resolve(false), 1000)
-                fetch(url).then(res => {
-                  if (res.ok) {
-                    const options = res.headers.get('X-Frame-Options')
-                    if (!options) {
-                      resolve(true)
-                    } else if (options === 'DENY') {
-                      resolve(false)
-                    } else if (options === 'SAMEORIGIN') {
-                      const target = new URL(res.url).origin
-                      const origin = new URL(sender.tab.url).origin
-                      resolve(target === origin)
-                    }
-                  }
-                  resolve(false)
-                })
-              })
-            )
-          }
+          const asyncList = iframeUrlList.map(checkIframeUrl)
           const result = await Promise.all(asyncList)
           sendResponse(result, false)
         })()

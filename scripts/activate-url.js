@@ -1,6 +1,27 @@
 ;(function () {
   'use strict'
 
+  function checkIframeUrl(url) {
+    return new Promise(async resolve => {
+      setTimeout(() => resolve(false), 5000)
+      try {
+        const res = await fetch(url)
+        if (res.ok) {
+          const options = res.headers.get('X-Frame-Options')
+          if (!options) {
+            resolve(true)
+          } else if (options === 'DENY') {
+            resolve(false)
+          } else if (options === 'SAMEORIGIN') {
+            const target = new URL(res.url).origin
+            const origin = new URL(sender.tab.url).origin
+            resolve(target === origin)
+          }
+        }
+      } catch (error) {}
+      resolve(false)
+    })
+  }
   function isNonTrivialUrl(iframe) {
     const src = iframe.src
     if (src === '' || src === 'about:blank') return false
@@ -20,7 +41,13 @@
         testList.push(iframe.src)
       }
     }
-    const result = await chrome.runtime.sendMessage({msg: 'check_iframes', data: testList})
+    const BackgroundResult = chrome.runtime.sendMessage({msg: 'check_iframes', data: testList})
+    const localResult = Promise.all(testList.map(checkIframeUrl))
+    const asyncList = await Promise.all([BackgroundResult, localResult])
+    const result = []
+    for (let i = 0; i < testList.length; i++) {
+      result.push(asyncList[0][i] || asyncList[1][i])
+    }
     for (let i = 0; i < testList.length; i++) {
       if (result[i] === false) {
         const src = testList[i]
