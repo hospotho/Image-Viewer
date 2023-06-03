@@ -176,7 +176,7 @@ const ImageViewerUtils = (function () {
     const cache = srcBitSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    return new Promise(_resolve => {
+    return new Promise(async _resolve => {
       const resolve = size => {
         srcBitSizeMap.set(src, size)
         _resolve(size)
@@ -199,24 +199,17 @@ const ImageViewerUtils = (function () {
       }
 
       try {
-        fetch(href, {method: 'HEAD'})
-          .then(res => {
-            if (!res.ok) {
-              updateComplete()
-              return
-            }
-            const type = res.headers.get('Content-Type')
-            const length = res.headers.get('Content-Length')
-            if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
-              const size = parseInt(length)
-              size ? resolve(size) : updateComplete()
-            }
-            updateComplete()
-          })
-          .catch(updateComplete)
-      } catch (error) {
-        updateComplete()
-      }
+        const res = await fetch(href, {method: 'HEAD'})
+        if (res.ok) {
+          const type = res.headers.get('Content-Type')
+          const length = res.headers.get('Content-Length')
+          if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
+            const size = Number(length)
+            size ? resolve(size) : updateComplete()
+          }
+        }
+      } catch (error) {}
+      updateComplete()
     })
   }
   function getImageRealSize(src) {
