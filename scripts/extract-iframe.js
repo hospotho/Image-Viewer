@@ -43,14 +43,14 @@
       }
     }
 
-    for (const node of document.querySelectorAll('*')) {
+    for (const node of document.body.getElementsByTagName('*')) {
       const {width, height} = node.getBoundingClientRect()
       if (width < minWidth || height < minHeight) continue
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
-      if (bg.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-        imageUrls.push(bg.substring(4, bg.length - 1).replace(/['"]/g, ''))
+      if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
+        imageUrls.push(bg.substring(5, bg.length - 2))
       }
     }
 

@@ -73,7 +73,7 @@ const ImageViewerUtils = (function () {
     if (tag === 'VIDEO') return dom.poster
     const backgroundImage = window.getComputedStyle(dom).backgroundImage
     const bg = backgroundImage.split(', ')[0]
-    return bg.substring(4, bg.length - 1).replace(/['"]/g, '')
+    return bg.substring(5, bg.length - 2)
   }
   function getImageInfoIndex(array, data) {
     const srcArray = array.map(item => (typeof item === 'string' ? item : item[0]))
@@ -356,12 +356,12 @@ const ImageViewerUtils = (function () {
       imageDataList.push([img.currentSrc, img])
     }
 
-    for (const node of document.querySelectorAll('*')) {
+    for (const node of document.body.getElementsByTagName('*')) {
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
-      if (bg.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-        imageDataList.push([bg.substring(4, bg.length - 1).replace(/['"]/g, ''), node])
+      if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
+        imageDataList.push([bg.substring(5, bg.length - 2), node])
       }
     }
 
@@ -408,14 +408,14 @@ const ImageViewerUtils = (function () {
       }
     }
 
-    for (const node of document.querySelectorAll('*')) {
+    for (const node of document.body.getElementsByTagName('*')) {
       const {width, height} = node.getBoundingClientRect()
       if (width < minWidth || height < minHeight) continue
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
-      if (bg.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-        imageDataList.push([bg.substring(4, bg.length - 1).replace(/['"]/g, ''), node])
+      if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
+        imageDataList.push([bg.substring(5, bg.length - 2), node])
       }
     }
 

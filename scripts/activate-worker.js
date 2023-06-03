@@ -177,8 +177,8 @@
       const backgroundImage = window.getComputedStyle(dom).backgroundImage
       if (backgroundImage !== 'none') {
         const bg = backgroundImage.split(', ')[0]
-        if (bg.indexOf('url') === 0 && bg.indexOf('.svg') === -1) {
-          const bgUrl = bg.substring(4, bg.length - 1).replace(/['"]/g, '')
+        if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
+          const bgUrl = bg.substring(5, bg.length - 2)
           return [bgUrl, minSize, dom]
         }
       }

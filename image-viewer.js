@@ -155,11 +155,11 @@ const imageViewer = (function () {
     }
     if (lastNode) return lastNode
 
-    for (const node of document.querySelectorAll('*')) {
+    for (const node of document.body.getElementsByTagName('*')) {
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
-      if (bg !== 'none' && imgUrl === bg.substring(4, bg.length - 1).replace(/['"]/g, '')) {
+      if (bg !== 'none' && imgUrl === bg.substring(5, bg.length - 2)) {
         const {width, height} = node.getBoundingClientRect()
         if (width < minWidth || height < minHeight) continue
         if (width > lastWidth) {
@@ -1158,7 +1158,7 @@ const imageViewer = (function () {
     // // delete
     // const current = shadowRoot.querySelector('li.current img')
     // const currentSrc = current.src
-    // if (newList.indexOf(currentSrc) === -1) {
+    // if (!newList.includes(currentSrc)) {
     //   current.parentElement.remove()
     //   const rawUrl = getRawUrl(currentSrc)
     //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
@@ -1170,7 +1170,7 @@ const imageViewer = (function () {
     // }
 
     // for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
-    //   if (newList.indexOf(imgNode.src) === -1) {
+    //   if (!newList.includes(imgNode.src)) {
     //     imgNode.parentElement.remove()
     //   }
     // }
