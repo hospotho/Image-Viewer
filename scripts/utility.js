@@ -441,7 +441,9 @@ const ImageViewerUtils = (function () {
       }
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
-        imageDataList.push([bg.substring(5, bg.length - 2), node])
+        const url = bg.substring(5, bg.length - 2)
+        node.setAttribute('bgUrl', url)
+        imageDataList.push([url, node])
       }
     }
 
