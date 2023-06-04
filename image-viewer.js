@@ -840,17 +840,32 @@ const imageViewer = (function () {
       })
     }
     function disableWebsiteDefaultEvent() {
-      viewer.addEventListener('keydown', e => e.stopPropagation())
-      viewer.addEventListener('keyup', e => e.stopPropagation())
-      viewer.addEventListener('keypress', e => e.stopPropagation())
-      viewer.addEventListener('contextmenu', e => e.stopPropagation())
-      viewer.addEventListener('wheel', e => e.stopPropagation())
-      viewer.addEventListener('mousedown', e => {
-        if (e.button == 1) {
-          e.preventDefault()
-          return false
-        }
-      })
+      const disableList = [
+        'click',
+        'contextmenu',
+        'dblclick',
+        'keydown',
+        'keypress',
+        'keyup',
+        'mousedown',
+        'mouseenter',
+        'mouseleave',
+        'mousemove',
+        'mouseover',
+        'mouseup',
+        'pointerdown',
+        'pointerenter',
+        'pointerleave',
+        'pointermove',
+        'pointerout',
+        'pointerover',
+        'pointerup',
+        'wheel'
+      ]
+
+      for (const event of disableList) {
+        viewer.addEventListener(event, e => e.stopPropagation())
+      }
     }
     function addSearchHotkeyEvent() {
       function checkKey(e, hotkey) {
