@@ -349,12 +349,22 @@ const ImageViewerUtils = (function () {
       imageDataList.push([img.currentSrc, img])
     }
 
-    for (const node of document.body.getElementsByTagName('*')) {
+    for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
+      const url = node.getAttribute('bgUrl')
+      if (url) {
+        imageDataList.push([url, node])
+        continue
+      }
       const backgroundImage = window.getComputedStyle(node).backgroundImage
-      if (backgroundImage === 'none') continue
+      if (backgroundImage === 'none') {
+        node.setAttribute('no-bg', '')
+        continue
+      }
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
-        imageDataList.push([bg.substring(5, bg.length - 2), node])
+        const url = bg.substring(5, bg.length - 2)
+        node.setAttribute('bgUrl', url)
+        imageDataList.push([url, node])
       }
     }
 
@@ -401,11 +411,34 @@ const ImageViewerUtils = (function () {
       }
     }
 
-    for (const node of document.body.getElementsByTagName('*')) {
-      const {width, height} = node.getBoundingClientRect()
-      if (width < minWidth || height < minHeight) continue
+    for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
+      const widthAttr = node.getAttribute('data-width')
+      if (widthAttr) {
+        const heightAttr = node.getAttribute('data-height')
+        const width = Number(widthAttr)
+        const height = Number(heightAttr)
+        if (width < minWidth || height < minHeight) continue
+      } else {
+        const {width, height} = node.getBoundingClientRect()
+        if (width === 0 || height === 0) {
+          node.setAttribute('no-bg', '')
+          continue
+        }
+        node.setAttribute('data-width', width)
+        node.setAttribute('data-height', height)
+        if (width < minWidth || height < minHeight) continue
+      }
+
+      const url = node.getAttribute('bgUrl')
+      if (url) {
+        imageDataList.push([url, node])
+        continue
+      }
       const backgroundImage = window.getComputedStyle(node).backgroundImage
-      if (backgroundImage === 'none') continue
+      if (backgroundImage === 'none') {
+        node.setAttribute('no-bg', '')
+        continue
+      }
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
         imageDataList.push([bg.substring(5, bg.length - 2), node])
