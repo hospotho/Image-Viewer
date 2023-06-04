@@ -108,7 +108,7 @@ const ImageViewerUtils = (function () {
       }
       if (found) {
         const lazyList = []
-        for (const container of document.getElementsByTagName('*')) {
+        for (const container of document.body.getElementsByTagName('*')) {
           const {width, height} = container.getBoundingClientRect()
           if (width > minWidth && height > minHeight) lazyList.push(container)
         }
