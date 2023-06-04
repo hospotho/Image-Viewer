@@ -1,3 +1,13 @@
+1.25 [2023-06-04]:
+1. AltGraph key now functions the same as Alt key in hotkey
+2. More intuitive zoom, where zooming now occurs at the screen center instead of the image center
+3. Fixed the incorrect position of the border display after the moveTo operation
+4. Fixed a bug that caused a conflict in the scroll function
+5. Added a check for iframes to handle a bug in Chrome
+6. Removed code that caused extra rendering time
+7. Added caching to enhance performance
+8. Improved performance on right click image pickup
+
 1.24 [2023-06-01]:
 1. Introduces method for old style lazy image
 2. Enhance the moveTo function and label border
