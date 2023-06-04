@@ -819,24 +819,32 @@ const imageViewer = (function () {
       })
     }
     function addMiddleClickKeyEvent() {
-      const action = () => {
+      const openNewTab = chrome.runtime ? anchor => chrome.runtime.sendMessage({msg: 'open_tab', url: anchor.href}) : anchor => window.open(anchor.href, '_blank')
+      const dispatchEvent = anchor => anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
+
+      const action = taskFunc => {
         const img = shadowRoot.querySelector('li.current img')
         const imgNode = searchImgNode(img)
         if (!imgNode) return
         const anchor = searchImgAnchor(imgNode)
         if (!anchor) return
-        anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
+        taskFunc(anchor)
       }
+
       viewer.addEventListener('keydown', e => {
         if (e.key === 'Insert' || e.key === '0') {
           e.preventDefault()
-          action()
+          action(openNewTab)
         }
       })
+      // call preventDefault to trigger auxclick event
+      viewer.addEventListener('mousedown', e => {
+        if (e.button == 1) e.preventDefault()
+      })
+      // browsers map middle click to opening a link in a new tab without switching
+      // opening a link in auxclick event handler can do the same job (undocumented?)
       viewer.addEventListener('auxclick', e => {
-        if (e.button === 1) {
-          action()
-        }
+        if (e.button === 1) action(dispatchEvent)
       })
     }
     function disableWebsiteDefaultEvent() {

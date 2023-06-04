@@ -140,6 +140,9 @@ const defaultOptions = {
 let currOptions = null
 let currOptionsWithoutSize = null
 let lastImageNodeInfo = null
+let lastTabID = 0
+let lastTabIndex = 0
+let lastTabOpenIndex = 0
 
 chrome.runtime.onInstalled.addListener(function (details) {
   if (details.reason === 'update' || details.reason === 'install') {
@@ -286,7 +289,12 @@ function addMessageHandler() {
         return true
       }
       case 'open_tab': {
-        chrome.tabs.create({active: false, index: sender.tab.index + 1, url: request.url}, sendResponse)
+        if (lastTabID !== sender.tab.id || lastTabIndex !== sender.tab.index) {
+          lastTabID = sender.tab.id
+          lastTabIndex = sender.tab.index
+          lastTabOpenIndex = sender.tab.index
+        }
+        chrome.tabs.create({active: false, index: ++lastTabOpenIndex, url: request.url}, sendResponse)
         return true
       }
       case 'close_tab': {
