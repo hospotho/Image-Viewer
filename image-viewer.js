@@ -558,7 +558,7 @@ const imageViewer = (function () {
         opacity: 1;
         color: #ddd;
       }
-      
+
       #iv-control-prev:after {
         left: 50%;
         margin-left: -10px;
