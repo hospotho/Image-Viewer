@@ -30,7 +30,7 @@ const imageViewer = (function () {
   }
   function insertImageNode(node, index) {
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    const list = [...shadowRoot.querySelectorAll('#iv-image-list li')]
+    const list = shadowRoot.querySelectorAll('#iv-image-list li')
 
     if (index === list.length) {
       imageListNode.appendChild(node)

@@ -123,8 +123,8 @@
       for (let i = 6; i < options.hotkey.length; i++) {
         addNewCustom()
       }
-      const custom = [...document.querySelectorAll('input.customSearch')]
-      const customUrl = [...document.querySelectorAll('input.customSearchUrl')]
+      const custom = document.querySelectorAll('input.customSearch')
+      const customUrl = document.querySelectorAll('input.customSearchUrl')
       for (let i = 0; i < custom.length; i++) {
         if (i < options.hotkey.length - 5) {
           custom[i].value = options.hotkey[i + 5]
@@ -189,8 +189,8 @@
 
       const hotkeyList = [google.value, yandex.value, sauceNAO.value, ascii2d.value, useAll.value]
       const customUrlList = []
-      const custom = [...document.querySelectorAll('input.customSearch')]
-      const customUrl = [...document.querySelectorAll('input.customSearchUrl')]
+      const custom = document.querySelectorAll('input.customSearch')
+      const customUrl = document.querySelectorAll('input.customSearchUrl')
       for (let i = 0; i < custom.length; i++) {
         if (!custom[i].value && !customUrl[i].value) continue
         hotkeyList.push(custom[i].value)

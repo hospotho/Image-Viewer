@@ -304,7 +304,7 @@ const ImageViewerUtils = (function () {
     return null
   }
   async function simpleUnlazyImage(options) {
-    const unlazyList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
+    const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
 
     const minWidth = Math.max(options.minWidth, 50)
     const minHeight = Math.max(options.minHeight, 50)
@@ -591,7 +591,7 @@ const ImageViewerUtils = (function () {
         // ad may use same wrapper and adblock set it to display: none
         if (div.offsetParent === null && div.style.position !== 'fixed') continue
 
-        const imgList = [...div.querySelectorAll('img')]
+        const imgList = div.querySelectorAll('img')
         if (imgList.length === 0) continue
 
         const widthList = []
