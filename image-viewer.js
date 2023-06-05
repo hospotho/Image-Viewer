@@ -884,7 +884,7 @@ const imageViewer = (function () {
         const shift = keyList.includes('Shift') === e.shiftKey
         return key && ctrl && alt && shift
       }
-      const openNewTab = chrome ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
+      const openNewTab = chrome.runtime ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
 
       if (!options.hotkey || options.hotkey.length < 5) return
       const hotkey = options.hotkey
