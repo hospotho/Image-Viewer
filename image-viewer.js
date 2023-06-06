@@ -13,11 +13,8 @@ const imageViewer = (function () {
     li.appendChild(img)
 
     img.alt = ''
-    img.referrerPolicy = options.referrerPolicy ? 'no-referrer' : null
-    img.crossorigin = options.cors ? 'anonymous' : null
-    img.onload = () => {
-      URL.revokeObjectURL(img.src)
-    }
+    if (options.referrerPolicy) img.referrerPolicy = 'no-referrer'
+    if (options.cors) img.crossOrigin = 'anonymous'
 
     if (typeof data === 'string') {
       img.src = data
