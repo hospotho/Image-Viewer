@@ -172,7 +172,7 @@ const imageViewer = (function () {
   function searchImgAnchor(imgNode) {
     let el = imgNode
     while (el.parentElement) {
-      if (el.tagName.toLowerCase() === 'a') return el
+      if (el.tagName === 'A') return el
       el = el.parentElement
     }
     return null
