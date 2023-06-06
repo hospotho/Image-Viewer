@@ -806,7 +806,7 @@ const imageViewer = (function () {
       closeButton.addEventListener('click', closeImageViewer)
       closeButton.addEventListener('contextmenu', e => {
         e.preventDefault()
-        chrome ? chrome.runtime.sendMessage('close_tab') : window.close()
+        chrome.runtime ? chrome.runtime.sendMessage('close_tab') : window.close()
       })
       viewer.addEventListener('keydown', e => {
         if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
