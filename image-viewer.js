@@ -2,9 +2,9 @@ const imageViewer = (function () {
   'use strict'
 
   let shadowRoot
-  let currentImageList
-  let removeTimeout
-  let lastUpdateTime
+  let currentImageList = []
+  let removeTimeout = 0
+  let lastUpdateTime = 0
 
   //==========utility==========
   function buildImageNode(data, options) {
