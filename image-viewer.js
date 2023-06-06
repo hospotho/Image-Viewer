@@ -662,18 +662,20 @@ const imageViewer = (function () {
     function updateCounter() {
       const list = [...shadowRoot.querySelectorAll('#iv-image-list li')]
       const length = list.length
-      const current = shadowRoot.querySelector('li.current') || shadowRoot.querySelector('#iv-image-list li')
-      if (!shadowRoot.querySelector('li.current') && current) {
-        // must in action-page mode
-        current.classList.add('current')
-        shadowRoot.querySelector('#iv-info-width').value = current.firstChild.naturalWidth
-        shadowRoot.querySelector('#iv-info-height').value = current.firstChild.naturalHeight
+      if (length === 0) {
+        closeImageViewer()
+        return
       }
+
+      const translate = shadowRoot.querySelector('#iv-image-list').style.translate
+      const translateY = translate.slice(4, -1)
+      const lastIndex = translateY ? Number(translateY) / -100 : 0
+      const current = shadowRoot.querySelector('li.current') || list[Math.min(length - 1, lastIndex)]
       const currIndex = list.indexOf(current)
+
       counterTotal.innerHTML = length
       counterCurrent.innerHTML = currIndex + 1
       imageListNode.style.translate = `0 ${-currIndex * 100}%`
-      if (length === 0) closeImageViewer()
     }
     function removeFailedImg() {
       const action = e => {
