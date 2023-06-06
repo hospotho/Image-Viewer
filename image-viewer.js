@@ -3,6 +3,8 @@ const imageViewer = (function () {
 
   let shadowRoot
   let currentImageList = []
+  const failedImageSet = new Set()
+
   let removeTimeout = 0
   let lastUpdateTime = 0
 
@@ -677,6 +679,15 @@ const imageViewer = (function () {
       const action = e => {
         const img = e?.target ?? e
         if (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight) {
+          const currentUrlList = []
+          for (const data of currentImageList) {
+            const url = typeof data === 'string' ? data : data[0]
+            currentUrlList.push(url)
+          }
+          const src = img.src
+          const index = currentUrlList.indexOf(src)
+          currentImageList.splice(index, 1)
+          failedImageSet.add(src)
           img.parentNode.remove()
           updateCounter()
         }
@@ -1142,6 +1153,15 @@ const imageViewer = (function () {
   }
 
   function updateImageList(newList, options) {
+    // preprocess
+    for (let i = newList.length - 1; i >= 0; i--) {
+      const data = newList[i]
+      const url = typeof data === 'string' ? data : data[0]
+      if (failedImageSet.has(url)) {
+        newList.splice(i, 1)
+      }
+    }
+
     // update
     const imgList = shadowRoot.querySelectorAll('#iv-image-list li img')
     for (let i = 0; i < currentImageList.length; i++) {
