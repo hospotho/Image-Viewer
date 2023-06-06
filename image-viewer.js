@@ -1163,14 +1163,11 @@ const imageViewer = (function () {
       const url = typeof data === 'string' ? data : data[0]
       currentUrlList.push(url)
     }
-    const newIndex = []
-    for (const data of newList) {
+    for (let i = 0; i < newList.length; i++) {
+      const data = newList[i]
       const url = typeof data === 'string' ? data : data[0]
       const index = currentUrlList.indexOf(url)
-      newIndex.push(index)
-    }
-    for (let i = 0; i < newList.length; i++) {
-      if (newIndex[i] === -1) {
+      if (index === -1) {
         const node = buildImageNode(newList[i], options)
         insertImageNode(node, i)
       }
