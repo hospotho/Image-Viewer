@@ -593,7 +593,7 @@ const ImageViewerUtils = (function () {
           if (!scrollFlag) window.scrollTo(startX, startY)
           Element.prototype.scrollIntoView = originalScrollIntoView
           window.scrollTo = originalScrollTo
-        }, 100)
+        }, 500)
       }
     })
     imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
