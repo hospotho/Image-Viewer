@@ -66,6 +66,10 @@
       : [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
   }
 
+  // options init maybe delayed in iframe
+  while (window.ImageViewerOption === undefined) {
+    await new Promise(resolve => setTimeout(resolve, 50))
+  }
   const options = window.ImageViewerOption
   const imageList = getImageList(options)
   if (imageList.length === 0) return
