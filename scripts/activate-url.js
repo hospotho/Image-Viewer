@@ -9,7 +9,7 @@
       }
       const timeout = setTimeout(() => resolve(false), 3000)
       try {
-        const res = await fetch(url)
+        const res = await fetch(url, {method: 'HEAD'})
         if (res.ok) {
           const options = res.headers.get('X-Frame-Options')
           if (!options) {
@@ -45,6 +45,8 @@
         testList.push(iframe.src)
       }
     }
+    if (testList.length === 0) return
+
     const BackgroundResult = chrome.runtime.sendMessage({msg: 'check_iframes', data: testList})
     const localResult = Promise.all(testList.map(checkIframeUrl))
     const asyncList = await Promise.all([BackgroundResult, localResult])

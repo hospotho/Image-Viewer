@@ -92,7 +92,7 @@ const checkIframeUrl = url => {
     }
     const timeout = setTimeout(() => resolve(false), 3000)
     try {
-      const res = await fetch(url)
+      const res = await fetch(url, {method: 'HEAD'})
       if (res.ok) {
         const options = res.headers.get('X-Frame-Options')
         if (!options) {
