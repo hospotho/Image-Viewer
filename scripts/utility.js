@@ -97,7 +97,7 @@ const ImageViewerUtils = (function () {
       scrollObserver.disconnect()
       domChanged = true
 
-      console.log('try deep unlazy')
+      console.log('unlazy by scroll')
       let found = false
       for (const mutation of mutationsList) {
         const element = mutation.target
