@@ -649,7 +649,7 @@ const ImageViewerUtils = (function () {
       options.minHeight = Math.min(finalHeight, options.minHeight)
     },
 
-    getOrderedImageUrls: async function (options) {
+    getOrderedImageUrls: async function (options, retryCount = 0) {
       const release = await mutex.acquire()
 
       await simpleUnlazyImage(options)
@@ -673,6 +673,10 @@ const ImageViewerUtils = (function () {
 
       if (uniqueImageUrls.length === 0) {
         release()
+        if (retryCount < 3) {
+          const retryResult = await new Promise(resolve => setTimeout(() => resolve(this.getOrderedImageUrls(options, retryCount + 1)), 1000))
+          return retryResult
+        }
         return []
       }
 
