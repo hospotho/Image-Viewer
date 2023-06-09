@@ -144,6 +144,7 @@ const ImageViewerUtils = (function () {
       scrollObserver.disconnect()
       if (!domChanged) window.scrollTo(currentX, currentY)
     }, 1000)
+    window.scrollTo(0, 0)
     window.scrollBy({top: window.screen.height})
   }
   async function waitSrcUpdate(img, _resolve) {
