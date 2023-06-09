@@ -480,9 +480,10 @@ const ImageViewerUtils = (function () {
   // sort image list
   async function mapSrcToIframe(dataList) {
     const iframeList = [...document.getElementsByTagName('iframe')]
-    if (iframeList.length === 0) return dataList
-
     const iframeSrcList = iframeList.map(iframe => iframe.src)
+    const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
+    if (filteredList.length === 0) return dataList
+
     const iframeRedirectSrcList = await chrome.runtime.sendMessage({msg: 'get_redirect', data: iframeSrcList})
 
     const imageDomList = []
@@ -656,7 +657,10 @@ const ImageViewerUtils = (function () {
 
       const uniqueImageUrls = getImageList(options)
 
-      if (!!document.querySelector('iframe')) {
+      const iframeList = [...document.getElementsByTagName('iframe')]
+      const iframeSrcList = iframeList.map(iframe => iframe.src)
+      const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
+      if (filteredList.length !== 0) {
         const minSize = Math.min(options.minWidth, options.minHeight)
         const iframeImage = await chrome.runtime.sendMessage({msg: 'extract_frames', minSize: minSize})
 
