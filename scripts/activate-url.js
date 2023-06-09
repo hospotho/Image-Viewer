@@ -18,7 +18,7 @@
             resolve(false)
           } else if (options === 'SAMEORIGIN') {
             const target = new URL(res.url).origin
-            const origin = new URL(sender.tab.url).origin
+            const origin = new URL(location.href).origin
             resolve(target === origin)
           }
         }
