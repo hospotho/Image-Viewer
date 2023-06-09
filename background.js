@@ -361,7 +361,7 @@ function createContextMenu() {
         return
       }
       case 'view_all_image_in_image_viewer': {
-        passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
+        await passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         return
       }
@@ -392,7 +392,7 @@ function addCommandHandler() {
         return
       }
       case 'open-image-viewer-without-size-filter': {
-        passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
+        await passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         return
       }
