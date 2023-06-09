@@ -71,7 +71,7 @@ const getImageLocalRealSize = (id, srcUrl) => {
 }
 const getRedirectUrl = async srcList => {
   const asyncList = srcList.map(async src => {
-    if (src === 'about:blank') return src
+    if (src === '' || src === 'about:blank') return src
 
     try {
       const res = await fetch(src)
