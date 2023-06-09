@@ -49,7 +49,8 @@
   imageViewer(window.backupImageUrlList, options)
 
   // auto update
-  const period = 500
+  let period = 500
+  const multiplier = 1.2
   let releaser
   const action = async () => {
     while (document.documentElement.classList.contains('has-image-viewer')) {
@@ -64,8 +65,15 @@
         window.backupImageUrlList = combinedImageList
         imageViewer(combinedImageList, options)
       }
-      await new Promise(resolve => {
-        setTimeout(resolve, period)
+      await new Promise(_resolve => {
+        const resolve = () => {
+          clearTimeout(timeout)
+          _resolve()
+        }
+        setTimeout(() => {
+          period *= multiplier
+          resolve()
+        }, period)
         releaser = resolve
       })
     }
@@ -75,7 +83,10 @@
       observer.disconnect()
       return
     }
-    if (typeof release === 'function') release()
+    if (typeof release === 'function') {
+      period = 500
+      release()
+    }
   })
   observer.observe(document.documentElement, {childList: true, subtree: true})
   action()
