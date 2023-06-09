@@ -85,8 +85,12 @@ const getRedirectUrl = async srcList => {
   return redirectUrlList
 }
 const checkIframeUrl = url => {
-  return new Promise(async resolve => {
-    setTimeout(() => resolve(false), 5000)
+  return new Promise(async _resolve => {
+    const resolve = bool => {
+      _resolve(bool)
+      clearTimeout(timeout)
+    }
+    const timeout = setTimeout(() => resolve(false), 3000)
     try {
       const res = await fetch(url)
       if (res.ok) {

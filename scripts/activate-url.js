@@ -2,8 +2,12 @@
   'use strict'
 
   function checkIframeUrl(url) {
-    return new Promise(async resolve => {
-      setTimeout(() => resolve(false), 5000)
+    return new Promise(async _resolve => {
+      const resolve = bool => {
+        _resolve(bool)
+        clearTimeout(timeout)
+      }
+      const timeout = setTimeout(() => resolve(false), 3000)
       try {
         const res = await fetch(url)
         if (res.ok) {
@@ -44,12 +48,9 @@
     const BackgroundResult = chrome.runtime.sendMessage({msg: 'check_iframes', data: testList})
     const localResult = Promise.all(testList.map(checkIframeUrl))
     const asyncList = await Promise.all([BackgroundResult, localResult])
-    const result = []
     for (let i = 0; i < testList.length; i++) {
-      result.push(asyncList[0][i] || asyncList[1][i])
-    }
-    for (let i = 0; i < testList.length; i++) {
-      if (result[i] === false) {
+      const result = asyncList[0][i] || asyncList[1][i]
+      if (result === false) {
         const src = testList[i]
         const iframe = document.querySelector(`iframe[src="${src}"]`)
         if (iframe) {
