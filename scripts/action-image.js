@@ -70,7 +70,7 @@
           clearTimeout(timeout)
           _resolve()
         }
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
           period *= multiplier
           resolve()
         }, period)
