@@ -68,6 +68,7 @@
 
   const options = window.ImageViewerOption
   const imageList = getImageList(options)
+  if (imageList.length === 0) return
 
   const asyncList = await Promise.all(imageList.map(createDataUrl))
   const imageDataUrls = asyncList.filter(url => url !== '')
