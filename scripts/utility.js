@@ -291,14 +291,20 @@ const ImageViewerUtils = (function () {
         if (match[0][0] === img.currentSrc) continue
         const newURL = match[0][0].replace(/https?:/, protocol)
         const isBetter = await checkUrl(img, bitSize, naturalSize, newURL)
-        if (isBetter) return attr.name
+        if (isBetter) {
+          img.removeAttribute(attr.name)
+          return attr.name
+        }
       }
 
       if (match.length > 1) {
         const first = match[0][0].replace(/https?:/, protocol)
         const last = match[match.length - 1][0].replace(/https?:/, protocol)
         const isBetter = await checkUrl(img, bitSize, naturalSize, first, last)
-        if (isBetter) return attr.name
+        if (isBetter) {
+          img.removeAttribute(attr.name)
+          return attr.name
+        }
       }
     }
 
