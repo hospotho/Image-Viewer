@@ -206,6 +206,7 @@ const ImageViewerUtils = (function () {
           if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
             const size = Number(length)
             size ? resolve(size) : updateComplete()
+            return
           }
         }
       } catch (error) {}
