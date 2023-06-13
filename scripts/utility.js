@@ -273,7 +273,7 @@ const ImageViewerUtils = (function () {
       }
     }
     if (img.srcset && img.currentSrc !== img.srcset) {
-      attrList.push(img.getAttribute('srcset'))
+      attrList.push(img.attributes['srcset'])
     }
     if (rawUrl === img.currentSrc && attrList.length === 0) return null
 
