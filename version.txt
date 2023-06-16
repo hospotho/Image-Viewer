@@ -1,3 +1,9 @@
+1.26 [2023-06-17]:
+1. Improved the logic of using middle click to open the link of current image
+2. Fixed a bug that caused jumping in viewer index
+3. Fixed a bug that prevented the image viewer from automatically starting for image URLs
+4. Other bug fixes and improvements
+
 1.25 [2023-06-04]:
 1. AltGraph key now functions the same as Alt key in hotkey
 2. More intuitive zoom, where zooming now occurs at the screen center instead of the image center
