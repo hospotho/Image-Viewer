@@ -64,8 +64,9 @@
   }
 
   async function init() {
-    if (document.body.children.length === 1 && document.body.children[0].tagName === 'IMG') {
-      const image = document.body.children[0]
+    const image = document.querySelector(`img[src='${location.href}']`)
+    if (image) {
+      console.log('Start image mode')
 
       await chrome.runtime.sendMessage('get_options')
       const options = window.ImageViewerOption
