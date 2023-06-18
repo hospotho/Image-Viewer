@@ -5,6 +5,7 @@
 
   document.documentElement.classList.add('has-image-viewer-worker')
 
+  await chrome.runtime.sendMessage('get_options')
   const options = window.ImageViewerOption
   const domainList = []
   const regexList = []

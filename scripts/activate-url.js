@@ -64,12 +64,11 @@
   }
 
   async function init() {
-    await chrome.runtime.sendMessage('get_options')
-
     const image = document.querySelector(`img[src='${location.href}']`)
     if (image) {
       console.log('Start image mode')
 
+      await chrome.runtime.sendMessage('get_options')
       const options = window.ImageViewerOption
       options.closeButton = false
       options.minWidth = 0
