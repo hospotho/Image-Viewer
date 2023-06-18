@@ -30,7 +30,7 @@
   // auto update
   let period = 500
   const multiplier = 1.2
-  let release
+  let updateRelease
   const action = async () => {
     while (document.documentElement.classList.contains('has-image-viewer')) {
       const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
@@ -50,18 +50,29 @@
           period *= multiplier
           resolve()
         }, period)
-        release = resolve
+        updateRelease = resolve
       })
     }
   }
-  const observer = new MutationObserver(() => {
+
+  let currentScrollX = window.scrollX
+  let currentScrollY = window.scrollY
+  const observer = new MutationObserver(async () => {
     if (!document.documentElement.classList.contains('has-image-viewer')) {
       observer.disconnect()
       return
     }
-    if (typeof release === 'function') {
+    if (typeof updateRelease === 'function') {
+      observer.disconnect()
+      await new Promise(resolve => setTimeout(resolve, 50))
+      while (currentScrollX !== window.scrollX || currentScrollY !== window.scrollY) {
+        currentScrollX = window.scrollX
+        currentScrollY = window.scrollY
+        await new Promise(resolve => setTimeout(resolve, 300))
+      }
+      observer.observe(document.documentElement, {childList: true, subtree: true})
       period = 500
-      release()
+      updateRelease()
     }
   })
   observer.observe(document.documentElement, {childList: true, subtree: true})

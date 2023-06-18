@@ -11,20 +11,36 @@ const ImageViewerUtils = (function () {
     let promise = Promise.resolve()
     let busy = false
     return {
-      acquire: async () => {
+      acquire: async function () {
         await promise
-        let release
-        promise = new Promise(
-          resolve =>
-            (release = () => {
-              busy = false
-              resolve()
-            })
-        )
+        let lockRelease
+        promise = new Promise(resolve => {
+          lockRelease = () => {
+            busy = false
+            resolve()
+          }
+        })
         busy = true
-        return release
+        return lockRelease
       },
-      isBusy: () => busy
+      waitUnlock: async function () {
+        if (!busy) {
+          let waitRelease
+          const wait = new Promise(resolve => (waitRelease = resolve))
+
+          const originalAcquire = this.acquire
+          this.acquire = async () => {
+            const lockRelease = await originalAcquire()
+            waitRelease()
+            this.acquire = originalAcquire
+            return lockRelease
+          }
+
+          await wait
+        }
+
+        await promise
+      }
     }
   })()
 
@@ -792,7 +808,7 @@ const ImageViewerUtils = (function () {
       const period = 500
       let stopFlag = true
       const action = async () => {
-        while (mutex.isBusy()) await new Promise(resolve => setTimeout(resolve, 50))
+        await mutex.waitUnlock()
 
         const allImage = document.getElementsByTagName('img')
         let currBottom = 0
