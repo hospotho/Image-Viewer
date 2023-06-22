@@ -660,8 +660,13 @@ const ImageViewerUtils = (function () {
         const heightList = []
         for (const img of imgList) {
           const {width, height} = img.getBoundingClientRect()
-          widthList.push(width)
-          heightList.push(height)
+          if (width > height) {
+            widthList.push(width)
+            heightList.push(height)
+          } else {
+            widthList.push(height)
+            heightList.push(width)
+          }
         }
         const maxWidth = Math.max(...widthList)
         const maxHeight = Math.max(...heightList)
@@ -669,11 +674,13 @@ const ImageViewerUtils = (function () {
         height.push(maxHeight)
       }
 
-      const finalWidth = Math.min(...width.filter(w => w * 2 >= domWidth)) - 3
-      const finalHeight = Math.min(...height.filter(h => h * 2 >= domHeight)) - 3
+      const [large, small] = domWidth / domHeight > 1 ? [domWidth, domHeight] : [domHeight, domWidth]
+      const finalWidth = Math.min(...width.filter(w => w * 1.2 >= large)) - 3
+      const finalHeight = Math.min(...height.filter(h => h * 1.2 >= small)) - 3
+      const finalSize = Math.min(finalWidth, finalHeight)
 
-      options.minWidth = Math.min(finalWidth, options.minWidth)
-      options.minHeight = Math.min(finalHeight, options.minHeight)
+      options.minWidth = Math.min(finalSize, options.minWidth)
+      options.minHeight = Math.min(finalSize, options.minHeight)
     },
 
     getOrderedImageUrls: async function (options, retryCount = 0) {
