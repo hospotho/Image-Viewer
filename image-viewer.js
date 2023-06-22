@@ -270,6 +270,8 @@ const imageViewer = (function () {
 
     let count = 0
     let {top, left} = imgNode.getBoundingClientRect()
+    const displayFrame = 60
+    const fps = 1000 / displayFrame
     const interval = setInterval(() => {
       const {top: currTop, left: currLeft} = imgNode.getBoundingClientRect()
       if (top !== currTop || left !== currLeft) {
@@ -277,11 +279,11 @@ const imageViewer = (function () {
         left = currLeft
         IObserver.observe(imgNode)
       }
-      if (count++ > 10) {
+      if (count++ > displayFrame) {
         clearInterval(interval)
         border.remove()
       }
-    }, 100)
+    }, fps)
   }
 
   const fitFuncDict = (function () {
