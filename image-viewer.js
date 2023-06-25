@@ -275,7 +275,7 @@ const imageViewer = (function () {
     const fps = 1000 / displayFrame
     const interval = setInterval(() => {
       const {top: currTop, left: currLeft} = imgNode.getBoundingClientRect()
-      if (top !== currTop || left !== currLeft) {
+      if (top !== currTop || left !== currLeft || count % 5 === 0) {
         top = currTop
         left = currLeft
         IObserver.observe(imgNode)
