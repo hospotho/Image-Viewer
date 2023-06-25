@@ -254,6 +254,7 @@ const imageViewer = (function () {
     border.style.border = '5px solid red'
     border.style.boxSizing = 'border-box'
     border.style.zIndex = '2147483647'
+    border.style.pointerEvents = 'none'
     document.body.appendChild(border)
 
     const action = entryList => {
