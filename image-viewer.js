@@ -218,7 +218,7 @@ const imageViewer = (function () {
     closeImageViewer()
 
     const ratio = currIndex / imageListLength
-    const totalHeight = window.scrollY
+    const totalHeight = document.body.scrollHeight
     const targetTop = totalHeight * ratio
 
     return new Promise(resolve => {
