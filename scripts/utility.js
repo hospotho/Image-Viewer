@@ -137,6 +137,10 @@ const ImageViewerUtils = (function () {
         }
         topList.sort((a, b) => a - b)
 
+        const wrapper = (func, ...args) => {
+          if (document.documentElement.classList.contains('has-image-viewer')) func(...args)
+        }
+
         const screenHeight = window.screen.height
         const scrollY = document.body.scrollHeight
         let lastTop = 0
@@ -144,12 +148,12 @@ const ImageViewerUtils = (function () {
         for (let i = 0; i < topList.length; i++) {
           const top = topList[i]
           if (top > lastTop + screenHeight / 2 || i === topList.length - 1) {
-            setTimeout(() => window.scrollTo(currentX, top), scrollCount++ * 150)
+            setTimeout(() => wrapper(window.scrollTo, currentX, top), scrollCount++ * 150)
             lastTop = top
           }
         }
-        setTimeout(() => window.scrollBy({top: scrollY}), scrollCount++ * 150)
-        setTimeout(() => window.scrollTo(currentX, currentY), scrollCount * 150)
+        setTimeout(() => wrapper(window.scrollBy, {top: scrollY}), scrollCount++ * 150)
+        setTimeout(() => wrapper(window.scrollTo, currentX, currentY), scrollCount * 150)
         return
       }
       window.scrollTo(currentX, currentY)
