@@ -829,7 +829,7 @@ const ImageViewerUtils = (function () {
         }
 
         if (!document.documentElement.classList.contains('has-image-viewer')) return
-        bottomImg.scrollIntoView({behavior: 'smooth', block: 'start'})
+        bottomImg.scrollIntoView({block: 'start'})
         await new Promise(resolve => setTimeout(resolve, period))
       }
       const timer = async () => {
