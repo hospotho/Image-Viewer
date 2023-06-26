@@ -1229,6 +1229,7 @@ const imageViewer = (function () {
 
   //==========main function==========
   function imageViewer(imageList, options) {
+    if (arguments.length === 0) return currentImageList
     if (imageList.length === 0) return
 
     if (!document.documentElement.classList.contains('has-image-viewer')) {
