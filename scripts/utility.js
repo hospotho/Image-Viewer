@@ -679,8 +679,8 @@ const ImageViewerUtils = (function () {
       }
 
       const [large, small] = domWidth / domHeight > 1 ? [domWidth, domHeight] : [domHeight, domWidth]
-      const finalWidth = Math.min(...width.filter(w => w * 1.2 >= large)) - 3
-      const finalHeight = Math.min(...height.filter(h => h * 1.2 >= small)) - 3
+      const finalWidth = Math.min(...width.filter(w => w * 1.5 >= large)) - 3
+      const finalHeight = Math.min(...height.filter(h => h * 1.5 >= small)) - 3
       const finalSize = Math.min(finalWidth, finalHeight)
 
       options.minWidth = Math.min(finalSize, options.minWidth)
