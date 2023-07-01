@@ -197,8 +197,16 @@
     const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
     const isNewImageInfoBetter = async (newInfo, oldInfo) => {
       if (oldInfo === null) return true
-      if (oldInfo[2].tagName === 'IMG' && newInfo[2].tagName !== 'IMG') return false
+      const oldIsImage = oldInfo[2].tagName === 'IMG' || oldInfo[2].tagName === 'VIDEO'
+      const newIsImage = newInfo[2].tagName === 'IMG' || newInfo[2].tagName === 'VIDEO'
+      const oldIsPlaceholder = oldInfo[1] < 10
+      if (oldIsImage && !newIsImage && !oldIsPlaceholder) return false
       if (!newInfo[0].startsWith('data')) {
+        if (oldIsImage !== newIsImage && !oldIsPlaceholder) {
+          const bgPos = window.getComputedStyle(oldInfo[2]).backgroundPosition
+          const isPartialBackground = bgPos.split('px').map(Number).some(Boolean)
+          return isPartialBackground
+        }
         const [newSize, oldSize] = await Promise.all([newInfo[0], oldInfo[0]].map(getImageRealSize))
         return newSize > oldSize
       }
