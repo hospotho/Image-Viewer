@@ -16,8 +16,8 @@
 
   // update image size filter
   const nodeInfo = await chrome.runtime.sendMessage('get_info')
-  const [srcUrl, nodeSize] = nodeInfo === null ? [] : nodeInfo
-  if (nodeSize > 0) {
+  const [srcUrl, nodeSize] = nodeInfo ?? []
+  if (nodeSize) {
     options.minWidth = Math.min(nodeSize, options.minWidth)
     options.minHeight = Math.min(nodeSize, options.minHeight)
   }
