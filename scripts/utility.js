@@ -165,7 +165,7 @@ const ImageViewerUtils = (function () {
       if (!domChanged) window.scrollTo(currentX, currentY)
     }, 1000)
     window.scrollTo(0, 0)
-    window.scrollBy({top: window.screen.height})
+    window.scrollBy({top: window.screen.height * 2})
   }
   async function waitSrcUpdate(img, _resolve) {
     const srcUrl = new URL(img.src, document.baseURI)
@@ -341,7 +341,7 @@ const ImageViewerUtils = (function () {
     const imgList = []
     for (const img of unlazyList) {
       const {width, height} = img.getBoundingClientRect()
-      if (width > minWidth && height > minHeight) imgList.push(img)
+      if ((width > minWidth && height > minHeight) || width === 0 || height === 0) imgList.push(img)
     }
     const listSize = imgList.length
     if (listSize) {
