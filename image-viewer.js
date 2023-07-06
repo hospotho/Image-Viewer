@@ -8,6 +8,8 @@ const imageViewer = (function () {
   let removeTimeout = 0
   let lastUpdateTime = 0
 
+  const KeydownHandlerList = []
+
   //==========utility==========
   function buildImageNode(data, options) {
     const li = document.createElement('li')
@@ -771,6 +773,18 @@ const imageViewer = (function () {
 
   function addFrameEvent(options) {
     const viewer = shadowRoot.querySelector('#image-viewer')
+    function initKeydownHandler() {
+      window.addEventListener(
+        'keydown',
+        e => {
+          if (!document.documentElement.classList.contains('has-image-viewer')) return
+          for (const func of KeydownHandlerList) {
+            func(e)
+          }
+        },
+        true
+      )
+    }
     function addFitButtonEvent() {
       const currFitBtn = shadowRoot.querySelector(`#iv-control-${options.fitMode}`)
       currFitBtn?.classList.add('on')
@@ -808,7 +822,7 @@ const imageViewer = (function () {
       }
 
       shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
-      viewer.addEventListener('keydown', e => {
+      KeydownHandlerList.push(e => {
         if (e.key === 'Enter') {
           e.preventDefault()
           moveTo()
@@ -824,7 +838,7 @@ const imageViewer = (function () {
         e.preventDefault()
         chrome.runtime ? chrome.runtime.sendMessage('close_tab') : window.close()
       })
-      viewer.addEventListener('keydown', e => {
+      KeydownHandlerList.push(e => {
         if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
           e.preventDefault()
           closeImageViewer()
@@ -844,7 +858,7 @@ const imageViewer = (function () {
         taskFunc(anchor)
       }
 
-      viewer.addEventListener('keydown', e => {
+      KeydownHandlerList.push(e => {
         if (e.key === 'Insert' || e.key === '0') {
           e.preventDefault()
           action(openNewTab)
@@ -865,7 +879,6 @@ const imageViewer = (function () {
         'click',
         'contextmenu',
         'dblclick',
-        'keydown',
         'keypress',
         'keyup',
         'mousedown',
@@ -887,6 +900,7 @@ const imageViewer = (function () {
       for (const event of disableList) {
         viewer.addEventListener(event, e => e.stopPropagation())
       }
+      KeydownHandlerList.push(e => e.stopPropagation())
     }
     function addSearchHotkeyEvent() {
       function checkKey(e, hotkey) {
@@ -907,7 +921,7 @@ const imageViewer = (function () {
       const ascii2dUrl = String.raw`https://ascii2d.net/search/url/{imgSrc}`
       const urlList = [googleUrl, yandexUrl, saucenaoUrl, ascii2dUrl]
 
-      viewer.addEventListener('keydown', e => {
+      KeydownHandlerList.push(e => {
         for (let i = urlList.length - 1; i >= 0; i--) {
           if (hotkey[i] === '' || !checkKey(e, hotkey[i])) continue
 
@@ -919,7 +933,7 @@ const imageViewer = (function () {
         }
       })
 
-      viewer.addEventListener('keydown', e => {
+      KeydownHandlerList.push(e => {
         if (!checkKey(e, hotkey[4])) return
         e.preventDefault()
         const imgUrl = shadowRoot.querySelector('li.current img').src
@@ -932,7 +946,7 @@ const imageViewer = (function () {
       const customHotkey = hotkey.slice(5)
       const customUrl = options.customUrl
       if (customHotkey.length !== customUrl.length) return
-      viewer.addEventListener('keydown', e => {
+      KeydownHandlerList.push(e => {
         for (let i = customHotkey.length - 1; i >= 0; i--) {
           if (customHotkey[i] === '' || !checkKey(e, customHotkey[i])) continue
 
@@ -945,6 +959,7 @@ const imageViewer = (function () {
       })
     }
 
+    initKeydownHandler()
     addFitButtonEvent()
     addMoveToButtonEvent()
     addCloseButtonEvent()
@@ -1130,7 +1145,7 @@ const imageViewer = (function () {
     }
 
     // key event
-    shadowRoot.querySelector('#image-viewer').addEventListener('keydown', e => {
+    KeydownHandlerList.push(e => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
         nextItem(e.repeat)
