@@ -2,6 +2,12 @@
   'use strict'
 
   const rawText = `
+1.27 [2023-07-06]:
+1. Improved image selection, decrease the priority of image placeholder and image sprite
+2. Improved border display after using moveTo
+3. Improved auto scrolling and auto update
+4. Some bug fixes
+
 1.26 [2023-06-17]:
 1. Improved the logic of using middle click to open the link of current image
 2. Fixed a bug that caused jumping in viewer index
