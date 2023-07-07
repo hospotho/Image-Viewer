@@ -42,6 +42,7 @@ const imageViewer = (function () {
 
   function closeImageViewer() {
     document.documentElement.classList.remove('has-image-viewer')
+    KeydownHandlerList.length = 0
     const root = document.querySelector('#image-viewer-root')
     if (root) {
       root.addEventListener('transitionend', root.remove)
@@ -774,6 +775,8 @@ const imageViewer = (function () {
   function addFrameEvent(options) {
     const viewer = shadowRoot.querySelector('#image-viewer')
     function initKeydownHandler() {
+      if (document.documentElement.classList.contains('has-image-viewer-listener')) return
+      document.documentElement.classList.add('has-image-viewer-listener')
       window.addEventListener(
         'keydown',
         e => {
