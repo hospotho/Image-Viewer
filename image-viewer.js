@@ -251,7 +251,7 @@ const imageViewer = (function () {
   }
   function displayBorder(imgNode) {
     const border = document.createElement('div')
-    border.style.position = 'absolute'
+    border.style.position = 'fixed'
     border.style.top = '0px'
     border.style.left = '0px'
     border.style.border = '5px solid red'
@@ -264,7 +264,7 @@ const imageViewer = (function () {
       const entry = entryList[0]
       const rect = entry.intersectionRect
       const {top, left, width, height} = rect
-      border.style.transform = `translate(${left + window.scrollX - 1}px, ${top + window.scrollY - 1}px)`
+      border.style.transform = `translate(${left - 1}px, ${top - 1}px)`
       border.style.width = `${width + 4}px`
       border.style.height = `${height + 4}px`
       IObserver.unobserve(imgNode)
