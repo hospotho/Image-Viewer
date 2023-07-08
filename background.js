@@ -135,14 +135,14 @@ const defaultOptions = {
   fitMode: 'both',
   zoomRatio: 1.2,
   rotateDeg: 15,
-  minWidth: 150,
+  minWidth: 180,
   minHeight: 150,
   svgFilter: true,
   debouncePeriod: 1500,
   throttlePeriod: 80,
-  searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
+  searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + A', 'Shift + S', 'Ctrl + Shift + Q', ''],
   customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
-  functionHotkey: ['Ctrl + R', 'Ctrl + S'],
+  functionHotkey: ['Shift + R', 'Shift + D'],
   hoverCheckDisableList: [],
   autoScrollEnableList: ['twitter.com', 'instagram.com', 'facebook.com']
 }
