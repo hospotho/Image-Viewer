@@ -845,6 +845,7 @@ const imageViewer = (function () {
 
       shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
       KeydownHandlerList.push(e => {
+        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
         if (e.key === 'Enter') {
           e.preventDefault()
           moveTo()
@@ -861,6 +862,7 @@ const imageViewer = (function () {
         chrome.runtime ? chrome.runtime.sendMessage('close_tab') : window.close()
       })
       KeydownHandlerList.push(e => {
+        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
         if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
           e.preventDefault()
           closeImageViewer()
@@ -881,6 +883,7 @@ const imageViewer = (function () {
       }
 
       KeydownHandlerList.push(e => {
+        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
         if (e.key === 'Insert' || e.key === '0') {
           e.preventDefault()
           action(openNewTab)
@@ -1168,6 +1171,7 @@ const imageViewer = (function () {
 
     // key event
     KeydownHandlerList.push(e => {
+      if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
         nextItem(e.repeat)
