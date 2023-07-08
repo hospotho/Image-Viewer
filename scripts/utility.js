@@ -393,7 +393,9 @@ const ImageViewerUtils = (function () {
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
         const url = bg.substring(5, bg.length - 2)
-        node.setAttribute('bgUrl', url)
+        if (!url.startsWith('data:')) {
+          node.setAttribute('bgUrl', url)
+        }
         imageDataList.push([url, node])
       }
     }
@@ -472,7 +474,9 @@ const ImageViewerUtils = (function () {
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
         const url = bg.substring(5, bg.length - 2)
-        node.setAttribute('bgUrl', url)
+        if (!url.startsWith('data:')) {
+          node.setAttribute('bgUrl', url)
+        }
         imageDataList.push([url, node])
       }
     }
