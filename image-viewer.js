@@ -214,16 +214,6 @@ const imageViewer = (function () {
     return nearestPageNode
   }
   function deepSearchImgNode(img, options) {
-    const current = shadowRoot.querySelector('#iv-counter-current')
-    const total = shadowRoot.querySelector('#iv-counter-total')
-    const currIndex = Number(current.innerHTML) - 1
-    const imageListLength = Number(total.innerHTML)
-    closeImageViewer()
-
-    const ratio = currIndex / imageListLength
-    const totalHeight = document.body.scrollHeight
-    const targetTop = totalHeight * ratio
-
     return new Promise(resolve => {
       let release = null
       let timeout = 0
@@ -265,7 +255,6 @@ const imageViewer = (function () {
       }
 
       newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
-      window.scrollTo(window.scrollX, targetTop)
       search()
     })
   }
@@ -828,6 +817,18 @@ const imageViewer = (function () {
       if (!options.closeButton) return
 
       async function moveTo() {
+        const current = shadowRoot.querySelector('#iv-counter-current')
+        const total = shadowRoot.querySelector('#iv-counter-total')
+        const currIndex = Number(current.innerHTML) - 1
+        const imageListLength = Number(total.innerHTML)
+        closeImageViewer()
+
+        const ratio = currIndex / imageListLength
+        const totalHeight = document.body.scrollHeight
+        const targetTop = totalHeight * ratio
+        window.scrollTo(window.scrollX, targetTop)
+        await new Promise(resolve => setTimeout(resolve, 100))
+
         const img = shadowRoot.querySelector('li.current img')
         let imgNode = searchImgNode(img, options)
         if (imgNode === null) {
@@ -837,7 +838,6 @@ const imageViewer = (function () {
             return
           }
         }
-        closeImageViewer()
         console.log('Move to image node')
         imgNode.scrollIntoView({block: 'center'})
         await new Promise(resolve => setTimeout(resolve, 50))
