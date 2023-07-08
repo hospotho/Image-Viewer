@@ -114,7 +114,7 @@ const imageViewer = (function () {
     } catch (error) {}
     return src
   }
-  function searchImgNode(img, options = null) {
+  function searchImgNode(img) {
     const iframeSrc = img.getAttribute('data-iframe-src')
     if (iframeSrc) {
       for (const iframe of document.getElementsByTagName('iframe')) {
@@ -125,10 +125,7 @@ const imageViewer = (function () {
     }
 
     const imgUrl = img.src
-    const minWidth = options ? options.minWidth : 0
-    const minHeight = options ? options.minHeight : 0
-
-    let lastWidth = 0
+    let lastSize = 0
     let lastNode = null
     for (const img of document.getElementsByTagName('img')) {
       if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) {
@@ -136,9 +133,9 @@ const imageViewer = (function () {
         if (img.offsetParent === null && img.style.position !== 'fixed') continue
 
         const {width, height} = img.getBoundingClientRect()
-        if (width < minWidth || height < minHeight) continue
-        if (width > lastWidth) {
-          lastWidth = width
+        const currSize = Math.min(width, height)
+        if (currSize > lastSize) {
+          lastSize = currSize
           lastNode = img
         }
       }
@@ -148,9 +145,9 @@ const imageViewer = (function () {
     for (const video of document.getElementsByTagName('video')) {
       if (imgUrl === video.poster) {
         const {width, height} = video.getBoundingClientRect()
-        if (width < minWidth || height < minHeight) continue
-        if (width > lastWidth) {
-          lastWidth = width
+        const currSize = Math.min(width, height)
+        if (currSize > lastSize) {
+          lastSize = currSize
           lastNode = video
         }
       }
@@ -163,9 +160,9 @@ const imageViewer = (function () {
       const bg = backgroundImage.split(', ')[0]
       if (bg !== 'none' && imgUrl === bg.substring(5, bg.length - 2)) {
         const {width, height} = node.getBoundingClientRect()
-        if (width < minWidth || height < minHeight) continue
-        if (width > lastWidth) {
-          lastWidth = width
+        const currSize = Math.min(width, height)
+        if (currSize > lastSize) {
+          lastSize = currSize
           lastNode = node
         }
       }
@@ -183,37 +180,39 @@ const imageViewer = (function () {
     return null
   }
 
-  function searchNearestPageImgNode(img, options) {
-    const minWidth = options.minWidth
-    const minHeight = options.minHeight
+  function searchNearestPageImgNode(img) {
     const imgUrlList = [...shadowRoot.querySelectorAll('img')].map(img => img.src)
-    const pageImgList = [...document.getElementsByTagName('img')].filter(img => {
-      const {width, height} = img.getBoundingClientRect()
-      return width > minWidth && height > minHeight
-    })
-    const pageImgUrlList = pageImgList.map(img => getRawUrl(img.src))
+    const pageImgList = document.getElementsByTagName('img')
+    const pageImgUrlList = [...pageImgList].map(img => getRawUrl(img.src))
 
-    const foundList = []
+    const indexList = []
     for (const url of pageImgUrlList) {
-      foundList.push(imgUrlList.indexOf(url))
+      indexList.push(imgUrlList.indexOf(url))
     }
 
     const currentIndex = imgUrlList.indexOf(img.src)
     let nearestSrc = null
-    let distance = imgUrlList.length
-    for (const index of foundList) {
+    let lastDistance = imgUrlList.length
+    let lastSize = 0
+    for (let i = 0; i < indexList.length; i++) {
+      const index = indexList[i]
       const currDistance = Math.abs(currentIndex - index)
-      if (distance > currDistance) {
-        distance = currDistance
-        nearestSrc = imgUrlList[index]
-      }
+      if (lastDistance < currDistance) continue
+
+      const {width, height} = pageImgList[i].getBoundingClientRect()
+      const currSize = Math.min(width, height)
+      if (nearestSrc === imgUrlList[index] && currSize <= lastSize) continue
+
+      nearestSrc = imgUrlList[index]
+      lastDistance = currDistance
+      lastSize = currSize
     }
 
     const pageIndex = pageImgUrlList.indexOf(nearestSrc)
     const nearestPageNode = pageImgList[pageIndex]
     return nearestPageNode
   }
-  function deepSearchImgNode(img, options) {
+  function deepSearchImgNode(img) {
     return new Promise(resolve => {
       let release = null
       let timeout = 0
@@ -242,13 +241,13 @@ const imageViewer = (function () {
               }
             }, 3000)
           })
-          const imgNode = searchImgNode(img, options)
+          const imgNode = searchImgNode(img)
           if (imgNode !== null || repeatCount > 5 || overtime) {
             newNodeObserver.disconnect()
             resolve(imgNode)
             return
           }
-          const nearest = searchNearestPageImgNode(img, options)
+          const nearest = searchNearestPageImgNode(img)
           nearest.scrollIntoView({block: 'center'})
           nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
         }
@@ -830,9 +829,9 @@ const imageViewer = (function () {
         await new Promise(resolve => setTimeout(resolve, 100))
 
         const img = shadowRoot.querySelector('li.current img')
-        let imgNode = searchImgNode(img, options)
+        let imgNode = searchImgNode(img)
         if (imgNode === null) {
-          imgNode = await deepSearchImgNode(img, options)
+          imgNode = await deepSearchImgNode(img)
           if (imgNode === null) {
             console.log('Image node not found')
             return
