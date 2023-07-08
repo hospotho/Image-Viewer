@@ -104,6 +104,11 @@ const checkIframeUrl = url => {
           const origin = new URL(sender.tab.url).origin
           resolve(target === origin)
         }
+      } else {
+        const policy = res.headers.get('referrer-policy')
+        if (policy === 'strict-origin-when-cross-origin') {
+          resolve(true)
+        }
       }
     } catch (error) {}
     resolve(false)
