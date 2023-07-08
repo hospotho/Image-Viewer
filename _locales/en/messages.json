@@ -8,6 +8,12 @@
   "appName": {
     "message": "Image Viewer"
   },
+  "auto_scroll_desc": {
+    "message": "Some web pages load more contents as you scroll down<br>Enable this option if you want Image Viewer to scroll and load content automatically"
+  },
+  "auto_scroll_enable_list": {
+    "message": "Enable Auto Scroll"
+  },
   "custom_search": {
     "message": "Custom"
   },
@@ -23,6 +29,15 @@
   "default_image_fit": {
     "message": "Default image fit"
   },
+  "domain_settings_example": {
+    "message": "Example setting (support regex):<br>example.com<br>sub.example.com<br>another.com<br>/^https.*regex\\.com/"
+  },
+  "domain_specific": {
+    "message": "Domain specific settings"
+  },
+  "download_hotkey": {
+    "message": "Download collected images:"
+  },
   "fit_with_original_size": {
     "message": "Original size"
   },
@@ -35,6 +50,9 @@
   "fit_with_window_width": {
     "message": "Fit with window width"
   },
+  "function_hotkey": {
+    "message": "Function hotkey"
+  },
   "github_link": {
     "message": "Github user manual"
   },
@@ -42,7 +60,13 @@
     "message": "Height"
   },
   "hotkey_notice": {
-    "message": "When more than one search using same hotkey, all search will be traggered, built-in hotkey like 'Ctrl + W' or 'Ctrl + T' will not be overridden.<br><br>When using custom search, '{imgSrc}' will be used to replace with real URL<br><br>Soft disable hotkey without Ctrl/Alt/Shift key, change its value in DevTools to save it."
+    "message": "When more than one search using same hotkey, all search will be triggered, built-in hotkey like 'Ctrl + W' or 'Ctrl + T' will not be overridden.<br><br>When using custom search, '{imgSrc}' will be used to replace with real URL<br><br>Soft disable hotkey without Ctrl/Alt/Shift key, change its value in DevTools to save it."
+  },
+  "hover_check_desc": {
+    "message": "Image Viewer allows you to select images by right-clicking on them<br>To select video thumbnails, it removes the hover elements by default<br>Disable this behavior if you want to keep the hover elements"
+  },
+  "hover_disable_list": {
+    "message": "Disable Hover Check"
   },
   "kofi_link": {
     "message": "Support me"
@@ -77,17 +101,20 @@
   "save": {
     "message": "Save"
   },
+  "scroll_hotkey": {
+    "message": "Enable auto scroll:"
+  },
   "search_hotkey": {
     "message": "Image search hotkey"
   },
   "size_filter": {
-    "message": "Image size fitler"
+    "message": "Image size filter"
   },
   "speed_control": {
     "message": "Speed control"
   },
   "svg_filter": {
-    "message": "Fitler svg"
+    "message": "Filter svg"
   },
   "throttle_desc": {
     "message": "When you 'long press arrow key', Image viewer will display each image approximate this period of time.<br>The default setting 80ms = 12.5fps (12.5 image per 1 second).<br>When throttle period was set to be close to 0, fps limit will only depending on you computer performance."
@@ -112,23 +139,5 @@
   },
   "zoom_ratio": {
     "message": "Zoom ratio"
-  },
-  "domain_specific":{
-    "message": "Domain specific settings"
-  },
-  "hover_disable_list":{
-    "message": "Disable Hover Check"
-  },
-  "hover_check_desc":{
-    "message": "Image Viewer allows you to select images by right-clicking on them<br>To select video thumbnails, it removes the hover elements by default<br>Disable this behavior if you want to keep the hover elements"
-  },
-  "auto_scroll_enable_list":{
-    "message": "Enable Auto Scroll"
-  },
-  "auto_scroll_desc":{
-    "message": "Some web pages load more contents as you scroll down<br>Enable this option if you want Image Viewer to scroll and load content automatically"
-  },
-  "domain_settings_example":{
-    "message": "Example setting (support regex):<br>example.com<br>sub.example.com<br>another.com<br>/^https.*regex\\.com/"
   }
 }

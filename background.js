@@ -140,8 +140,9 @@ const defaultOptions = {
   svgFilter: true,
   debouncePeriod: 1500,
   throttlePeriod: 80,
-  hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
+  searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
   customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
+  functionHotkey: ['Ctrl + R', 'Ctrl + S'],
   hoverCheckDisableList: [],
   autoScrollEnableList: ['twitter.com', 'instagram.com', 'facebook.com']
 }

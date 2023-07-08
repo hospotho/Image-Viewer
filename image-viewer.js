@@ -938,8 +938,8 @@ const imageViewer = (function () {
       }
       const openNewTab = chrome.runtime ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
 
-      if (!options.hotkey || options.hotkey.length < 5) return
-      const hotkey = options.hotkey
+      if (!options.searchHotkey || options.searchHotkey.length < 5) return
+      const hotkey = options.searchHotkey
       const googleUrl = String.raw`https://lens.google.com/uploadbyurl?url={imgSrc}`
       const yandexUrl = String.raw`https://yandex.com/images/search?family=yes&rpt=imageview&url={imgSrc}`
       const saucenaoUrl = String.raw`https://saucenao.com/search.php?db=999&url={imgSrc}`

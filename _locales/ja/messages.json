@@ -8,6 +8,12 @@
   "appName": {
     "message": "Image Viewer"
   },
+  "auto_scroll_desc": {
+    "message": "一部のWebページでは、スクロールダウンするとコンテンツが追加で読み込まれます<br>Image Viewerに自動的にスクロールしてコンテンツを読み込んでもらいたい場合は、このオプションを有効にしてください"
+  },
+  "auto_scroll_enable_list": {
+    "message": "自動スクロールを有効にする"
+  },
   "custom_search": {
     "message": "カスタム"
   },
@@ -23,6 +29,15 @@
   "default_image_fit": {
     "message": "デフォルトの画像サイズ"
   },
+  "domain_settings_example": {
+    "message": "設定例（正規表現対応）：<br>example.com<br>sub.example.com<br>another.com<br>/^https.*regex\\.com/"
+  },
+  "domain_specific": {
+    "message": "ドメイン固有の設定"
+  },
+  "download_hotkey": {
+    "message": "集めた写真をダウンロード:"
+  },
   "fit_with_original_size": {
     "message": "画像の元のサイズ"
   },
@@ -35,6 +50,9 @@
   "fit_with_window_width": {
     "message": "ウィンドウの横幅"
   },
+  "function_hotkey": {
+    "message": "機能ホットキー"
+  },
   "github_link": {
     "message": "Github ユーザマニュアル(Eng)"
   },
@@ -43,6 +61,12 @@
   },
   "hotkey_notice": {
     "message": "複数の検索で同じホットキーを使用すると、すべての検索が同時にトリガーされ、「Ctrl + W」「Ctrl + T」などの既存のショートカットキーはオーバーライドされません<br><br>カスタム検索エンジンを使用する場合、検索URLの「{imgSrc}」は実際の画像リンクに置き換えられ<br><br>Ctrl/Alt/Shiftを使用せずのホットキーは推奨しません、たがDevToolsで望みのキーに変更そして保存はできます"
+  },
+  "hover_check_desc": {
+    "message": "Image Viewerは、右クリックで画像を選択できます<br>ビデオのサムネイルを選択するには、デフォルトでホバー要素を削除します<br>ホバー要素を保持したい場合は、この動作を無効にしてください"
+  },
+  "hover_disable_list": {
+    "message": "ホバーチェックを無効にする"
   },
   "kofi_link": {
     "message": "Support me"
@@ -76,6 +100,9 @@
   },
   "save": {
     "message": "保存"
+  },
+  "scroll_hotkey": {
+    "message": "自動スクロール有効:"
   },
   "search_hotkey": {
     "message": "画像検索ホットキー"
@@ -112,23 +139,5 @@
   },
   "zoom_ratio": {
     "message": "ズームの倍率"
-  },
-  "domain_specific":{
-    "message": "ドメイン固有の設定"
-  },
-  "hover_disable_list":{
-    "message": "ホバーチェックを無効にする"
-  },
-  "hover_check_desc":{
-    "message": "Image Viewerは、右クリックで画像を選択できます<br>ビデオのサムネイルを選択するには、デフォルトでホバー要素を削除します<br>ホバー要素を保持したい場合は、この動作を無効にしてください"
-  },
-  "auto_scroll_enable_list":{
-    "message": "自動スクロールを有効にする"
-  },
-  "auto_scroll_desc":{
-    "message": "一部のWebページでは、スクロールダウンするとコンテンツが追加で読み込まれます<br>Image Viewerに自動的にスクロールしてコンテンツを読み込んでもらいたい場合は、このオプションを有効にしてください"
-  },
-  "domain_settings_example":{
-    "message": "設定例（正規表現対応）：<br>example.com<br>sub.example.com<br>another.com<br>/^https.*regex\\.com/"
   }
 }

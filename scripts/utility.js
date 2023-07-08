@@ -582,6 +582,9 @@ const ImageViewerUtils = (function () {
 
   // auto scroll
   function isEnableAutoScroll(options) {
+    if (document.documentElement.classList.contains('enableAutoScroll')) {
+      return true
+    }
     const domainList = []
     const regexList = []
     for (const str of options.autoScrollEnableList) {
@@ -592,6 +595,7 @@ const ImageViewerUtils = (function () {
       }
     }
     const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length
+    if (enableAutoScroll) document.documentElement.classList.add('enableAutoScroll')
     return enableAutoScroll
   }
   function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
@@ -634,6 +638,36 @@ const ImageViewerUtils = (function () {
     })
     imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
   }
+
+  // init function hotkey
+  function checkKey(e, hotkey) {
+    const keyList = hotkey.split('+').map(str => str.trim())
+    const key = keyList[keyList.length - 1] === e.key.toUpperCase()
+    const ctrl = keyList.includes('Ctrl') === e.ctrlKey
+    const alt = keyList.includes('Alt') === e.altKey || e.getModifierState('AltGraph')
+    const shift = keyList.includes('Shift') === e.shiftKey
+    return key && ctrl && alt && shift
+  }
+
+  const options = window.ImageViewerOption
+  window.addEventListener(
+    'keydown',
+    e => {
+      // enable auto scroll
+      if (checkKey(e, options.functionHotkey[0])) {
+        e.preventDefault()
+        if (!document.documentElement.classList.contains('enableAutoScroll')) {
+          document.documentElement.classList.add('enableAutoScroll')
+        }
+      }
+      // download images
+      if (checkKey(e, options.functionHotkey[1])) {
+        e.preventDefault()
+        chrome.runtime.sendMessage('download_images')
+      }
+    },
+    true
+  )
 
   return {
     closeImageViewer: function () {

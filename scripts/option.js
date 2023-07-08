@@ -17,6 +17,9 @@
   const ascii2d = document.querySelector('input#ascii2dSearch')
   const useAll = document.querySelector('input#useAllSearch')
 
+  const scrollHotkey = document.querySelector('input#scrollHotkey')
+  const downloadHotkey = document.querySelector('input#downloadHotkey')
+
   const hoverCheck = document.querySelector('textarea#hoverCheckDisableList')
   const autoScroll = document.querySelector('textarea#autoScrollEnableList')
 
@@ -29,8 +32,9 @@
     svgFilter: true,
     debouncePeriod: 1500,
     throttlePeriod: 80,
-    hotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
+    searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + E', 'Shift + R', 'Ctrl + Alt + Q', ''],
     customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
+    functionHotkey: ['Ctrl + R', 'Ctrl + S'],
     hoverCheckDisableList: [],
     autoScrollEnableList: ['twitter.com', 'instagram.com', 'facebook.com']
   }
@@ -64,7 +68,7 @@
 
   function resetDefaultOptions() {
     chrome.storage.sync.set({options: defaultOptions}, () => {
-      console.log('Options have been reset to default.')
+      alert('Options have been reset to default.')
       console.log(defaultOptions)
     })
   }
@@ -114,20 +118,20 @@
       debounce.value = options.debouncePeriod
       throttle.value = options.throttlePeriod
 
-      google.value = options.hotkey[0]
-      yandex.value = options.hotkey[1]
-      sauceNAO.value = options.hotkey[2]
-      ascii2d.value = options.hotkey[3]
-      useAll.value = options.hotkey[4]
+      google.value = options.searchHotkey[0]
+      yandex.value = options.searchHotkey[1]
+      sauceNAO.value = options.searchHotkey[2]
+      ascii2d.value = options.searchHotkey[3]
+      useAll.value = options.searchHotkey[4]
 
-      for (let i = 6; i < options.hotkey.length; i++) {
+      for (let i = 6; i < options.searchHotkey.length; i++) {
         addNewCustom()
       }
       const custom = document.querySelectorAll('input.customSearch')
       const customUrl = document.querySelectorAll('input.customSearchUrl')
       for (let i = 0; i < custom.length; i++) {
-        if (i < options.hotkey.length - 5) {
-          custom[i].value = options.hotkey[i + 5]
+        if (i < options.searchHotkey.length - 5) {
+          custom[i].value = options.searchHotkey[i + 5]
           customUrl[i].value = options.customUrl[i]
         } else {
           custom[i].value = ''
@@ -135,13 +139,15 @@
         }
       }
 
+      scrollHotkey.value = options.functionHotkey[0]
+      downloadHotkey.value = options.functionHotkey[1]
+
       hoverCheck.value = options.hoverCheckDisableList.join('\n')
       autoScroll.value = options.autoScrollEnableList.join('\n')
     } catch (e) {
-      console.log(e)
-      alert('Failed to use existing options')
       resetDefaultOptions()
       setValue(defaultOptions)
+      alert('Failed to use existing options')
     }
   }
 
@@ -196,8 +202,10 @@
         hotkeyList.push(custom[i].value)
         customUrlList.push(customUrl[i].value)
       }
-      options.hotkey = hotkeyList
+      options.searchHotkey = hotkeyList
       options.customUrl = customUrlList
+
+      options.functionHotkey = [scrollHotkey.value, downloadHotkey.value]
 
       const hoverCheckDisableList = hoverCheck.value.split('\n')
       const autoScrollEnableList = autoScroll.value.split('\n')
@@ -205,9 +213,9 @@
       options.autoScrollEnableList = autoScrollEnableList
 
       chrome.storage.sync.set({options: options}, () => {
-        console.log('Options have been save.')
-        console.log(options)
         chrome.runtime.sendMessage('update_options')
+        console.log(options)
+        alert('Options have been saved.')
       })
     })
 
@@ -215,8 +223,6 @@
       setValue(defaultOptions)
       resetDefaultOptions()
     })
-
-    document.querySelector('button#save').click()
   }
 
   async function init() {
