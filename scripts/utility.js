@@ -252,14 +252,15 @@ const ImageViewerUtils = (function () {
   async function checkUrlSize(img, size, getSizeFunction, url) {
     if (url.length === 1) {
       const lazySize = await getSizeFunction(url[0])
-      if (lazySize > size) {
+      if (lazySize >= size) {
         await updateImageSource(img, url[0])
         return true
       }
     } else if (url.length === 2) {
       const [firstSize, lastSize] = await Promise.all(url.map(getSizeFunction))
-      if (firstSize > size || lastSize > size) {
-        const large = lastSize > firstSize ? url[1] : url[0]
+      if (firstSize >= size || lastSize >= size) {
+        const index = Number(lastSize > firstSize)
+        const large = url[index]
         await updateImageSource(img, large)
         return true
       }
