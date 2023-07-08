@@ -225,28 +225,48 @@ const imageViewer = (function () {
     const targetTop = totalHeight * ratio
 
     return new Promise(resolve => {
-      let timeout
-      let lastNearest
-      let repeatCount = 0
+      let release = null
+      let timeout = 0
 
-      const search = () => {
-        const imgNode = searchImgNode(img, options)
-        if (imgNode !== null || repeatCount > 5) {
-          newNodeObserver.disconnect()
-          resolve(imgNode)
-          return
-        }
-        const nearest = searchNearestPageImgNode(img, options)
-        nearest.scrollIntoView({block: 'center'})
-        nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
-      }
       const newNodeObserver = new MutationObserver(() => {
         clearTimeout(timeout)
-        timeout = setTimeout(search, 100)
+        if (typeof release === 'function') {
+          timeout = setTimeout(release, 100)
+        }
       })
+      const search = async () => {
+        let lastNearest = null
+        let repeatCount = 0
+        let overtime = false
+        while (true) {
+          await new Promise(resolve => {
+            let waiting = true
+            release = () => {
+              waiting = false
+              resolve()
+            }
+            setTimeout(() => {
+              if (waiting) {
+                resolve()
+                overtime = true
+              }
+            }, 3000)
+          })
+          const imgNode = searchImgNode(img, options)
+          if (imgNode !== null || repeatCount > 5 || overtime) {
+            newNodeObserver.disconnect()
+            resolve(imgNode)
+            return
+          }
+          const nearest = searchNearestPageImgNode(img, options)
+          nearest.scrollIntoView({block: 'center'})
+          nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
+        }
+      }
 
       newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
       window.scrollTo(window.scrollX, targetTop)
+      search()
     })
   }
   function displayBorder(imgNode) {
