@@ -208,7 +208,7 @@
 
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob, 'application/zip')
-    a.download = `image_${Date.now()}.zip`
+    a.download = `ImageViewer_${Date.now()}.zip`
     a.click()
     URL.revokeObjectURL(a.href)
   }
