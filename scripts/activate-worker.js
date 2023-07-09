@@ -107,7 +107,7 @@
       return result
     }
 
-    function searchImageFromTree(dom, viewportPos) {
+    async function searchImageFromTree(dom, viewportPos) {
       if (!dom) return null
 
       let root = dom
@@ -135,10 +135,10 @@
         hasSameKindSibling ||= nextSibling ? nextClassList === rootClassList || nextSibling.tagName === root.tagName : false
       }
 
-      root = root.parentElement
       const [mouseX, mouseY] = viewportPos
       const relatedDomList = []
-      for (const dom of getAllChildElements(root)) {
+      const childList = getAllChildElements(root)
+      for (const dom of childList) {
         const hidden = dom.offsetParent === null && dom.style.position !== 'fixed'
         if (hidden) {
           relatedDomList.push(dom)
@@ -151,17 +151,20 @@
 
       const imageInfoList = []
       for (const dom of relatedDomList) {
-        const imageInfo = extractImageInfoFromNode(dom)
+        const imageInfo = extractImageInfoFromNode(dom, false)
         if (isImageInfoValid(imageInfo)) imageInfoList.push(imageInfo)
       }
       if (imageInfoList.length === 0) return null
 
       imageInfoList.sort((a, b) => getTopElement(a[2], b[2], dom))
-      return imageInfoList[0]
+      const first = imageInfoList[0]
+      const second = imageInfoList[1]
+      const check = await isNewImageInfoBetter(first, second)
+      return check ? first : second
     }
 
     // utility
-    function extractImageInfoFromNode(dom) {
+    function extractImageInfoFromNode(dom, checkChild = true) {
       const {width, height} = dom.getBoundingClientRect()
       if (dom.tagName === 'IMG') {
         const sizeList = [dom.naturalWidth, dom.naturalHeight, width, height]
@@ -183,6 +186,7 @@
         }
       }
 
+      if (!checkChild) return null
       const allChildren = getAllChildElements(dom)
       if (allChildren.length < 5) {
         for (const children of allChildren) {
@@ -207,10 +211,36 @@
           const isPartialBackground = bgPos.split('px').map(Number).some(Boolean)
           return isPartialBackground
         }
-        const [newSize, oldSize] = await Promise.all([newInfo[0], oldInfo[0]].map(getImageRealSize))
-        return newSize > oldSize
+        const [newRealSize, oldRealSize] = await Promise.all([newInfo[0], oldInfo[0]].map(getImageRealSize))
+        if (newRealSize === oldRealSize) {
+          const [newBitSize, oldBitSize] = await Promise.all([newInfo[0], oldInfo[0]].map(getImageBitSize))
+          return newBitSize > oldBitSize
+        }
+        return newRealSize > oldRealSize
       }
       return false
+    }
+    const getImageBitSize = src => {
+      // protocol-relative URL
+      const url = new URL(src, document.baseURI)
+      const href = url.href
+      return new Promise(async resolve => {
+        try {
+          const res = await fetch(href, {method: 'HEAD'})
+          if (!res.ok) {
+            resolve(0)
+            return
+          }
+          const type = res.headers.get('Content-Type')
+          const length = res.headers.get('Content-Length')
+          if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
+            const size = Number(length)
+            size ? resolve(size) : resolve(0)
+            return
+          }
+        } catch (error) {}
+        resolve(0)
+      })
     }
     const getImageRealSize = url => {
       return new Promise(resolve => {
@@ -277,7 +307,7 @@
           return hiddenImageInfoFromPoint
         }
 
-        const imageInfoFromTree = searchImageFromTree(firstVisibleDom, viewportPos)
+        const imageInfoFromTree = await searchImageFromTree(firstVisibleDom, viewportPos)
         if (isImageInfoValid(imageInfoFromTree)) {
           console.log('Image node found, hide under sub tree.')
           markingDom(imageInfoFromTree[2])
