@@ -659,6 +659,9 @@ const ImageViewerUtils = (function () {
         if (!document.documentElement.classList.contains('enableAutoScroll')) {
           document.documentElement.classList.add('enableAutoScroll')
         }
+        if (document.documentElement.classList.contains('has-image-viewer')) {
+          ImageViewerUtils.checkAndStartAutoScroll(null)
+        }
       }
       // download images
       if (checkKey(e, options.functionHotkey[1])) {
