@@ -2,12 +2,10 @@ const imageViewer = (function () {
   'use strict'
 
   let shadowRoot
-  let currentImageList = []
-  const failedImageSet = new Set()
-
-  let removeTimeout = 0
   let lastUpdateTime = 0
+  let currentImageList = []
 
+  const failedImageSet = new Set()
   const KeydownHandlerList = []
 
   //==========utility==========
@@ -720,14 +718,6 @@ const imageViewer = (function () {
           img.addEventListener('error', action)
         }
       }
-
-      if (removeTimeout) clearTimeout(removeTimeout)
-      removeTimeout = setTimeout(() => {
-        for (const img of shadowRoot.querySelectorAll('#iv-image-list li img')) {
-          if (!img.complete) img.parentNode.remove()
-        }
-        updateCounter()
-      }, 5000 + 500 * Number(counterTotal.innerHTML))
     }
 
     const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
