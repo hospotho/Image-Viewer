@@ -671,7 +671,7 @@ const imageViewer = (function () {
     const _imageList = shadowRoot.querySelector('#iv-image-list')
     let first = buildImageNode(imageList[0], options)
     _imageList.appendChild(first)
-    currentImageList = imageList
+    currentImageList = Array.from(imageList)
     lastUpdateTime = Date.now()
 
     if (imageList.length === 1) return
@@ -705,7 +705,10 @@ const imageViewer = (function () {
     function removeFailedImg() {
       const action = e => {
         const img = e?.target ?? e
-        if (img.naturalWidth < options.minWidth || img.naturalHeight < options.minHeight) {
+        const ratio = options.minWidth / options.minHeight - 1
+        const sign = Math.sign(ratio)
+        const [adjustWidth, adjustHeight] = [img.naturalWidth, img.naturalHeight].sort((a, b) => sign * (b - a))
+        if (adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
           const currentUrlList = []
           for (const data of currentImageList) {
             const url = typeof data === 'string' ? data : data[0]

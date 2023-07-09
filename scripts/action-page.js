@@ -20,7 +20,7 @@
 
   const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-  window.backupImageUrlList = combinedImageList
+  window.backupImageUrlList = Array.from(combinedImageList)
 
   if (typeof imageViewer !== 'function') {
     await chrome.runtime.sendMessage('load_script')
@@ -35,10 +35,11 @@
     while (document.documentElement.classList.contains('has-image-viewer')) {
       const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
       const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
+      const currentImageList = imageViewer()
 
       if (!document.documentElement.classList.contains('has-image-viewer')) return
-      if (combinedImageList.length > window.backupImageUrlList.length) {
-        window.backupImageUrlList = combinedImageList
+      if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
+        window.backupImageUrlList = Array.from(combinedImageList)
         imageViewer(combinedImageList, options)
       }
       await new Promise(_resolve => {

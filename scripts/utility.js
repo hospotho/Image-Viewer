@@ -44,6 +44,7 @@ const ImageViewerUtils = (function () {
     }
   })()
 
+  let firstUnlazyFlag = true
   let firstUnlazyScrollFlag = false
   const unlazyObserver = new MutationObserver(mutationsList => {
     const updatedSet = new Set()
@@ -332,9 +333,30 @@ const ImageViewerUtils = (function () {
       }
     }
 
-    return null
+    return 'original src'
   }
   async function simpleUnlazyImage(options) {
+    // set timeout for first time unlazy
+    if (firstUnlazyFlag) {
+      firstUnlazyFlag = false
+      const clone = structuredClone(options)
+      clone.firstTime = true
+      const timeout = new Promise(resolve =>
+        setTimeout(() => {
+          resolve()
+          if (!firstUnlazyScrollFlag) {
+            console.log('unlazy timeout')
+          }
+        }, 1000)
+      )
+      const race = Promise.race([simpleUnlazyImage(clone), timeout])
+      return race
+    }
+    // wait first unlazy complete
+    while (!options.firstTime && !firstUnlazyScrollFlag) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+
     const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
 
     const minWidth = Math.max(options.minWidth, 50)
@@ -347,21 +369,25 @@ const ImageViewerUtils = (function () {
     const listSize = imgList.length
     if (listSize) {
       console.log(`Try to unlazy ${listSize} image`)
+      imgList.map(img => img.classList.add('simpleUnlazy'))
+
       const asyncList = await Promise.all(imgList.map(checkImageAttr))
       const lazyName = asyncList.filter(Boolean)
 
       if (lazyName.length !== 0) {
         for (const name of [...new Set(lazyName)]) {
-          console.log(`Unlazy ${lazyName.filter(x => x === name).length} img with ${name} attr`)
+          console.log(`Unlazy ${lazyName.filter(x => x === name).length} img with ${name}`)
         }
+        // create dom update for observer manually
+        const div = document.createElement('div')
+        document.body.appendChild(div)
+        setTimeout(div.remove, 100)
       } else {
         console.log('No lazy image found')
       }
-
-      imgList.map(img => img.classList.add('simpleUnlazy'))
     }
 
-    if (firstUnlazyScrollFlag === false) {
+    if (!firstUnlazyScrollFlag) {
       firstUnlazyScrollFlag = true
       if (document.readyState === 'complete') {
         setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 500)
@@ -664,7 +690,7 @@ const ImageViewerUtils = (function () {
         }
       }
       // download images
-      if (checkKey(e, options.functionHotkey[1])) {
+      if (typeof imageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
         e.preventDefault()
         chrome.runtime.sendMessage('download_images')
       }
@@ -852,6 +878,19 @@ const ImageViewerUtils = (function () {
       return uniqueFinalList
     },
 
+    isStrLengthEqual: function (newList, oldList) {
+      const newListStringLength = newList
+        .flat()
+        .map(str => str.length)
+        .reduce((a, b) => a + b, 0)
+      const oldListStringLength = oldList
+        .flat()
+        .map(str => str.length)
+        .reduce((a, b) => a + b, 0)
+
+      return newListStringLength === oldListStringLength
+    },
+
     checkAndStartAutoScroll: function (options) {
       if (!isEnableAutoScroll(options)) return
 
@@ -879,6 +918,9 @@ const ImageViewerUtils = (function () {
         await new Promise(resolve => setTimeout(resolve, period))
       }
       const timer = async () => {
+        while (!firstUnlazyScrollFlag) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
         stopFlag = false
         let lastY = window.scrollY
         let count = 0

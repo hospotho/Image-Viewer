@@ -33,7 +33,7 @@
 
   const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-  window.backupImageUrlList = combinedImageList
+  window.backupImageUrlList = Array.from(combinedImageList)
 
   // find image index
   options.index = ImageViewerUtils.searchImageInfoIndex(dom || srcUrl, window.backupImageUrlList)
@@ -59,10 +59,11 @@
       }
       const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
       const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
+      const currentImageList = imageViewer()
 
       if (!document.documentElement.classList.contains('has-image-viewer')) return
-      if (combinedImageList.length > window.backupImageUrlList.length) {
-        window.backupImageUrlList = combinedImageList
+      if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
+        window.backupImageUrlList = Array.from(combinedImageList)
         imageViewer(combinedImageList, options)
       }
       await new Promise(_resolve => {
