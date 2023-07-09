@@ -334,6 +334,10 @@ function addMessageHandler() {
         })()
         return true
       }
+      case 'download_images': {
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/download-images.js']}, sendResponse)
+        return true
+      }
     }
   })
 }
