@@ -472,6 +472,7 @@ const imageViewer = (function () {
         font-family: Verdana, Helvetica, Arial, sans-serif;
         color: #ddd;
         font-size: 16px;
+        font-weight: 400;
       }
       #iv-info input {
         background: none;
@@ -483,6 +484,7 @@ const imageViewer = (function () {
         font-family: Verdana, Helvetica, Arial, sans-serif;
         color: #ddd;
         font-size: 16px;
+        font-weight: 400;
       }
       #iv-info input:hover {
         border-color: #aaa;
@@ -562,6 +564,7 @@ const imageViewer = (function () {
         color: #fff;
         text-shadow: -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
         font-size: 20px;
+        font-weight: 400;
         visibility: visible;
       }
       #iv-counter {
