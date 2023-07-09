@@ -170,11 +170,21 @@ const imageViewer = (function () {
     return null
   }
   function searchImgAnchor(imgNode) {
+    const closestAnchor = imgNode.closest('a')
+    if (closestAnchor) return closestAnchor
+
+    const {width: rootWidth, height: rootHeight, top: rootTop, left: rootLeft} = imgNode.getBoundingClientRect()
     let el = imgNode
     while (el.parentElement) {
-      if (el.tagName === 'A') return el
       el = el.parentElement
+      const anchorList = el.getElementsByTagName('a')
+      for (const anchor of anchorList) {
+        const {width, height, top, left} = anchor.getBoundingClientRect()
+        const include = top <= rootTop && left <= rootLeft && top + height >= rootTop + rootHeight && left + width >= rootLeft + rootWidth
+        if (include) return anchor
+      }
     }
+
     return null
   }
 
