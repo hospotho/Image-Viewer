@@ -160,7 +160,12 @@ const ImageViewerUtils = (function () {
       window.scrollTo(currentX, currentY)
     })
 
-    scrollObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
+    scrollObserver.observe(document.documentElement, {
+      attributes: true,
+      subtree: true,
+      childList: true,
+      attributeFilter: ['src', 'srcset']
+    })
     setTimeout(() => {
       scrollObserver.disconnect()
       if (!domChanged) window.scrollTo(currentX, currentY)
