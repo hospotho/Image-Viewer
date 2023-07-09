@@ -40,110 +40,53 @@
   }
 
   function buildLocalFileHeader(filename, data) {
-    const signature = 0x04034b50
-    const versionNeeded = 20 // Minimum version needed to extract
-    const generalPurposeFlag = 0 // No special flags
-    const compressionMethod = 0 // No compression
-    const modificationTime = 0 // Placeholder for modification time (not used)
-    const modificationDate = 0 // Placeholder for modification date (not used)
-
-    // Calculate CRC-32 checksum
     const crc32 = calculateCRC32(data)
-
     const compressedSize = data.length
-    const uncompressedSize = data.length
-    const filenameLength = filename.length
-    const extraFieldLength = 0 // No extra fields
-
-    // Construct the local file header
-    const localFileHeader = new Uint8Array(30 + filenameLength + extraFieldLength + compressedSize)
-
-    const view = new DataView(localFileHeader.buffer)
-    let offset = 0
-
-    view.setUint32(offset, signature, true) // Little-endian byte order
-    offset += 4
-
-    view.setUint16(offset, versionNeeded, true)
-    offset += 2
-
-    view.setUint16(offset, generalPurposeFlag, true)
-    offset += 2
-
-    view.setUint16(offset, compressionMethod, true)
-    offset += 2
-
-    view.setUint16(offset, modificationTime, true)
-    offset += 2
-
-    view.setUint16(offset, modificationDate, true)
-    offset += 2
-
-    view.setUint32(offset, crc32, true)
-    offset += 4
-
-    view.setUint32(offset, compressedSize, true)
-    offset += 4
-
-    view.setUint32(offset, uncompressedSize, true)
-    offset += 4
-
-    view.setUint16(offset, filenameLength, true)
-    offset += 2
-
-    view.setUint16(offset, extraFieldLength, true)
-    offset += 2
-
     const encoder = new TextEncoder()
     const filenameBytes = encoder.encode(filename)
-    localFileHeader.set(filenameBytes, offset)
-    offset += filenameBytes.length
+    const filenameLength = filenameBytes.length
 
-    localFileHeader.set(data, offset)
+    // Construct the local file header
+    const localFileHeader = new Uint8Array(30 + filenameLength + compressedSize)
+    const view = new DataView(localFileHeader.buffer)
+
+    // Little-endian byte order
+    view.setUint32(0, 0x04034b50, true) // Local file header signature
+    view.setUint16(4, 20, true) // Version needed to extract (minimum)
+    view.setUint16(6, 0, true) // No special flags
+    view.setUint16(8, 0, true) // No compression
+    view.setUint16(10, 0, true) // Placeholder for modification time (not used)
+    view.setUint16(12, 0, true) // Placeholder for modification date (not used)
+    view.setUint32(14, crc32, true) // CRC-32 of uncompressed data
+    view.setUint32(18, compressedSize, true) // Compressed size
+    view.setUint32(22, compressedSize, true) // Uncompressed size
+    view.setUint16(26, filenameLength, true) // File name length
+    view.setUint16(28, 0, true) // No extra fields
+    localFileHeader.set(filenameBytes, 30) // File name
+    localFileHeader.set(data, 30 + filenameLength) // File data
 
     return localFileHeader
   }
   function buildCentralDirectory(localFileHeader, offset) {
-    const signature = 0x02014b50
-    const versionMadeBy = 20 // Minimum version needed to extract
-    const versionNeeded = 20 // Minimum version needed to extract
-    const generalPurposeFlag = 0 // No special flags
-    const compressionMethod = 0 // No compression
-    const modificationTime = 0 // Placeholder for modification time (not used)
-    const modificationDate = 0 // Placeholder for modification date (not used)
-
-    const dataView = new DataView(localFileHeader.buffer)
-    const crc32 = dataView.getUint32(14, true) // Get the CRC-32 from local file header
-    const compressedSize = dataView.getUint32(18, true) // Get the compressed size from local file header
-    const uncompressedSize = dataView.getUint32(22, true) // Get the uncompressed size from local file header
-    const filenameLength = dataView.getUint16(26, true) // Get the filename length from local file header
-    const extraFieldLength = dataView.getUint16(28, true) // Get the extra field length from local file header
+    const headerView = new DataView(localFileHeader.buffer)
+    const filenameLength = headerView.getUint16(26, true)
+    const headerData = localFileHeader.subarray(4, 30)
+    const fileName = localFileHeader.subarray(30, 30 + filenameLength)
 
     // Construct the central directory entry
     const centralDirectoryEntry = new Uint8Array(46 + filenameLength)
     const view = new DataView(centralDirectoryEntry.buffer)
-    let centralOffset = offset
 
-    view.setUint32(0, signature, true) // Little-endian byte order
-    // view.setUint16(4, versionMadeBy, true)
-    // view.setUint16(6, versionNeeded, true)
-    // view.setUint16(8, generalPurposeFlag, true)
-    // view.setUint16(10, compressionMethod, true)
-    // view.setUint16(12, modificationTime, true)
-    // view.setUint16(14, modificationDate, true)
-    // view.setUint32(16, crc32, true)
-    // view.setUint32(20, compressedSize, true)
-    // view.setUint32(24, uncompressedSize, true)
-    // view.setUint16(28, filenameLength, true)
-    // view.setUint16(30, extraFieldLength, true)
+    // Little-endian byte order
+    view.setUint32(0, 0x02014b50, true) // Central directory file header signature
+    view.setUint16(4, 20, true) // Version made by
+    centralDirectoryEntry.set(headerData, 6) // CDE 6-32 = LFH 4-30
     view.setUint16(32, 0, true) // No file comment
     view.setUint16(34, 0, true) // Disk number start
     view.setUint16(36, 0, true) // Internal file attributes
     view.setUint32(38, 0, true) // External file attributes
-    view.setUint32(42, centralOffset, true)
-
-    const localFileHeaderArray = new Uint8Array(localFileHeader.buffer)
-    centralDirectoryEntry.set(localFileHeaderArray.subarray(4, 30 + filenameLength + extraFieldLength), 4)
+    view.setUint32(42, offset, true) // Relative offset of local file header
+    centralDirectoryEntry.set(fileName, 46) // File name
 
     return centralDirectoryEntry
   }
@@ -167,11 +110,14 @@
     const endOfCentralDirectoryRecord = new Uint8Array(22)
     const view = new DataView(endOfCentralDirectoryRecord.buffer)
 
-    view.setUint32(0, 0x06054b50, true) // Signature
+    view.setUint32(0, 0x06054b50, true) // End of central directory signature
+    view.setUint16(4, 0, true) // Number of this disk
+    view.setUint16(6, 0, true) // Disk where central directory starts
     view.setUint16(8, localFileHeaderList.length, true) // Number of central directory records on this disk
     view.setUint16(10, localFileHeaderList.length, true) // Total number of central directory records
     view.setUint32(12, centralDirectorySize, true) // Size of central directory
     view.setUint32(16, centralOffset, true) // Offset of start of central directory
+    view.setUint16(20, 0, true) // No comment
 
     // Combine all the components into the final zip file
     const zipSize = centralOffset + centralDirectorySize + endOfCentralDirectoryRecord.length
@@ -197,7 +143,7 @@
   function getUserSelection(length) {
     if (length === 1) return [true]
 
-    const userSelection = prompt("eg. '1-5, 8, 11-13'", `1-${length}`)
+    const userSelection = prompt("Images to Download: eg. '1-5, 8, 11-13'", `1-${length}`)
     if (!userSelection) return null
 
     const input = userSelection.replaceAll(' ', '')
