@@ -244,7 +244,7 @@ const ImageViewerUtils = (function () {
       }
 
       const img = new Image()
-      img.onload = () => resolve(img.naturalWidth)
+      img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
       img.onerror = () => resolve(0)
       img.src = src
     })
