@@ -1,3 +1,15 @@
+1.28 [2023-07-10]:
+Major Update
+1. Added a hotkey to manually enable auto scroll
+2. Added a hotkey to download images collected by image viewer
+  // Note: This extension is not a resource downloader
+  // Download functionality is limited to basic features
+  // eg. selecting a download range and packaging in a zip file
+3. Improved first display time of image viewer
+4. Improved middle-click redirect to open the original image's hyperlink
+5. Improved correctness of right click image pickup
+6. Other bug fixes and improvements
+
 1.27 [2023-07-06]:
 1. Improved image selection, decrease the priority of image placeholder and image sprite
 2. Improved border display after using moveTo
