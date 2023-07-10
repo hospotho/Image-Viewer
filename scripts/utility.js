@@ -86,7 +86,7 @@ const ImageViewerUtils = (function () {
   }
   function getDomUrl(dom) {
     const tag = dom.tagName
-    if (tag === 'IMG') return dom.currentSrc
+    if (tag === 'IMG') return dom.currentSrc || dom.src
     if (tag === 'VIDEO') return dom.poster
     const backgroundImage = window.getComputedStyle(dom).backgroundImage
     const bg = backgroundImage.split(', ')[0]
@@ -805,11 +805,19 @@ const ImageViewerUtils = (function () {
         const currentUrl = getDomUrl(input)
         const currIndex = imageList.indexOf(currentUrl)
         if (currIndex !== -1) return currIndex
-        return imageList.indexOf(getRawUrl(currentUrl))
+
+        // handle url update lag
+        // init large quantity cause lag, index should near end
+        const rawUrl = getRawUrl(currentUrl)
+        for (let i = imageList.length - 1; i >= 0; i--) {
+          const url = imageList[i]
+          if (typeof url === 'string' && url.startsWith(rawUrl)) {
+            return i
+          }
+        }
       }
 
-      const data = input.startsWith('data') ? [input] : input
-      return getImageInfoIndex(imageList, data)
+      return getImageInfoIndex(imageList, input)
     },
 
     combineImageList: function (newList, oldList) {
