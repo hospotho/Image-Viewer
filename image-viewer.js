@@ -844,7 +844,11 @@ const imageViewer = (function () {
           }
         }
         console.log('Move to image node')
-        imgNode.scrollIntoView({block: 'center'})
+        let currentY = -1
+        while (currentY !== window.scrollY) {
+          currentY = window.scrollY
+          imgNode.scrollIntoView({block: 'center'})
+        }
         await new Promise(resolve => setTimeout(resolve, 50))
         displayBorder(imgNode)
       }
