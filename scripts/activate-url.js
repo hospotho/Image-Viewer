@@ -112,9 +112,7 @@
     } catch (error) {}
     return src
   }
-  function getRawSize(src) {
-    const rawUrl = getRawUrl(src)
-    if (rawUrl === src) return 0
+  function getRawSize(rawUrl) {
     return new Promise(resolve => {
       const img = new Image()
       img.onload = () => resolve(img.naturalWidth)
@@ -131,7 +129,8 @@
     options.minWidth = 0
     options.minHeight = 0
 
-    const rawSize = await getRawSize(image.src)
+    const rawUrl = getRawUrl(image.src)
+    const rawSize = rawUrl === image.src ? 0 : await getRawSize(rawUrl)
     const currSize = image.naturalWidth
 
     if (typeof imageViewer !== 'function') {
