@@ -105,6 +105,7 @@ const checkIframeUrl = url => {
       } else {
         const policy = res.headers.get('referrer-policy')
         if (policy === 'strict-origin-when-cross-origin') {
+          console.log('CORS error, assuming iframe url is valid', url)
           resolve(true)
         }
       }
