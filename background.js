@@ -16,7 +16,6 @@ const getImageBitSize = src => {
   return new Promise(async _resolve => {
     const resolve = size => {
       srcBitSizeMap.set(src, size)
-      BitSizeExpired.push(src)
       _resolve(size)
     }
     setTimeout(() => resolve(0), 5000)
@@ -43,7 +42,6 @@ const getImageLocalRealSize = (id, srcUrl) => {
   return new Promise(_resolve => {
     const resolve = size => {
       srcLocalRealSizeMap.set(srcUrl, size)
-      LocalRealSizeExpired.push(srcUrl)
       _resolve(size)
     }
 
@@ -118,18 +116,6 @@ const resetLabel = () => document.querySelector('.ImageViewerLastDom')?.classLis
 
 const srcBitSizeMap = new Map()
 const srcLocalRealSizeMap = new Map()
-const BitSizeExpired = []
-const LocalRealSizeExpired = []
-setInterval(() => {
-  for (const key of BitSizeExpired) {
-    srcBitSizeMap.delete(key)
-  }
-  for (const key of LocalRealSizeExpired) {
-    srcLocalRealSizeMap.delete(key)
-  }
-  BitSizeExpired.length = 0
-  LocalRealSizeExpired.length = 0
-}, 1000 * 60 * 60)
 
 const defaultOptions = {
   fitMode: 'both',

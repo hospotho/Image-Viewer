@@ -1,6 +1,7 @@
 ;(function () {
   'use strict'
 
+  // normal web page mode
   function checkIframeUrl(url) {
     return new Promise(async _resolve => {
       const resolve = bool => {
@@ -63,56 +64,7 @@
     }
   }
 
-  async function init() {
-    const image = document.querySelector(`img[src='${location.href}']`)
-    if (image) {
-      console.log('Start image mode')
-
-      await chrome.runtime.sendMessage('get_options')
-      const options = window.ImageViewerOption
-      options.closeButton = false
-      options.minWidth = 0
-      options.minHeight = 0
-
-      const getRawUrl = src => {
-        const argsRegex = /(.*?(?:png|jpeg|jpg|gif|bmp|tiff|webp)).*/i
-        const argsMatch = !src.startsWith('data') && src.match(argsRegex)
-        if (argsMatch) {
-          const rawUrl = argsMatch[1]
-          if (rawUrl !== src) return rawUrl
-        }
-        try {
-          const url = new URL(src)
-          const noSearch = url.origin + url.pathname
-          if (noSearch !== src) return noSearch
-        } catch (error) {}
-        return src
-      }
-
-      const rawUrl = getRawUrl(image.src)
-      if (rawUrl !== image.src) {
-        const currSize = image.naturalWidth
-        const rawSize = await new Promise(resolve => {
-          const img = new Image()
-          img.onload = () => resolve(img.naturalWidth)
-          img.onerror = () => resolve(0)
-          img.src = rawUrl
-        })
-
-        if (rawSize > currSize) {
-          await chrome.runtime.sendMessage('load_script')
-          image.style.display = 'none'
-          imageViewer([rawUrl], options)
-          return
-        }
-      }
-
-      await chrome.runtime.sendMessage('load_script')
-      image.style.display = 'none'
-      imageViewer([image.src], options)
-      return
-    }
-
+  async function initWorker() {
     chrome.runtime.sendMessage('load_main_worker')
 
     // chrome.scripting.executeScript never return on invalid iframe
@@ -120,14 +72,13 @@
       let found = false
       for (const mutation of mutationList) {
         const target = mutation.target
-        if (target.tagName === 'IFRAME') {
-          if (target.classList.contains('updateByTest')) {
-            target.classList.remove('updateByTest')
-            continue
-          }
-          found = true
-          target.classList.remove('loadedWorker')
+        if (target.tagName !== 'IFRAME') continue
+        if (target.classList.contains('updateByTest')) {
+          target.classList.remove('updateByTest')
+          continue
         }
+        found = true
+        target.classList.remove('loadedWorker')
       }
       if (!found || !document.querySelector('iframe:not(.loadedWorker)')) return
       await removeFailedIframe()
@@ -144,6 +95,62 @@
       await removeFailedIframe()
       chrome.runtime.sendMessage('load_worker')
     }, 3000)
+  }
+
+  // image url mode
+  function getRawUrl(src) {
+    const argsRegex = /(.*?(?:png|jpeg|jpg|gif|bmp|tiff|webp)).*/i
+    const argsMatch = !src.startsWith('data') && src.match(argsRegex)
+    if (argsMatch) {
+      const rawUrl = argsMatch[1]
+      if (rawUrl !== src) return rawUrl
+    }
+    try {
+      const url = new URL(src)
+      const noSearch = url.origin + url.pathname
+      if (noSearch !== src) return noSearch
+    } catch (error) {}
+    return src
+  }
+  function getRawSize(src) {
+    const rawUrl = getRawUrl(src)
+    if (rawUrl === src) return 0
+    return new Promise(resolve => {
+      const img = new Image()
+      img.onload = () => resolve(img.naturalWidth)
+      img.onerror = () => resolve(0)
+      img.src = rawUrl
+    })
+  }
+
+  async function initImageViewer(image) {
+    console.log('Start image mode')
+
+    const options = window.ImageViewerOption
+    options.closeButton = false
+    options.minWidth = 0
+    options.minHeight = 0
+
+    const rawSize = await getRawSize(image.src)
+    const currSize = image.naturalWidth
+
+    if (typeof imageViewer !== 'function') {
+      await chrome.runtime.sendMessage('load_script')
+    }
+    rawSize > currSize ? imageViewer([rawUrl], options) : imageViewer([image.src], options)
+    image.style.display = 'none'
+  }
+
+  async function init() {
+    await chrome.runtime.sendMessage('get_options')
+    // Chrome terminated service worker
+    while (!window.ImageViewerOption) {
+      console.log('Wait service worker ready')
+      await chrome.runtime.sendMessage('get_options')
+    }
+
+    const image = document.querySelector(`img[src='${location.href}']`)
+    image ? initImageViewer(image) : initWorker()
   }
 
   if (document.visibilityState === 'visible') {
