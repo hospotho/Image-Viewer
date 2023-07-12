@@ -160,14 +160,13 @@
         const [start, end] = part
           .split('-')
           .map(Number)
-          .map(n => Math.min(Math.max(1, n), length) - 1)
+          .map(n => Math.min(length, Math.max(1, n)) - 1)
           .sort((a, b) => a - b)
         for (let i = start; i <= end; i++) {
-          ;``
           result[i] = true
         }
       } else {
-        const index = Math.min(Math.max(1, Number(part)), length) - 1
+        const index = Math.min(length, Math.max(1, Number(part))) - 1
         result[index] = true
       }
     }
@@ -187,7 +186,7 @@
 
     const imageUrlList = imageList.map(i => (typeof i === 'string' ? i : i[0]))
     const selectionRange = getUserSelection(imageUrlList.length)
-    if (!imageUrlList.length || selectionRange === null) return
+    if (selectionRange === null) return
 
     const imageBinaryList = await Promise.all(imageUrlList.map(getImageBinary))
 
