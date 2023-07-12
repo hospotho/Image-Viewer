@@ -154,7 +154,10 @@
         const imageInfo = extractImageInfoFromNode(dom, false)
         if (isImageInfoValid(imageInfo)) imageInfoList.push(imageInfo)
       }
-      if (imageInfoList.length === 0) return null
+      if (imageInfoList.length === 0) {
+        return childList.length < 5 ? searchImageFromTree(root.parentElement, viewportPos) : null
+      }
+      if (imageInfoList.length === 1) return imageInfoList[0]
 
       imageInfoList.sort((a, b) => getTopElement(a[2], b[2], dom))
       const first = imageInfoList[0]
