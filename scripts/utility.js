@@ -471,7 +471,9 @@ const ImageViewerUtils = (function () {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
       if ((width >= minWidth && height >= minHeight) || img.classList.contains('ImageViewerLastDom')) {
-        imageDataList.push([img.currentSrc, img])
+        // currentSrc might be empty during unlazy or update
+        const imgSrc = img.currentSrc || img.src
+        imageDataList.push([imgSrc, img])
       }
     }
 
