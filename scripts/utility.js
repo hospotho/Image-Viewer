@@ -364,8 +364,8 @@ const ImageViewerUtils = (function () {
 
     const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
 
-    const minWidth = Math.max(options.minWidth, 50)
-    const minHeight = Math.max(options.minHeight, 50)
+    const minWidth = Math.min(options.minWidth, 100)
+    const minHeight = Math.min(options.minHeight, 100)
     const imgList = []
     for (const img of unlazyList) {
       const {width, height} = img.getBoundingClientRect()
