@@ -275,7 +275,7 @@
         let tryCount = 0
         while (tryCount < maxTry) {
           const dom = elementList[index]
-          const imageInfo = extractImageInfoFromNode(dom)
+          const imageInfo = extractImageInfoFromNode(dom, !imageInfoFromPoint)
           const valid = isImageInfoValid(imageInfo)
 
           if (dom.offsetParent !== null || dom.style.position === 'fixed') {
