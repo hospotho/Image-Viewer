@@ -1,7 +1,7 @@
 const imageViewer = (function () {
   'use strict'
 
-  let shadowRoot
+  let shadowRoot = null
   let lastUpdateTime = 0
   let currentImageList = []
 
@@ -1088,7 +1088,7 @@ const imageViewer = (function () {
     const debouncePeriod = options.debouncePeriod ?? 1500
     const throttlePeriod = options.throttlePeriod ?? 80
 
-    let debounceTimeout
+    let debounceTimeout = 0
     let throttleTimestamp = Date.now()
     let debounceFlag = false
 

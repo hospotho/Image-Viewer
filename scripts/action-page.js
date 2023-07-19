@@ -30,7 +30,7 @@
   // auto update
   let period = 500
   const multiplier = 1.2
-  let updateRelease
+  let updateRelease = null
   const action = async () => {
     while (document.documentElement.classList.contains('has-image-viewer')) {
       const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)

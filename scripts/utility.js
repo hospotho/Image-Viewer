@@ -13,7 +13,7 @@ const ImageViewerUtils = (function () {
     return {
       acquire: async function () {
         await promise
-        let lockRelease
+        let lockRelease = null
         promise = new Promise(resolve => {
           lockRelease = () => {
             busy = false
@@ -25,7 +25,7 @@ const ImageViewerUtils = (function () {
       },
       waitUnlock: async function () {
         if (!busy) {
-          let waitRelease
+          let waitRelease = null
           const wait = new Promise(resolve => (waitRelease = resolve))
 
           const originalAcquire = this.acquire
