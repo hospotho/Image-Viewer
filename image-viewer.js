@@ -829,7 +829,7 @@ const imageViewer = (function () {
         closeImageViewer()
 
         const ratio = currIndex / imageListLength
-        const totalHeight = document.body.scrollHeight
+        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
         const targetTop = totalHeight * ratio
         window.scrollTo(window.scrollX, targetTop)
         await new Promise(resolve => setTimeout(resolve, 100))

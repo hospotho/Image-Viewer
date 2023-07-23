@@ -143,7 +143,7 @@ const ImageViewerUtils = (function () {
         }
 
         const screenHeight = window.screen.height
-        const scrollY = document.body.scrollHeight
+        const scrollY = document.body.scrollHeight || document.documentElement.scrollHeight
         let lastTop = 0
         let scrollCount = 1
         for (let i = 0; i < topList.length; i++) {
@@ -967,7 +967,7 @@ const ImageViewerUtils = (function () {
       })
       newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
       setTimeout(() => {
-        if (!existNewDom) window.scrollTo(startX, document.body.scrollHeight)
+        if (!existNewDom) window.scrollTo(startX, document.body.scrollHeight || document.documentElement.scrollHeight)
       }, 3000)
 
       stopAutoScrollOnExit(newNodeObserver, startX, startY)
