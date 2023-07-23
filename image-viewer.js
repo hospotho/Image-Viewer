@@ -1004,8 +1004,11 @@ const imageViewer = (function () {
   }
 
   function addImageEvent(options) {
-    function addTransformHandler(li) {
+    async function addTransformHandler(li) {
       const img = li.firstChild
+      while (!img.complete) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
       let zoomCount = 0
       let rotateCount = 0
       // zoom & rotate
