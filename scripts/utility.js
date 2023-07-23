@@ -393,6 +393,7 @@ const ImageViewerUtils = (function () {
     }
 
     if (!firstUnlazyScrollFlag) {
+      console.log('first unlazy complete')
       firstUnlazyScrollFlag = true
       if (document.readyState === 'complete') {
         setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 500)
