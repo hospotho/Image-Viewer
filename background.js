@@ -254,8 +254,7 @@ function addMessageHandler() {
           }
 
           const args = []
-          for (const data of imageDataList) {
-            const [imageList, href] = data
+          for (const [imageList, href] of imageDataList) {
             let top = href
             while (relation.has(top)) top = relation.get(top)
             for (const image of imageList) {

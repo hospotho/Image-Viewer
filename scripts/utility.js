@@ -574,12 +574,11 @@ const ImageViewerUtils = (function () {
     imageDomList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
 
     const sortedDataList = []
-    for (const data of imageDomList) {
-      const dom = data[1]
+    for (const [url, dom] of imageDomList) {
       if (dom.tagName === 'IFRAME') {
-        sortedDataList.push([data[0], dom.src])
+        sortedDataList.push([url, dom.src])
       } else {
-        sortedDataList.push(data[0])
+        sortedDataList.push(url)
       }
     }
     return sortedDataList
