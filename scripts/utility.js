@@ -413,11 +413,6 @@ const ImageViewerUtils = (function () {
     }
 
     for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
-      const url = node.getAttribute('bgUrl')
-      if (url) {
-        imageDataList.push([url, node])
-        continue
-      }
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') {
         node.setAttribute('no-bg', '')
@@ -426,9 +421,6 @@ const ImageViewerUtils = (function () {
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
         const url = bg.substring(5, bg.length - 2)
-        if (!url.startsWith('data')) {
-          node.setAttribute('bgUrl', url)
-        }
         imageDataList.push([url, node])
       }
     }
@@ -496,11 +488,6 @@ const ImageViewerUtils = (function () {
         if (width < minWidth || height < minHeight) continue
       }
 
-      const url = node.getAttribute('bgUrl')
-      if (url) {
-        imageDataList.push([url, node])
-        continue
-      }
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') {
         node.setAttribute('no-bg', '')
@@ -509,9 +496,6 @@ const ImageViewerUtils = (function () {
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
         const url = bg.substring(5, bg.length - 2)
-        if (!url.startsWith('data')) {
-          node.setAttribute('bgUrl', url)
-        }
         imageDataList.push([url, node])
       }
     }
