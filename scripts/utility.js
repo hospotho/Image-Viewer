@@ -726,6 +726,8 @@ const ImageViewerUtils = (function () {
 
       const classList = '.' + [...wrapper.classList].map(CSS.escape).join(', .')
       const wrapperDivList = document.querySelectorAll(`div:is(${classList})`)
+      // firefox not yet support :has()
+      // const wrapperDivList = document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`)
 
       const width = []
       const height = []
@@ -755,8 +757,9 @@ const ImageViewerUtils = (function () {
       }
 
       const [large, small] = domWidth / domHeight > 1 ? [domWidth, domHeight] : [domHeight, domWidth]
-      const finalWidth = Math.min(...width.filter(w => w * 1.5 >= large)) - 3
-      const finalHeight = Math.min(...height.filter(h => h * 1.5 >= small)) - 3
+      const [optionLarge, optionSmall] = options.minWidth / options.minHeight > 1 ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
+      const finalWidth = Math.min(...width.filter(w => w * 1.5 >= large || w * 1.2 >= optionLarge)) - 3
+      const finalHeight = Math.min(...height.filter(h => h * 1.5 >= small || h * 1.2 >= optionSmall)) - 3
       const finalSize = Math.min(finalWidth, finalHeight)
 
       options.minWidth = Math.min(finalSize, options.minWidth)
