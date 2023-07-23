@@ -916,6 +916,12 @@ const ImageViewerUtils = (function () {
       const startX = window.scrollX
       const startY = window.scrollY
 
+      const imageListLength = imageViewer().length
+      if (imageListLength > 50) {
+        const targetHeight = (document.body.scrollHeight || document.documentElement.scrollHeight) * 0.85
+        window.scrollTo(startX, targetHeight)
+      }
+
       const period = 500
       let stopFlag = true
       const action = async () => {
