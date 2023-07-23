@@ -188,16 +188,16 @@
     const selectionRange = getUserSelection(imageUrlList.length)
     if (selectionRange === null) return
 
-    const imageBinaryList = await Promise.all(imageUrlList.map(getImageBinary))
+    const selectedUrlList = imageUrlList.map((v, i) => [v, i]).filter(item => selectionRange[item[1]])
+    const imageBinaryList = await Promise.all(selectedUrlList.map(async item => [await getImageBinary(item[0]), item[1]]))
 
     const localFileHeaderList = []
-    for (let i = 0; i < imageUrlList.length; i++) {
-      if (!selectionRange[i]) continue
-
-      const index = ('0000' + (i + 1)).slice(-5)
-      const name = imageUrlList[i].startsWith('data') ? '' : '_' + imageUrlList[i].split('/').pop().split('?').shift()
-      const filename = `${index}${name}` + (name.includes('.') ? '' : '.jpg')
-      const data = imageBinaryList[i]
+    for (const [data, index] of imageBinaryList) {
+      const indexString = ('0000' + (index + 1)).slice(-5)
+      const url = imageUrlList[index]
+      const name = url.startsWith('data') ? '' : '_' + url.split('/').pop().split('?').shift()
+      const extension = name.includes('.') ? '' : '.jpg'
+      const filename = indexString + name + extension
 
       const localFileHeader = buildLocalFileHeader(filename, data)
       localFileHeaderList.push(localFileHeader)
@@ -207,7 +207,7 @@
 
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob, 'application/zip')
-    a.download = `ImageViewer_${Date.now()}.zip`
+    a.download = `ImageViewer_${Date.now()}_${document.title}.zip`
     a.click()
     URL.revokeObjectURL(a.href)
   }
