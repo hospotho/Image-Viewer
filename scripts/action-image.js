@@ -59,7 +59,7 @@
       }
       const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
       const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-      const currentImageList = imageViewer()
+      const currentImageList = imageViewer('getImageList')
 
       if (!document.documentElement.classList.contains('has-image-viewer')) return
       if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
