@@ -387,7 +387,7 @@ const ImageViewerUtils = (function () {
 
       // checkImageAttr() will fail if image is still loading
       let waitCount = 0
-      while (imgList.some(img => !img.complete)) {
+      while (imgList.some(img => !img.complete && img.loading !== 'lazy')) {
         await new Promise(resolve => setTimeout(resolve, 20))
         waitCount++
         if (waitCount === 250) alert('Slow connection, images still loading')
