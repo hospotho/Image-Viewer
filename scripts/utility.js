@@ -258,6 +258,7 @@ const ImageViewerUtils = (function () {
   async function checkUrlSize(img, size, getSizeFunction, url) {
     if (url.length === 1) {
       const lazySize = await getSizeFunction(url[0])
+      if (getSizeFunction.name === 'getImageBitSize' && lazySize === size) return false
       if (lazySize >= size) {
         await updateImageSource(img, url[0])
         return true
