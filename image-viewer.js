@@ -1284,6 +1284,19 @@ const imageViewer = (function () {
   //==========main function==========
   function imageViewer(imageList, options) {
     if (arguments.length === 0) return currentImageList
+    if (arguments.length === 1) {
+      const action = arguments[0]
+      switch (action) {
+        case 'clear':
+          currentImageList.length = 0
+          const imageListNode = shadowRoot.querySelector('#iv-image-list')
+          imageListNode.innerHTML = ''
+          return
+        default:
+          return
+      }
+    }
+
     if (imageList.length === 0) return
 
     if (!document.documentElement.classList.contains('has-image-viewer')) {
