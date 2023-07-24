@@ -368,7 +368,15 @@ const ImageViewerUtils = (function () {
     const minWidth = Math.min(options.minWidth, 100)
     const minHeight = Math.min(options.minHeight, 100)
     const imgList = []
+
+    // let allComplete = true
     for (const img of unlazyList) {
+      // TODO: loop if unlazy not complete
+      // // checkImageAttr() will fail if image is still loading
+      // if (!img.complete) {
+      //   allComplete = false
+      //   continue
+      // }
       const {width, height} = img.getBoundingClientRect()
       if ((width > minWidth && height > minHeight) || width === 0 || height === 0) imgList.push(img)
     }
@@ -376,6 +384,14 @@ const ImageViewerUtils = (function () {
     if (listSize) {
       console.log(`Try to unlazy ${listSize} image`)
       imgList.map(img => img.classList.add('simpleUnlazy'))
+
+      // checkImageAttr() will fail if image is still loading
+      let waitCount = 0
+      while (imgList.some(img => !img.complete)) {
+        await new Promise(resolve => setTimeout(resolve, 20))
+        waitCount++
+        if (waitCount === 250) alert('Slow connection, images still loading')
+      }
 
       const asyncList = await Promise.all(imgList.map(checkImageAttr))
       const lazyName = asyncList.filter(Boolean)
@@ -393,8 +409,14 @@ const ImageViewerUtils = (function () {
       }
     }
 
+    // if (!allComplete) {
+    //   await simpleUnlazyImage(options)
+    // }
+
     if (!firstUnlazyScrollFlag) {
       console.log('First unlazy complete')
+      window.backupImageUrlList = []
+      if (typeof imageViewer === 'function') imageViewer('clear')
       firstUnlazyScrollFlag = true
       if (document.readyState === 'complete') {
         setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 500)
