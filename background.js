@@ -92,7 +92,7 @@ const checkIframeUrl = url => {
     try {
       const res = await fetch(url, {method: 'HEAD'})
       if (res.ok) {
-        const options = res.headers.get('X-Frame-Options')
+        const options = res.headers.get('X-Frame-Options')?.toUpperCase()
         if (!options) {
           resolve(true)
         } else if (options === 'DENY') {
