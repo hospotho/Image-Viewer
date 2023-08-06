@@ -35,7 +35,7 @@
     while (document.documentElement.classList.contains('has-image-viewer')) {
       const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
       const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-      const currentImageList = imageViewer('getImageList')
+      const currentImageList = imageViewer('get_image_list')
 
       if (!document.documentElement.classList.contains('has-image-viewer')) return
       if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {

@@ -1286,8 +1286,8 @@ const imageViewer = (function () {
     if (arguments.length === 1) {
       const action = arguments[0]
       switch (action) {
-        case 'getImageList':
-          return currentImageList
+        case 'get_image_list':
+          return Array.from(currentImageList)
         case 'clear':
           currentImageList.length = 0
           const imageListNode = shadowRoot.querySelector('#iv-image-list')

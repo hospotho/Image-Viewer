@@ -912,7 +912,7 @@ const ImageViewerUtils = (function () {
       const startX = window.scrollX
       const startY = window.scrollY
 
-      const imageListLength = imageViewer('getImageList').length
+      const imageListLength = imageViewer('get_image_list').length
       if (imageListLength > 50) {
         const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
         window.scrollTo(startX, totalHeight * 0.85)
