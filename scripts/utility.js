@@ -947,6 +947,13 @@ const ImageViewerUtils = (function () {
         let count = 0
         while (lastY < (document.body.scrollHeight || document.documentElement.scrollHeight)) {
           if (count > 5 || !document.documentElement.classList.contains('has-image-viewer')) break
+
+          if (document.visibilityState !== 'visible') {
+            while (document.visibilityState !== 'visible') {
+              await new Promise(resolve => setTimeout(resolve, 100))
+            }
+          }
+
           await action()
           if (lastY === window.scrollY) {
             count++

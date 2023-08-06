@@ -43,8 +43,14 @@
         imageViewer(combinedImageList, options)
       }
       await new Promise(_resolve => {
-        const resolve = () => {
+        const resolve = async () => {
           clearTimeout(timeout)
+          if (document.visibilityState !== 'visible') {
+            console.log('wait document visible')
+            while (document.visibilityState !== 'visible') {
+              await new Promise(resolve => setTimeout(resolve, 100))
+            }
+          }
           _resolve()
         }
         const timeout = setTimeout(() => {
@@ -56,9 +62,9 @@
     }
   }
 
-  let currentScrollX = window.scrollX
-  let currentScrollY = window.scrollY
   const observer = new MutationObserver(async () => {
+    let currentScrollX = window.scrollX
+    let currentScrollY = window.scrollY
     if (!document.documentElement.classList.contains('has-image-viewer')) {
       observer.disconnect()
       return
