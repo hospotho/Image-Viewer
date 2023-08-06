@@ -726,7 +726,22 @@ const ImageViewerUtils = (function () {
       if (!dom || !document.contains(dom) || domWidth === 0) return
 
       const wrapper = dom.closest('div')
-      if (!wrapper || wrapper.classList.length === 0) return
+      if (!wrapper) return
+
+      if (wrapper.classList.length === 0) {
+        let minWidth = domWidth
+        let minHeight = domHeight
+        for (const img of wrapper.querySelectorAll('img')) {
+          const {width, height} = img.getBoundingClientRect()
+          if (width !== 0 && height !== 0) {
+            minWidth = Math.min(minWidth, width)
+            minHeight = Math.min(minHeight, height)
+          }
+        }
+        options.minWidth = Math.min(minWidth, options.minWidth)
+        options.minHeight = Math.min(minHeight, options.minHeight)
+        return
+      }
 
       const classList = '.' + [...wrapper.classList].map(CSS.escape).join(', .')
       const wrapperDivList = document.querySelectorAll(`div:is(${classList})`)
