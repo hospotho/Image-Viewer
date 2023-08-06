@@ -190,8 +190,8 @@ const imageViewer = (function () {
 
   function searchNearestPageImgNode(img) {
     const imgUrlList = [...shadowRoot.querySelectorAll('img')].map(img => img.src)
-    const pageImgList = document.getElementsByTagName('img')
-    const pageImgUrlList = [...pageImgList].map(img => getRawUrl(img.src))
+    const pageImgList = [...document.getElementsByTagName('img')].filter(img => img.clientWidth > 0 && img.clientHeight > 0)
+    const pageImgUrlList = pageImgList.map(img => getRawUrl(img.src))
 
     const indexList = []
     for (const url of pageImgUrlList) {
@@ -223,19 +223,20 @@ const imageViewer = (function () {
   function deepSearchImgNode(img) {
     return new Promise(resolve => {
       let release = null
-      let timeout = 0
-
-      const newNodeObserver = new MutationObserver(() => {
-        clearTimeout(timeout)
-        if (typeof release === 'function') {
-          timeout = setTimeout(release, 100)
-        }
-      })
       const search = async () => {
         let lastNearest = null
         let repeatCount = 0
         let overtime = false
         while (true) {
+          const imgNode = searchImgNode(img)
+          if (imgNode !== null || repeatCount > 5 || overtime) {
+            newNodeObserver.disconnect()
+            resolve(imgNode)
+            return
+          }
+          const nearest = searchNearestPageImgNode(img)
+          nearest.scrollIntoView({block: 'center'})
+          nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
           await new Promise(resolve => {
             let waiting = true
             release = () => {
@@ -249,17 +250,17 @@ const imageViewer = (function () {
               }
             }, 3000)
           })
-          const imgNode = searchImgNode(img)
-          if (imgNode !== null || repeatCount > 5 || overtime) {
-            newNodeObserver.disconnect()
-            resolve(imgNode)
-            return
-          }
-          const nearest = searchNearestPageImgNode(img)
-          nearest.scrollIntoView({block: 'center'})
-          nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
         }
       }
+
+      const newNodeObserver = new MutationObserver(async () => {
+        if (typeof release === 'function') {
+          newNodeObserver.disconnect()
+          await new Promise(resolve => setTimeout(resolve, 100))
+          release()
+          newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+        }
+      })
 
       newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
       search()
