@@ -46,6 +46,7 @@ const ImageViewerUtils = (function () {
 
   let firstUnlazyFlag = true
   let firstUnlazyScrollFlag = false
+  let firstSlowAlertFlag = false
   const unlazyObserver = new MutationObserver(mutationsList => {
     const updatedSet = new Set()
     const modifiedSet = new Set()
@@ -378,7 +379,20 @@ const ImageViewerUtils = (function () {
     const minHeight = Math.min(options.minHeight, 100)
     const imgList = []
 
+    setTimeout(() => {
+      if (!firstSlowAlertFlag && [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')) {
+        firstSlowAlertFlag = true
+        alert('Slow connection, images still loading')
+      }
+    }, 5000)
+
+    let allComplete = true
     for (const img of unlazyList) {
+      // checkImageAttr() will fail if image is still loading
+      if (!img.complete) {
+        allComplete = false
+        continue
+      }
       const {width, height} = img.getBoundingClientRect()
       if ((width > minWidth && height > minHeight) || width === 0 || height === 0) imgList.push(img)
     }
@@ -386,14 +400,6 @@ const ImageViewerUtils = (function () {
     if (listSize) {
       console.log(`Try to unlazy ${listSize} image`)
       imgList.map(img => img.classList.add('simpleUnlazy'))
-
-      // checkImageAttr() will fail if image is still loading
-      let waitCount = 0
-      while (imgList.some(img => !img.complete && img.loading !== 'lazy')) {
-        await new Promise(resolve => setTimeout(resolve, 20))
-        waitCount++
-        if (waitCount === 250) alert('Slow connection, images still loading')
-      }
 
       const asyncList = await Promise.all(imgList.map(checkImageAttr))
       const lazyName = asyncList.filter(Boolean)
@@ -409,6 +415,11 @@ const ImageViewerUtils = (function () {
       } else {
         console.log('No lazy image found')
       }
+    }
+
+    if (!allComplete) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+      await simpleUnlazyImage(options)
     }
 
     if (!firstUnlazyScrollFlag) {
