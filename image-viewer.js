@@ -185,6 +185,11 @@ const imageViewer = (function () {
       }
     }
 
+    const prevSibling = imgNode.previousElementSibling
+    const nextSibling = imgNode.nextElementSibling
+    if (prevSibling?.tagName === 'A') return prevSibling
+    if (nextSibling?.tagName === 'A') return nextSibling
+
     return null
   }
 
