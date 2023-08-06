@@ -396,7 +396,7 @@ const ImageViewerUtils = (function () {
         // create dom update for observer manually
         const div = document.createElement('div')
         document.body.appendChild(div)
-        setTimeout(div.remove, 100)
+        setTimeout(() => div.remove(), 100)
       } else {
         console.log('No lazy image found')
       }
