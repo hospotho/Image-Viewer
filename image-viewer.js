@@ -714,7 +714,7 @@ const imageViewer = (function () {
         const ratio = options.minWidth / options.minHeight - 1
         const sign = Math.sign(ratio)
         const [adjustWidth, adjustHeight] = [img.naturalWidth, img.naturalHeight].sort((a, b) => sign * (b - a))
-        if (adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
+        if (adjustWidth === 0 || adjustHeight === 0 || adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
           const currentUrlList = []
           for (const data of currentImageList) {
             const url = typeof data === 'string' ? data : data[0]
