@@ -341,6 +341,15 @@ const ImageViewerUtils = (function () {
 
     return 'original src'
   }
+  function clearWindowBackup(options) {
+    const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data[0]))
+    const backup = window.backupImageUrlList
+    for (let i = backup.length - 1; i >= 0; i--) {
+      const url = backup[i]
+      if (typeof url !== 'string') continue
+      if (!allImageUrlSet.has(url)) backup.splice(i, 1)
+    }
+  }
   async function simpleUnlazyImage(options) {
     // set timeout for first time unlazy
     if (firstUnlazyFlag) {
@@ -404,8 +413,7 @@ const ImageViewerUtils = (function () {
 
     if (!firstUnlazyScrollFlag) {
       console.log('First unlazy complete')
-      // ERROR: also delete hidden image after first unload
-      window.backupImageUrlList = []
+      clearWindowBackup(options)
       if (typeof imageViewer === 'function') imageViewer('clear')
       firstUnlazyScrollFlag = true
       if (document.readyState === 'complete') {
