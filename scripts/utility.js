@@ -369,14 +369,7 @@ const ImageViewerUtils = (function () {
     const minHeight = Math.min(options.minHeight, 100)
     const imgList = []
 
-    // let allComplete = true
     for (const img of unlazyList) {
-      // TODO: loop if unlazy not complete
-      // // checkImageAttr() will fail if image is still loading
-      // if (!img.complete) {
-      //   allComplete = false
-      //   continue
-      // }
       const {width, height} = img.getBoundingClientRect()
       if ((width > minWidth && height > minHeight) || width === 0 || height === 0) imgList.push(img)
     }
@@ -409,12 +402,9 @@ const ImageViewerUtils = (function () {
       }
     }
 
-    // if (!allComplete) {
-    //   await simpleUnlazyImage(options)
-    // }
-
     if (!firstUnlazyScrollFlag) {
       console.log('First unlazy complete')
+      // ERROR: also delete hidden image after first unload
       window.backupImageUrlList = []
       if (typeof imageViewer === 'function') imageViewer('clear')
       firstUnlazyScrollFlag = true
