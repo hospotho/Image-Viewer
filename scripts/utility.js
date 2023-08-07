@@ -304,8 +304,9 @@ const ImageViewerUtils = (function () {
     if (img.srcset && img.currentSrc !== img.srcset) {
       attrList.push(img.attributes['srcset'])
     }
-    if (img.parentElement.tagName === 'A' && img.parentElement.href.match(urlRegex)) {
-      attrList.push({value: img.parentElement.href, name: 'parent_anchor'})
+    const anchor = img.closest('a')
+    if (anchor && anchor.href.match(urlRegex)) {
+      attrList.push({value: anchor.href, name: 'parent anchor'})
     }
     if (rawUrl === img.currentSrc && attrList.length === 0) return null
 
