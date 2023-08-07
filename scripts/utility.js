@@ -56,7 +56,7 @@ const ImageViewerUtils = (function () {
         updatedSet.add(element)
         continue
       }
-      if (element.classList.contains('simpleUnlazy')) {
+      if (element.classList.contains('simpleUnlazy') && !element.classList.contains('unlazyNotComplete')) {
         modifiedSet.add(element)
       }
     }
@@ -403,9 +403,10 @@ const ImageViewerUtils = (function () {
     const listSize = imgList.length
     if (listSize) {
       console.log(`Try to unlazy ${listSize} image`)
-      imgList.map(img => img.classList.add('simpleUnlazy'))
+      imgList.map(img => img.classList.add('simpleUnlazy', 'unlazyNotComplete'))
 
       const asyncList = await Promise.all(imgList.map(checkImageAttr))
+      imgList.map(img => img.classList.remove('unlazyNotComplete'))
       const lazyName = asyncList.filter(Boolean)
 
       if (lazyName.length !== 0) {
