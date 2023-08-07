@@ -985,7 +985,8 @@ const ImageViewerUtils = (function () {
       const imageListLength = imageViewer('get_image_list').length
       if (imageListLength > 50) {
         const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-        window.scrollTo(startX, totalHeight * 0.85)
+        const targetHeight = Math.max(totalHeight * 0.85, totalHeight - window.innerHeight * 3)
+        window.scrollTo(startX, targetHeight)
       }
 
       const period = 500
