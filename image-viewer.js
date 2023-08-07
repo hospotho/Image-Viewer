@@ -5,6 +5,10 @@ const imageViewer = (function () {
   let lastUpdateTime = 0
   let currentImageList = []
 
+  let clearFlag = false
+  let clearSrc = ''
+  let clearIndex = -1
+
   const failedImageSet = new Set()
   const KeydownHandlerList = []
 
@@ -310,6 +314,33 @@ const imageViewer = (function () {
         border.remove()
       }
     }, fps)
+  }
+
+  function restoreIndex() {
+    if (clearIndex === -1) return
+
+    const current = shadowRoot.querySelector('#iv-counter-current')
+    const imageListNode = shadowRoot.querySelector('#iv-image-list')
+    const infoWidth = shadowRoot.querySelector('#iv-info-width')
+    const infoHeight = shadowRoot.querySelector('#iv-info-height')
+
+    const srcIndex = currentImageList.indexOf(clearSrc)
+    const newIndex = srcIndex === -1 ? clearIndex : srcIndex
+
+    current.innerHTML = newIndex + 1
+
+    imageListNode.style.translate = `0 ${-newIndex * 100}%`
+    imageListNode.querySelector('li.current')?.classList.remove('current')
+
+    const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
+    relateListItem.classList.add('current')
+
+    const relateImage = relateListItem.querySelector('img')
+    infoWidth.value = relateImage.naturalWidth
+    infoHeight.value = relateImage.naturalHeight
+
+    clearSrc = ''
+    clearIndex = -1
   }
 
   const fitFuncDict = (function () {
@@ -1227,6 +1258,24 @@ const imageViewer = (function () {
       }
     }
 
+    // clear
+    let neededClear = false
+    if (clearFlag) {
+      clearFlag = false
+      neededClear = currentImageList.length > newList.length
+    }
+    if (neededClear) {
+      console.log('Clear bad image list')
+      currentImageList.length = 0
+      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      imageListNode.innerHTML = ''
+      buildImageList(newList, options)
+      return
+    } else {
+      clearSrc = ''
+      clearIndex = -1
+    }
+
     // update
     const imgList = shadowRoot.querySelectorAll('#iv-image-list li img')
     for (let i = 0; i < currentImageList.length; i++) {
@@ -1295,9 +1344,11 @@ const imageViewer = (function () {
         case 'get_image_list':
           return Array.from(currentImageList)
         case 'clear':
-          currentImageList.length = 0
-          const imageListNode = shadowRoot.querySelector('#iv-image-list')
-          imageListNode.innerHTML = ''
+          clearFlag = true
+          const current = shadowRoot.querySelector('li.current img')
+          const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+          clearSrc = current.src
+          clearIndex = counterCurrent.innerHTML - 1
           return
         default:
           return
@@ -1320,6 +1371,7 @@ const imageViewer = (function () {
       initImageList(options)
       fitImage(options, true)
       addImageEvent(options)
+      restoreIndex()
       console.log('Image viewer updated')
     }
   }
