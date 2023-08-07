@@ -394,7 +394,7 @@ const ImageViewerUtils = (function () {
         continue
       }
       const {width, height} = img.getBoundingClientRect()
-      if ((width > minWidth && height > minHeight) || width === 0 || height === 0) imgList.push(img)
+      if ((width >= minWidth && height >= minHeight) || width === 0 || height === 0) imgList.push(img)
     }
     const listSize = imgList.length
     if (listSize) {
