@@ -304,6 +304,9 @@ const ImageViewerUtils = (function () {
     if (img.srcset && img.currentSrc !== img.srcset) {
       attrList.push(img.attributes['srcset'])
     }
+    if (img.parentElement.tagName === 'A' && img.parentElement.href.match(urlRegex)) {
+      attrList.push({value: img.parentElement.href, name: 'parent_anchor'})
+    }
     if (rawUrl === img.currentSrc && attrList.length === 0) return null
 
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
