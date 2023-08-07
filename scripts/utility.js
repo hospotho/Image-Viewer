@@ -741,7 +741,7 @@ const ImageViewerUtils = (function () {
       // firefox still not yet support :has() 2023/08/07
       const wrapperDivList = document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`)
 
-      if (!wrapper || wrapperDivList.length === 1) {
+      if (!wrapper || wrapperDivList.length <= 1) {
         const img = dom
         let curr = img.parentElement
         let selector = 'img'
