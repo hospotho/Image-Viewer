@@ -737,7 +737,39 @@ const ImageViewerUtils = (function () {
       if (!dom || !document.contains(dom) || domWidth === 0) return
 
       const wrapper = dom.closest('div')
-      if (!wrapper) return
+      const classList = '.' + [...wrapper?.classList].map(CSS.escape).join(', .')
+      const wrapperDivList = document.querySelectorAll(`div:is(${classList})`)
+      // firefox not yet support :has()
+      // const wrapperDivList = document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`)
+
+      if (!wrapper || wrapperDivList.length === 1) {
+        const img = dom
+        let curr = img.parentElement
+        let selector = 'img'
+        while (curr.parentElement) {
+          if (curr.classList.length > 1) {
+            selector = curr.tagName.toLowerCase() + ':is(.' + [...curr.classList].map(CSS.escape).join(', .') + ') ' + selector
+          } else if (curr.classList.length === 1) {
+            selector = curr.tagName.toLowerCase() + '.' + CSS.escape(curr.classList[0]) + ' ' + selector
+          } else {
+            selector = curr.tagName.toLowerCase() + ' ' + selector
+          }
+          curr = curr.parentElement
+        }
+
+        let minWidth = domWidth
+        let minHeight = domHeight
+        for (const img of document.querySelectorAll(selector)) {
+          const {width, height} = img.getBoundingClientRect()
+          if (width !== 0 && height !== 0) {
+            minWidth = Math.min(minWidth, width)
+            minHeight = Math.min(minHeight, height)
+          }
+        }
+        options.minWidth = Math.min(minWidth, options.minWidth)
+        options.minHeight = Math.min(minHeight, options.minHeight)
+        return
+      }
 
       if (wrapper.classList.length === 0) {
         let minWidth = domWidth
@@ -753,11 +785,6 @@ const ImageViewerUtils = (function () {
         options.minHeight = Math.min(minHeight, options.minHeight)
         return
       }
-
-      const classList = '.' + [...wrapper.classList].map(CSS.escape).join(', .')
-      const wrapperDivList = document.querySelectorAll(`div:is(${classList})`)
-      // firefox not yet support :has()
-      // const wrapperDivList = document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`)
 
       const width = []
       const height = []
