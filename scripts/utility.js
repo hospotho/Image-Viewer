@@ -769,8 +769,8 @@ const ImageViewerUtils = (function () {
             minHeight = Math.min(minHeight, height)
           }
         }
-        options.minWidth = Math.min(minWidth, options.minWidth)
-        options.minHeight = Math.min(minHeight, options.minHeight)
+        options.minWidth = Math.min(minWidth - 3, options.minWidth)
+        options.minHeight = Math.min(minHeight - 3, options.minHeight)
         return
       }
 
@@ -784,8 +784,8 @@ const ImageViewerUtils = (function () {
             minHeight = Math.min(minHeight, height)
           }
         }
-        options.minWidth = Math.min(minWidth, options.minWidth)
-        options.minHeight = Math.min(minHeight, options.minHeight)
+        options.minWidth = Math.min(minWidth - 3, options.minWidth)
+        options.minHeight = Math.min(minHeight - 3, options.minHeight)
         return
       }
 
