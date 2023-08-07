@@ -316,6 +316,16 @@ const imageViewer = (function () {
     }, fps)
   }
 
+  function isCurrentListBad(currentImageList, newList) {
+    if (!clearFlag) return false
+    clearFlag = false
+
+    if (currentImageList.length > newList.length) return true
+    for (const img of currentImageList) {
+      if (newList.indexOf(img) === -1) return true
+    }
+    return false
+  }
   function restoreIndex() {
     if (clearIndex === -1) return
 
@@ -1259,12 +1269,7 @@ const imageViewer = (function () {
     }
 
     // clear
-    let neededClear = false
-    if (clearFlag) {
-      clearFlag = false
-      neededClear = currentImageList.length > newList.length
-    }
-    if (neededClear) {
+    if (isCurrentListBad(currentImageList, newList)) {
       console.log('Clear bad image list')
       currentImageList.length = 0
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
