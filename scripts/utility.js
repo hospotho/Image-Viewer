@@ -390,6 +390,7 @@ const ImageViewerUtils = (function () {
     for (const img of unlazyList) {
       // checkImageAttr() will fail if image is still loading
       if (!img.complete) {
+        if (img.loading === 'lazy') img.loading = 'eager'
         allComplete = false
         continue
       }
