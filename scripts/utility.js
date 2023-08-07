@@ -940,8 +940,12 @@ const ImageViewerUtils = (function () {
       return newListStringLength === oldListStringLength
     },
 
-    checkAndStartAutoScroll: function (options) {
+    checkAndStartAutoScroll: async function (options) {
       if (!isEnableAutoScroll(options)) return
+
+      while (!firstUnlazyScrollFlag) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
 
       const startX = window.scrollX
       const startY = window.scrollY
@@ -973,9 +977,6 @@ const ImageViewerUtils = (function () {
         await new Promise(resolve => setTimeout(resolve, period))
       }
       const timer = async () => {
-        while (!firstUnlazyScrollFlag) {
-          await new Promise(resolve => setTimeout(resolve, 100))
-        }
         stopFlag = false
         let lastY = window.scrollY
         let count = 0
