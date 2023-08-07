@@ -124,41 +124,25 @@ const ImageViewerUtils = (function () {
           break
         }
       }
-      if (found) {
-        const lazyList = []
-        for (const container of document.body.getElementsByTagName('*')) {
-          const {width, height} = container.getBoundingClientRect()
-          if (width > minWidth && height > minHeight) lazyList.push(container)
-        }
-
-        const topList = []
-        for (let i = 0; i < lazyList.length; i++) {
-          const container = lazyList[i]
-          const {top} = container.getBoundingClientRect()
-          topList.push(top)
-        }
-        topList.sort((a, b) => a - b)
-
-        const wrapper = (func, ...args) => {
-          if (document.documentElement.classList.contains('has-image-viewer')) func(...args)
-        }
-
-        const screenHeight = window.screen.height
-        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-        let lastTop = 0
-        let scrollCount = 1
-        for (let i = 0; i < topList.length; i++) {
-          const top = topList[i]
-          if (top > lastTop + screenHeight / 2 || i === topList.length - 1) {
-            setTimeout(() => wrapper(window.scrollTo, currentX, top), scrollCount++ * 150)
-            lastTop = top
-          }
-        }
-        setTimeout(() => wrapper(window.scrollTo, currentX, totalHeight), scrollCount++ * 150)
-        setTimeout(() => wrapper(window.scrollTo, currentX, currentY), scrollCount * 150)
+      if (!found) {
+        window.scrollTo(currentX, currentY)
         return
       }
-      window.scrollTo(currentX, currentY)
+
+      const wrapper = (func, ...args) => {
+        if (document.documentElement.classList.contains('has-image-viewer')) func(...args)
+      }
+      const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
+      const scrollDelta = window.innerHeight * 1.5
+      let scrollCount = 0
+      let top = 0
+      while (top < totalHeight) {
+        const currTop = top
+        setTimeout(() => wrapper(window.scrollTo, currentX, currTop), scrollCount++ * 150)
+        top += scrollDelta
+      }
+      setTimeout(() => wrapper(window.scrollTo, currentX, totalHeight), scrollCount++ * 150)
+      setTimeout(() => wrapper(window.scrollTo, currentX, currentY), scrollCount * 150)
     })
 
     scrollObserver.observe(document.documentElement, {
@@ -171,8 +155,19 @@ const ImageViewerUtils = (function () {
       scrollObserver.disconnect()
       if (!domChanged) window.scrollTo(currentX, currentY)
     }, 1000)
+
     window.scrollTo(0, 0)
-    window.scrollBy({top: window.screen.height * 2})
+    window.scrollBy({top: window.innerHeight * 2})
+    setTimeout(() => {
+      if (domChanged) return
+
+      let maxHeight = 0
+      for (const img of document.getElementsByTagName('img')) {
+        const height = img.clientHeight
+        maxHeight = Math.max(maxHeight, height)
+      }
+      window.scrollBy({top: maxHeight * 2})
+    }, 100)
   }
   async function waitSrcUpdate(img, _resolve) {
     const srcUrl = new URL(img.src, document.baseURI)
@@ -1026,7 +1021,7 @@ const ImageViewerUtils = (function () {
           if (lastY === window.scrollY) {
             count++
             window.scrollBy(0, -100)
-            window.scrollBy({top: window.screen.height})
+            window.scrollBy({top: window.innerHeight})
           } else {
             count = 0
           }
