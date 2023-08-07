@@ -64,8 +64,11 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
     <td><kbd>click</kbd> "Move To" button on the control bar</td>
   </tr>
   <tr>
-    <td><kbd>middle-click</kbd> the original image</td>
+    <td rowspan="2"><kbd>middle-click</kbd> the original image</td>
     <td><kbd>middle-click</kbd> on the image</td>
+  </tr>
+  <tr>
+    <td><kbd>0</kbd> both number row and number pad</td>
   </tr>
   <tr>
     <td>Drag image</td>
@@ -81,7 +84,7 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
   </tr>
   <tr>
     <td>Zoom image</td>
-    <td>Scroll</td>
+    <td>Scroll on the image</td>
   </tr>
   <tr>
     <td>Rotate image</td>
@@ -118,7 +121,7 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
 
 ## Browser support
 
-The entire project was written in Vanilla JavaScript with extension API support for Chromium-based browsers. It should work on Firefox, but it has not been tested yet.
+The entire project was written in Vanilla JavaScript with extension API support for Chromium-based browsers. ~~It should work on Firefox, but it has not been tested yet.~~ Part of the code uses CSS :has() selector, which Firefox still does not yet support in the stable version (Aug 2023).
 
 The standalone `image-viewer.js` should work on all modern browsers, and you can use it on your own website.
 
@@ -127,7 +130,8 @@ You can also run your own activation script using Tampermonkey or other alternat
 ## ToDo
 
 1. `image-viewer.min.js`
-2. ...
+2. handle more edgy cases
+3. bugs fix
 
 ## History
 
