@@ -119,6 +119,7 @@ const ImageViewerUtils = (function () {
       let found = false
       for (const mutation of mutationsList) {
         const element = mutation.target
+        if (element.tagName !== 'IMG') continue
         if (!element.classList.contains('updateByObserver') || !element.classList.contains('simpleUnlazy')) {
           found = true
           break
