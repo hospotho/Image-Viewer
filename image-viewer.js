@@ -326,8 +326,13 @@ const imageViewer = (function () {
     }
     return false
   }
-  function restoreIndex() {
+  function restoreIndex(options) {
     if (clearIndex === -1) return
+    if (options.index === undefined) {
+      clearSrc = ''
+      clearIndex = -1
+      return
+    }
 
     const current = shadowRoot.querySelector('#iv-counter-current')
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
@@ -1376,7 +1381,7 @@ const imageViewer = (function () {
       initImageList(options)
       fitImage(options, true)
       addImageEvent(options)
-      restoreIndex()
+      restoreIndex(options)
       console.log('Image viewer updated')
     }
   }
