@@ -145,6 +145,7 @@
     // Chrome terminated service worker
     while (!window.ImageViewerOption) {
       console.log('Wait service worker ready')
+      await new Promise(resolve => setTimeout(resolve, 50))
       await chrome.runtime.sendMessage('get_options')
     }
 
