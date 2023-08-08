@@ -393,6 +393,7 @@ const ImageViewerUtils = (function () {
         allComplete = false
         continue
       }
+      if (img.decoding) img.decoding = 'sync'
       if (img.src === '') {
         imgList.push(img)
         continue
