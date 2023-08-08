@@ -383,7 +383,7 @@ const ImageViewerUtils = (function () {
         firstSlowAlertFlag = true
         alert('Slow connection, images still loading')
       }
-    }, 5000)
+    }, 10000)
 
     let allComplete = true
     for (const img of unlazyList) {
