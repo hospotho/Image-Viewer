@@ -381,6 +381,7 @@ const ImageViewerUtils = (function () {
     setTimeout(() => {
       if (!firstSlowAlertFlag && [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')) {
         firstSlowAlertFlag = true
+        console.log('Slow connection, images still loading')
         alert('Slow connection, images still loading')
       }
     }, 10000)
