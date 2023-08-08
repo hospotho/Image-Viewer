@@ -2,6 +2,13 @@
   'use strict'
 
   const rawText = `
+1.29 [2023-08-08]:
+1. Corrected code related to the service worker lifecycle
+2. Enhanced unlazy logic to handle additional cases
+3. Improved logic for updating the size filter when there are images of the same kind as the picked image
+4. Enhanced the user experience on auto scroll
+5. Numerous bug fixes and minor improvements
+
 1.28 [2023-07-10]:
 Major Update
 1. Added a hotkey to manually enable auto scroll
@@ -85,7 +92,7 @@ Stability update
 3. Fix bugs
 
 1.16 [2023-04-10]:
-1. Image viewer now collects images after website adding new content.
+1. Image viewer now collects images after website adding new content
   // usually website update is toggled by scroll to the end of the page
   // you can archive it by scrolling on the scrollbar or press "End" key on keyboard
   // you may also use other "next page" script/extension
@@ -103,81 +110,81 @@ Large Update
 
 1.14 [2023-04-01]:
 1. Improve CSS of image viewer
-2. Improve performance of right click image pickup.
-3. Add an icon image pre-check before unlazy image to improve performance.
+2. Improve performance of right click image pickup
+3. Add an icon image pre-check before unlazy image to improve performance
 4. Enhance the method of getting image wrapper size
 5. Bug fixes
 
 1.13 [2023-03-18]:
-1. Improve right click image pickup performance.
-2. Improve stability on image unlazy.
-3. Extend the loading time limit for images inside image viewer.
-4. Fix lot of typos and bugs.
+1. Improve right click image pickup performance
+2. Improve stability on image unlazy
+3. Extend the loading time limit for images inside image viewer
+4. Fix lot of typos and bugs
 
 1.12 [2023-02-14]:
-1. Add this popup page to show release notes when install or update.
-2. Improve stability.
-3. Add domain white list for image unlazy.
+1. Add this popup page to show release notes when install or update
+2. Improve stability
+3. Add domain white list for image unlazy
   // create issues on github if you want to add domain to the list
   // may move to option page or just hide in source code
 
 1.11 [2023-02-11]:
-1. Images are now order by its real location.
-3. No longer use dataURL, ObjectURL is faster and better for the browser to render images.
-2. Min size filter will also considers wrapper of the selected image.
-4. Some website that disabled right click menu. Add "view last right click" in icon menu to handle it.
+1. Images are now order by its real location
+3. No longer use dataURL, ObjectURL is faster and better for the browser to render images
+2. Min size filter will also considers wrapper of the selected image
+4. Some website that disabled right click menu. Add "view last right click" in icon menu to handle it
 
 1.10 [2023-02-11]:
-1. Add MoveTo support for iframe images.
+1. Add MoveTo support for iframe images
 2. Improve right click image pickup
-3. Improve image check size method.
+3. Improve image check size method
 
 1.9  [2023-01-13]:
-1. Support image pickup using right click.
-2. Delay execution of worker script to improve performance.
+1. Support image pickup using right click
+2. Delay execution of worker script to improve performance
 
 1.8  [2022-10-30]:
-1. Improve the support of viewing images inside iframe.
-2. Refactor code to tidy up code related to iframe.
+1. Improve the support of viewing images inside iframe
+2. Refactor code to tidy up code related to iframe
 
 1.7  [2022-10-04]:
-1. Improve support on iframe images.
-2. Improve simpleUnlazyImage().
-3. Add more keyboard shortcuts and svg filter in option.
+1. Improve support on iframe images
+2. Improve simpleUnlazyImage()
+3. Add more keyboard shortcuts and svg filter in option
 
 1.6  [2022-09-03]:
-1. Support images inside iframe.
-2. Improve data transfer between content script and background.
+1. Support images inside iframe
+2. Improve data transfer between content script and background
 
 1.5  [2022-08-22]:
-1. Renew simpleUnlazyImage().
+1. Renew simpleUnlazyImage()
 2. Improve image-viewer.js
-3. Support hotkey for reverse search image.
+3. Support hotkey for reverse search image
 
 1.4  [2022-08-10]:
-1. Improve simpleUnlazyImage().
-2. Support video element.
-3. Improve MoveTo button logic.
-4. Prevent input leak out from image viewer.
-5. Improve simpleUnlazyImage().
-6. Add utility.js to separate utility function.
+1. Improve simpleUnlazyImage()
+2. Support video element
+3. Improve MoveTo button logic
+4. Prevent input leak out from image viewer
+5. Improve simpleUnlazyImage()
+6. Add utility.js to separate utility function
 
 1.3  [2022-07-01]:
-1. Delay loading of image-viewer.js to improve performance.
-2. Add command support.
-3. Improve image unlazy.
-4. Renew activate image method to increase readability.
+1. Delay loading of image-viewer.js to improve performance
+2. Add command support
+3. Improve image unlazy
+4. Renew activate image method to increase readability
 
 1.2  [2022-07-01]:
-1. Add simpleUnlazyImage() to unlazy image before getting image list.
-2. Change CSS to pin image viewer counter .
+1. Add simpleUnlazyImage() to unlazy image before getting image list
+2. Change CSS to pin image viewer counter 
 
 1.1  [2022-07-01]:
-1. Support mirror effect.
-2. Replace old transform method with matrix to improve performance.
+1. Support mirror effect
+2. Replace old transform method with matrix to improve performance
 
 1.0  [2022-06-29]:
-First release on github.
+First release on github
 `
   function createNotes() {
     const data = rawText
