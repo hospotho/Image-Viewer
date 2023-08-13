@@ -207,17 +207,24 @@
       const newIsImage = newInfo[2].tagName === 'IMG' || newInfo[2].tagName === 'VIDEO'
       const oldIsPlaceholder = oldInfo[1] < 10
       if (oldIsImage && !newIsImage && !oldIsPlaceholder) return false
-      if (!newInfo[0].startsWith('data')) {
+
+      const newUrl = newInfo[0]
+      const oldUrl = oldInfo[0]
+      if (!newUrl.startsWith('data')) {
+        const newIsSvg = newUrl.startsWith('data:image/svg') || newUrl.includes('.svg')
+        const oldIsSvg = oldUrl.startsWith('data:image/svg') || oldUrl.includes('.svg')
+        if (!newIsSvg && oldIsSvg) return true
+
         if (oldIsImage !== newIsImage && !oldIsPlaceholder) {
           const bgPos = window.getComputedStyle(oldInfo[2]).backgroundPosition
           const isPartialBackground = bgPos.split('px').map(Number).some(Boolean)
           return isPartialBackground
         }
-        const [newRealSize, oldRealSize] = await Promise.all([newInfo[0], oldInfo[0]].map(getImageRealSize))
-        if (newRealSize === oldRealSize) {
-          const [newBitSize, oldBitSize] = await Promise.all([newInfo[0], oldInfo[0]].map(getImageBitSize))
+        const [newBitSize, oldBitSize] = await Promise.all([newUrl, oldUrl].map(getImageBitSize))
+        if (newBitSize * oldBitSize !== 0) {
           return newBitSize > oldBitSize
         }
+        const [newRealSize, oldRealSize] = await Promise.all([newUrl, oldUrl].map(getImageRealSize))
         return newRealSize > oldRealSize
       }
       return false
@@ -283,7 +290,9 @@
             if (valid && (await isNewImageInfoBetter(imageInfo, imageInfoFromPoint))) {
               imageInfoFromPoint = imageInfo
               imageDomLayer = index
-              tryCount = Math.max(maxTry - 5, tryCount)
+              const url = imageInfoFromPoint[0]
+              const isSvg = url.startsWith('data:image/svg') || url.includes('.svg')
+              if (!isSvg) tryCount = Math.max(maxTry - 5, tryCount)
             }
           } else {
             if (valid) {

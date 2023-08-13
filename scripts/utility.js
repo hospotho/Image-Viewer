@@ -471,7 +471,7 @@ const ImageViewerUtils = (function () {
       imageDataList.push([video.poster, video])
     }
 
-    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.includes('.svg') || url.includes('image/svg') : url => url === '' || url === 'about:blank'
+    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.startsWith('data:image/svg') || url.includes('.svg') : url => url === '' || url === 'about:blank'
 
     const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
     const imageUrlSet = new Set(filteredDataList.map(data => data[0]))
@@ -549,7 +549,7 @@ const ImageViewerUtils = (function () {
       }
     }
 
-    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.includes('.svg') || url.includes('image/svg') : url => url === '' || url === 'about:blank'
+    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.startsWith('data:image/svg') || url.includes('.svg') : url => url === '' || url === 'about:blank'
 
     const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
     const imageUrlSet = new Set(filteredDataList.map(data => data[0]))
