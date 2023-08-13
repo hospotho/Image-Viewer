@@ -887,6 +887,8 @@ const ImageViewerUtils = (function () {
             return i
           }
         }
+
+        return -1
       }
 
       return getImageInfoIndex(imageList, input)
