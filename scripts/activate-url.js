@@ -48,9 +48,9 @@
     }
     if (testList.length === 0) return
 
-    const BackgroundResult = chrome.runtime.sendMessage({msg: 'check_iframes', data: testList})
+    const backgroundResult = chrome.runtime.sendMessage({msg: 'check_iframes', data: testList})
     const localResult = Promise.all(testList.map(checkIframeUrl))
-    const asyncList = await Promise.all([BackgroundResult, localResult])
+    const asyncList = await Promise.all([backgroundResult, localResult])
     for (let i = 0; i < testList.length; i++) {
       const result = asyncList[0][i] || asyncList[1][i]
       if (result === false) {

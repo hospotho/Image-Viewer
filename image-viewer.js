@@ -10,7 +10,7 @@ const imageViewer = (function () {
   let clearIndex = -1
 
   const failedImageSet = new Set()
-  const KeydownHandlerList = []
+  const keydownHandlerList = []
 
   //==========utility==========
   function buildImageNode(data, options) {
@@ -44,7 +44,7 @@ const imageViewer = (function () {
 
   function closeImageViewer() {
     document.documentElement.classList.remove('has-image-viewer')
-    KeydownHandlerList.length = 0
+    keydownHandlerList.length = 0
     const root = document.querySelector('#image-viewer-root')
     if (root) {
       root.addEventListener('transitionend', root.remove)
@@ -293,10 +293,10 @@ const imageViewer = (function () {
       border.style.transform = `translate(${left - 1}px, ${top - 1}px)`
       border.style.width = `${width + 4}px`
       border.style.height = `${height + 4}px`
-      IObserver.unobserve(imgNode)
+      observer.unobserve(imgNode)
     }
-    const IObserver = new IntersectionObserver(action)
-    IObserver.observe(imgNode)
+    const observer = new IntersectionObserver(action)
+    observer.observe(imgNode)
 
     let count = 0
     let {top, left} = imgNode.getBoundingClientRect()
@@ -307,7 +307,7 @@ const imageViewer = (function () {
       if (top !== currTop || left !== currLeft || count % 5 === 0) {
         top = currTop
         left = currLeft
-        IObserver.observe(imgNode)
+        observer.observe(imgNode)
       }
       if (count++ > displayFrame) {
         clearInterval(interval)
@@ -847,7 +847,7 @@ const imageViewer = (function () {
         'keydown',
         e => {
           if (!document.documentElement.classList.contains('has-image-viewer')) return
-          for (const func of KeydownHandlerList) {
+          for (const func of keydownHandlerList) {
             func(e)
           }
         },
@@ -906,7 +906,7 @@ const imageViewer = (function () {
       }
 
       shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
-      KeydownHandlerList.push(e => {
+      keydownHandlerList.push(e => {
         if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
         if (e.key === 'Enter') {
           e.preventDefault()
@@ -923,7 +923,7 @@ const imageViewer = (function () {
         e.preventDefault()
         chrome.runtime ? chrome.runtime.sendMessage('close_tab') : window.close()
       })
-      KeydownHandlerList.push(e => {
+      keydownHandlerList.push(e => {
         if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
         if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
           e.preventDefault()
@@ -944,7 +944,7 @@ const imageViewer = (function () {
         taskFunc(anchor)
       }
 
-      KeydownHandlerList.push(e => {
+      keydownHandlerList.push(e => {
         if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
         if (e.key === 'Insert' || e.key === '0') {
           e.preventDefault()
@@ -987,7 +987,7 @@ const imageViewer = (function () {
       for (const event of disableList) {
         viewer.addEventListener(event, e => e.stopPropagation())
       }
-      KeydownHandlerList.push(e => e.stopPropagation())
+      keydownHandlerList.push(e => e.stopPropagation())
     }
     function addSearchHotkeyEvent() {
       function checkKey(e, hotkey) {
@@ -1008,7 +1008,7 @@ const imageViewer = (function () {
       const ascii2dUrl = String.raw`https://ascii2d.net/search/url/{imgSrc}`
       const urlList = [googleUrl, yandexUrl, saucenaoUrl, ascii2dUrl]
 
-      KeydownHandlerList.push(e => {
+      keydownHandlerList.push(e => {
         for (let i = urlList.length - 1; i >= 0; i--) {
           if (hotkey[i] === '' || !checkKey(e, hotkey[i])) continue
 
@@ -1020,7 +1020,7 @@ const imageViewer = (function () {
         }
       })
 
-      KeydownHandlerList.push(e => {
+      keydownHandlerList.push(e => {
         if (!checkKey(e, hotkey[4])) return
         e.preventDefault()
         const imgUrl = shadowRoot.querySelector('li.current img').src
@@ -1033,7 +1033,7 @@ const imageViewer = (function () {
       const customHotkey = hotkey.slice(5)
       const customUrl = options.customUrl
       if (customHotkey.length !== customUrl.length) return
-      KeydownHandlerList.push(e => {
+      keydownHandlerList.push(e => {
         for (let i = customHotkey.length - 1; i >= 0; i--) {
           if (customHotkey[i] === '' || !checkKey(e, customHotkey[i])) continue
 
@@ -1235,7 +1235,7 @@ const imageViewer = (function () {
     }
 
     // key event
-    KeydownHandlerList.push(e => {
+    keydownHandlerList.push(e => {
       if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
