@@ -3,6 +3,7 @@
 
   // normal web page mode
   function checkIframeUrl(url) {
+    if (url.startsWith('blob:')) return true
     return new Promise(async _resolve => {
       const resolve = bool => {
         _resolve(bool)
