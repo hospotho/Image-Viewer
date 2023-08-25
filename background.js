@@ -82,7 +82,7 @@ const getRedirectUrl = async srcList => {
 
   return redirectUrlList
 }
-const checkIframeUrl = url => {
+const checkIframeUrl = (url, complete = false) => {
   return new Promise(async _resolve => {
     const resolve = bool => {
       _resolve(bool)
@@ -90,7 +90,9 @@ const checkIframeUrl = url => {
     }
     const timeout = setTimeout(() => resolve(false), 3000)
     try {
-      const res = await fetch(url, {method: 'HEAD'})
+      // default second parameter is index from array.map
+      const option = complete === true ? {method: 'GET'} : {method: 'HEAD'}
+      const res = await fetch(url, option)
       if (res.ok) {
         const options = res.headers.get('X-Frame-Options')?.toUpperCase()
         if (!options) {
@@ -107,6 +109,11 @@ const checkIframeUrl = url => {
         if (policy === 'strict-origin-when-cross-origin') {
           console.log('CORS error, assuming iframe url is valid', url)
           resolve(true)
+        }
+        const type = res.headers.get('content-type')
+        if (type?.startsWith?.('text/html')) {
+          console.log(`${res.status} error but correct type. Testing GET method`, url)
+          resolve(checkIframeUrl(url, true))
         }
       }
     } catch (error) {}
