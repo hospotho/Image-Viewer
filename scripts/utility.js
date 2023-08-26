@@ -326,7 +326,7 @@ const ImageViewerUtils = (function () {
       attrList.push({value: rawUrl, name: 'raw_url'})
     }
     const anchor = img.closest('a')
-    if (anchor && anchor.href.match(urlRegex)) {
+    if (anchor && anchor.href.match(argsRegex)) {
       attrList.push({value: anchor.href, name: 'parent_anchor'})
     }
     if (attrList.length === 0) return null
