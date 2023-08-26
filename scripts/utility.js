@@ -390,23 +390,23 @@ const ImageViewerUtils = (function () {
     for (const attr of img.attributes) {
       if (passList.has(attr.name)) continue
 
-      const attrUrl = attr.value
+      const attrUrl = new URL(attr.value, document.baseURI).href
       if (!attrUrl.match(urlRegex) || attrUrl === img.currentSrc) continue
-      attrList.push(attr)
+      attrList.push({name: attr.name, value: attrUrl})
       const rawAttrUrl = getRawUrl(attrUrl)
       if (rawAttrUrl !== attrUrl && rawAttrUrl !== rawUrl) {
-        attrList.push({value: rawAttrUrl, name: 'raw ' + attr.name})
+        attrList.push({name: 'raw ' + attr.name, value: rawAttrUrl})
       }
     }
     if (img.srcset && img.currentSrc !== img.srcset) {
       attrList.push(img.attributes['srcset'])
     }
     if (rawUrl !== img.currentSrc) {
-      attrList.push({value: rawUrl, name: 'raw url'})
+      attrList.push({name: 'raw url', value: rawUrl})
     }
     const anchor = img.closest('a')
     if (anchor && anchor.href.match(argsRegex)) {
-      attrList.push({value: anchor.href, name: 'parent anchor'})
+      attrList.push({name: 'parent anchor', value: anchor.href})
     }
     if (attrList.length === 0) return null
 
