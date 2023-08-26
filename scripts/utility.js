@@ -73,16 +73,30 @@ const ImageViewerUtils = (function () {
   // base function
   function getRawUrl(src) {
     if (src.startsWith('data')) return src
+    try {
+      const url = new URL(src)
+      const baseURI = url.origin + url.pathname
+      const argsMatch = baseURI.match(argsRegex)
+      if (argsMatch) {
+        const rawUrl = argsMatch[1]
+        if (rawUrl !== src) return rawUrl
+      }
+
+      const searchList = url.search
+        .slice(1)
+        .split('&')
+        .filter(t => t.match(argsRegex))
+        .join('&')
+      const imgSearch = searchList ? '?' + searchList : ''
+      const noSearch = baseURI + imgSearch
+      if (noSearch !== src) return noSearch
+    } catch (error) {}
+
     const argsMatch = src.match(argsRegex)
     if (argsMatch) {
       const rawUrl = argsMatch[1]
       if (rawUrl !== src) return rawUrl
     }
-    try {
-      const url = new URL(src)
-      const noSearch = url.origin + url.pathname
-      if (noSearch !== src) return noSearch
-    } catch (error) {}
     return src
   }
   function getDomUrl(dom) {
