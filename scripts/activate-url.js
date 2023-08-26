@@ -53,14 +53,14 @@
     const localResult = Promise.all(testList.map(checkIframeUrl))
     const asyncList = await Promise.all([backgroundResult, localResult])
     for (let i = 0; i < testList.length; i++) {
-      const result = asyncList[0][i] || asyncList[1][i]
-      if (result === false) {
-        const src = testList[i]
-        const iframe = document.querySelector(`iframe[src="${src}"]`)
-        if (iframe) {
-          iframe.classList.add('updateByTest')
-          iframe.src = 'about:blank'
-        }
+      const valid = asyncList[0][i] || asyncList[1][i]
+      if (valid) return
+
+      const src = testList[i]
+      const iframe = document.querySelector(`iframe[src="${src}"]`)
+      if (iframe) {
+        iframe.classList.add('updateByTest')
+        iframe.src = 'about:blank'
       }
     }
   }
