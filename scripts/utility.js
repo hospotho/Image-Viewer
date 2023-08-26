@@ -496,6 +496,43 @@ const ImageViewerUtils = (function () {
   }
 
   // get image
+  function processImageDataList(options, imageDataList) {
+    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.startsWith('data:image/svg') || url.includes('.svg') : url => url === '' || url === 'about:blank'
+
+    const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
+    let imageUrlSet = new Set(filteredDataList.map(data => data[0]))
+    let imageUrlOrderSet = [...imageUrlSet]
+
+    for (const data of filteredDataList) {
+      const url = data[0]
+      const rawUrl = getRawUrl(url)
+      if (url !== rawUrl && imageUrlSet.has(rawUrl)) {
+        const urlIndex = imageUrlOrderSet.indexOf(url)
+        const rawUrlIndex = imageUrlOrderSet.indexOf(rawUrl)
+        // ensure the order unchanged
+        if (urlIndex > rawUrlIndex) {
+          imageUrlSet.delete(url)
+          imageUrlOrderSet.splice(urlIndex, 1)
+        } else {
+          data[0] = rawUrl
+          imageUrlOrderSet[urlIndex] = imageUrlOrderSet[rawUrlIndex]
+          imageUrlOrderSet.splice(rawUrlIndex, 1)
+          imageUrlSet = new Set(imageUrlOrderSet)
+        }
+      }
+    }
+
+    const uniqueDataList = []
+    for (const data of filteredDataList) {
+      const url = data[0]
+      if (imageUrlSet.has(url)) {
+        imageUrlSet.delete(url)
+        uniqueDataList.push(data)
+      }
+    }
+
+    return uniqueDataList
+  }
   function getImageListWithoutFilter(options) {
     const imageDataList = []
     for (const img of document.querySelectorAll('img.simpleUnlazy')) {
@@ -519,26 +556,7 @@ const ImageViewerUtils = (function () {
       imageDataList.push([video.poster, video])
     }
 
-    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.startsWith('data:image/svg') || url.includes('.svg') : url => url === '' || url === 'about:blank'
-
-    const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
-    const imageUrlSet = new Set(filteredDataList.map(data => data[0]))
-
-    for (const data of filteredDataList) {
-      const url = data[0]
-      const rawUrl = getRawUrl(url)
-      if (url !== rawUrl && imageUrlSet.has(rawUrl)) imageUrlSet.delete(url)
-    }
-
-    const uniqueDataList = []
-    for (const data of filteredDataList) {
-      const url = data[0]
-      if (imageUrlSet.has(url)) {
-        imageUrlSet.delete(url)
-        uniqueDataList.push(data)
-      }
-    }
-
+    const uniqueDataList = processImageDataList(options, imageDataList)
     return uniqueDataList
   }
   function getImageList(options) {
@@ -597,26 +615,7 @@ const ImageViewerUtils = (function () {
       }
     }
 
-    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.startsWith('data:image/svg') || url.includes('.svg') : url => url === '' || url === 'about:blank'
-
-    const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
-    const imageUrlSet = new Set(filteredDataList.map(data => data[0]))
-
-    for (const data of filteredDataList) {
-      const url = data[0]
-      const rawUrl = getRawUrl(url)
-      if (url !== rawUrl && imageUrlSet.has(rawUrl)) imageUrlSet.delete(url)
-    }
-
-    const uniqueDataList = []
-    for (const data of filteredDataList) {
-      const url = data[0]
-      if (imageUrlSet.has(url)) {
-        imageUrlSet.delete(url)
-        uniqueDataList.push(data)
-      }
-    }
-
+    const uniqueDataList = processImageDataList(options, imageDataList)
     return uniqueDataList
   }
 
