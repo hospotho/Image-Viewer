@@ -329,19 +329,24 @@ const ImageViewerUtils = (function () {
     const rawUrl = getRawUrl(img.currentSrc)
     const attrList = []
     for (const attr of img.attributes) {
-      if (!passList.has(attr.name) && attr.value.match(urlRegex)) {
+      const attrUrl = attr.value
+      if (!passList.has(attr.name) && attrUrl.match(urlRegex)) {
         attrList.push(attr)
+      }
+      const rawAttrUrl = getRawUrl(attrUrl)
+      if (rawAttrUrl !== attrUrl) {
+        attrList.push({value: rawAttrUrl, name: 'raw ' + attr.name})
       }
     }
     if (img.srcset && img.currentSrc !== img.srcset) {
       attrList.push(img.attributes['srcset'])
     }
     if (rawUrl !== img.currentSrc) {
-      attrList.push({value: rawUrl, name: 'raw_url'})
+      attrList.push({value: rawUrl, name: 'raw url'})
     }
     const anchor = img.closest('a')
     if (anchor && anchor.href.match(argsRegex)) {
-      attrList.push({value: anchor.href, name: 'parent_anchor'})
+      attrList.push({value: anchor.href, name: 'parent anchor'})
     }
     if (attrList.length === 0) return null
 
@@ -374,7 +379,7 @@ const ImageViewerUtils = (function () {
       }
     }
 
-    return successList.length ? successList : 'original_src'
+    return successList.length ? successList : 'original src'
   }
   function clearWindowBackup(options) {
     const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data[0]))
