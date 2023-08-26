@@ -301,20 +301,17 @@ const ImageViewerUtils = (function () {
     if (img.srcset && img.currentSrc !== img.srcset) {
       attrList.push(img.attributes['srcset'])
     }
+    if (rawUrl !== img.currentSrc) {
+      attrList.push({value: rawUrl, name: 'raw url'})
+    }
     const anchor = img.closest('a')
     if (anchor && anchor.href.match(urlRegex)) {
       attrList.push({value: anchor.href, name: 'parent anchor'})
     }
-    if (rawUrl === img.currentSrc && attrList.length === 0) return null
+    if (attrList.length === 0) return null
 
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
-
-    if (rawUrl !== img.currentSrc) {
-      const newURL = rawUrl.replace(/https?:/, protocol)
-      const isBetter = await checkUrl(img, bitSize, naturalSize, newURL)
-      if (isBetter) return 'rawUrl'
-    }
 
     for (const attr of attrList) {
       const match = [...attr.value.matchAll(urlRegex)]
