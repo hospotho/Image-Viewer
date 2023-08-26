@@ -24,21 +24,19 @@ const ImageViewerUtils = (function () {
         return lockRelease
       },
       waitUnlock: async function () {
-        if (!busy) {
-          let waitRelease = null
-          const wait = new Promise(resolve => (waitRelease = resolve))
+        if (busy) return await promise
 
-          const originalAcquire = this.acquire
-          this.acquire = async () => {
-            const lockRelease = await originalAcquire()
-            waitRelease()
-            this.acquire = originalAcquire
-            return lockRelease
-          }
-
-          await wait
+        let waitRelease = null
+        const wait = new Promise(resolve => (waitRelease = resolve))
+        const originalAcquire = mutex.acquire
+        mutex.acquire = async () => {
+          const lockRelease = await originalAcquire()
+          waitRelease()
+          mutex.acquire = originalAcquire
+          return lockRelease
         }
 
+        await wait
         await promise
       }
     }
