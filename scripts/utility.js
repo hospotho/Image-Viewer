@@ -100,9 +100,26 @@ const ImageViewerUtils = (function () {
     if (result !== -1) return result
     return srcArray.indexOf(getRawUrl(query))
   }
+  function isEnableAutoScroll(options) {
+    if (document.documentElement.classList.contains('enableAutoScroll')) {
+      return true
+    }
+    const domainList = []
+    const regexList = []
+    for (const str of options.autoScrollEnableList) {
+      if (str[0] === '/' && str[str.length - 1] === '/') {
+        regexList.push(new RegExp(str.slice(1, -1)))
+      } else {
+        domainList.push(str)
+      }
+    }
+    const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length
+    if (enableAutoScroll) document.documentElement.classList.add('enableAutoScroll')
+    return enableAutoScroll
+  }
 
   // unlazy
-  async function scrollUnlazy(options, minWidth, minHeight) {
+  async function scrollUnlazy(options) {
     if (isEnableAutoScroll(options)) return
 
     const release = await mutex.acquire()
@@ -139,11 +156,11 @@ const ImageViewerUtils = (function () {
       let top = 0
       while (top < totalHeight) {
         const currTop = top
-        setTimeout(() => wrapper(window.scrollTo, currentX, currTop), scrollCount++ * 150)
+        setTimeout(() => wrapper(window.scrollTo, currentX, currTop), ++scrollCount * 150)
         top += scrollDelta
       }
-      setTimeout(() => wrapper(window.scrollTo, currentX, totalHeight), scrollCount++ * 150)
-      setTimeout(() => wrapper(window.scrollTo, currentX, currentY), scrollCount * 150)
+      setTimeout(() => wrapper(window.scrollTo, currentX, totalHeight), ++scrollCount * 150)
+      setTimeout(() => wrapper(window.scrollTo, currentX, currentY), ++scrollCount * 150)
     })
 
     scrollObserver.observe(document.documentElement, {
@@ -649,23 +666,6 @@ const ImageViewerUtils = (function () {
   }
 
   // auto scroll
-  function isEnableAutoScroll(options) {
-    if (document.documentElement.classList.contains('enableAutoScroll')) {
-      return true
-    }
-    const domainList = []
-    const regexList = []
-    for (const str of options.autoScrollEnableList) {
-      if (str[0] === '/' && str[str.length - 1] === '/') {
-        regexList.push(new RegExp(str.slice(1, -1)))
-      } else {
-        domainList.push(str)
-      }
-    }
-    const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length
-    if (enableAutoScroll) document.documentElement.classList.add('enableAutoScroll')
-    return enableAutoScroll
-  }
   function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
     let scrollFlag = false
 
