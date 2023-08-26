@@ -317,6 +317,7 @@ const ImageViewerUtils = (function () {
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
 
+    const successList = []
     for (const attr of attrList) {
       const match = [...attr.value.matchAll(urlRegex)]
       if (match.length === 0) continue
@@ -327,7 +328,7 @@ const ImageViewerUtils = (function () {
         const isBetter = await checkUrl(img, bitSize, naturalSize, newURL)
         if (isBetter) {
           img.removeAttribute(attr.name)
-          return attr.name
+          successList.push(attr.name)
         }
       }
 
@@ -337,12 +338,12 @@ const ImageViewerUtils = (function () {
         const isBetter = await checkUrl(img, bitSize, naturalSize, first, last)
         if (isBetter) {
           img.removeAttribute(attr.name)
-          return attr.name
+          successList.push(attr.name)
         }
       }
     }
 
-    return 'original src'
+    return successList.length ? successList : 'original src'
   }
   function clearWindowBackup(options) {
     const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data[0]))
@@ -413,11 +414,16 @@ const ImageViewerUtils = (function () {
 
       const asyncList = await Promise.all(imgList.map(checkImageAttr))
       imgList.map(img => img.classList.remove('unlazyNotComplete'))
-      const lazyName = asyncList.filter(Boolean)
+      const resultList = asyncList.flat()
+      const lazyList = resultList.filter(Boolean)
 
-      if (lazyName.length !== 0) {
-        for (const name of [...new Set(lazyName)]) {
-          console.log(`Unlazy ${lazyName.filter(x => x === name).length} img with ${name}`)
+      if (resultList.length > imgList.length) {
+        console.log('Multiple unlazy attributes found')
+      }
+      if (lazyList.length !== 0) {
+      const lazySet = new Set(lazyList)
+        for (const name of lazySet) {
+          console.log(`Unlazy ${lazyList.filter(x => x === name).length} img with ${name}`)
         }
         // create dom update for observer manually
         const div = document.createElement('div')
