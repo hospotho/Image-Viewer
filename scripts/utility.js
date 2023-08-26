@@ -384,6 +384,54 @@ const ImageViewerUtils = (function () {
 
     return successList.length ? successList : 'original src'
   }
+  async function startUnlazy(minWidth, minHeight) {
+    const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
+
+    const imgList = []
+    let allComplete = true
+    for (const img of unlazyList) {
+      // checkImageAttr() will fail if image is still loading
+      if (!img.complete) {
+        if (img.loading === 'lazy') img.loading = 'eager'
+        allComplete = false
+        continue
+      }
+      if (img.getAttribute('decoding')) img.decoding = 'sync'
+      if (img.src === '') {
+        imgList.push(img)
+        continue
+      }
+      const {width, height} = img.getBoundingClientRect()
+      if ((width >= minWidth && height >= minHeight) || width === 0 || height === 0) imgList.push(img)
+    }
+
+    const listSize = imgList.length
+    if (!listSize) return allComplete
+
+    console.log(`Try to unlazy ${listSize} image`)
+    imgList.map(img => img.classList.add('simpleUnlazy', 'unlazyNotComplete'))
+
+    const asyncList = await Promise.all(imgList.map(checkImageAttr))
+    imgList.map(img => img.classList.remove('unlazyNotComplete'))
+    const resultList = asyncList.flat()
+    const lazyList = resultList.filter(Boolean)
+
+    if (resultList.length > listSize) console.log('Multiple unlazy attributes found')
+    if (lazyList.length) {
+      const lazySet = new Set(lazyList)
+      for (const name of lazySet) {
+        console.log(`Unlazy ${lazyList.filter(x => x === name).length} img with ${name}`)
+      }
+      // create dom update for observer manually
+      const div = document.createElement('div')
+      document.body.appendChild(div)
+      setTimeout(() => div.remove(), 100)
+    } else {
+      console.log('No lazy image found')
+    }
+
+    return allComplete
+  }
   function clearWindowBackup(options) {
     const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data[0]))
     const backup = window.backupImageUrlList
@@ -426,54 +474,10 @@ const ImageViewerUtils = (function () {
       }
     }, 10000)
 
-    const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
     const minWidth = Math.min(options.minWidth, 100)
     const minHeight = Math.min(options.minHeight, 100)
 
-    const imgList = []
-    let allComplete = true
-    for (const img of unlazyList) {
-      // checkImageAttr() will fail if image is still loading
-      if (!img.complete) {
-        if (img.loading === 'lazy') img.loading = 'eager'
-        allComplete = false
-        continue
-      }
-      if (img.getAttribute('decoding')) img.decoding = 'sync'
-      if (img.src === '') {
-        imgList.push(img)
-        continue
-      }
-      const {width, height} = img.getBoundingClientRect()
-      if ((width >= minWidth && height >= minHeight) || width === 0 || height === 0) imgList.push(img)
-    }
-
-    const listSize = imgList.length
-    if (listSize) {
-      console.log(`Try to unlazy ${listSize} image`)
-      imgList.map(img => img.classList.add('simpleUnlazy', 'unlazyNotComplete'))
-
-      const asyncList = await Promise.all(imgList.map(checkImageAttr))
-      imgList.map(img => img.classList.remove('unlazyNotComplete'))
-      const resultList = asyncList.flat()
-      const lazyList = resultList.filter(Boolean)
-
-      if (resultList.length > imgList.length) {
-        console.log('Multiple unlazy attributes found')
-      }
-      if (lazyList.length) {
-        const lazySet = new Set(lazyList)
-        for (const name of lazySet) {
-          console.log(`Unlazy ${lazyList.filter(x => x === name).length} img with ${name}`)
-        }
-        // create dom update for observer manually
-        const div = document.createElement('div')
-        document.body.appendChild(div)
-        setTimeout(() => div.remove(), 100)
-      } else {
-        console.log('No lazy image found')
-      }
-    }
+    const allComplete = await startUnlazy(minWidth, minHeight)
 
     if (!allComplete) {
       await new Promise(resolve => setTimeout(resolve, 100))
