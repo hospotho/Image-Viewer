@@ -45,6 +45,8 @@ const ImageViewerUtils = (function () {
   let firstUnlazyFlag = true
   let firstUnlazyScrollFlag = false
   let firstSlowAlertFlag = false
+
+  // init observer to prevent unlazy image being modify
   const unlazyObserver = new MutationObserver(mutationsList => {
     const updatedSet = new Set()
     const modifiedSet = new Set()
@@ -68,7 +70,39 @@ const ImageViewerUtils = (function () {
   })
   unlazyObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
 
-  // base function
+  // init function hotkey
+  const options = window.ImageViewerOption
+  window.addEventListener(
+    'keydown',
+    e => {
+      // enable auto scroll
+      if (checkKey(e, options.functionHotkey[0])) {
+        e.preventDefault()
+        if (!document.documentElement.classList.contains('enableAutoScroll')) {
+          document.documentElement.classList.add('enableAutoScroll')
+        }
+        if (document.documentElement.classList.contains('has-image-viewer')) {
+          ImageViewerUtils.checkAndStartAutoScroll(null)
+        }
+      }
+      // download images
+      if (typeof imageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
+        e.preventDefault()
+        chrome.runtime.sendMessage('download_images')
+      }
+    },
+    true
+  )
+
+  //==========utility==========
+  function checkKey(e, hotkey) {
+    const keyList = hotkey.split('+').map(str => str.trim())
+    const key = keyList[keyList.length - 1] === e.key.toUpperCase()
+    const ctrl = keyList.includes('Ctrl') === e.ctrlKey
+    const alt = keyList.includes('Alt') === e.altKey || e.getModifierState('AltGraph')
+    const shift = keyList.includes('Shift') === e.shiftKey
+    return key && ctrl && alt && shift
+  }
   function getRawUrl(src) {
     if (src.startsWith('data')) return src
     try {
@@ -150,7 +184,7 @@ const ImageViewerUtils = (function () {
     let minWidth = domWidth
     let minHeight = domHeight
     for (const img of container.querySelectorAll(selector)) {
-      const { width, height } = img.getBoundingClientRect()
+      const {width, height} = img.getBoundingClientRect()
       if (width !== 0 && height !== 0) {
         minWidth = Math.min(minWidth, width)
         minHeight = Math.min(minHeight, height)
@@ -759,39 +793,6 @@ const ImageViewerUtils = (function () {
     })
     imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
   }
-
-  // init function hotkey
-  function checkKey(e, hotkey) {
-    const keyList = hotkey.split('+').map(str => str.trim())
-    const key = keyList[keyList.length - 1] === e.key.toUpperCase()
-    const ctrl = keyList.includes('Ctrl') === e.ctrlKey
-    const alt = keyList.includes('Alt') === e.altKey || e.getModifierState('AltGraph')
-    const shift = keyList.includes('Shift') === e.shiftKey
-    return key && ctrl && alt && shift
-  }
-
-  const options = window.ImageViewerOption
-  window.addEventListener(
-    'keydown',
-    e => {
-      // enable auto scroll
-      if (checkKey(e, options.functionHotkey[0])) {
-        e.preventDefault()
-        if (!document.documentElement.classList.contains('enableAutoScroll')) {
-          document.documentElement.classList.add('enableAutoScroll')
-        }
-        if (document.documentElement.classList.contains('has-image-viewer')) {
-          ImageViewerUtils.checkAndStartAutoScroll(null)
-        }
-      }
-      // download images
-      if (typeof imageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
-        e.preventDefault()
-        chrome.runtime.sendMessage('download_images')
-      }
-    },
-    true
-  )
 
   return {
     closeImageViewer: function () {
