@@ -380,7 +380,7 @@ const ImageViewerUtils = (function () {
       if (firstUnlazyScrollFlag || firstSlowAlertFlag) return
       const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
       const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
-      if (stillLoading) {
+      if (!firstUnlazyScrollFlag || stillLoading) {
         firstSlowAlertFlag = true
         console.log('Slow connection, images still loading')
         alert('Slow connection, images still loading')
