@@ -106,7 +106,8 @@ const ImageViewerUtils = (function () {
   function getRawUrl(src) {
     if (src.startsWith('data')) return src
     try {
-      const url = new URL(src)
+      // protocol-relative URL
+      const url = new URL(src, document.baseURI)
       const baseURI = url.origin + url.pathname
       const argsMatch = baseURI.match(argsRegex)
       if (argsMatch) {
