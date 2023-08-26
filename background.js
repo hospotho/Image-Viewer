@@ -9,25 +9,28 @@ const passDataToTab = (id, name, data) => {
     }
   })
 }
-const getImageBitSize = src => {
+const getImageBitSize = (src, complete = false) => {
   const cache = srcBitSizeMap.get(src)
   if (cache !== undefined) return cache
 
   return new Promise(async _resolve => {
     const resolve = size => {
-      srcBitSizeMap.set(src, size)
+      const cache = srcBitSizeMap.get(src)
+      if (cache === undefined || cache === 0) srcBitSizeMap.set(src, size)
       _resolve(size)
     }
     setTimeout(() => resolve(0), 5000)
 
     try {
-      const res = await fetch(src, {method: 'HEAD'})
+      const option = complete === true ? {method: 'GET'} : {method: 'HEAD'}
+      const res = await fetch(src, option)
       if (res.ok) {
         const type = res.headers.get('Content-Type')
         const length = res.headers.get('Content-Length')
         if (type?.startsWith('image')) {
           const size = Number(length) || 0
-          resolve(size)
+          // some server return strange content length for HEAD method
+          size > 100 ? resolve(size) : resolve(await getImageBitSize(src, true))
         }
       }
     } catch (error) {}
