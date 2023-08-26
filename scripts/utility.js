@@ -364,7 +364,8 @@ const ImageViewerUtils = (function () {
         const newURL = match[0][0].replace(/https?:/, protocol)
         const isBetter = await checkUrl(img, bitSize, naturalSize, newURL)
         if (isBetter) {
-          img.removeAttribute(attr.name)
+          const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
+          img.removeAttribute(realAttrName)
           successList.push(attr.name)
         }
       }
@@ -374,7 +375,8 @@ const ImageViewerUtils = (function () {
         const last = match[match.length - 1][0].replace(/https?:/, protocol)
         const isBetter = await checkUrl(img, bitSize, naturalSize, first, last)
         if (isBetter) {
-          img.removeAttribute(attr.name)
+          const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
+          img.removeAttribute(realAttrName)
           successList.push(attr.name)
         }
       }
