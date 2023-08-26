@@ -132,6 +132,36 @@ const ImageViewerUtils = (function () {
     return enableAutoScroll
   }
 
+  // wrapper size
+  function getImageSelector(img) {
+    let curr = img.parentElement
+    let selector = 'img'
+    while (curr.parentElement) {
+      if (curr.classList.length > 1) {
+        selector = curr.tagName.toLowerCase() + ':is(.' + [...curr.classList].map(CSS.escape).join(', .') + ') ' + selector
+      } else if (curr.classList.length === 1) {
+        selector = curr.tagName.toLowerCase() + '.' + CSS.escape(curr.classList[0]) + ' ' + selector
+      } else {
+        selector = curr.tagName.toLowerCase() + ' ' + selector
+      }
+      curr = curr.parentElement
+    }
+    return selector
+  }
+  function updateSizeBySelector(domWidth, domHeight, container, selector, options) {
+    let minWidth = domWidth
+    let minHeight = domHeight
+    for (const img of container.querySelectorAll(selector)) {
+      const { width, height } = img.getBoundingClientRect()
+      if (width !== 0 && height !== 0) {
+        minWidth = Math.min(minWidth, width)
+        minHeight = Math.min(minHeight, height)
+      }
+    }
+    options.minWidth = Math.min(minWidth - 3, options.minWidth)
+    options.minHeight = Math.min(minHeight - 3, options.minHeight)
+  }
+
   // unlazy
   async function scrollUnlazy(options) {
     if (isEnableAutoScroll(options)) return
@@ -786,46 +816,13 @@ const ImageViewerUtils = (function () {
       const wrapperDivList = wrapper ? document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`) : []
 
       if (!wrapper || wrapperDivList.length <= 1) {
-        const img = dom
-        let curr = img.parentElement
-        let selector = 'img'
-        while (curr.parentElement) {
-          if (curr.classList.length > 1) {
-            selector = curr.tagName.toLowerCase() + ':is(.' + [...curr.classList].map(CSS.escape).join(', .') + ') ' + selector
-          } else if (curr.classList.length === 1) {
-            selector = curr.tagName.toLowerCase() + '.' + CSS.escape(curr.classList[0]) + ' ' + selector
-          } else {
-            selector = curr.tagName.toLowerCase() + ' ' + selector
-          }
-          curr = curr.parentElement
-        }
-
-        let minWidth = domWidth
-        let minHeight = domHeight
-        for (const img of document.querySelectorAll(selector)) {
-          const {width, height} = img.getBoundingClientRect()
-          if (width !== 0 && height !== 0) {
-            minWidth = Math.min(minWidth, width)
-            minHeight = Math.min(minHeight, height)
-          }
-        }
-        options.minWidth = Math.min(minWidth - 3, options.minWidth)
-        options.minHeight = Math.min(minHeight - 3, options.minHeight)
+        const selector = getImageSelector(dom)
+        updateSizeBySelector(domWidth, domHeight, document, selector, options)
         return
       }
 
       if (wrapper.classList.length === 0) {
-        let minWidth = domWidth
-        let minHeight = domHeight
-        for (const img of wrapper.querySelectorAll('img')) {
-          const {width, height} = img.getBoundingClientRect()
-          if (width !== 0 && height !== 0) {
-            minWidth = Math.min(minWidth, width)
-            minHeight = Math.min(minHeight, height)
-          }
-        }
-        options.minWidth = Math.min(minWidth - 3, options.minWidth)
-        options.minHeight = Math.min(minHeight - 3, options.minHeight)
+        updateSizeBySelector(domWidth, domHeight, wrapper, 'img', options)
         return
       }
 
