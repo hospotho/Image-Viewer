@@ -388,11 +388,12 @@ const ImageViewerUtils = (function () {
     const rawUrl = getRawUrl(img.currentSrc)
     const attrList = []
     for (const attr of img.attributes) {
-      if (passList.has(attr.name)) continue
+      if (passList.has(attr.name) || !attr.value.match(urlRegex)) continue
 
       const attrUrl = new URL(attr.value, document.baseURI).href
-      if (!attrUrl.match(urlRegex) || attrUrl === img.currentSrc) continue
-      attrList.push({name: attr.name, value: attrUrl})
+      if (attrUrl !== img.currentSrc) {
+        attrList.push({name: attr.name, value: attrUrl})
+      }
       const rawAttrUrl = getRawUrl(attrUrl)
       if (rawAttrUrl !== attrUrl && rawAttrUrl !== rawUrl) {
         attrList.push({name: 'raw ' + attr.name, value: rawAttrUrl})
