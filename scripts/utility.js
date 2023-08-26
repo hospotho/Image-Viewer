@@ -370,10 +370,6 @@ const ImageViewerUtils = (function () {
     if (bitSize) {
       const result = await checkUrlSize(img, bitSize, getImageBitSize, url)
       if (result) return true
-      if (!result && url[0] === getRawUrl(img.currentSrc)) {
-        srcBitSizeMap.set(url[0], 0)
-        return false
-      }
     }
     const result = await checkUrlSize(img, naturalSize, getImageRealSize, url)
     return result
