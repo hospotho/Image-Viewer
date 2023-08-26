@@ -115,7 +115,7 @@ const ImageViewerUtils = (function () {
       scrollObserver.disconnect()
       domChanged = true
 
-      console.log('unlazy by scroll')
+      console.log('Unlazy by scroll')
       let found = false
       for (const mutation of mutationsList) {
         const element = mutation.target
@@ -306,11 +306,11 @@ const ImageViewerUtils = (function () {
       attrList.push(img.attributes['srcset'])
     }
     if (rawUrl !== img.currentSrc) {
-      attrList.push({value: rawUrl, name: 'raw url'})
+      attrList.push({value: rawUrl, name: 'raw_url'})
     }
     const anchor = img.closest('a')
     if (anchor && anchor.href.match(urlRegex)) {
-      attrList.push({value: anchor.href, name: 'parent anchor'})
+      attrList.push({value: anchor.href, name: 'parent_anchor'})
     }
     if (attrList.length === 0) return null
 
@@ -343,7 +343,7 @@ const ImageViewerUtils = (function () {
       }
     }
 
-    return successList.length ? successList : 'original src'
+    return successList.length ? successList : 'original_src'
   }
   function clearWindowBackup(options) {
     const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data[0]))
@@ -376,21 +376,22 @@ const ImageViewerUtils = (function () {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
-    const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
-
-    const minWidth = Math.min(options.minWidth, 100)
-    const minHeight = Math.min(options.minHeight, 100)
-    const imgList = []
-
     setTimeout(() => {
+      if (firstUnlazyScrollFlag || firstSlowAlertFlag) return
       const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
-      if (!firstUnlazyScrollFlag && !firstSlowAlertFlag && [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')) {
+      const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
+      if (stillLoading) {
         firstSlowAlertFlag = true
         console.log('Slow connection, images still loading')
         alert('Slow connection, images still loading')
       }
     }, 10000)
 
+    const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
+    const minWidth = Math.min(options.minWidth, 100)
+    const minHeight = Math.min(options.minHeight, 100)
+
+    const imgList = []
     let allComplete = true
     for (const img of unlazyList) {
       // checkImageAttr() will fail if image is still loading
@@ -407,6 +408,7 @@ const ImageViewerUtils = (function () {
       const {width, height} = img.getBoundingClientRect()
       if ((width >= minWidth && height >= minHeight) || width === 0 || height === 0) imgList.push(img)
     }
+
     const listSize = imgList.length
     if (listSize) {
       console.log(`Try to unlazy ${listSize} image`)
@@ -420,8 +422,8 @@ const ImageViewerUtils = (function () {
       if (resultList.length > imgList.length) {
         console.log('Multiple unlazy attributes found')
       }
-      if (lazyList.length !== 0) {
-      const lazySet = new Set(lazyList)
+      if (lazyList.length) {
+        const lazySet = new Set(lazyList)
         for (const name of lazySet) {
           console.log(`Unlazy ${lazyList.filter(x => x === name).length} img with ${name}`)
         }
@@ -849,7 +851,7 @@ const ImageViewerUtils = (function () {
       const iframeList = [...document.getElementsByTagName('iframe')]
       const iframeSrcList = iframeList.map(iframe => iframe.src)
       const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
-      if (filteredList.length !== 0) {
+      if (filteredList.length) {
         const minSize = Math.min(options.minWidth, options.minHeight)
         const iframeImage = await chrome.runtime.sendMessage({msg: 'extract_frames', minSize: minSize})
 
