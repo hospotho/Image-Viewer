@@ -22,8 +22,8 @@ const getImageBitSize = (src, complete = false) => {
     setTimeout(() => resolve(0), 5000)
 
     try {
-      const option = complete === true ? {method: 'GET'} : {method: 'HEAD'}
-      const res = await fetch(src, option)
+      const method = complete === true ? 'GET' : 'HEAD'
+      const res = await fetch(src, {method: method})
       if (res.ok) {
         const type = res.headers.get('Content-Type')
         const length = res.headers.get('Content-Length')
@@ -94,8 +94,8 @@ const checkIframeUrl = (url, complete = false) => {
     const timeout = setTimeout(() => resolve(false), 3000)
     try {
       // default second parameter is index from array.map
-      const option = complete === true ? {method: 'GET'} : {method: 'HEAD'}
-      const res = await fetch(url, option)
+      const method = complete === true ? 'GET' : 'HEAD'
+      const res = await fetch(src, {method: method})
       if (res.ok) {
         const options = res.headers.get('X-Frame-Options')?.toUpperCase()
         if (!options) {

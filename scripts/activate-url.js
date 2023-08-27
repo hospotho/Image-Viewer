@@ -156,7 +156,7 @@
     if (typeof imageViewer !== 'function') {
       await chrome.runtime.sendMessage('load_script')
     }
-    rawSize > currSize ? imageViewer([rawUrl], options) : imageViewer([image.src], options)
+    imageViewer([rawSize > currSize ? rawUrl : image.src], options)
     image.style.display = 'none'
   }
 
