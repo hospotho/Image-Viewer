@@ -378,17 +378,7 @@ const ImageViewerUtils = (function () {
     const result = await checkUrlSize(img, naturalSize, getImageRealSize, url)
     return result
   }
-  async function checkImageAttr(img) {
-    const loadingType = img.loading
-    img.loading = 'eager'
-    if (loadingType === 'lazy') {
-      await new Promise(resolve => {
-        img.onload = resolve
-        img.onerror = resolve
-        if (img.complete) resolve()
-      })
-    }
-
+  function getUnlazyAttrList(img) {
     const rawUrl = getRawUrl(img.currentSrc)
     const attrList = []
     for (const attr of img.attributes) {
@@ -413,6 +403,10 @@ const ImageViewerUtils = (function () {
     if (anchor && anchor.href.match(argsRegex)) {
       attrList.push({name: 'parent anchor', value: anchor.href})
     }
+    return attrList
+  }
+  async function checkImageAttr(img) {
+    const attrList = getUnlazyAttrList(img)
     if (attrList.length === 0) return null
 
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
