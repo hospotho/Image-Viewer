@@ -505,32 +505,37 @@ const ImageViewerUtils = (function () {
       if (!allImageUrlSet.has(url)) backup.splice(i, 1)
     }
   }
+  function createFirstUnlazyRace(options) {
+    // slow connection alert
+    setTimeout(() => {
+      if (firstUnlazyScrollFlag || firstSlowAlertFlag) return
+      const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
+      const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
+      if (!firstUnlazyScrollFlag || stillLoading) {
+        firstSlowAlertFlag = true
+        console.log('Slow connection, images still loading')
+        alert('Slow connection, images still loading')
+      }
+    }, 10000)
+
+    // set timeout for first unlazy
+    const timeout = new Promise(resolve =>
+      setTimeout(() => {
+        resolve()
+        if (!firstUnlazyScrollFlag) {
+          console.log('Unlazy timeout')
+        }
+      }, 1000)
+    )
+    const clone = structuredClone(options)
+    clone.firstTime = true
+    const race = Promise.race([simpleUnlazyImage(clone), timeout])
+    return race
+  }
   async function simpleUnlazyImage(options) {
-    // set timeout for first time unlazy
     if (firstUnlazyFlag) {
       firstUnlazyFlag = false
-      setTimeout(() => {
-        if (firstUnlazyScrollFlag || firstSlowAlertFlag) return
-        const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
-        const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
-        if (!firstUnlazyScrollFlag || stillLoading) {
-          firstSlowAlertFlag = true
-          console.log('Slow connection, images still loading')
-          alert('Slow connection, images still loading')
-        }
-      }, 10000)
-
-      const clone = structuredClone(options)
-      clone.firstTime = true
-      const timeout = new Promise(resolve =>
-        setTimeout(() => {
-          resolve()
-          if (!firstUnlazyScrollFlag) {
-            console.log('Unlazy timeout')
-          }
-        }, 1000)
-      )
-      const race = Promise.race([simpleUnlazyImage(clone), timeout])
+      const race = createFirstUnlazyRace(options)
       return race
     }
     // wait first unlazy complete
