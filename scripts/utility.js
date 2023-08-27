@@ -234,7 +234,7 @@ const ImageViewerUtils = (function () {
     options.minHeight = Math.min(minHeight - 3, options.minHeight)
   }
 
-  // unlazy
+  // scroll unlazy
   function scrollThoughDocument(currentX, currentY) {
     const wrapper = (func, ...args) => {
       if (document.documentElement.classList.contains('has-image-viewer')) func(...args)
@@ -313,6 +313,7 @@ const ImageViewerUtils = (function () {
     tryActivateLazyImage(domChangedPromise)
   }
 
+  // attr unlazy
   async function waitSrcUpdate(img, _resolve) {
     const srcUrl = new URL(img.src, document.baseURI)
     while (srcUrl.href !== img.currentSrc) {
@@ -487,6 +488,8 @@ const ImageViewerUtils = (function () {
 
     return successList.length ? successList : 'original src'
   }
+
+  // unlazy main function
   function getUnlazyImageList(minWidth, minHeight) {
     const imgList = []
     let allComplete = true
