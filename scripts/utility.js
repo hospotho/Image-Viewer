@@ -509,6 +509,17 @@ const ImageViewerUtils = (function () {
     // set timeout for first time unlazy
     if (firstUnlazyFlag) {
       firstUnlazyFlag = false
+      setTimeout(() => {
+        if (firstUnlazyScrollFlag || firstSlowAlertFlag) return
+        const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
+        const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
+        if (!firstUnlazyScrollFlag || stillLoading) {
+          firstSlowAlertFlag = true
+          console.log('Slow connection, images still loading')
+          alert('Slow connection, images still loading')
+        }
+      }, 10000)
+
       const clone = structuredClone(options)
       clone.firstTime = true
       const timeout = new Promise(resolve =>
@@ -526,17 +537,6 @@ const ImageViewerUtils = (function () {
     while (!options.firstTime && !firstUnlazyScrollFlag) {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
-
-    setTimeout(() => {
-      if (firstUnlazyScrollFlag || firstSlowAlertFlag) return
-      const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
-      const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
-      if (!firstUnlazyScrollFlag || stillLoading) {
-        firstSlowAlertFlag = true
-        console.log('Slow connection, images still loading')
-        alert('Slow connection, images still loading')
-      }
-    }, 10000)
 
     const minWidth = Math.min(options.minWidth, 100)
     const minHeight = Math.min(options.minHeight, 100)
