@@ -442,15 +442,13 @@ const ImageViewerUtils = (function () {
 
     return successList.length ? successList : 'original src'
   }
-  async function startUnlazy(minWidth, minHeight) {
-    const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
-
+  function getUnlazyImageList(minWidth, minHeight) {
     const imgList = []
     let allComplete = true
-    for (const img of unlazyList) {
+    for (const img of document.querySelectorAll('img:not(.simpleUnlazy)')) {
+      img.loading = 'eager'
       // checkImageAttr() will fail if image is still loading
       if (!img.complete) {
-        if (img.loading === 'lazy') img.loading = 'eager'
         allComplete = false
         continue
       }
@@ -462,8 +460,11 @@ const ImageViewerUtils = (function () {
       const {width, height} = img.getBoundingClientRect()
       if ((width >= minWidth && height >= minHeight) || width === 0 || height === 0) imgList.push(img)
     }
-
-    const listSize = imgList.length
+    return {imgList, allComplete}
+  }
+  async function startUnlazy(minWidth, minHeight) {
+    const {unlazyList, allComplete} = getUnlazyImageList(minWidth, minHeight)
+    const listSize = unlazyList.length
     if (!listSize) return allComplete
 
     console.log(`Try to unlazy ${listSize} image`)
