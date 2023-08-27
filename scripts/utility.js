@@ -202,7 +202,8 @@ const ImageViewerUtils = (function () {
     const oneToOne = imageCount === wrapperDivList.length
     const finalWidth = oneToOne ? Math.min(...width) : Math.min(...width.filter(w => w * 1.5 >= large || w * 1.2 >= optionLarge))
     const finalHeight = oneToOne ? Math.min(...height) : Math.min(...height.filter(h => h * 1.5 >= small || h * 1.2 >= optionSmall))
-    const finalSize = Math.min(finalWidth, finalHeight) - 3
+    // not allow size below 50 to prevent icon
+    const finalSize = Math.max(50, Math.min(finalWidth, finalHeight)) - 3
     options.minWidth = Math.min(finalSize, options.minWidth)
     options.minHeight = Math.min(finalSize, options.minHeight)
   }
