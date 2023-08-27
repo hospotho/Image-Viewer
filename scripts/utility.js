@@ -633,6 +633,24 @@ const ImageViewerUtils = (function () {
     const uniqueDataList = processImageDataList(options, imageDataList)
     return uniqueDataList
   }
+  function isNodeSizeEnough(node, minWidth, minHeight) {
+    const widthAttr = node.getAttribute('data-width')
+    if (widthAttr) {
+      const heightAttr = node.getAttribute('data-height')
+      const width = Number(widthAttr)
+      const height = Number(heightAttr)
+      return width >= minWidth && height >= minHeight
+    } else {
+      const {width, height} = node.getBoundingClientRect()
+      if (width === 0 || height === 0) {
+        node.setAttribute('no-bg', '')
+        return false
+      }
+      node.setAttribute('data-width', width)
+      node.setAttribute('data-height', height)
+      return width >= minWidth && height >= minHeight
+    }
+  }
   function getImageList(options) {
     const minWidth = options.minWidth
     const minHeight = options.minHeight
@@ -653,23 +671,7 @@ const ImageViewerUtils = (function () {
     }
 
     for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
-      const widthAttr = node.getAttribute('data-width')
-      if (widthAttr) {
-        const heightAttr = node.getAttribute('data-height')
-        const width = Number(widthAttr)
-        const height = Number(heightAttr)
-        if (width < minWidth || height < minHeight) continue
-      } else {
-        const {width, height} = node.getBoundingClientRect()
-        if (width === 0 || height === 0) {
-          node.setAttribute('no-bg', '')
-          continue
-        }
-        node.setAttribute('data-width', width)
-        node.setAttribute('data-height', height)
-        if (width < minWidth || height < minHeight) continue
-      }
-
+      if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') {
         node.setAttribute('no-bg', '')
