@@ -508,11 +508,11 @@ const ImageViewerUtils = (function () {
       const {width, height} = img.getBoundingClientRect()
       if ((width >= minWidth && height >= minHeight) || width === 0 || height === 0) imgList.push(img)
     }
-    return {imgList, allComplete}
+    return [imgList, allComplete]
   }
   async function startUnlazy(minWidth, minHeight) {
-    const {unlazyList, allComplete} = getUnlazyImageList(minWidth, minHeight)
-    const listSize = unlazyList.length
+    const [imgList, allComplete] = getUnlazyImageList(minWidth, minHeight)
+    const listSize = imgList.length
     if (!listSize) return allComplete
 
     console.log(`Try to unlazy ${listSize} image`)
