@@ -198,6 +198,10 @@ const ImageViewerUtils = (function () {
   // unlazy
   async function scrollUnlazy(options) {
     if (isEnableAutoScroll(options)) return
+    if (!document.documentElement.classList.contains('has-image-viewer')) {
+      firstUnlazyScrollFlag = false
+      return
+    }
 
     const release = await mutex.acquire()
     release()
