@@ -43,6 +43,7 @@ const ImageViewerUtils = (function () {
   })()
 
   let firstUnlazyFlag = true
+  let firstUnlazyCompleteFlag = false
   let firstUnlazyScrollFlag = false
   let firstSlowAlertFlag = false
 
@@ -582,9 +583,7 @@ const ImageViewerUtils = (function () {
       return race
     }
     // wait first unlazy complete
-    while (!options.firstTime && !firstUnlazyScrollFlag) {
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
+    if (!options.firstTime && !firstUnlazyCompleteFlag) return
 
     const minWidth = Math.min(options.minWidth, 100)
     const minHeight = Math.min(options.minHeight, 100)
@@ -593,13 +592,17 @@ const ImageViewerUtils = (function () {
 
     if (!allComplete) {
       await new Promise(resolve => setTimeout(resolve, 100))
-      await simpleUnlazyImage(options)
+      simpleUnlazyImage(options)
     }
 
-    if (!firstUnlazyScrollFlag) {
-      console.log('First unlazy complete')
+    if (!firstUnlazyCompleteFlag) {
+      firstUnlazyCompleteFlag ||= allComplete
       clearWindowBackup(options)
       if (typeof imageViewer === 'function') imageViewer('clear')
+    }
+
+    if (firstUnlazyCompleteFlag && !firstUnlazyScrollFlag) {
+      console.log('First unlazy complete')
       firstUnlazyScrollFlag = true
       if (document.readyState === 'complete') {
         setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 500)
