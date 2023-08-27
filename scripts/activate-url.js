@@ -83,17 +83,20 @@
       }
       if (!found || !document.querySelector('iframe:not(.loadedWorker)')) return
       await removeFailedIframe()
+      chrome.runtime.sendMessage('get_options')
       chrome.runtime.sendMessage('load_worker')
     })
     observer.observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ['src']})
 
     await removeFailedIframe()
     console.log('Init content script.')
+    chrome.runtime.sendMessage('get_options')
     chrome.runtime.sendMessage('load_worker')
 
     // for some rare case
     setTimeout(async () => {
       await removeFailedIframe()
+      chrome.runtime.sendMessage('get_options')
       chrome.runtime.sendMessage('load_worker')
     }, 3000)
   }
