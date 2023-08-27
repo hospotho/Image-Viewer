@@ -2,6 +2,14 @@
   'use strict'
 
   const rawText = `
+1.30 [2023-08-27]:
+Stability update
+1. Improved SVG filtering
+2. Added support for multiple layers unlazy
+3. Enhanced logic for getting raw image URLs
+4. Added support for more edge cases
+5. Other bug fixes and improvements
+
 1.29 [2023-08-08]:
 1. Corrected code related to the service worker lifecycle
 2. Enhanced unlazy logic to handle additional cases
