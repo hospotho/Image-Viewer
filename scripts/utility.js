@@ -196,6 +196,34 @@ const ImageViewerUtils = (function () {
   }
 
   // unlazy
+  function scrollThoughDocument(currentX, currentY) {
+    const wrapper = (func, ...args) => {
+      if (document.documentElement.classList.contains('has-image-viewer')) func(...args)
+    }
+    const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
+    const scrollDelta = window.innerHeight * 1.5
+    let scrollCount = 0
+    let top = 0
+    while (top < totalHeight) {
+      const currTop = top
+      setTimeout(() => wrapper(window.scrollTo, currentX, currTop), ++scrollCount * 150)
+      top += scrollDelta
+    }
+    setTimeout(() => wrapper(window.scrollTo, currentX, totalHeight), ++scrollCount * 150)
+    setTimeout(() => wrapper(window.scrollTo, currentX, currentY), ++scrollCount * 150)
+  }
+  async function tryActivateLazyImage(domChangedPromise) {
+    window.scrollTo(0, 0)
+    window.scrollBy({top: window.innerHeight * 2})
+
+    if (await domChangedPromise) return
+    let maxHeight = 0
+    for (const img of document.getElementsByTagName('img')) {
+      const height = img.clientHeight
+      maxHeight = Math.max(maxHeight, height)
+    }
+    window.scrollBy({top: maxHeight * 2})
+  }
   async function scrollUnlazy(options) {
     if (isEnableAutoScroll(options)) return
     if (!document.documentElement.classList.contains('has-image-viewer')) {
@@ -228,20 +256,7 @@ const ImageViewerUtils = (function () {
         return
       }
 
-      const wrapper = (func, ...args) => {
-        if (document.documentElement.classList.contains('has-image-viewer')) func(...args)
-      }
-      const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-      const scrollDelta = window.innerHeight * 1.5
-      let scrollCount = 0
-      let top = 0
-      while (top < totalHeight) {
-        const currTop = top
-        setTimeout(() => wrapper(window.scrollTo, currentX, currTop), ++scrollCount * 150)
-        top += scrollDelta
-      }
-      setTimeout(() => wrapper(window.scrollTo, currentX, totalHeight), ++scrollCount * 150)
-      setTimeout(() => wrapper(window.scrollTo, currentX, currentY), ++scrollCount * 150)
+      scrollThoughDocument(currentX, currentY)
     })
 
     scrollObserver.observe(document.documentElement, {
@@ -255,19 +270,10 @@ const ImageViewerUtils = (function () {
       if (!domChanged) window.scrollTo(currentX, currentY)
     }, 1000)
 
-    window.scrollTo(0, 0)
-    window.scrollBy({top: window.innerHeight * 2})
-    setTimeout(() => {
-      if (domChanged) return
-
-      let maxHeight = 0
-      for (const img of document.getElementsByTagName('img')) {
-        const height = img.clientHeight
-        maxHeight = Math.max(maxHeight, height)
-      }
-      window.scrollBy({top: maxHeight * 2})
-    }, 100)
+    const domChangedPromise = new Promise(resolve => setTimeout(() => resolve(domChanged), 100))
+    tryActivateLazyImage(domChangedPromise)
   }
+
   async function waitSrcUpdate(img, _resolve) {
     const srcUrl = new URL(img.src, document.baseURI)
     while (srcUrl.href !== img.currentSrc) {
