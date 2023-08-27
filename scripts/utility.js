@@ -808,6 +808,58 @@ const ImageViewerUtils = (function () {
   }
 
   // auto scroll
+  function startAutoScroll() {
+    let stopFlag = true
+    const getStopFlag = () => {
+      return stopFlag
+    }
+    const action = async () => {
+      await mutex.waitUnlock()
+
+      const allImage = document.getElementsByTagName('img')
+      let currBottom = 0
+      let bottomImg = null
+      for (const img of allImage) {
+        const {bottom} = img.getBoundingClientRect()
+        if (bottom > currBottom) {
+          currBottom = bottom
+          bottomImg = img
+        }
+      }
+
+      if (!document.documentElement.classList.contains('has-image-viewer')) return
+      bottomImg.scrollIntoView({block: 'start'})
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
+    const timer = async () => {
+      stopFlag = false
+      let lastY = window.scrollY
+      let count = 0
+      while (lastY < (document.body.scrollHeight || document.documentElement.scrollHeight)) {
+        if (count > 5 || !document.documentElement.classList.contains('has-image-viewer')) break
+
+        if (document.visibilityState !== 'visible') {
+          while (document.visibilityState !== 'visible') {
+            await new Promise(resolve => setTimeout(resolve, 100))
+          }
+        }
+
+        await action()
+        if (lastY === window.scrollY) {
+          count++
+          window.scrollBy(0, -100)
+          window.scrollBy({top: window.innerHeight})
+        } else {
+          count = 0
+        }
+        lastY = window.scrollY
+      }
+      stopFlag = true
+    }
+
+    timer()
+    return [getStopFlag, timer]
+  }
   function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
     let scrollFlag = false
 
@@ -1044,58 +1096,12 @@ const ImageViewerUtils = (function () {
         window.scrollTo(startX, targetHeight)
       }
 
-      const period = 500
-      let stopFlag = true
-      const action = async () => {
-        await mutex.waitUnlock()
-
-        const allImage = document.getElementsByTagName('img')
-        let currBottom = 0
-        let bottomImg = null
-        for (const img of allImage) {
-          const {bottom} = img.getBoundingClientRect()
-          if (bottom > currBottom) {
-            currBottom = bottom
-            bottomImg = img
-          }
-        }
-
-        if (!document.documentElement.classList.contains('has-image-viewer')) return
-        bottomImg.scrollIntoView({block: 'start'})
-        await new Promise(resolve => setTimeout(resolve, period))
-      }
-      const timer = async () => {
-        stopFlag = false
-        let lastY = window.scrollY
-        let count = 0
-        while (lastY < (document.body.scrollHeight || document.documentElement.scrollHeight)) {
-          if (count > 5 || !document.documentElement.classList.contains('has-image-viewer')) break
-
-          if (document.visibilityState !== 'visible') {
-            while (document.visibilityState !== 'visible') {
-              await new Promise(resolve => setTimeout(resolve, 100))
-            }
-          }
-
-          await action()
-          if (lastY === window.scrollY) {
-            count++
-            window.scrollBy(0, -100)
-            window.scrollBy({top: window.innerHeight})
-          } else {
-            count = 0
-          }
-          lastY = window.scrollY
-        }
-        stopFlag = true
-      }
-
-      timer()
+      const [getStopFlag, timer] = startAutoScroll()
 
       let existNewDom = false
       const newNodeObserver = new MutationObserver(() => {
         existNewDom = true
-        if (stopFlag) timer()
+        if (getStopFlag()) timer()
       })
       newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
       setTimeout(() => {
