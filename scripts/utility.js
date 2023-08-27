@@ -170,6 +170,8 @@ const ImageViewerUtils = (function () {
   function updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options) {
     const width = []
     const height = []
+    const rawWidth = []
+    const rawHeight = []
     let imageCount = 0
     for (const div of wrapperDivList) {
       // ad may use same wrapper and adblock set it to display: none
@@ -183,6 +185,8 @@ const ImageViewerUtils = (function () {
       const heightList = []
       for (const img of imgList) {
         const {width, height} = img.getBoundingClientRect()
+        rawWidth.push(width)
+        rawHeight.push(height)
         if (width > height) {
           widthList.push(width)
           heightList.push(height)
@@ -200,8 +204,9 @@ const ImageViewerUtils = (function () {
     const [large, small] = domWidth / domHeight > 1 ? [domWidth, domHeight] : [domHeight, domWidth]
     const [optionLarge, optionSmall] = options.minWidth / options.minHeight > 1 ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
     const oneToOne = imageCount === wrapperDivList.length
-    const finalWidth = oneToOne ? Math.min(...width) : Math.min(...width.filter(w => w * 1.5 >= large || w * 1.2 >= optionLarge))
-    const finalHeight = oneToOne ? Math.min(...height) : Math.min(...height.filter(h => h * 1.5 >= small || h * 1.2 >= optionSmall))
+    const sameSize = Math.max(...rawWidth) === Math.min(...rawWidth) || Math.max(...rawHeight) === Math.min(...rawHeight)
+    const finalWidth = oneToOne && sameSize ? Math.min(...width) : Math.min(...width.filter(w => w * 1.5 >= large || w * 1.2 >= optionLarge))
+    const finalHeight = oneToOne && sameSize ? Math.min(...height) : Math.min(...height.filter(h => h * 1.5 >= small || h * 1.2 >= optionSmall))
     // not allow size below 50 to prevent icon
     const finalSize = Math.max(50, Math.min(finalWidth, finalHeight)) - 3
     options.minWidth = Math.min(finalSize, options.minWidth)
