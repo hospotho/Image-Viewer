@@ -166,6 +166,45 @@ const ImageViewerUtils = (function () {
   }
 
   // wrapper size
+  function updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options) {
+    const width = []
+    const height = []
+    let imageCount = 0
+    for (const div of wrapperDivList) {
+      // ad may use same wrapper and adblock set it to display: none
+      if (div.offsetParent === null && div.style.position !== 'fixed') continue
+
+      const imgList = div.querySelectorAll('img')
+      imageCount += imgList.length
+      if (imgList.length === 0) continue
+
+      const widthList = []
+      const heightList = []
+      for (const img of imgList) {
+        const {width, height} = img.getBoundingClientRect()
+        if (width > height) {
+          widthList.push(width)
+          heightList.push(height)
+        } else {
+          widthList.push(height)
+          heightList.push(width)
+        }
+      }
+      const maxWidth = Math.max(...widthList)
+      const maxHeight = Math.max(...heightList)
+      width.push(maxWidth)
+      height.push(maxHeight)
+    }
+
+    const [large, small] = domWidth / domHeight > 1 ? [domWidth, domHeight] : [domHeight, domWidth]
+    const [optionLarge, optionSmall] = options.minWidth / options.minHeight > 1 ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
+    const oneToOne = imageCount === wrapperDivList.length
+    const finalWidth = oneToOne ? Math.min(...width) : Math.min(...width.filter(w => w * 1.5 >= large || w * 1.2 >= optionLarge))
+    const finalHeight = oneToOne ? Math.min(...height) : Math.min(...height.filter(h => h * 1.5 >= small || h * 1.2 >= optionSmall))
+    const finalSize = Math.min(finalWidth, finalHeight) - 3
+    options.minWidth = Math.min(finalSize, options.minWidth)
+    options.minHeight = Math.min(finalSize, options.minHeight)
+  }
   function getImageSelector(img) {
     let curr = img.parentElement
     let selector = 'img'
@@ -829,49 +868,11 @@ const ImageViewerUtils = (function () {
         updateSizeBySelector(domWidth, domHeight, document, selector, options)
         return
       }
-
       if (wrapper.classList.length === 0) {
         updateSizeBySelector(domWidth, domHeight, wrapper, 'img', options)
         return
       }
-
-      const width = []
-      const height = []
-      let imageCount = 0
-      for (const div of wrapperDivList) {
-        // ad may use same wrapper and adblock set it to display: none
-        if (div.offsetParent === null && div.style.position !== 'fixed') continue
-
-        const imgList = div.querySelectorAll('img')
-        imageCount += imgList.length
-        if (imgList.length === 0) continue
-
-        const widthList = []
-        const heightList = []
-        for (const img of imgList) {
-          const {width, height} = img.getBoundingClientRect()
-          if (width > height) {
-            widthList.push(width)
-            heightList.push(height)
-          } else {
-            widthList.push(height)
-            heightList.push(width)
-          }
-        }
-        const maxWidth = Math.max(...widthList)
-        const maxHeight = Math.max(...heightList)
-        width.push(maxWidth)
-        height.push(maxHeight)
-      }
-
-      const [large, small] = domWidth / domHeight > 1 ? [domWidth, domHeight] : [domHeight, domWidth]
-      const [optionLarge, optionSmall] = options.minWidth / options.minHeight > 1 ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
-      const oneToOne = imageCount === wrapperDivList.length
-      const finalWidth = oneToOne ? Math.min(...width) : Math.min(...width.filter(w => w * 1.5 >= large || w * 1.2 >= optionLarge))
-      const finalHeight = oneToOne ? Math.min(...height) : Math.min(...height.filter(h => h * 1.5 >= small || h * 1.2 >= optionSmall))
-      const finalSize = Math.min(finalWidth, finalHeight) - 3
-      options.minWidth = Math.min(finalSize, options.minWidth)
-      options.minHeight = Math.min(finalSize, options.minHeight)
+      updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options)
     },
 
     getOrderedImageUrls: async function (options, retryCount = 0) {
