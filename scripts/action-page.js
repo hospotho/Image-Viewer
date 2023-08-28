@@ -44,10 +44,9 @@
       }
       await new Promise(resolve => {
         let fulfilled = false
-        const release = async (overtime = false) => {
+        const release = async () => {
           if (fulfilled) return
           fulfilled = true
-          period = overtime ? period * multiplier : 500
           if (document.visibilityState !== 'visible') {
             console.log('wait document visible')
             while (document.visibilityState !== 'visible') {
@@ -56,7 +55,10 @@
           }
           resolve()
         }
-        setTimeout(() => release(true), period)
+        setTimeout(() => {
+          period *= multiplier
+          release()
+        }, period)
         updateRelease = release
       })
     }
@@ -78,6 +80,7 @@
         await new Promise(resolve => setTimeout(resolve, 300))
       }
       observer.observe(document.documentElement, {childList: true, subtree: true})
+      period = 500
       updateRelease()
     }
   })
