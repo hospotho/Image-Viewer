@@ -1,4 +1,4 @@
-const ImageViewerUtils = (function () {
+window.ImageViewerUtils = (function () {
   'use strict'
 
   const passList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'height', 'width', 'sizes', 'onerror', 'data-error'])

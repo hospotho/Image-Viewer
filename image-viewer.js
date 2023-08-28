@@ -1,4 +1,4 @@
-const imageViewer = (function () {
+window.imageViewer = (function () {
   'use strict'
 
   let shadowRoot = null
