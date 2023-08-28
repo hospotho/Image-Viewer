@@ -229,27 +229,24 @@
       }
       return false
     }
-    const getImageBitSize = src => {
+    const getImageBitSize = async src => {
       // protocol-relative URL
       const url = new URL(src, document.baseURI)
       const href = url.href
-      return new Promise(async resolve => {
-        try {
-          const res = await fetch(href, {method: 'HEAD'})
-          if (!res.ok) {
-            resolve(0)
-            return
-          }
-          const type = res.headers.get('Content-Type')
-          const length = res.headers.get('Content-Length')
-          if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
-            const size = Number(length)
-            size ? resolve(size) : resolve(0)
-            return
-          }
-        } catch (error) {}
-        resolve(0)
-      })
+      const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+      try {
+        const res = await fetch(href, {method: 'HEAD'})
+        if (!res.ok) {
+          return 0
+        }
+        const type = res.headers.get('Content-Type')
+        const length = res.headers.get('Content-Length')
+        if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
+          const size = Number(length)
+          return size
+        }
+      } catch (error) {}
+      return 0
     }
     const getImageRealSize = url => {
       return new Promise(resolve => {
@@ -359,15 +356,12 @@
         }
   })()
 
-  function createDataUrl(srcUrl) {
-    return new Promise(async resolve => {
-      const requests = [chrome.runtime.sendMessage({msg: 'get_local_size', url: srcUrl}), chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl})]
-      const [localSize, globalSize] = await Promise.all(requests)
-      if (localSize || globalSize) {
-        resolve(srcUrl)
-        return
-      }
+  async function createDataUrl(srcUrl) {
+    const requests = [chrome.runtime.sendMessage({msg: 'get_local_size', url: srcUrl}), chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl})]
+    const [localSize, globalSize] = await Promise.all(requests)
+    if (localSize || globalSize) return srcUrl
 
+    return new Promise(resolve => {
       const img = new Image()
 
       img.onload = () => {

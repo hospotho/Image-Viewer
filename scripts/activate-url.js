@@ -2,31 +2,27 @@
   'use strict'
 
   // normal web page mode
-  function checkIframeUrl(url) {
+  async function checkIframeUrl(url) {
     if (url.startsWith('blob:')) return true
-    return new Promise(async _resolve => {
-      const resolve = bool => {
-        _resolve(bool)
-        clearTimeout(timeout)
-      }
-      const timeout = setTimeout(() => resolve(false), 3000)
-      try {
-        const res = await fetch(url, {method: 'HEAD'})
-        if (res.ok) {
-          const options = res.headers.get('X-Frame-Options')?.toUpperCase()
-          if (!options) {
-            resolve(true)
-          } else if (options === 'DENY') {
-            resolve(false)
-          } else if (options === 'SAMEORIGIN') {
-            const target = new URL(res.url).origin
-            const origin = new URL(location.href).origin
-            resolve(target === origin)
-          }
+
+    const controller = new AbortController()
+    setTimeout(() => controller.abort(), 3000)
+    try {
+      const res = await fetch(url, {method: 'HEAD', signal: controller.signal})
+      if (res.ok) {
+        const options = res.headers.get('X-Frame-Options')?.toUpperCase()
+        if (!options) {
+          return true
+        } else if (options === 'DENY') {
+          return false
+        } else if (options === 'SAMEORIGIN') {
+          const target = new URL(res.url).origin
+          const origin = new URL(location.href).origin
+          return target === origin
         }
-      } catch (error) {}
-      resolve(false)
-    })
+      }
+    } catch (error) {}
+    return false
   }
   function isNonTrivialUrl(iframe) {
     const src = iframe.src

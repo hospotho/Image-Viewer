@@ -3,15 +3,14 @@
 
   if (window.top === window.self) return
 
-  function createDataUrl(srcUrl) {
-    return new Promise(async resolve => {
-      const requests = [chrome.runtime.sendMessage({msg: 'get_local_size', url: srcUrl}), chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl})]
-      const [localSize, globalSize] = await Promise.all(requests)
-      if (localSize || globalSize) {
-        resolve(srcUrl)
-        return
-      }
+  async function createDataUrl(srcUrl) {
+    const requests = [chrome.runtime.sendMessage({msg: 'get_local_size', url: srcUrl}), chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl})]
+    const [localSize, globalSize] = await Promise.all(requests)
+    if (localSize || globalSize) {
+      return srcUrl
+    }
 
+    return new Promise(resolve => {
       const img = new Image()
 
       img.onload = () => {

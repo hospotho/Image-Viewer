@@ -9,34 +9,33 @@ const passDataToTab = (id, name, data) => {
     }
   })
 }
-const getImageBitSize = (src, complete = false) => {
+const getImageBitSize = async (src, complete = false) => {
   const cache = srcBitSizeMap.get(src)
   if (cache !== undefined) return cache
 
-  return new Promise(async _resolve => {
-    const resolve = size => {
-      const cache = srcBitSizeMap.get(src)
-      if (cache === undefined || cache === 0) srcBitSizeMap.set(src, size)
-      _resolve(size)
-    }
-    setTimeout(() => resolve(0), 5000)
-
-    try {
-      const method = complete === true ? 'GET' : 'HEAD'
-      const res = await fetch(src, {method: method})
-      if (res.ok) {
-        const type = res.headers.get('Content-Type')
-        const length = res.headers.get('Content-Length')
-        if (type?.startsWith('image')) {
-          const size = Number(length) || 0
-          // some server return strange content length for HEAD method
-          size > 100 ? resolve(size) : resolve(await getImageBitSize(src, true))
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), 5000)
+  try {
+    const method = complete === true ? 'GET' : 'HEAD'
+    const res = await fetch(src, {method: method, signal: controller.signal})
+    if (res.ok) {
+      const type = res.headers.get('Content-Type')
+      const length = res.headers.get('Content-Length')
+      if (type?.startsWith('image')) {
+        const size = Number(length)
+        // some server return strange content length for HEAD method
+        if (size > 100 || complete) {
+          const cache = srcBitSizeMap.get(src)
+          if (cache === undefined || cache === 0) srcBitSizeMap.set(src, size)
+          return size
+        } else {
+          return getImageBitSize(src, true)
         }
       }
-    } catch (error) {}
+    }
+  } catch (error) {}
 
-    resolve(0)
-  })
+  return 0
 }
 const getImageLocalRealSize = (id, srcUrl) => {
   const cache = srcLocalRealSizeMap.get(srcUrl)
@@ -85,43 +84,36 @@ const getRedirectUrl = async srcList => {
 
   return redirectUrlList
 }
-const checkIframeUrl = (url, complete = false) => {
-  return new Promise(async _resolve => {
-    const resolve = bool => {
-      _resolve(bool)
-      clearTimeout(timeout)
-    }
-    const timeout = setTimeout(() => resolve(false), 3000)
-    try {
-      // default second parameter is index from array.map
-      const method = complete === true ? 'GET' : 'HEAD'
-      const res = await fetch(src, {method: method})
-      if (res.ok) {
-        const options = res.headers.get('X-Frame-Options')?.toUpperCase()
-        if (!options) {
-          resolve(true)
-        } else if (options === 'DENY') {
-          resolve(false)
-        } else if (options === 'SAMEORIGIN') {
-          const target = new URL(res.url).origin
-          const origin = new URL(sender.tab.url).origin
-          resolve(target === origin)
-        }
-      } else {
-        const policy = res.headers.get('referrer-policy')
-        if (policy === 'strict-origin-when-cross-origin') {
-          console.log('CORS error, assuming iframe url is valid', url)
-          resolve(true)
-        }
-        const type = res.headers.get('content-type')
-        if (type?.startsWith?.('text/html')) {
-          console.log(`${res.status} error but correct type. Testing GET method`, url)
-          resolve(checkIframeUrl(url, true))
-        }
+const checkIframeUrl = async (url, origin, complete = false) => {
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), 3000)
+  try {
+    const method = complete ? 'GET' : 'HEAD'
+    const res = await fetch(url, {method: method})
+    if (res.ok) {
+      const options = res.headers.get('X-Frame-Options')?.toUpperCase()
+      if (!options) {
+        return true
+      } else if (options === 'DENY') {
+        return false
+      } else if (options === 'SAMEORIGIN') {
+        const target = new URL(res.url).origin
+        return target === origin
       }
-    } catch (error) {}
-    resolve(false)
-  })
+    } else {
+      const policy = res.headers.get('referrer-policy')
+      if (policy === 'strict-origin-when-cross-origin') {
+        console.log('CORS error, assuming iframe url is valid', url)
+        return true
+      }
+      const type = res.headers.get('content-type')
+      if (type?.startsWith?.('text/html') && !complete) {
+        console.log(`${res.status} error but correct type. Testing GET method`, url)
+        return checkIframeUrl(url, origin, true)
+      }
+    }
+  } catch (error) {}
+  return false
 }
 const resetLabel = () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
 
@@ -238,7 +230,8 @@ function addMessageHandler() {
       case 'check_iframes': {
         ;(async () => {
           const iframeUrlList = request.data
-          const asyncList = iframeUrlList.map(checkIframeUrl)
+          const origin = new URL(sender.tab.url).origin
+          const asyncList = iframeUrlList.map(url => checkIframeUrl(url, origin))
           const result = await Promise.all(asyncList)
           sendResponse(result, false)
         })()
