@@ -82,7 +82,7 @@ window.ImageViewerUtils = (function () {
         if (!document.documentElement.classList.contains('enableAutoScroll')) {
           document.documentElement.classList.add('enableAutoScroll')
         }
-        if (document.documentElement.classList.contains('has-image-viewer')) {
+        if (hasImageViewer()) {
           autoScroll()
         }
       }
@@ -165,6 +165,9 @@ window.ImageViewerUtils = (function () {
     if (enableAutoScroll) document.documentElement.classList.add('enableAutoScroll')
     return enableAutoScroll
   }
+  function hasImageViewer() {
+    return document.documentElement.classList.contains('has-image-viewer')
+  }
 
   // wrapper size
   function updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options) {
@@ -244,7 +247,7 @@ window.ImageViewerUtils = (function () {
   // scroll unlazy
   function scrollThoughDocument(currentX, currentY) {
     const wrapper = (func, ...args) => {
-      if (document.documentElement.classList.contains('has-image-viewer')) func(...args)
+      if (hasImageViewer()) func(...args)
     }
     const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
     const scrollDelta = window.innerHeight * 1.5
@@ -276,7 +279,7 @@ window.ImageViewerUtils = (function () {
     }
 
     await new Promise(resolve => setTimeout(resolve, 500))
-    if (!document.documentElement.classList.contains('has-image-viewer')) {
+    if (!hasImageViewer()) {
       firstUnlazyScrollFlag = false
       return
     }
@@ -837,7 +840,7 @@ window.ImageViewerUtils = (function () {
         }
       }
 
-      if (!document.documentElement.classList.contains('has-image-viewer')) return
+      if (!hasImageViewer()) return
       bottomImg.scrollIntoView({block: 'start'})
       await new Promise(resolve => setTimeout(resolve, 500))
     }
@@ -846,7 +849,7 @@ window.ImageViewerUtils = (function () {
       let lastY = window.scrollY
       let count = 0
       while (lastY < (document.body.scrollHeight || document.documentElement.scrollHeight)) {
-        if (count > 5 || !document.documentElement.classList.contains('has-image-viewer')) break
+        if (count > 5 || !hasImageViewer()) break
 
         if (document.visibilityState !== 'visible') {
           while (document.visibilityState !== 'visible') {
@@ -875,7 +878,7 @@ window.ImageViewerUtils = (function () {
 
     const originalScrollIntoView = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = function () {
-      if (!document.documentElement.classList.contains('has-image-viewer')) {
+      if (!hasImageViewer()) {
         scrollFlag = true
       }
       let currX = window.scrollX
@@ -891,14 +894,14 @@ window.ImageViewerUtils = (function () {
 
     const originalScrollTo = window.scrollTo
     window.scrollTo = function () {
-      if (!document.documentElement.classList.contains('has-image-viewer')) {
+      if (!hasImageViewer()) {
         scrollFlag = true
       }
       originalScrollTo.apply(this, arguments)
     }
 
     const imageViewerObserver = new MutationObserver(() => {
-      if (!document.documentElement.classList.contains('has-image-viewer')) {
+      if (!hasImageViewer()) {
         imageViewerObserver.disconnect()
         newNodeObserver.disconnect()
         setTimeout(() => {
