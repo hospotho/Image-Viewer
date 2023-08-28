@@ -181,7 +181,7 @@
 
   // main
   async function main() {
-    const imageList = imageViewer('get_image_list')
+    const imageList = ImageViewer('get_image_list')
     if (imageList.length === 0) return
 
     const imageUrlList = imageList.map(i => (typeof i === 'string' ? i : i[0]))

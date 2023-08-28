@@ -149,10 +149,10 @@
     const rawSize = rawUrl === image.src ? 0 : await getRawSize(rawUrl)
     const currSize = image.naturalWidth
 
-    if (typeof imageViewer !== 'function') {
+    if (typeof ImageViewer !== 'function') {
       await chrome.runtime.sendMessage('load_script')
     }
-    imageViewer([rawSize > currSize ? rawUrl : image.src], options)
+    ImageViewer([rawSize > currSize ? rawUrl : image.src], options)
     image.style.display = 'none'
   }
 

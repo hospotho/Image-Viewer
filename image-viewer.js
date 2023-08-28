@@ -1,4 +1,4 @@
-window.imageViewer = (function () {
+window.ImageViewer = (function () {
   'use strict'
 
   let shadowRoot = null
@@ -1358,7 +1358,7 @@ window.imageViewer = (function () {
   }
 
   //==========main function==========
-  function imageViewer(imageList, options) {
+  function ImageViewer(imageList, options) {
     if (arguments.length === 1) {
       const action = arguments[0]
       switch (action) {
@@ -1401,5 +1401,5 @@ window.imageViewer = (function () {
     }
   }
 
-  return imageViewer
+  return ImageViewer
 })()

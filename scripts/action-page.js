@@ -6,7 +6,7 @@
   }
 
   if (document.documentElement.classList.contains('has-image-viewer')) {
-    imageViewer('close_image_viewer')
+    ImageViewer('close_image_viewer')
     return
   }
 
@@ -22,10 +22,10 @@
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
   window.backupImageUrlList = Array.from(combinedImageList)
 
-  if (typeof imageViewer !== 'function') {
+  if (typeof ImageViewer !== 'function') {
     await chrome.runtime.sendMessage('load_script')
   }
-  imageViewer(window.backupImageUrlList, options)
+  ImageViewer(window.backupImageUrlList, options)
 
   // auto update
   let period = 500
@@ -35,12 +35,12 @@
     while (document.documentElement.classList.contains('has-image-viewer')) {
       const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
       const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-      const currentImageList = imageViewer('get_image_list')
+      const currentImageList = ImageViewer('get_image_list')
 
       if (!document.documentElement.classList.contains('has-image-viewer')) return
       if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
         window.backupImageUrlList = Array.from(combinedImageList)
-        imageViewer(combinedImageList, options)
+        ImageViewer(combinedImageList, options)
       }
       await new Promise(_resolve => {
         const resolve = async () => {

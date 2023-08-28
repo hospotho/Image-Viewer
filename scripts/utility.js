@@ -87,7 +87,7 @@ window.ImageViewerUtils = (function () {
         }
       }
       // download images
-      if (typeof imageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
+      if (typeof ImageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
         e.preventDefault()
         chrome.runtime.sendMessage('download_images')
       }
@@ -615,7 +615,7 @@ window.ImageViewerUtils = (function () {
     if (!firstUnlazyCompleteFlag) {
       firstUnlazyCompleteFlag ||= allComplete
       clearWindowBackup(options)
-      if (typeof imageViewer === 'function') imageViewer('clear_image_list')
+      if (typeof ImageViewer === 'function') ImageViewer('clear_image_list')
     }
 
     if (firstUnlazyCompleteFlag && !firstUnlazyScrollFlag) {
@@ -916,8 +916,8 @@ window.ImageViewerUtils = (function () {
     const startX = window.scrollX
     const startY = window.scrollY
 
-    if (typeof imageViewer === 'function') {
-      const imageListLength = imageViewer('get_image_list').length
+    if (typeof ImageViewer === 'function') {
+      const imageListLength = ImageViewer('get_image_list').length
       if (imageListLength > 50) {
         const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
         const targetHeight = Math.max(totalHeight * 0.85, totalHeight - window.innerHeight * 3)

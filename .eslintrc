@@ -10,7 +10,7 @@
     "sourceType": "module"
   },
   "globals": {
-    "imageViewer": false,
+    "ImageViewer": false,
     "ImageViewerUtils": false
   },
   "rules": {
