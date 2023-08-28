@@ -736,7 +736,7 @@ window.imageViewer = (function () {
 
   function buildImageList(imageList, options) {
     const _imageList = shadowRoot.querySelector('#iv-image-list')
-    let first = buildImageNode(imageList[0], options)
+    const first = buildImageNode(imageList[0], options)
     _imageList.appendChild(first)
     currentImageList = Array.from(imageList)
     lastUpdateTime = Date.now()
@@ -968,7 +968,7 @@ window.imageViewer = (function () {
       })
       // call preventDefault to trigger auxclick event
       viewer.addEventListener('mousedown', e => {
-        if (e.button == 1) e.preventDefault()
+        if (e.button === 1) e.preventDefault()
       })
       // browsers map middle click to opening a link in a new tab without switching
       // opening a link in auxclick event handler can do the same job (undocumented?)
@@ -1114,7 +1114,7 @@ window.imageViewer = (function () {
       let startPos = {x: 0, y: 0}
       li.addEventListener('mousedown', e => {
         dragFlag = true
-        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        const [moveX, moveY] = MtoV(img.style.transform).slice(-2)
         imagePos = {x: moveX, y: moveY}
         startPos = {x: e.clientX, y: e.clientY}
       })
@@ -1252,15 +1252,11 @@ window.imageViewer = (function () {
     // key event
     keydownHandlerList.push(e => {
       if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      const right = e.key === 'ArrowRight' || e.key === 'ArrowDown'
+      const left = e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+      if (right || left) {
         e.preventDefault()
-        nextItem(e.repeat)
-        return
-      }
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        e.preventDefault()
-        prevItem(e.repeat)
-        return
+        right ? nextItem(e.repeat) : prevItem(e.repeat)
       }
     })
     // arrow button
@@ -1368,13 +1364,14 @@ window.imageViewer = (function () {
       switch (action) {
         case 'get_image_list':
           return Array.from(currentImageList)
-        case 'clear':
+        case 'clear': {
           clearFlag = true
           const current = shadowRoot.querySelector('li.current img')
           const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
           clearSrc = current.src
           clearIndex = counterCurrent.innerHTML - 1
           return
+        }
         default:
           return
       }

@@ -447,7 +447,7 @@ window.ImageViewerUtils = (function () {
       }
     }
     if (img.srcset && img.currentSrc !== img.srcset) {
-      attrList.push(img.attributes['srcset'])
+      attrList.push(img.attributes.srcset)
     }
     if (rawUrl !== img.currentSrc) {
       attrList.push({name: 'raw url', value: rawUrl})

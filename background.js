@@ -364,17 +364,17 @@ function createContextMenu() {
       case 'view_images_in_image_viewer': {
         await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-image.js']})
-        return
+        break
       }
       case 'view_all_image_in_image_viewer': {
         await passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
-        return
+        break
       }
       case 'view_last_right_click_image_in_image_viewer': {
         await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-image.js']})
-        return
+        break
       }
     }
   })
@@ -395,12 +395,12 @@ function addCommandHandler() {
       case 'open-image-viewer': {
         await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
-        return
+        break
       }
       case 'open-image-viewer-without-size-filter': {
         await passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
-        return
+        break
       }
     }
   })
