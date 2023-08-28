@@ -271,6 +271,11 @@ window.ImageViewerUtils = (function () {
     window.scrollBy({top: maxHeight * 2})
   }
   async function scrollUnlazy() {
+    while (document.readyState !== 'complete') {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 500))
     if (!document.documentElement.classList.contains('has-image-viewer')) {
       firstUnlazyScrollFlag = false
       return
@@ -613,18 +618,9 @@ window.ImageViewerUtils = (function () {
     if (firstUnlazyCompleteFlag && !firstUnlazyScrollFlag) {
       console.log('First unlazy complete')
       firstUnlazyScrollFlag = true
-      if (document.readyState === 'complete') {
-        setTimeout(() => {
-          isEnableAutoScroll(options) ? autoScroll() : scrollUnlazy()
-        }, 500)
-      } else {
-        window.addEventListener('load', () => {
-          setTimeout(() => {
-            isEnableAutoScroll(options) ? autoScroll() : scrollUnlazy()
-          }, 500)
-        })
-      }
+      if (!isEnableAutoScroll(options)) scrollUnlazy()
     }
+    if (firstUnlazyCompleteFlag && isEnableAutoScroll(options)) autoScroll()
   }
 
   // get image
@@ -918,11 +914,13 @@ window.ImageViewerUtils = (function () {
     const startX = window.scrollX
     const startY = window.scrollY
 
-    const imageListLength = imageViewer('get_image_list').length
-    if (imageListLength > 50) {
-      const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-      const targetHeight = Math.max(totalHeight * 0.85, totalHeight - window.innerHeight * 3)
-      window.scrollTo(startX, targetHeight)
+    if (typeof imageViewer === 'function') {
+      const imageListLength = imageViewer('get_image_list').length
+      if (imageListLength > 50) {
+        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
+        const targetHeight = Math.max(totalHeight * 0.85, totalHeight - window.innerHeight * 3)
+        window.scrollTo(startX, targetHeight)
+      }
     }
 
     const [getStopFlag, timer] = startAutoScroll()
