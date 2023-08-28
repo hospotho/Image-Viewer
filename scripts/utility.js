@@ -46,6 +46,7 @@ window.ImageViewerUtils = (function () {
   let firstUnlazyCompleteFlag = false
   let firstUnlazyScrollFlag = false
   let firstSlowAlertFlag = false
+  let autoScrollFlag = false
 
   // init observer to prevent unlazy image being modify
   const unlazyObserver = new MutationObserver(mutationsList => {
@@ -265,7 +266,9 @@ window.ImageViewerUtils = (function () {
     window.scrollTo(0, 0)
     window.scrollBy({top: window.innerHeight * 2})
 
-    if (await domChangedPromise) return
+    const domChanged = await domChangedPromise
+    if (domChanged || !isImageViewerExist()) return
+
     let maxHeight = 0
     for (const img of document.getElementsByTagName('img')) {
       const height = img.clientHeight
@@ -623,7 +626,7 @@ window.ImageViewerUtils = (function () {
       firstUnlazyScrollFlag = true
       if (!isEnableAutoScroll(options)) scrollUnlazy()
     }
-    if (firstUnlazyCompleteFlag && isEnableAutoScroll(options)) autoScroll()
+    if (firstUnlazyCompleteFlag && isEnableAutoScroll(options) && !autoScrollFlag) autoScroll()
   }
 
   // get image
@@ -851,14 +854,12 @@ window.ImageViewerUtils = (function () {
       while (lastY < (document.body.scrollHeight || document.documentElement.scrollHeight)) {
         if (count > 5 || !isImageViewerExist()) break
 
-        if (document.visibilityState !== 'visible') {
-          while (document.visibilityState !== 'visible') {
-            await new Promise(resolve => setTimeout(resolve, 100))
-          }
+        while (document.visibilityState !== 'visible') {
+          await new Promise(resolve => setTimeout(resolve, 100))
         }
 
         await action()
-        if (lastY === window.scrollY) {
+        if (lastY === window.scrollY && isImageViewerExist()) {
           count++
           window.scrollBy(0, -100)
           window.scrollBy({top: window.innerHeight})
@@ -902,6 +903,7 @@ window.ImageViewerUtils = (function () {
 
     const imageViewerObserver = new MutationObserver(() => {
       if (isImageViewerExist()) return
+      autoScrollFlag = false
       imageViewerObserver.disconnect()
       newNodeObserver.disconnect()
       setTimeout(() => {
@@ -912,7 +914,14 @@ window.ImageViewerUtils = (function () {
     })
     imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
   }
-  function autoScroll() {
+  async function autoScroll() {
+    autoScrollFlag = true
+    await new Promise(resolve => setTimeout(resolve, 500))
+    if (!isImageViewerExist()) {
+      autoScrollFlag = false
+      return
+    }
+
     const startX = window.scrollX
     const startY = window.scrollY
 
