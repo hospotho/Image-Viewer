@@ -1,0 +1,23 @@
+{
+  "env": {
+    "es2021": true,
+    "browser": true,
+    "webextensions": true
+  },
+  "extends": "standard",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "globals": {
+    "imageViewer": false,
+    "ImageViewerUtils": false
+  },
+  "rules": {
+    "space-before-function-paren": "off",
+    "object-curly-spacing": "off",
+    "spaced-comment": "off",
+    "object-shorthand": "off",
+    "indent": "off"
+  }
+}
