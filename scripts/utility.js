@@ -901,15 +901,14 @@ window.ImageViewerUtils = (function () {
     }
 
     const imageViewerObserver = new MutationObserver(() => {
-      if (!hasImageViewer()) {
-        imageViewerObserver.disconnect()
-        newNodeObserver.disconnect()
-        setTimeout(() => {
-          if (!scrollFlag) window.scrollTo(startX, startY)
-          Element.prototype.scrollIntoView = originalScrollIntoView
-          window.scrollTo = originalScrollTo
-        }, 500)
-      }
+      if (hasImageViewer()) return
+      imageViewerObserver.disconnect()
+      newNodeObserver.disconnect()
+      setTimeout(() => {
+        if (!scrollFlag) window.scrollTo(startX, startY)
+        Element.prototype.scrollIntoView = originalScrollIntoView
+        window.scrollTo = originalScrollTo
+      }, 500)
     })
     imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
   }
