@@ -612,7 +612,7 @@ window.ImageViewerUtils = (function () {
     if (!firstUnlazyCompleteFlag) {
       firstUnlazyCompleteFlag ||= allComplete
       clearWindowBackup(options)
-      if (typeof imageViewer === 'function') imageViewer('clear')
+      if (typeof imageViewer === 'function') imageViewer('clear_image_list')
     }
 
     if (firstUnlazyCompleteFlag && !firstUnlazyScrollFlag) {

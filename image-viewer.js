@@ -1364,7 +1364,7 @@ window.imageViewer = (function () {
       switch (action) {
         case 'get_image_list':
           return Array.from(currentImageList)
-        case 'clear': {
+        case 'clear_image_list': {
           clearFlag = true
           const current = shadowRoot.querySelector('li.current img')
           const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
