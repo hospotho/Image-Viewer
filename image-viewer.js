@@ -1372,6 +1372,9 @@ window.imageViewer = (function () {
           clearIndex = counterCurrent.innerHTML - 1
           return
         }
+        case 'close_image_viewer':
+          closeImageViewer()
+          break
         default:
           return
       }

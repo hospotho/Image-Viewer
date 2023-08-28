@@ -942,16 +942,6 @@ window.ImageViewerUtils = (function () {
   }
 
   return {
-    closeImageViewer: function () {
-      document.documentElement.classList.remove('has-image-viewer')
-      const root = document.querySelector('#image-viewer-root')
-      if (root) {
-        root.addEventListener('transitionend', root.remove)
-        root.style.transition = 'opacity 0.2s'
-        root.style.opacity = '0'
-      }
-    },
-
     updateWrapperSize: function (dom, domSize, options) {
       const [domWidth, domHeight] = domSize
       if (!dom || !document.contains(dom) || domWidth === 0) return

@@ -6,7 +6,7 @@
   }
 
   if (document.documentElement.classList.contains('has-image-viewer')) {
-    ImageViewerUtils.closeImageViewer()
+    imageViewer('close_image_viewer')
     return
   }
 
