@@ -920,7 +920,7 @@ window.ImageViewerUtils = (function () {
       const imageListLength = ImageViewer('get_image_list').length
       if (imageListLength > 50) {
         const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-        const targetHeight = Math.max(totalHeight * 0.85, totalHeight - window.innerHeight * 3)
+        const targetHeight = Math.min(window.scrollY, totalHeight - window.innerHeight * 10)
         window.scrollTo(startX, targetHeight)
       }
     }
