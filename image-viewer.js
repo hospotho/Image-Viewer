@@ -65,7 +65,7 @@ window.imageViewer = (function () {
     return `matrix(${m.map(t => t.toFixed(2))})`
   }
   function MtoV(str) {
-    const match = str.match(/matrix\([-\d\.e, ]+\)/)
+    const match = str.match(/matrix\([-\d.e, ]+\)/)
     if (!match) return
     const m = match[0]
       .slice(7, -1)
@@ -102,7 +102,7 @@ window.imageViewer = (function () {
 
   function getRawUrl(src) {
     if (typeof src !== 'string') return src
-    const argsRegex = /(.*?[=\.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+    const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
     if (src.startsWith('data')) return src
     try {
       // protocol-relative URL

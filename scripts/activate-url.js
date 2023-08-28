@@ -103,7 +103,7 @@
 
   // image url mode
   function getRawUrl(src) {
-    const argsRegex = /(.*?(?:png|jpeg|jpg|gif|bmp|tiff|webp)).*/i
+    const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
     if (src.startsWith('data')) return src
     try {
       // protocol-relative URL
