@@ -1374,7 +1374,7 @@ window.ImageViewer = (function () {
         }
         case 'close_image_viewer':
           closeImageViewer()
-          break
+          return
         default:
           return
       }
