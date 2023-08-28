@@ -84,7 +84,4 @@
   })
   observer.observe(document.documentElement, {childList: true, subtree: true})
   action()
-
-  // auto scroll
-  ImageViewerUtils.checkAndStartAutoScroll(options)
 })()

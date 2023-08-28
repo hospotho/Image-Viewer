@@ -83,7 +83,7 @@ window.ImageViewerUtils = (function () {
           document.documentElement.classList.add('enableAutoScroll')
         }
         if (document.documentElement.classList.contains('has-image-viewer')) {
-          ImageViewerUtils.checkAndStartAutoScroll(null)
+          autoScroll()
         }
       }
       // download images
@@ -270,8 +270,7 @@ window.ImageViewerUtils = (function () {
     }
     window.scrollBy({top: maxHeight * 2})
   }
-  async function scrollUnlazy(options) {
-    if (isEnableAutoScroll(options)) return
+  async function scrollUnlazy() {
     if (!document.documentElement.classList.contains('has-image-viewer')) {
       firstUnlazyScrollFlag = false
       return
@@ -611,10 +610,14 @@ window.ImageViewerUtils = (function () {
       console.log('First unlazy complete')
       firstUnlazyScrollFlag = true
       if (document.readyState === 'complete') {
-        setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 500)
+        setTimeout(() => {
+          isEnableAutoScroll(options) ? autoScroll() : scrollUnlazy()
+        }, 500)
       } else {
         window.addEventListener('load', () => {
-          setTimeout(() => scrollUnlazy(options, minWidth, minHeight), 500)
+          setTimeout(() => {
+            isEnableAutoScroll(options) ? autoScroll() : scrollUnlazy()
+          }, 500)
         })
       }
     }
@@ -907,6 +910,34 @@ window.ImageViewerUtils = (function () {
     })
     imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
   }
+  function autoScroll() {
+    const startX = window.scrollX
+    const startY = window.scrollY
+
+    const imageListLength = imageViewer('get_image_list').length
+    if (imageListLength > 50) {
+      const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
+      const targetHeight = Math.max(totalHeight * 0.85, totalHeight - window.innerHeight * 3)
+      window.scrollTo(startX, targetHeight)
+    }
+
+    const [getStopFlag, timer] = startAutoScroll()
+
+    let existNewDom = false
+    const newNodeObserver = new MutationObserver(() => {
+      existNewDom = true
+      if (getStopFlag()) timer()
+    })
+    newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+    setTimeout(() => {
+      if (!existNewDom) {
+        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
+        window.scrollTo(startX, totalHeight)
+      }
+    }, 3000)
+
+    stopAutoScrollOnExit(newNodeObserver, startX, startY)
+  }
 
   return {
     closeImageViewer: function () {
@@ -1084,41 +1115,6 @@ window.ImageViewerUtils = (function () {
         .reduce((a, b) => a + b, 0)
 
       return newListStringLength === oldListStringLength
-    },
-
-    checkAndStartAutoScroll: async function (options) {
-      if (!isEnableAutoScroll(options)) return
-
-      while (!firstUnlazyScrollFlag) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-
-      const startX = window.scrollX
-      const startY = window.scrollY
-
-      const imageListLength = imageViewer('get_image_list').length
-      if (imageListLength > 50) {
-        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-        const targetHeight = Math.max(totalHeight * 0.85, totalHeight - window.innerHeight * 3)
-        window.scrollTo(startX, targetHeight)
-      }
-
-      const [getStopFlag, timer] = startAutoScroll()
-
-      let existNewDom = false
-      const newNodeObserver = new MutationObserver(() => {
-        existNewDom = true
-        if (getStopFlag()) timer()
-      })
-      newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
-      setTimeout(() => {
-        if (!existNewDom) {
-          const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-          window.scrollTo(startX, totalHeight)
-        }
-      }, 3000)
-
-      stopAutoScrollOnExit(newNodeObserver, startX, startY)
     }
   }
 })()
