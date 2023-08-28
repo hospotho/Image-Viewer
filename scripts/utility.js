@@ -24,7 +24,7 @@ window.ImageViewerUtils = (function () {
         return lockRelease
       },
       waitUnlock: async function () {
-        if (busy) return await promise
+        if (busy) return promise
 
         let waitRelease = null
         const wait = new Promise(resolve => (waitRelease = resolve))
