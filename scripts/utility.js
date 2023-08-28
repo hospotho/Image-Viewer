@@ -82,7 +82,7 @@ window.ImageViewerUtils = (function () {
         if (!document.documentElement.classList.contains('enableAutoScroll')) {
           document.documentElement.classList.add('enableAutoScroll')
         }
-        if (hasImageViewer()) {
+        if (isImageViewerExist()) {
           autoScroll()
         }
       }
@@ -165,7 +165,7 @@ window.ImageViewerUtils = (function () {
     if (enableAutoScroll) document.documentElement.classList.add('enableAutoScroll')
     return enableAutoScroll
   }
-  function hasImageViewer() {
+  function isImageViewerExist() {
     return document.documentElement.classList.contains('has-image-viewer')
   }
 
@@ -247,7 +247,7 @@ window.ImageViewerUtils = (function () {
   // scroll unlazy
   function scrollThoughDocument(currentX, currentY) {
     const wrapper = (func, ...args) => {
-      if (hasImageViewer()) func(...args)
+      if (isImageViewerExist()) func(...args)
     }
     const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
     const scrollDelta = window.innerHeight * 1.5
@@ -279,7 +279,7 @@ window.ImageViewerUtils = (function () {
     }
 
     await new Promise(resolve => setTimeout(resolve, 500))
-    if (!hasImageViewer()) {
+    if (!isImageViewerExist()) {
       firstUnlazyScrollFlag = false
       return
     }
@@ -840,7 +840,7 @@ window.ImageViewerUtils = (function () {
         }
       }
 
-      if (!hasImageViewer()) return
+      if (!isImageViewerExist()) return
       bottomImg.scrollIntoView({block: 'start'})
       await new Promise(resolve => setTimeout(resolve, 500))
     }
@@ -849,7 +849,7 @@ window.ImageViewerUtils = (function () {
       let lastY = window.scrollY
       let count = 0
       while (lastY < (document.body.scrollHeight || document.documentElement.scrollHeight)) {
-        if (count > 5 || !hasImageViewer()) break
+        if (count > 5 || !isImageViewerExist()) break
 
         if (document.visibilityState !== 'visible') {
           while (document.visibilityState !== 'visible') {
@@ -878,7 +878,7 @@ window.ImageViewerUtils = (function () {
 
     const originalScrollIntoView = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = function () {
-      if (!hasImageViewer()) {
+      if (!isImageViewerExist()) {
         scrollFlag = true
       }
       let currX = window.scrollX
@@ -894,14 +894,14 @@ window.ImageViewerUtils = (function () {
 
     const originalScrollTo = window.scrollTo
     window.scrollTo = function () {
-      if (!hasImageViewer()) {
+      if (!isImageViewerExist()) {
         scrollFlag = true
       }
       originalScrollTo.apply(this, arguments)
     }
 
     const imageViewerObserver = new MutationObserver(() => {
-      if (hasImageViewer()) return
+      if (isImageViewerExist()) return
       imageViewerObserver.disconnect()
       newNodeObserver.disconnect()
       setTimeout(() => {
