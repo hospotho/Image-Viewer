@@ -173,18 +173,22 @@ window.ImageViewerUtils = (function () {
   }
 
   // wrapper size
-  function updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options) {
+  function processWrapperList(wrapperDivList) {
     const width = []
     const height = []
     const rawWidth = []
     const rawHeight = []
+    const imageCountList = []
     let imageCount = 0
+    let maxImage = 0
     for (const div of wrapperDivList) {
       // ad may use same wrapper and adblock set it to display: none
       if (div.offsetParent === null && div.style.position !== 'fixed') continue
 
       const imgList = div.querySelectorAll('img')
       imageCount += imgList.length
+      maxImage = Math.max(maxImage, imgList.length)
+      imageCountList.push(imgList.length)
       if (imgList.length === 0) continue
 
       const widthList = []
@@ -206,18 +210,27 @@ window.ImageViewerUtils = (function () {
       width.push(maxWidth)
       height.push(maxHeight)
     }
+    return [maxImage, imageCount, imageCountList, rawWidth, rawHeight, width, height]
+  }
+  function updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options) {
+    const [maxImage, imageCount, imageCountList, rawWidth, rawHeight, width, height] = processWrapperList(wrapperDivList)
 
-    const [large, small] = domWidth / domHeight > 1 ? [domWidth, domHeight] : [domHeight, domWidth]
-    const [optionLarge, optionSmall] = options.minWidth / options.minHeight > 1 ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
-    const oneToOne = imageCount === wrapperDivList.length
-    const sameSize = Math.max(...rawWidth) === Math.min(...rawWidth) || Math.max(...rawHeight) === Math.min(...rawHeight)
-    const finalWidth = oneToOne && sameSize ? Math.min(...width) : Math.min(...width.filter(w => w * 1.5 >= large || w * 1.2 >= optionLarge))
-    const finalHeight = oneToOne && sameSize ? Math.min(...height) : Math.min(...height.filter(h => h * 1.5 >= small || h * 1.2 >= optionSmall))
+    const largeContainer = maxImage >= 5 && imageCountList.filter(num => num === maxImage).length > 1
+    const oneToOne = imageCount === wrapperDivList.length && (Math.max(...rawWidth) === Math.min(...rawWidth) || Math.max(...rawHeight) === Math.min(...rawHeight))
+    const useMinSize = largeContainer || oneToOne
+    const sizeFunc = (sizeList, rawSizeList, domSize, optionSize) => Math.min(...(useMinSize ? rawSizeList.filter(Boolean) : sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize)))
+
+    const [large, small] = [domWidth, domHeight].sort((a, b) => b - a)
+    const [optionLarge, optionSmall] = [options.minWidth, options.minHeight].sort((a, b) => b - a)
+    const finalWidth = sizeFunc(width, rawWidth, large, optionLarge)
+    const finalHeight = sizeFunc(height, rawHeight, small, optionSmall)
+
     // not allow size below 50 to prevent icon
-    const finalSize = Math.max(50, Math.min(finalWidth, finalHeight)) - 3
+    const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight)) - 1
     options.minWidth = Math.min(finalSize, options.minWidth)
     options.minHeight = Math.min(finalSize, options.minHeight)
   }
+
   function getImageSelector(img) {
     let curr = img.parentElement
     let selector = 'img'
