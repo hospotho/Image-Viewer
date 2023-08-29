@@ -220,11 +220,11 @@ function addMessageHandler() {
         return true
       }
       case 'load_utility': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, sendResponse)
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, () => sendResponse())
         return true
       }
       case 'load_script': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, sendResponse)
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse())
         return true
       }
       case 'check_iframes': {
@@ -269,7 +269,7 @@ function addMessageHandler() {
         return true
       }
       case 'reset_dom': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: resetLabel}, sendResponse)
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: resetLabel}, () => sendResponse())
         return true
       }
       case 'get_info': {
@@ -293,11 +293,11 @@ function addMessageHandler() {
           lastTabIndex = sender.tab.index
           lastTabOpenIndex = sender.tab.index
         }
-        chrome.tabs.create({active: false, index: ++lastTabOpenIndex, url: request.url}, sendResponse)
+        chrome.tabs.create({active: false, index: ++lastTabOpenIndex, url: request.url}, () => sendResponse())
         return true
       }
       case 'close_tab': {
-        chrome.tabs.remove(sender.tab.id, sendResponse)
+        chrome.tabs.remove(sender.tab.id, () => sendResponse())
         return true
       }
       case 'get_size': {
@@ -324,7 +324,7 @@ function addMessageHandler() {
         return true
       }
       case 'download_images': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/download-images.js']}, sendResponse)
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/download-images.js']}, () => sendResponse())
         return true
       }
     }
