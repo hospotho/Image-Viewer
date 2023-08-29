@@ -436,7 +436,6 @@ window.ImageViewerUtils = (function () {
     if (url.length === 1) {
       const lazySize = await getSizeFunction(url[0])
       if (lazySize === 0) return false
-      if (getSizeFunction.name === 'getImageBitSize' && lazySize === size) return false
       if (lazySize >= size) {
         await updateImageSource(img, url[0])
         return true
