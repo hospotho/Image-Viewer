@@ -488,10 +488,7 @@ window.ImageViewerUtils = (function () {
     }
     return attrList
   }
-  async function checkImageAttr(img) {
-    const attrList = getUnlazyAttrList(img)
-    if (attrList.length === 0) return null
-
+  async function checkImageAttr(img, attrList) {
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
 
@@ -528,50 +525,50 @@ window.ImageViewerUtils = (function () {
 
   // unlazy main function
   function getUnlazyImageList(minWidth, minHeight) {
-    const imgList = []
+    const imgWithAttrList = []
     let allComplete = true
     for (const img of document.querySelectorAll('img:not(.simpleUnlazy)')) {
       img.loading = 'eager'
+      if (img.getAttribute('decoding')) img.decoding = 'sync'
+
+      const attrList = getUnlazyAttrList(img)
+      if (attrList.length === 0) {
+        img.classList.add('simpleUnlazy')
+        continue
+      }
       // checkImageAttr() will fail if image is still loading
       if (!img.complete) {
         allComplete = false
         continue
       }
-      if (img.getAttribute('decoding')) img.decoding = 'sync'
+
       if (img.src === '') {
-        imgList.push(img)
+        imgWithAttrList.push([img, attrList])
         continue
       }
       const {width, height} = img.getBoundingClientRect()
-      if ((width >= minWidth && height >= minHeight) || width === 0 || height === 0) imgList.push(img)
+      if ((width >= minWidth && height >= minHeight) || width === 0 || height === 0) {
+        imgWithAttrList.push([img, attrList])
+      }
     }
-    return [imgList, allComplete]
+    return [imgWithAttrList, allComplete]
   }
   async function startUnlazy(minWidth, minHeight) {
-    const [imgList, allComplete] = getUnlazyImageList(minWidth, minHeight)
-    const listSize = imgList.length
+    const [imgWithAttrList, allComplete] = getUnlazyImageList(minWidth, minHeight)
+    const listSize = imgWithAttrList.length
     if (!listSize) return allComplete
 
     console.log(`Try to unlazy ${listSize} image`)
-    imgList.map(img => img.classList.add('simpleUnlazy', 'unlazyNotComplete'))
+    imgWithAttrList.map(item => item[0].classList.add('simpleUnlazy', 'unlazyNotComplete'))
 
-    const asyncList = await Promise.all(imgList.map(checkImageAttr))
-    imgList.map(img => img.classList.remove('unlazyNotComplete'))
-    const resultList = asyncList.flat()
-    const lazyList = resultList.filter(Boolean)
+    const asyncList = await Promise.all(imgWithAttrList.map(([img, attrList]) => checkImageAttr(img, attrList)))
+    imgWithAttrList.map(item => item[0].classList.remove('unlazyNotComplete'))
+    const lazyList = asyncList.flat()
 
-    if (resultList.length > listSize) console.log('Multiple unlazy attributes found')
-    if (lazyList.length) {
-      const lazySet = new Set(lazyList)
-      for (const name of lazySet) {
-        console.log(`Unlazy ${lazyList.filter(x => x === name).length} img with ${name}`)
-      }
-      // create dom update for observer manually
-      const div = document.createElement('div')
-      document.body.appendChild(div)
-      setTimeout(() => div.remove(), 100)
-    } else {
-      console.log('No lazy image found')
+    if (lazyList.length > listSize) console.log('Multiple unlazy attributes found')
+    const lazySet = new Set(lazyList)
+    for (const name of lazySet) {
+      console.log(`Unlazy ${lazyList.filter(x => x === name).length} img with ${name}`)
     }
 
     return allComplete
