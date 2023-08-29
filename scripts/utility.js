@@ -45,7 +45,6 @@ window.ImageViewerUtils = (function () {
   let firstUnlazyFlag = true
   let firstUnlazyCompleteFlag = false
   let firstUnlazyScrollFlag = false
-  let firstSlowAlertFlag = false
   let autoScrollFlag = false
 
   // init observer to prevent unlazy image being modify
@@ -292,6 +291,9 @@ window.ImageViewerUtils = (function () {
     window.scrollBy({top: maxHeight * 2})
   }
   async function scrollUnlazy() {
+    if (firstUnlazyScrollFlag) return
+
+    firstUnlazyScrollFlag = true
     while (document.readyState !== 'complete') {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
@@ -586,11 +588,10 @@ window.ImageViewerUtils = (function () {
   function createFirstUnlazyRace(options) {
     // slow connection alert
     setTimeout(() => {
-      if (firstUnlazyScrollFlag || firstSlowAlertFlag) return
+      if (firstUnlazyCompleteFlag) return
       const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
       const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
-      if (!firstUnlazyScrollFlag || stillLoading) {
-        firstSlowAlertFlag = true
+      if (stillLoading) {
         console.log('Slow connection, images still loading')
         alert('Slow connection, images still loading')
       }
@@ -600,7 +601,7 @@ window.ImageViewerUtils = (function () {
     const timeout = new Promise(resolve =>
       setTimeout(() => {
         resolve()
-        if (!firstUnlazyScrollFlag) {
+        if (!firstUnlazyCompleteFlag) {
           console.log('Unlazy timeout')
         }
       }, 1000)
@@ -622,25 +623,23 @@ window.ImageViewerUtils = (function () {
     const minWidth = Math.min(options.minWidth, 100)
     const minHeight = Math.min(options.minHeight, 100)
 
-    const allComplete = await startUnlazy(minWidth, minHeight)
-
+    let allComplete = await startUnlazy(minWidth, minHeight)
     if (!allComplete) {
-      await new Promise(resolve => setTimeout(resolve, 100))
-      simpleUnlazyImage(options)
+      console.log('Wait all images load complete')
+      while (!allComplete) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        allComplete = await startUnlazy(minWidth, minHeight)
+      }
     }
 
     if (!firstUnlazyCompleteFlag) {
-      firstUnlazyCompleteFlag ||= allComplete
+      console.log('First unlazy complete')
+      firstUnlazyCompleteFlag = true
       clearWindowBackup(options)
       if (typeof ImageViewer === 'function') ImageViewer('clear_image_list')
     }
 
-    if (firstUnlazyCompleteFlag && !firstUnlazyScrollFlag) {
-      console.log('First unlazy complete')
-      firstUnlazyScrollFlag = true
-      if (!isEnableAutoScroll(options)) scrollUnlazy()
-    }
-    if (firstUnlazyCompleteFlag && isEnableAutoScroll(options) && !autoScrollFlag) autoScroll()
+    isEnableAutoScroll(options) ? autoScroll() : scrollUnlazy()
   }
 
   // get image
@@ -929,6 +928,8 @@ window.ImageViewerUtils = (function () {
     imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
   }
   async function autoScroll() {
+    if (autoScrollFlag) return
+
     autoScrollFlag = true
     await new Promise(resolve => setTimeout(resolve, 500))
     if (!isImageViewerExist()) {
