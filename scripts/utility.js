@@ -461,33 +461,6 @@ window.ImageViewerUtils = (function () {
     const result = await checkUrlSize(img, naturalSize, getImageRealSize, url)
     return result
   }
-  function getUnlazyAttrList(img) {
-    const rawUrl = getRawUrl(img.currentSrc)
-    const attrList = []
-    for (const attr of img.attributes) {
-      if (passList.has(attr.name) || !attr.value.match(urlRegex)) continue
-
-      const attrUrl = new URL(attr.value, document.baseURI).href
-      if (attrUrl !== img.currentSrc) {
-        attrList.push({name: attr.name, value: attrUrl})
-      }
-      const rawAttrUrl = getRawUrl(attrUrl)
-      if (rawAttrUrl !== attrUrl && rawAttrUrl !== rawUrl) {
-        attrList.push({name: 'raw ' + attr.name, value: rawAttrUrl})
-      }
-    }
-    if (img.srcset && img.currentSrc !== img.srcset) {
-      attrList.push(img.attributes.srcset)
-    }
-    if (rawUrl !== img.currentSrc) {
-      attrList.push({name: 'raw url', value: rawUrl})
-    }
-    const anchor = img.closest('a')
-    if (anchor && anchor.href.match(argsRegex)) {
-      attrList.push({name: 'parent anchor', value: anchor.href})
-    }
-    return attrList
-  }
   async function checkImageAttr(img, attrList) {
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
     const naturalSize = img.naturalWidth
@@ -524,6 +497,33 @@ window.ImageViewerUtils = (function () {
   }
 
   // unlazy main function
+  function getUnlazyAttrList(img) {
+    const rawUrl = getRawUrl(img.currentSrc)
+    const attrList = []
+    for (const attr of img.attributes) {
+      if (passList.has(attr.name) || !attr.value.match(urlRegex)) continue
+
+      const attrUrl = new URL(attr.value, document.baseURI).href
+      if (attrUrl !== img.currentSrc) {
+        attrList.push({name: attr.name, value: attrUrl})
+      }
+      const rawAttrUrl = getRawUrl(attrUrl)
+      if (rawAttrUrl !== attrUrl && rawAttrUrl !== rawUrl) {
+        attrList.push({name: 'raw ' + attr.name, value: rawAttrUrl})
+      }
+    }
+    if (img.srcset && img.currentSrc !== img.srcset) {
+      attrList.push(img.attributes.srcset)
+    }
+    if (rawUrl !== img.currentSrc) {
+      attrList.push({name: 'raw url', value: rawUrl})
+    }
+    const anchor = img.closest('a')
+    if (anchor && anchor.href.match(argsRegex)) {
+      attrList.push({name: 'parent anchor', value: anchor.href})
+    }
+    return attrList
+  }
   function getUnlazyImageList(minWidth, minHeight) {
     const imgWithAttrList = []
     let allComplete = true
