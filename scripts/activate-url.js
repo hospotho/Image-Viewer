@@ -50,7 +50,7 @@
     const asyncList = await Promise.all([backgroundResult, localResult])
     for (let i = 0; i < testList.length; i++) {
       const valid = asyncList[0][i] || asyncList[1][i]
-      if (valid) return
+      if (valid) continue
 
       const src = testList[i]
       const iframe = document.querySelector(`iframe[src="${src}"]`)
