@@ -66,7 +66,13 @@ window.ImageViewerUtils = (function () {
     }
     for (const img of modifiedSet) {
       img.classList.add('updateByObserver')
-      checkImageAttr(img)
+      setTimeout(async () => {
+        while (!img.complete) {
+          await new Promise(resolve => setTimeout(resolve, 50))
+        }
+        const attrList = getUnlazyAttrList(img)
+        checkImageAttr(img, attrList)
+      }, 100)
     }
   })
   unlazyObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
