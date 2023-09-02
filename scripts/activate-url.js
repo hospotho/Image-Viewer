@@ -133,8 +133,8 @@
   function getRawSize(rawUrl) {
     return new Promise(resolve => {
       const img = new Image()
-      img.onload = () => resolve(img.naturalWidth)
-      img.onerror = () => resolve(0)
+      img.onload = () => resolve([img.naturalWidth, img.naturalHeight])
+      img.onerror = () => resolve([0, 0])
       img.src = rawUrl
     })
   }
@@ -148,13 +148,15 @@
     options.minHeight = 0
 
     const rawUrl = getRawUrl(image.src)
-    const rawSize = rawUrl === image.src ? 0 : await getRawSize(rawUrl)
-    const currSize = image.naturalWidth
+    const rawSize = rawUrl === image.src ? [0, 0] : await getRawSize(rawUrl)
+    const rawRatio = rawSize[0] ? rawSize[0] / rawSize[1] : 0
+    const currRatio = image.naturalWidth / image.naturalHeight
+    const isRawBetter = rawSize[0] > image.naturalWidth && Math.abs(rawRatio - currRatio) < 0.01
 
     if (typeof ImageViewer !== 'function') {
       await chrome.runtime.sendMessage('load_script')
     }
-    ImageViewer([rawSize > currSize ? rawUrl : image.src], options)
+    ImageViewer([isRawBetter ? rawUrl : image.src], options)
     image.style.display = 'none'
   }
 
