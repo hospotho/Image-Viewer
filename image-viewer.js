@@ -1073,11 +1073,9 @@ window.ImageViewer = (function () {
   function addImageEvent(options) {
     async function addTransformHandler(li) {
       const img = li.firstChild
-      while (!img.complete) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
       let zoomCount = 0
       let rotateCount = 0
+
       // zoom & rotate
       li.addEventListener('wheel', e => {
         e.preventDefault()
