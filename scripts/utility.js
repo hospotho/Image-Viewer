@@ -117,17 +117,15 @@ window.ImageViewerUtils = (function () {
       const url = new URL(src, document.baseURI)
       const baseURI = url.origin + url.pathname
 
-      let tokenFound = false
       const searchList = url.search
         .slice(1)
         .split('&')
-        .filter(t => t.match(argsRegex) || (t.split('=')[1].length >= 10 && (tokenFound = true)))
+        .filter(t => t.match(argsRegex))
         .join('&')
       const imgSearch = searchList ? '?' + searchList : ''
       const noSearch = baseURI + imgSearch
-      if (noSearch !== src || tokenFound) return noSearch
 
-      const argsMatch = baseURI.match(argsRegex)
+      const argsMatch = noSearch.match(argsRegex)
       if (argsMatch) {
         const rawUrl = argsMatch[1]
         if (rawUrl !== src) return rawUrl
@@ -381,6 +379,7 @@ window.ImageViewerUtils = (function () {
     try {
       const res = await fetch(href, {method: 'HEAD'})
       if (res.ok) {
+        if (res.redirected) return -1
         const type = res.headers.get('Content-Type')
         const length = res.headers.get('Content-Length')
         if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
@@ -440,32 +439,30 @@ window.ImageViewerUtils = (function () {
       img.src = src
     })
   }
-  async function checkUrlSize(img, size, getSizeFunction, url) {
+  async function getUrlSize(getSizeFunction, url) {
     if (url.length === 1) {
       const lazySize = await getSizeFunction(url[0])
-      if (lazySize === 0) return false
-      if (lazySize >= size) {
-        await updateImageSource(img, url[0])
-        return true
-      }
-    } else if (url.length === 2) {
+      return [lazySize, url[0]]
+    } else {
       const [firstSize, lastSize] = await Promise.all(url.map(getSizeFunction))
-      if (firstSize >= size || lastSize >= size) {
-        const index = Number(lastSize > firstSize)
-        const large = url[index]
-        await updateImageSource(img, large)
+      return firstSize > lastSize ? [firstSize, url[0]] : [lastSize, url[1]]
+    }
+  }
+  async function checkUrl(img, bitSize, naturalSize, ...urlList) {
+    if (bitSize) {
+      const [lazyBitSize, url] = await getUrlSize(getImageBitSize, urlList)
+      if (lazyBitSize === -1) return false
+      if (lazyBitSize >= bitSize) {
+        await updateImageSource(img, url)
         return true
       }
+    }
+    const [lazyRealSize, url] = await getUrlSize(getImageRealSize, urlList)
+    if (lazyRealSize >= naturalSize) {
+      await updateImageSource(img, url)
+      return true
     }
     return false
-  }
-  async function checkUrl(img, bitSize, naturalSize, ...url) {
-    if (bitSize) {
-      const result = await checkUrlSize(img, bitSize, getImageBitSize, url)
-      if (result) return true
-    }
-    const result = await checkUrlSize(img, naturalSize, getImageRealSize, url)
-    return result
   }
   async function checkImageAttr(img, attrList) {
     const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))

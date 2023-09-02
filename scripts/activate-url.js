@@ -106,17 +106,15 @@
       const url = new URL(src, document.baseURI)
       const baseURI = url.origin + url.pathname
 
-      let tokenFound = false
       const searchList = url.search
         .slice(1)
         .split('&')
-        .filter(t => t.match(argsRegex) || (t.split('=')[1].length >= 10 && (tokenFound = true)))
+        .filter(t => t.match(argsRegex))
         .join('&')
       const imgSearch = searchList ? '?' + searchList : ''
       const noSearch = baseURI + imgSearch
-      if (noSearch !== src || tokenFound) return noSearch
 
-      const argsMatch = baseURI.match(argsRegex)
+      const argsMatch = noSearch.match(argsRegex)
       if (argsMatch) {
         const rawUrl = argsMatch[1]
         if (rawUrl !== src) return rawUrl

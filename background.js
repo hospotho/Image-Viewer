@@ -48,6 +48,7 @@ const getImageBitSize = async (src, complete = false) => {
     const res = await fetch(src, {method: method, signal: controller.signal})
     release()
     if (res.ok) {
+      if (res.redirected) return -1
       const type = res.headers.get('Content-Type')
       const length = res.headers.get('Content-Length')
       if (type?.startsWith('image')) {
