@@ -515,14 +515,14 @@ window.ImageViewerUtils = (function () {
         attrList.push({name: 'raw ' + attr.name, value: rawAttrUrl})
       }
     }
-    if (img.srcset && img.currentSrc !== img.srcset) {
+    if (img.srcset && img.srcset !== img.currentSrc) {
       attrList.push(img.attributes.srcset)
     }
     if (rawUrl !== img.currentSrc) {
       attrList.push({name: 'raw url', value: rawUrl})
     }
     const anchor = img.closest('a')
-    if (anchor && anchor.href.match(argsRegex)) {
+    if (anchor && anchor.href.match(argsRegex) && anchor.href !== img.currentSrc) {
       attrList.push({name: 'parent anchor', value: anchor.href})
     }
     return attrList
