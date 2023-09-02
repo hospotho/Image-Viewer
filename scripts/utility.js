@@ -545,12 +545,12 @@ window.ImageViewerUtils = (function () {
         continue
       }
 
-      if (img.src === '') {
+      if (img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0) {
         imgWithAttrList.push([img, attrList])
         continue
       }
       const {width, height} = img.getBoundingClientRect()
-      if ((width >= minWidth && height >= minHeight) || width === 0 || height === 0) {
+      if (width >= minWidth && height >= minHeight) {
         imgWithAttrList.push([img, attrList])
       }
     }
