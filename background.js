@@ -1,3 +1,29 @@
+// utility function
+const srcBitSizeMap = new Map()
+const srcLocalRealSizeMap = new Map()
+const mutex = (function () {
+  const maxParallel = 8
+  let fetchCount = 0
+  const isAvailable = () => fetchCount < maxParallel
+  const createRelease = () =>
+    (() => {
+      let executed = false
+      return () => {
+        if (!executed) fetchCount--
+        executed = true
+      }
+    })()
+  return {
+    waitSlot: async function () {
+      while (!isAvailable()) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+      fetchCount++
+      return createRelease()
+    }
+  }
+})()
+
 const i18n = tag => chrome.i18n.getMessage(tag)
 const passDataToTab = (id, name, data) => {
   console.log('Pass data: ', id, name, data)
@@ -13,11 +39,14 @@ const getImageBitSize = async (src, complete = false) => {
   const cache = srcBitSizeMap.get(src)
   if (cache !== undefined) return cache
 
+  const release = await mutex.waitSlot()
+
   const controller = new AbortController()
   setTimeout(() => controller.abort(), 5000)
   try {
     const method = complete === true ? 'GET' : 'HEAD'
     const res = await fetch(src, {method: method, signal: controller.signal})
+    release()
     if (res.ok) {
       const type = res.headers.get('Content-Type')
       const length = res.headers.get('Content-Length')
@@ -35,6 +64,7 @@ const getImageBitSize = async (src, complete = false) => {
     }
   } catch (error) {}
 
+  release()
   return 0
 }
 const getImageLocalRealSize = (id, srcUrl) => {
@@ -117,9 +147,7 @@ const checkIframeUrl = async (url, origin, complete = false) => {
 }
 const resetLabel = () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
 
-const srcBitSizeMap = new Map()
-const srcLocalRealSizeMap = new Map()
-
+// main function
 const defaultOptions = {
   fitMode: 'both',
   zoomRatio: 1.2,
