@@ -1085,17 +1085,27 @@ window.ImageViewer = (function () {
           const newZoomCount = e.deltaY > 0 ? zoomCount - 1 : zoomCount + 1
           scaleX = Math.sign(scaleX) * options.zoomRatio ** newZoomCount
           scaleY = Math.sign(scaleY) * options.zoomRatio ** newZoomCount
+          // recalculate displacement for zooming at the center of the viewpoint
           moveX = moveX * options.zoomRatio ** (newZoomCount - zoomCount)
           moveY = moveY * options.zoomRatio ** (newZoomCount - zoomCount)
           zoomCount = newZoomCount
         } else {
           // mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
-          rotateCount += mirror * ((e.deltaY > 0) * 2 - 1)
+          const deltaRotate = mirror * ((e.deltaY > 0) * 2 - 1)
+          rotateCount += deltaRotate
+          // recalculate displacement for rotation around the center of the viewpoint
+          const radial = Math.sqrt(moveX ** 2 + moveY ** 2)
+          const angle = (Math.atan2(moveY, moveX) * 180) / Math.PI
+          const newAngle = angle + mirror * options.rotateDeg * deltaRotate
+          const newRadian = (newAngle / 180) * Math.PI
+          moveX = radial * Math.cos(newRadian)
+          moveY = radial * Math.sin(newRadian)
         }
         // rotate value must be reset every time after updating the transform matrix
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
         img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
+
       // mirror-reflect
       li.addEventListener('click', e => {
         if (!e.altKey && !e.getModifierState('AltGraph')) return
