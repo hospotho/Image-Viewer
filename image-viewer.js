@@ -244,51 +244,35 @@ window.ImageViewer = (function () {
     const nearestPageNode = pageImgList[pageIndex]
     return nearestPageNode
   }
-  function deepSearchImgNode(img) {
-    return new Promise(resolve => {
-      let release = null
-      const search = async () => {
-        let lastNearest = null
-        let repeatCount = 0
-        let overtime = false
-        while (true) {
-          const imgNode = searchImgNode(img)
-          if (imgNode !== null || repeatCount > 5 || overtime) {
-            newNodeObserver.disconnect()
-            resolve(imgNode)
-            return
-          }
-          const nearest = searchNearestPageImgNode(img)
-          nearest.scrollIntoView({behavior: 'instant', block: 'center'})
-          nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
-          await new Promise(resolve => {
-            let waiting = true
-            release = () => {
-              waiting = false
-              resolve()
-            }
-            setTimeout(() => {
-              if (waiting) {
-                resolve()
-                overtime = true
-              }
-            }, 3000)
-          })
-        }
+  async function deepSearchImgNode(img) {
+    const newNodeObserver = new MutationObserver(async () => {
+      if (typeof release === 'function') {
+        newNodeObserver.disconnect()
+        await new Promise(resolve => setTimeout(resolve, 100))
+        release()
+        newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
       }
-
-      const newNodeObserver = new MutationObserver(async () => {
-        if (typeof release === 'function') {
-          newNodeObserver.disconnect()
-          await new Promise(resolve => setTimeout(resolve, 100))
-          release()
-          newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
-        }
-      })
-
-      newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
-      search()
     })
+    newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+
+    let release = null
+    let repeatCount = 0
+    let overtime = false
+    let lastNearest = null
+    while (true) {
+      const imgNode = searchImgNode(img)
+      if (imgNode !== null || repeatCount > 5 || overtime) {
+        newNodeObserver.disconnect()
+        return imgNode
+      }
+      const nearest = searchNearestPageImgNode(img)
+      nearest.scrollIntoView({behavior: 'instant', block: 'center'})
+      nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
+      overtime = await new Promise(resolve => {
+        release = () => resolve(false)
+        setTimeout(() => resolve(true), 3000)
+      })
+    }
   }
   function displayBorder(imgNode) {
     const border = document.createElement('div')
