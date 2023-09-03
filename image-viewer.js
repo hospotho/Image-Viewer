@@ -259,7 +259,7 @@ window.ImageViewer = (function () {
             return
           }
           const nearest = searchNearestPageImgNode(img)
-          nearest.scrollIntoView({block: 'center'})
+          nearest.scrollIntoView({behavior: 'instant', block: 'center'})
           nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
           await new Promise(resolve => {
             let waiting = true
@@ -914,7 +914,7 @@ window.ImageViewer = (function () {
         let currentY = -1
         while (currentY !== window.scrollY) {
           currentY = window.scrollY
-          imgNode.scrollIntoView({block: 'center'})
+          imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
         }
         await new Promise(resolve => setTimeout(resolve, 50))
         displayBorder(imgNode)

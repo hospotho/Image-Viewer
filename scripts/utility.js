@@ -857,7 +857,7 @@ window.ImageViewerUtils = (function () {
       }
 
       if (!isImageViewerExist()) return
-      bottomImg.scrollIntoView({block: 'start'})
+      bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
       await new Promise(resolve => setTimeout(resolve, 500))
     }
     const timer = async () => {
