@@ -134,39 +134,33 @@ window.ImageViewer = (function () {
   function searchImgNode(img) {
     const iframeSrc = img.getAttribute('data-iframe-src')
     if (iframeSrc) {
-      for (const iframe of document.getElementsByTagName('iframe')) {
-        if (iframe.src === iframeSrc) {
-          return iframe
-        }
-      }
+      return [...document.getElementsByTagName('iframe')].find(iframe => iframe.src === iframeSrc)
     }
 
     const imgUrl = img.src
     let lastSize = 0
     let lastNode = null
+    const updateLargestNode = node => {
+      const {width, height} = node.getBoundingClientRect()
+      const currSize = Math.min(width, height)
+      if (currSize > lastSize) {
+        lastSize = currSize
+        lastNode = node
+      }
+    }
+
     for (const img of document.getElementsByTagName('img')) {
       if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) {
         // check visibility by offsetParent
         if (img.offsetParent === null && img.style.position !== 'fixed') continue
-
-        const {width, height} = img.getBoundingClientRect()
-        const currSize = Math.min(width, height)
-        if (currSize > lastSize) {
-          lastSize = currSize
-          lastNode = img
-        }
+        updateLargestNode(img)
       }
     }
     if (lastNode) return lastNode
 
     for (const video of document.getElementsByTagName('video')) {
       if (imgUrl === video.poster) {
-        const {width, height} = video.getBoundingClientRect()
-        const currSize = Math.min(width, height)
-        if (currSize > lastSize) {
-          lastSize = currSize
-          lastNode = video
-        }
+        updateLargestNode(video)
       }
     }
     if (lastNode) return lastNode
@@ -176,17 +170,10 @@ window.ImageViewer = (function () {
       if (backgroundImage === 'none') continue
       const bg = backgroundImage.split(', ')[0]
       if (bg !== 'none' && imgUrl === bg.substring(5, bg.length - 2)) {
-        const {width, height} = node.getBoundingClientRect()
-        const currSize = Math.min(width, height)
-        if (currSize > lastSize) {
-          lastSize = currSize
-          lastNode = node
-        }
+        updateLargestNode(node)
       }
     }
-    if (lastNode) return lastNode
-
-    return null
+    return lastNode
   }
   function searchImgAnchor(imgNode) {
     const closestAnchor = imgNode.closest('a')
