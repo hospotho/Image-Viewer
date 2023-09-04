@@ -866,6 +866,11 @@ window.ImageViewer = (function () {
         const imageListLength = Number(total.innerHTML)
         closeImageViewer()
 
+        const htmlTemp = document.documentElement.style.scrollBehavior
+        const bodyTemp = document.body.style.scrollBehavior
+        document.documentElement.style.scrollBehavior = 'auto'
+        document.body.style.scrollBehavior = 'auto'
+
         const ratio = currIndex / imageListLength
         const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
         const targetTop = totalHeight * ratio
@@ -888,6 +893,8 @@ window.ImageViewer = (function () {
           imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
         }
         await new Promise(resolve => setTimeout(resolve, 50))
+        document.documentElement.style.scrollBehavior = htmlTemp
+        document.body.style.scrollBehavior = bodyTemp
         displayBorder(imgNode)
       }
 
