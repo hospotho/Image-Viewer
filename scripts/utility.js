@@ -87,6 +87,8 @@ window.ImageViewerUtils = (function () {
         e.preventDefault()
         if (!document.documentElement.classList.contains('enableAutoScroll')) {
           document.documentElement.classList.add('enableAutoScroll')
+        } else {
+          document.documentElement.classList.remove('enableAutoScroll')
         }
         if (isImageViewerExist()) {
           autoScroll()
@@ -867,7 +869,7 @@ window.ImageViewerUtils = (function () {
       while (lastY < (document.body.scrollHeight || document.documentElement.scrollHeight)) {
         if (count > 5 || !isImageViewerExist()) break
 
-        while (document.visibilityState !== 'visible') {
+        while (document.visibilityState !== 'visible' || !document.documentElement.classList.contains('enableAutoScroll')) {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
 
