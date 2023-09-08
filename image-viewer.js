@@ -1238,8 +1238,8 @@ window.ImageViewer = (function () {
     // key event
     keydownHandlerList.push(e => {
       if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-      const right = e.key === 'ArrowRight' || e.key === 'ArrowDown'
-      const left = e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+      const right = e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'w' || e.key === 'a'
+      const left = e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 's' || e.key === 'd'
       if (right || left) {
         e.preventDefault()
         right ? nextItem(e.repeat) : prevItem(e.repeat)

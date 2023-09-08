@@ -48,7 +48,7 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
   </tr>
   <tr>
     <td rowspan="3">View previous/next image</td>
-    <td><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd><kbd>←</kbd></td>
+    <td><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd><kbd>←</kbd><kbd>w</kbd><kbd>a</kbd><kbd>s</kbd><kbd>d</kbd></td>
   </tr>
   <tr>
     <td>Scroll on the control bar</td>
