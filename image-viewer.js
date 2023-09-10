@@ -1283,6 +1283,8 @@ window.ImageViewer = (function () {
       clearIndex = -1
     }
 
+    let update = false
+
     // update
     const imgList = shadowRoot.querySelectorAll('#iv-image-list li img')
     for (let i = 0; i < currentImageList.length; i++) {
@@ -1294,6 +1296,7 @@ window.ImageViewer = (function () {
         if (newList.includes(rawUrl)) {
           currentImageList[i] = rawUrl
           imgList[i].src = rawUrl
+          update = true
         }
       }
     }
@@ -1311,6 +1314,7 @@ window.ImageViewer = (function () {
       if (index === -1) {
         const node = buildImageNode(newList[i], options)
         insertImageNode(node, i)
+        update = true
       }
     }
 
@@ -1321,6 +1325,7 @@ window.ImageViewer = (function () {
     // const currentSrc = current.src
     // if (!newList.includes(currentSrc)) {
     //   current.parentElement.remove()
+    //   update = true
     //   const rawUrl = getRawUrl(currentSrc)
     //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
     //     if (imgNode.src === rawUrl) {
@@ -1333,6 +1338,7 @@ window.ImageViewer = (function () {
     // for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
     //   if (!newList.includes(imgNode.src)) {
     //     imgNode.parentElement.remove()
+    //     update = true
     //   }
     // }
 
@@ -1341,6 +1347,7 @@ window.ImageViewer = (function () {
 
     shadowRoot.querySelector('#iv-index').style.display = 'inline'
     shadowRoot.querySelector('#iv-counter-total').innerHTML = currentImageList.length
+    if (update) console.log('Image viewer updated')
   }
 
   //==========main function==========
@@ -1383,7 +1390,6 @@ window.ImageViewer = (function () {
       fitImage(options, true)
       addImageEvent(options)
       restoreIndex(options)
-      console.log('Image viewer updated')
     }
   }
 
