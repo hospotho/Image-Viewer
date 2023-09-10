@@ -1236,7 +1236,7 @@ window.ImageViewer = (function () {
     }
 
     // key event
-    keydownHandlerList.push(e => {
+    const normalNavigation = e => {
       if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
       const left = e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'a'
       const right = e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 's' || e.key === 'd'
@@ -1244,7 +1244,20 @@ window.ImageViewer = (function () {
         e.preventDefault()
         right ? nextItem(e.repeat) : prevItem(e.repeat)
       }
-    })
+    }
+    const fastNavigation = e => {
+      if (!e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
+      const left = e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'a'
+      const right = e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 's' || e.key === 'd'
+      if (left || right) {
+        e.preventDefault()
+        const currIndex = Number(current.innerHTML) - 1
+        const newIndex = right ? Math.min(currIndex + 10, Number(total.innerHTML) - 1) : Math.max(currIndex - 10, 0)
+        moveToNode(newIndex)
+      }
+    }
+    keydownHandlerList.push(normalNavigation)
+    keydownHandlerList.push(fastNavigation)
     // arrow button
     shadowRoot.querySelector('#iv-control-prev').addEventListener('click', prevItem)
     shadowRoot.querySelector('#iv-control-next').addEventListener('click', nextItem)
