@@ -451,7 +451,7 @@ window.ImageViewerUtils = (function () {
     }
   }
   async function checkUrl(img, bitSize, naturalSize, ...urlList) {
-    if (bitSize) {
+    if (bitSize > 0) {
       const [lazyBitSize, url] = await getUrlSize(getImageBitSize, urlList)
       if (lazyBitSize === -1) return false
       if (lazyBitSize >= bitSize) {
