@@ -9,9 +9,9 @@ https://ko-fi.com/tonymilktea
 ## Features
 
 1. Collect and view all images on the page.
-2. Support images in iframes.
-3. Disable simple lazy loading.
-4. Search and scroll to the original image on the page.
+2. Support video poster and images in iframes.
+3. Auto load most lazy loaded images.
+4. Go to original image on the page.
 5. Fit, zoom, rotate and mirror the image.
 6. Hotkey for image reverse search.
 7. Download collected images.
@@ -43,12 +43,12 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
     <td>Controls</td>
   </tr>
   <tr>
-    <td>Pick image</td>
-    <td><kbd>right-click</kbd> on the image<br>(size filter will use this image as reference)</td>
+    <td>Pick image<br>(size filter will use this image as reference)</td>
+    <td><kbd>right-click</kbd> on the image</td>
   </tr>
   <tr>
     <td rowspan="3">View previous/next image</td>
-    <td><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd><kbd>←</kbd><kbd>w</kbd><kbd>a</kbd><kbd>s</kbd><kbd>d</kbd></td>
+    <td><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd><kbd>w</kbd><kbd>a</kbd><kbd>s</kbd><kbd>d</kbd></td>
   </tr>
   <tr>
     <td>Scroll on the control bar</td>
@@ -57,18 +57,22 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
     <td>Scroll on the close button</td>
   </tr>
   <tr>
-    <td rowspan="2">Scroll to original image</td>
+    <td>Fast navigation (10 images, no throttle)</td>
+    <td><kbd>Ctrl</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></td>
+  </tr>
+  <tr>
+    <td rowspan="2">Go to original image on page</td>
     <td><kbd>Enter</kbd></td>
   </tr>
   <tr>
     <td><kbd>click</kbd> "Move To" button on the control bar</td>
   </tr>
   <tr>
-    <td rowspan="2"><kbd>middle-click</kbd> the original image</td>
+    <td rowspan="2"><kbd>middle-click</kbd> the original image<br>(Open tab for post, video, etc.)</td>
     <td><kbd>middle-click</kbd> on the image</td>
   </tr>
   <tr>
-    <td><kbd>0</kbd> both number row and number pad</td>
+    <td><kbd>0</kbd> both number row and numeric keypad</td>
   </tr>
   <tr>
     <td>Drag image</td>
@@ -96,7 +100,7 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
   </tr>
   <tr>
     <td>Image reverse search</td>
-    <td>Press the defined hotkeys</td>
+    <td>Press the hotkeys defined in setting</td>
   </tr>
   <tr>
     <td>Download collected images</td>
@@ -125,7 +129,7 @@ The entire project was written in Vanilla JavaScript with extension API support 
 
 The standalone `image-viewer.js` should work on all modern browsers, and you can use it on your own website.
 
-You can also run your own activation script using Tampermonkey or other alternatives to start `image-viewer.js`.
+You can also use `image-viewer.js` with your own script by Tampermonkey or other alternatives.
 
 ## ToDo
 
