@@ -137,9 +137,14 @@ const checkIframeUrl = async (url, origin, complete = false) => {
         console.log('CORS error, assuming iframe url is valid', url)
         return true
       }
+      if (complete) return false
       const type = res.headers.get('content-type')
-      if (type?.startsWith?.('text/html') && !complete) {
+      if (type?.startsWith?.('text/html')) {
         console.log(`${res.status} error but correct type. Testing GET method`, url)
+        return checkIframeUrl(url, origin, true)
+      }
+      if (res.status === 400) {
+        console.log('400 Bad Request. Testing GET method', url)
         return checkIframeUrl(url, origin, true)
       }
     }
