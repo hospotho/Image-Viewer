@@ -547,14 +547,13 @@ window.ImageViewerUtils = (function () {
         continue
       }
 
-      if (img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0) {
-        imgWithAttrList.push([img, attrList])
-        continue
+      let lazy = img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0
+      lazy ||= img.classList.contains('lazy') || img.classList.contains('lazyload')
+      if (!lazy) {
+        const {width, height} = img.getBoundingClientRect()
+        lazy ||= width >= minWidth && height >= minHeight
       }
-      const {width, height} = img.getBoundingClientRect()
-      if (width >= minWidth && height >= minHeight) {
-        imgWithAttrList.push([img, attrList])
-      }
+      if (lazy) imgWithAttrList.push([img, attrList])
     }
     return [imgWithAttrList, allComplete]
   }
