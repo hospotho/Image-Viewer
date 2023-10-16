@@ -57,6 +57,7 @@
       if (iframe) {
         iframe.classList.add('updateByTest')
         iframe.src = 'about:blank'
+        console.log(`Remove failed iframe: ${src}`)
       }
     }
   }
