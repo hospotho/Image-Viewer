@@ -304,20 +304,20 @@
         }
 
         if (imageInfoFromPoint) {
-          console.log(`Image node found, layer ${imageDomLayer}.`)
+          console.log(`Image node found, layer ${imageDomLayer}`)
           markingDom(imageInfoFromPoint[2])
           return imageInfoFromPoint
         }
 
         if (hiddenImageInfoFromPoint) {
-          console.log(`Hidden image node found, layer ${hiddenDomLayer}.`)
+          console.log(`Hidden image node found, layer ${hiddenDomLayer}`)
           markingDom(hiddenImageInfoFromPoint[2])
           return hiddenImageInfoFromPoint
         }
 
         const imageInfoFromTree = await searchImageFromTree(firstVisibleDom, viewportPos)
         if (isImageInfoValid(imageInfoFromTree)) {
-          console.log('Image node found, hide under sub tree.')
+          console.log('Image node found, hide under sub tree')
           markingDom(imageInfoFromTree[2])
           return imageInfoFromTree
         }

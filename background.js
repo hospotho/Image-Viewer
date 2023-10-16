@@ -187,7 +187,7 @@ function resetLocalStorage() {
   chrome.storage.sync.get('options', res => {
     if (res && Object.keys(res).length === 0 && Object.getPrototypeOf(res) === Object.prototype) {
       chrome.storage.sync.set({options: defaultOptions}, () => {
-        console.log('Set options to default values.')
+        console.log('Set options to default values')
         console.log(defaultOptions)
       })
       currOptions = defaultOptions
@@ -200,13 +200,13 @@ function resetLocalStorage() {
       currOptionsWithoutSize = Object.assign({}, currOptions)
       currOptionsWithoutSize.minWidth = 0
       currOptionsWithoutSize.minHeight = 0
-      console.log('Loaded options from storage.')
+      console.log('Loaded options from storage')
       console.log(res.options)
 
       const defaultKeyLength = Object.keys(defaultOptions).length
       const currKeyLength = Object.keys(currOptions).length
       if (defaultKeyLength !== currKeyLength) {
-        console.log('New options available.')
+        console.log('New options available')
         chrome.runtime.openOptionsPage()
       }
     }
@@ -439,7 +439,7 @@ function init() {
   createContextMenu()
   addToolbarIconHandler()
   addCommandHandler()
-  console.log('Init complete.')
+  console.log('Init complete')
 }
 
 init()

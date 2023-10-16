@@ -86,7 +86,7 @@
     observer.observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ['src']})
 
     await removeFailedIframe()
-    console.log('Init content script.')
+    console.log('Init content script')
     chrome.runtime.sendMessage('get_options')
     chrome.runtime.sendMessage('load_worker')
 
@@ -177,7 +177,7 @@
   if (document.visibilityState === 'visible') {
     init()
   } else {
-    console.log('Waiting user to view the page.')
+    console.log('Waiting user to view the page')
     const handleEvent = () => {
       document.removeEventListener('visibilitychange', handleEvent)
       window.removeEventListener('focus', handleEvent)
