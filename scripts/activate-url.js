@@ -162,8 +162,10 @@
   async function init() {
     await chrome.runtime.sendMessage('get_options')
     // Chrome terminated service worker
-    while (!window.ImageViewerOption) {
+    if (!window.ImageViewerOption) {
       console.log('Wait service worker ready')
+    }
+    while (!window.ImageViewerOption) {
       await new Promise(resolve => setTimeout(resolve, 50))
       await chrome.runtime.sendMessage('get_options')
     }
