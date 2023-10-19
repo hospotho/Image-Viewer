@@ -455,51 +455,60 @@ window.ImageViewerUtils = (function () {
       const [lazyBitSize, url] = await getUrlSize(getImageBitSize, urlList)
       if (lazyBitSize === -1) return false
       if (lazyBitSize >= bitSize) {
+        if (lazyBitSize === bitSize && getRawUrl(img.currentSrc) === getRawUrl(url)) return false
         await updateImageSource(img, url)
         return true
       }
     }
     const [lazyRealSize, url] = await getUrlSize(getImageRealSize, urlList)
     if (lazyRealSize >= naturalSize) {
+      if (lazyRealSize === naturalSize && getRawUrl(img.currentSrc) === getRawUrl(url)) return false
       await updateImageSource(img, url)
       return true
     }
     return false
   }
   async function checkImageAttr(img, attrList) {
-    const imageSrc = img.currentSrc.replace(/https?:/, protocol)
-    const bitSize = await getImageBitSize(imageSrc)
-    const naturalSize = srcRealSizeMap.get(imageSrc) ?? img.naturalWidth
-
     const successList = []
-    for (const attr of attrList) {
-      const match = [...attr.value.matchAll(urlRegex)]
-      if (match.length === 0) continue
+    let lastIndex = 0
+    let complete = false
+    while (!complete) {
+      const imageSrc = img.currentSrc.replace(/https?:/, protocol)
+      const bitSize = await getImageBitSize(imageSrc)
+      const naturalSize = srcRealSizeMap.get(imageSrc) ?? img.naturalWidth
 
-      if (match.length === 1) {
-        if (match[0][0] === img.currentSrc) continue
-        const newURL = match[0][0].replace(/https?:/, protocol)
-        const isBetter = await checkUrl(img, bitSize, naturalSize, newURL)
-        if (isBetter) {
-          const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
-          img.removeAttribute(realAttrName)
-          successList.push(attr.name)
+      while (lastIndex < attrList.length) {
+        const attr = attrList[lastIndex++]
+        complete = lastIndex === attrList.length
+        const match = [...attr.value.matchAll(urlRegex)]
+        if (match.length === 0) continue
+
+        if (match.length === 1) {
+          if (match[0][0] === img.currentSrc) continue
+          const newURL = match[0][0].replace(/https?:/, protocol)
+          const isBetter = await checkUrl(img, bitSize, naturalSize, newURL)
+          if (isBetter) {
+            const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
+            img.removeAttribute(realAttrName)
+            successList.push(attr.name)
+            break
+          }
         }
-      }
 
-      if (match.length > 1) {
-        const first = match[0][0].replace(/https?:/, protocol)
-        const last = match[match.length - 1][0].replace(/https?:/, protocol)
-        const isBetter = await checkUrl(img, bitSize, naturalSize, first, last)
-        if (isBetter) {
-          const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
-          img.removeAttribute(realAttrName)
-          successList.push(attr.name)
+        if (match.length > 1) {
+          const first = match[0][0].replace(/https?:/, protocol)
+          const last = match[match.length - 1][0].replace(/https?:/, protocol)
+          const isBetter = await checkUrl(img, bitSize, naturalSize, first, last)
+          if (isBetter) {
+            const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
+            img.removeAttribute(realAttrName)
+            successList.push(attr.name)
+            break
+          }
         }
       }
     }
-
-    return successList.length ? successList : 'original src'
+    return successList
   }
 
   // unlazy main function
