@@ -8,6 +8,7 @@ window.ImageViewerUtils = (function () {
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
   const rawUrlCache = new Map()
+  const badImageList = new Set(['', 'about:blank'])
   const mutex = (() => {
     let promise = Promise.resolve()
     let busy = false
@@ -653,6 +654,7 @@ window.ImageViewerUtils = (function () {
         console.log(`Found lazy src appear ${countMap[src]} times ${src}`)
         srcBitSizeMap.set(src, 0)
         srcRealSizeMap.set(src, 0)
+        badImageList.add(src)
       }
     }
   }
@@ -690,9 +692,9 @@ window.ImageViewerUtils = (function () {
 
   // get image
   function processImageDataList(options, imageDataList) {
-    const badImage = options.svgFilter ? url => url === '' || url === 'about:blank' || url.startsWith('data:image/svg') || url.includes('.svg') : url => url === '' || url === 'about:blank'
+    const isBadImage = options.svgFilter ? url => badImageList.has(url) || url.startsWith('data:image/svg') || url.includes('.svg') : url => badImageList.has(url)
 
-    const filteredDataList = imageDataList.filter(data => !badImage(data[0]))
+    const filteredDataList = imageDataList.filter(data => !isBadImage(data[0]))
 
     let imageUrlSet = new Set(filteredDataList.map(data => data[0]))
     const imageUrlOrderedList = [...imageUrlSet]
