@@ -467,8 +467,9 @@ window.ImageViewerUtils = (function () {
     return false
   }
   async function checkImageAttr(img, attrList) {
-    const bitSize = await getImageBitSize(img.currentSrc.replace(/https?:/, protocol))
-    const naturalSize = img.naturalWidth
+    const imageSrc = img.currentSrc.replace(/https?:/, protocol)
+    const bitSize = await getImageBitSize(imageSrc)
+    const naturalSize = srcRealSizeMap.get(imageSrc) ?? img.naturalWidth
 
     const successList = []
     for (const attr of attrList) {
@@ -548,7 +549,7 @@ window.ImageViewerUtils = (function () {
       }
 
       let lazy = img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0
-      lazy ||= img.classList.contains('lazy') || img.classList.contains('lazyload')
+      lazy ||= img.className.toLowerCase().includes('lazy')
       if (!lazy) {
         const {width, height} = img.getBoundingClientRect()
         lazy ||= width >= minWidth && height >= minHeight
@@ -612,9 +613,33 @@ window.ImageViewerUtils = (function () {
     const race = Promise.race([simpleUnlazyImage(clone), timeout])
     return race
   }
+  function preprocessLazyPlaceholder() {
+    const lazySrcList = [...document.getElementsByTagName('img')]
+      .filter(image => image.className.toLowerCase().includes('lazy') && image.src)
+      .map(image => image.currentSrc.replace(/https?:/, protocol))
+
+    if (lazySrcList.length === 0) return
+    const countMap = {}
+    for (const src of lazySrcList) {
+      if (countMap[src] === undefined) {
+        countMap[src] = 1
+      } else {
+        countMap[src]++
+      }
+    }
+
+    for (const src in countMap) {
+      if (countMap[src] >= 5) {
+        console.log(`Found lazy src appear ${countMap[src]} times ${src}`)
+        srcBitSizeMap.set(src, 0)
+        srcRealSizeMap.set(src, 0)
+      }
+    }
+  }
   async function simpleUnlazyImage(options) {
     if (firstUnlazyFlag) {
       firstUnlazyFlag = false
+      preprocessLazyPlaceholder()
       const race = createFirstUnlazyRace(options)
       return race
     }
