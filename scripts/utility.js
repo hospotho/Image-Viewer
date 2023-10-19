@@ -7,6 +7,7 @@ window.ImageViewerUtils = (function () {
   const protocol = window.location.protocol
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
+  const rawUrlCache = new Map()
   const mutex = (() => {
     let promise = Promise.resolve()
     let busy = false
@@ -113,6 +114,9 @@ window.ImageViewerUtils = (function () {
     return key && ctrl && alt && shift
   }
   function getRawUrl(src) {
+    const cache = rawUrlCache.get(src)
+    if (cache !== undefined) return cache
+
     if (src.startsWith('data')) return src
     try {
       // protocol-relative URL
@@ -130,15 +134,22 @@ window.ImageViewerUtils = (function () {
       const argsMatch = noSearch.match(argsRegex)
       if (argsMatch) {
         const rawUrl = argsMatch[1]
-        if (rawUrl !== src) return rawUrl
+        if (rawUrl !== src) {
+          rawUrlCache.set(src, rawUrl)
+          return rawUrl
+        }
       }
     } catch (error) {}
 
     const argsMatch = src.match(argsRegex)
     if (argsMatch) {
       const rawUrl = argsMatch[1]
-      if (rawUrl !== src) return rawUrl
+      if (rawUrl !== src) {
+        rawUrlCache.set(src, rawUrl)
+        return rawUrl
+      }
     }
+    rawUrlCache.set(src, src)
     return src
   }
   function getDomUrl(dom) {
