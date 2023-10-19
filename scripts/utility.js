@@ -215,10 +215,10 @@ window.ImageViewerUtils = (function () {
       width.push(maxWidth)
       height.push(maxHeight)
     }
-    return [maxImage, imageCount, imageCountList, rawWidth, rawHeight, width, height]
+    return {maxImage, imageCount, imageCountList, rawWidth, rawHeight, width, height}
   }
   function updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options) {
-    const [maxImage, imageCount, imageCountList, rawWidth, rawHeight, width, height] = processWrapperList(wrapperDivList)
+    const {maxImage, imageCount, imageCountList, rawWidth, rawHeight, width, height} = processWrapperList(wrapperDivList)
 
     const largeContainer = maxImage >= 5 && imageCountList.filter(num => num === maxImage).length > 1
     const oneToOne = imageCount === wrapperDivList.length && (Math.max(...rawWidth) === Math.min(...rawWidth) || Math.max(...rawHeight) === Math.min(...rawHeight))
@@ -556,10 +556,10 @@ window.ImageViewerUtils = (function () {
       }
       if (lazy) imgWithAttrList.push([img, attrList])
     }
-    return [imgWithAttrList, allComplete]
+    return {imgWithAttrList, allComplete}
   }
   async function startUnlazy(minWidth, minHeight) {
-    const [imgWithAttrList, allComplete] = getUnlazyImageList(minWidth, minHeight)
+    const {imgWithAttrList, allComplete} = getUnlazyImageList(minWidth, minHeight)
     const listSize = imgWithAttrList.length
     if (!listSize) return allComplete
 
@@ -911,7 +911,7 @@ window.ImageViewerUtils = (function () {
     }
 
     timer()
-    return [getStopFlag, timer]
+    return {getStopFlag, timer}
   }
   function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
     let scrollFlag = false
@@ -975,7 +975,7 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    const [getStopFlag, timer] = startAutoScroll()
+    const {getStopFlag, timer} = startAutoScroll()
 
     let existNewDom = false
     const newNodeObserver = new MutationObserver(() => {
