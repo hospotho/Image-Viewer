@@ -8,6 +8,7 @@ window.ImageViewer = (function () {
   let clearFlag = false
   let clearSrc = ''
   let clearIndex = -1
+  let lastSrc = ''
 
   const failedImageSet = new Set()
   const keydownHandlerList = []
@@ -43,6 +44,8 @@ window.ImageViewer = (function () {
   }
 
   function closeImageViewer() {
+    const current = shadowRoot.querySelector('li.current img')
+    lastSrc = current.src
     document.documentElement.classList.remove('has-image-viewer')
     keydownHandlerList.length = 0
     const root = document.querySelector('#image-viewer-root')
@@ -312,16 +315,17 @@ window.ImageViewer = (function () {
     }
     return false
   }
-  function restoreIndex() {
-    if (clearIndex === -1) return
+  function restoreIndex(options) {
+    const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastSrc !== '')
+    if (!neededToRestore) return
 
     const current = shadowRoot.querySelector('#iv-counter-current')
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const infoWidth = shadowRoot.querySelector('#iv-info-width')
     const infoHeight = shadowRoot.querySelector('#iv-info-height')
 
-    const srcIndex = currentImageList.indexOf(clearSrc)
-    const newIndex = clearIndex === 0 ? 0 : srcIndex === -1 ? clearIndex : srcIndex
+    const srcIndex = currentImageList.indexOf(clearSrc || lastSrc)
+    const newIndex = clearIndex === 0 ? 0 : srcIndex === -1 ? Math.max(clearIndex, 0) : srcIndex
 
     current.innerHTML = newIndex + 1
 
@@ -337,6 +341,7 @@ window.ImageViewer = (function () {
 
     clearSrc = ''
     clearIndex = -1
+    lastSrc = ''
   }
 
   const fitFuncDict = (function () {
@@ -1403,8 +1408,8 @@ window.ImageViewer = (function () {
       initImageList(options)
       fitImage(options, true)
       addImageEvent(options)
-      restoreIndex()
     }
+    restoreIndex(options)
   }
 
   return ImageViewer
