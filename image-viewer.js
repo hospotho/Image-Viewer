@@ -321,7 +321,7 @@ window.ImageViewer = (function () {
     const infoHeight = shadowRoot.querySelector('#iv-info-height')
 
     const srcIndex = currentImageList.indexOf(clearSrc)
-    const newIndex = srcIndex === -1 ? clearIndex : srcIndex
+    const newIndex = clearIndex === 0 ? 0 : srcIndex === -1 ? clearIndex : srcIndex
 
     current.innerHTML = newIndex + 1
 
@@ -1310,6 +1310,8 @@ window.ImageViewer = (function () {
     }
 
     // insert
+    const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+    const currentIndex = counterCurrent.innerHTML - 1
     const currentUrlList = []
     for (const data of currentImageList) {
       const url = typeof data === 'string' ? data : data[0]
@@ -1323,6 +1325,10 @@ window.ImageViewer = (function () {
         const node = buildImageNode(newList[i], options)
         insertImageNode(node, i)
         update = true
+        if (i === 0 && currentIndex === 0) {
+          console.log('First image changed')
+          clearIndex = 0
+        }
       }
     }
 
