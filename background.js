@@ -25,11 +25,11 @@ const mutex = (function () {
 })()
 
 const i18n = tag => chrome.i18n.getMessage(tag)
-const passDataToTab = (id, name, data) => {
+const passDataToTab = (id, name, data, toAllFrames = true) => {
   console.log('Pass data: ', id, name, data)
   return chrome.scripting.executeScript({
     args: [data, name],
-    target: {tabId: id, allFrames: true},
+    target: {tabId: id, allFrames: toAllFrames},
     func: (data, name) => {
       window[name] = data
     }
@@ -229,6 +229,13 @@ function addMessageHandler() {
       case 'get_options': {
         ;(async () => {
           await passDataToTab(sender.tab.id, 'ImageViewerOption', currOptions)
+          sendResponse()
+        })()
+        return true
+      }
+      case 'get_main_options': {
+        ;(async () => {
+          await passDataToTab(sender.tab.id, 'ImageViewerOption', currOptions, false)
           sendResponse()
         })()
         return true
