@@ -468,6 +468,7 @@ window.ImageViewerUtils = (function () {
       if (lazyBitSize === -1) return false
       if (lazyBitSize >= bitSize) {
         if (lazyBitSize === bitSize && getRawUrl(img.currentSrc) === getRawUrl(url)) return false
+        badImageList.add(img.currentSrc)
         await updateImageSource(img, url)
         return true
       }
@@ -475,6 +476,7 @@ window.ImageViewerUtils = (function () {
     const [lazyRealSize, url] = await getUrlSize(getImageRealSize, urlList)
     if (lazyRealSize >= naturalSize) {
       if (lazyRealSize === naturalSize && getRawUrl(img.currentSrc) === getRawUrl(url)) return false
+      badImageList.add(img.currentSrc)
       await updateImageSource(img, url)
       return true
     }
@@ -1109,6 +1111,10 @@ window.ImageViewerUtils = (function () {
     },
 
     combineImageList: function (newList, oldList) {
+      oldList = oldList.filter(data => {
+        const src = typeof data === 'string' ? data : data[0]
+        return !badImageList.has(src)
+      })
       if (newList.length === 0 || oldList.length === 0) return newList.concat(oldList)
 
       removeRepeatNonRaw(newList, oldList)
