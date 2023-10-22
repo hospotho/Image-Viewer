@@ -393,6 +393,9 @@ function createContextMenu() {
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (!tab.url) return
+    const supported = tab.url.startsWith('http') || (tab.url.startsWith('file') && (await chrome.extension.isAllowedFileSchemeAccess()))
+    if (!supported) return
+
     console.log('Context menus event: ', tab.id, info.menuItemId)
     switch (info.menuItemId) {
       case 'view_images_in_image_viewer': {
