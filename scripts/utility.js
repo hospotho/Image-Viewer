@@ -545,6 +545,15 @@ window.ImageViewerUtils = (function () {
     if (rawUrl !== img.currentSrc) {
       attrList.push({name: 'raw url', value: rawUrl})
     }
+    const filename = img.currentSrc.split('/').pop()
+    if (!filename.includes('.')) {
+      const extMatch = filename.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
+      if (extMatch) {
+        const filenameWithExt = filename.split('?').shift() + '.' + extMatch[0]
+        const rawExt = img.currentSrc.replace(filename, filenameWithExt)
+        attrList.push({name: 'raw extension', value: rawExt})
+      }
+    }
     const anchor = img.closest('a')
     if (anchor && anchor.href.match(argsRegex) && anchor.href !== img.currentSrc) {
       attrList.push({name: 'parent anchor', value: anchor.href})
