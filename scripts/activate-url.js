@@ -26,7 +26,10 @@
   }
   function isNonTrivialUrl(iframe) {
     const src = iframe.src
-    if (src === '' || src === 'about:blank') return false
+    if (src === '' || src === 'about:blank') {
+      iframe.classList.add('updateByTest')
+      return false
+    }
     if (src.startsWith('javascript')) {
       iframe.classList.add('updateByTest')
       iframe.src = 'about:blank'
@@ -61,11 +64,7 @@
       }
     }
   }
-
-  async function initWorker() {
-    chrome.runtime.sendMessage('load_main_worker')
-
-    // chrome.scripting.executeScript never return on invalid iframe
+  function initIframeObserver() {
     const observer = new MutationObserver(async mutationList => {
       let found = false
       for (const mutation of mutationList) {
@@ -73,19 +72,30 @@
         if (target.tagName !== 'IFRAME') continue
         if (target.classList.contains('updateByTest')) {
           target.classList.remove('updateByTest')
+          const {width, height} = target.getBoundingClientRect()
+          if (target.id === '' && target.className.replace('loadedWorker', '') === '' && width + height === 0) {
+            target.remove()
+          }
           continue
         }
         found = true
         target.classList.remove('loadedWorker')
       }
-      if (!found || !document.querySelector('iframe:not(.loadedWorker)')) return
+      if (!found && !document.querySelector('iframe:not(.loadedWorker)')) return
       await removeFailedIframe()
       chrome.runtime.sendMessage('get_options')
       chrome.runtime.sendMessage('load_worker')
     })
     observer.observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ['src']})
+  }
 
+  async function initWorker() {
+    chrome.runtime.sendMessage('load_main_worker')
+
+    // chrome.scripting.executeScript never return on invalid iframe
+    initIframeObserver()
     await removeFailedIframe()
+
     console.log('Init content script')
     chrome.runtime.sendMessage('get_options')
     chrome.runtime.sendMessage('load_worker')
