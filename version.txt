@@ -1,3 +1,12 @@
+1.31 [2023-10-22]:
+1. Rotation now rotates around the center of the viewpoint
+2. Auto scroll hotkey will toggle auto scroll instead of just starting it
+3. Navigation with "WASD" is now supported
+4. Support fast navigation by pressing the Ctrl key at the same time to activate it  
+5. Support memory of last image when restarting in page mode
+6. Enhanced code quality
+7. Other bug fixes and improvements
+
 1.30 [2023-08-27]:
 Stability update
 1. Improved SVG filtering
