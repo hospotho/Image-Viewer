@@ -10,7 +10,10 @@ window.ImageViewer = (function () {
   let clearIndex = -1
   let lastSrc = ''
 
+  const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
   const failedImageSet = new Set()
+  const rawUrlCache = new Map()
+  const rawFilenameCache = new Map()
   const keydownHandlerList = []
 
   //==========utility==========
@@ -103,10 +106,19 @@ window.ImageViewer = (function () {
     return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
   }
 
+  function getFilename(src) {
+    const cache = rawFilenameCache.get(src)
+    if (cache !== undefined) return cache
+
+    const filename = src.split('/').pop().split('?').shift().split('.').shift()
+    rawFilenameCache.set(src, filename)
+    return filename
+  }
   function getRawUrl(src) {
-    if (typeof src !== 'string') return src
-    const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
-    if (src.startsWith('data')) return src
+    const cache = rawUrlCache.get(src)
+    if (cache !== undefined) return cache
+
+    if (typeof src !== 'string' || src.startsWith('data')) return src
     try {
       // protocol-relative URL
       const url = new URL(src, document.baseURI)
@@ -123,15 +135,22 @@ window.ImageViewer = (function () {
       const argsMatch = noSearch.match(argsRegex)
       if (argsMatch) {
         const rawUrl = argsMatch[1]
-        if (rawUrl !== src) return rawUrl
+        if (rawUrl !== src) {
+          rawUrlCache.set(src, rawUrl)
+          return rawUrl
+        }
       }
     } catch (error) {}
 
     const argsMatch = src.match(argsRegex)
     if (argsMatch) {
       const rawUrl = argsMatch[1]
-      if (rawUrl !== src) return rawUrl
+      if (rawUrl !== src) {
+        rawUrlCache.set(src, rawUrl)
+        return rawUrl
+      }
     }
+    rawUrlCache.set(src, src)
     return src
   }
   function searchImgNode(img) {
@@ -141,6 +160,8 @@ window.ImageViewer = (function () {
     }
 
     const imgUrl = img.src
+    const imgFilename = getFilename(img.src)
+    const possibleNodeList = []
     let lastSize = 0
     let lastNode = null
     const updateLargestNode = node => {
@@ -156,6 +177,13 @@ window.ImageViewer = (function () {
       if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) {
         updateLargestNode(img)
       }
+      if (imgFilename === getFilename(img.src)) {
+        possibleNodeList.push(img)
+      }
+    }
+    if (lastNode) return lastNode
+    if (possibleNodeList.length !== 0 && possibleNodeList.length <= 2) {
+      possibleNodeList.map(updateLargestNode)
     }
     if (lastNode) return lastNode
 
@@ -201,17 +229,30 @@ window.ImageViewer = (function () {
   }
 
   function searchNearestPageImgNode(img) {
-    const imgUrlList = [...shadowRoot.querySelectorAll('img')].map(img => img.src)
+    const imgList = [...shadowRoot.querySelectorAll('img')]
+    const imgUrlList = imgList.map(img => img.src)
+    const imgFilenameList = imgList.map(img => getFilename(img.src))
+
     const pageImgList = [...document.getElementsByTagName('img')].filter(img => img.clientWidth > 0 && img.clientHeight > 0)
     const pageImgUrlList = pageImgList.map(img => getRawUrl(img.src))
+    const pageImgFilenameList = pageImgList.map(img => getFilename(img.src))
 
     const indexList = []
-    for (const url of pageImgUrlList) {
-      indexList.push(imgUrlList.indexOf(url))
+    for (let i = 0; i < pageImgUrlList.length; i++) {
+      const url = pageImgUrlList[i]
+      const urlIndex = imgUrlList.indexOf(url)
+      if (urlIndex !== -1) {
+        indexList.push(urlIndex)
+      } else {
+        const filename = pageImgFilenameList[i]
+        const filenameIndex = imgFilenameList.indexOf(filename)
+        indexList.push(filenameIndex)
+      }
     }
 
     const currentIndex = imgUrlList.indexOf(img.src)
     let nearestSrc = null
+    let nearestFilename = null
     let lastDistance = imgUrlList.length
     let lastSize = 0
     for (let i = 0; i < indexList.length; i++) {
@@ -221,14 +262,16 @@ window.ImageViewer = (function () {
 
       const {width, height} = pageImgList[i].getBoundingClientRect()
       const currSize = Math.min(width, height)
-      if (nearestSrc === imgUrlList[index] && currSize <= lastSize) continue
+      if ((nearestSrc === imgUrlList[index] || nearestFilename === imgFilenameList[index]) && currSize <= lastSize) continue
 
       nearestSrc = imgUrlList[index]
+      nearestFilename = imgFilenameList[index]
       lastDistance = currDistance
       lastSize = currSize
     }
 
-    const pageIndex = pageImgUrlList.indexOf(nearestSrc)
+    const pageUrlIndex = pageImgUrlList.indexOf(nearestSrc)
+    const pageIndex = pageUrlIndex !== -1 ? pageUrlIndex : pageImgFilenameList.indexOf(nearestFilename)
     const nearestPageNode = pageImgList[pageIndex]
     return nearestPageNode
   }
