@@ -213,6 +213,7 @@ window.ImageViewer = (function () {
     while (el.parentElement) {
       el = el.parentElement
       const anchorList = el.getElementsByTagName('a')
+      if (anchorList.length === 1) return anchorList[0]
       for (const anchor of anchorList) {
         const {width, height, top, left} = anchor.getBoundingClientRect()
         const include = top <= rootTop && left <= rootLeft && top + height >= rootTop + rootHeight && left + width >= rootLeft + rootWidth
