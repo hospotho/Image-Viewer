@@ -73,6 +73,7 @@ window.ImageViewerUtils = (function () {
           await new Promise(resolve => setTimeout(resolve, 50))
         }
         const attrList = getUnlazyAttrList(img)
+        if (attrList.length === 0) return
         checkImageAttr(img, attrList)
       }, 100)
     }
