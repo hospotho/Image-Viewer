@@ -154,8 +154,6 @@ window.ImageViewer = (function () {
 
     for (const img of document.getElementsByTagName('img')) {
       if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) {
-        // check visibility by offsetParent
-        if (img.offsetParent === null && img.style.position !== 'fixed') continue
         updateLargestNode(img)
       }
     }
@@ -885,6 +883,10 @@ window.ImageViewer = (function () {
             console.log('Image node not found')
             return
           }
+        }
+        // check visibility by offsetParent
+        if (imgNode.offsetParent === null && imgNode.style.position !== 'fixed') {
+          console.log('Image node not visible')
         }
         console.log('Move to image node')
         let currentY = -1
