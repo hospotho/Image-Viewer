@@ -38,6 +38,14 @@
     return true
   }
   async function removeFailedIframe() {
+    for (const embed of document.getElementsByTagName('embed')) {
+      if (embed.type === '' || embed.type === 'text/html') {
+        embed.outerHTML = embed.outerHTML.replace(/^<embed(.*)>$/, '<iframe$1></iframe>')
+      } else {
+        embed.classList.add('loadedWorker')
+      }
+    }
+
     const iframeList = document.querySelectorAll('iframe:not(.loadedWorker)')
     const testList = []
     for (const iframe of iframeList) {
@@ -81,7 +89,7 @@
         found = true
         target.classList.remove('loadedWorker')
       }
-      if (!found && !document.querySelector('iframe:not(.loadedWorker)')) return
+      if (!found && !document.querySelector('iframe:not(.loadedWorker)') && !document.querySelector('embed:not(.loadedWorker)')) return
       await removeFailedIframe()
       chrome.runtime.sendMessage('get_options')
       chrome.runtime.sendMessage('load_worker')
