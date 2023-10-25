@@ -1383,29 +1383,27 @@ window.ImageViewer = (function () {
       }
     }
 
-    // This extension never remove old image from the list
-    // fork and uncomment below code if you need it
-    // // delete
-    // const current = shadowRoot.querySelector('li.current img')
-    // const currentSrc = current.src
-    // if (!newList.includes(currentSrc)) {
-    //   current.parentElement.remove()
-    //   update = true
-    //   const rawUrl = getRawUrl(currentSrc)
-    //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
-    //     if (imgNode.src === rawUrl) {
-    //       imgNode.parentElement.classList.add('current')
-    //       break
-    //     }
-    //   }
-    // }
+    // delete
+    const current = shadowRoot.querySelector('li.current img')
+    const currentSrc = current.src
+    if (!newList.includes(currentSrc)) {
+      current.parentElement.remove()
+      update = true
+      const rawUrl = getRawUrl(currentSrc)
+      for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
+        if (imgNode.src === rawUrl) {
+          imgNode.parentElement.classList.add('current')
+          break
+        }
+      }
+    }
 
-    // for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
-    //   if (!newList.includes(imgNode.src)) {
-    //     imgNode.parentElement.remove()
-    //     update = true
-    //   }
-    // }
+    for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
+      if (!newList.includes(imgNode.src)) {
+        imgNode.parentElement.remove()
+        update = true
+      }
+    }
 
     currentImageList = Array.from(newList)
     lastUpdateTime = Date.now()
