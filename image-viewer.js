@@ -1376,25 +1376,25 @@ window.ImageViewer = (function () {
         }
       }
     }
-    function tryRemove() {
-      const current = shadowRoot.querySelector('li.current img')
-      const currentSrc = current.src
-      for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
-        if (!newUrlList.includes(imgNode.src)) {
-          imgNode.parentElement.remove()
-          updated = true
-        }
-      }
+    // function tryRemove() {
+    //   const current = shadowRoot.querySelector('li.current img')
+    //   const currentSrc = current.src
+    //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
+    //     if (!newUrlList.includes(imgNode.src)) {
+    //       imgNode.parentElement.remove()
+    //       updated = true
+    //     }
+    //   }
 
-      const rawUrl = getRawUrl(currentSrc)
-      if (!shadowRoot.contains(current) || rawUrl === currentSrc) return
-      for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
-        if (imgNode.src === rawUrl) {
-          imgNode.parentElement.classList.add('current')
-          break
-        }
-      }
-    }
+    //   const rawUrl = getRawUrl(currentSrc)
+    //   if (!shadowRoot.contains(current) || rawUrl === currentSrc) return
+    //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
+    //     if (imgNode.src === rawUrl) {
+    //       imgNode.parentElement.classList.add('current')
+    //       break
+    //     }
+    //   }
+    // }
 
     preprocess()
     const cleared = tryClear()
@@ -1414,7 +1414,9 @@ window.ImageViewer = (function () {
     let updated = false
     tryUpdate()
     tryInsert()
-    tryRemove()
+    // This extension never remove old image from the list
+    // fork and uncomment if you need it
+    // tryRemove()
 
     currentImageList = Array.from(newList)
     lastUpdateTime = Date.now()
