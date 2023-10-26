@@ -347,13 +347,13 @@ window.ImageViewer = (function () {
     }, fps)
   }
 
-  function isCurrentListBad(currentImageList, newList) {
+  function isCurrentListBad(newList) {
     if (!clearFlag) return false
     clearFlag = false
 
     if (currentImageList.length > newList.length) return true
     for (const img of currentImageList) {
-      if (newList.indexOf(img) === -1) return true
+      if (typeof img === 'string' && newList.indexOf(img) === -1) return true
     }
     return false
   }
@@ -1320,76 +1320,74 @@ window.ImageViewer = (function () {
   }
 
   function updateImageList(newList, options) {
-    // preprocess
-    for (let i = newList.length - 1; i >= 0; i--) {
-      const data = newList[i]
-      const url = typeof data === 'string' ? data : data[0]
-      if (failedImageSet.has(url)) {
-        newList.splice(i, 1)
-      }
-    }
-
-    // clear
-    if (isCurrentListBad(currentImageList, newList)) {
-      console.log('Clear bad image list')
-      currentImageList.length = 0
-      const imageListNode = shadowRoot.querySelector('#iv-image-list')
-      imageListNode.innerHTML = ''
-      buildImageList(newList, options)
-      return
-    } else {
-      clearSrc = ''
-      clearIndex = -1
-    }
-
-    let update = false
-
-    // update
-    const imgList = shadowRoot.querySelectorAll('#iv-image-list li img')
-    for (let i = 0; i < currentImageList.length; i++) {
-      const data = currentImageList[i]
-      if (typeof data === 'string') {
-        if (newList.includes(data)) continue
-
-        const rawUrl = getRawUrl(data)
-        if (newList.includes(rawUrl)) {
-          currentImageList[i] = rawUrl
-          imgList[i].src = rawUrl
-          update = true
+    function preprocess() {
+      for (let i = newList.length - 1; i >= 0; i--) {
+        const data = newList[i]
+        const url = typeof data === 'string' ? data : data[0]
+        if (failedImageSet.has(url)) {
+          newList.splice(i, 1)
         }
       }
     }
-
-    // insert
-    const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
-    const currentIndex = counterCurrent.innerHTML - 1
-    const currentUrlList = []
-    for (const data of currentImageList) {
-      const url = typeof data === 'string' ? data : data[0]
-      currentUrlList.push(url)
+    function tryClear() {
+      if (isCurrentListBad(newList)) {
+        console.log('Clear bad image list')
+        currentImageList.length = 0
+        const imageListNode = shadowRoot.querySelector('#iv-image-list')
+        imageListNode.innerHTML = ''
+        buildImageList(newList, options)
+        return true
+      } else {
+        clearSrc = ''
+        clearIndex = -1
+        return false
+      }
     }
-    for (let i = 0; i < newList.length; i++) {
-      const data = newList[i]
-      const url = typeof data === 'string' ? data : data[0]
-      const index = currentUrlList.indexOf(url)
-      if (index === -1) {
-        const node = buildImageNode(newList[i], options)
+    function tryUpdate() {
+      const imgList = shadowRoot.querySelectorAll('#iv-image-list li img')
+      for (let i = 0; i < currentImageList.length; i++) {
+        const data = currentImageList[i]
+        if (typeof data !== 'string' || newUrlList.includes(data)) continue
+
+        const rawUrl = getRawUrl(data)
+        if (data !== rawUrl && newUrlList.includes(rawUrl)) {
+          currentImageList[i] = rawUrl
+          currentUrlList[i] = rawUrl
+          imgList[i].src = rawUrl
+          updated = true
+        }
+      }
+    }
+    function tryInsert() {
+      const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+      const currentIndex = counterCurrent.innerHTML - 1
+      for (let i = 0; i < newList.length; i++) {
+        const data = newList[i]
+        const url = typeof data === 'string' ? data : data[0]
+        const index = currentUrlList.indexOf(url)
+        if (index !== -1) continue
+
+        const node = buildImageNode(data, options)
         insertImageNode(node, i)
-        update = true
+        updated = true
         if (i === 0 && currentIndex === 0) {
           console.log('First image changed')
           clearIndex = 0
         }
       }
     }
+    function tryRemove() {
+      const current = shadowRoot.querySelector('li.current img')
+      const currentSrc = current.src
+      for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
+        if (!newUrlList.includes(imgNode.src)) {
+          imgNode.parentElement.remove()
+          updated = true
+        }
+      }
 
-    // delete
-    const current = shadowRoot.querySelector('li.current img')
-    const currentSrc = current.src
-    if (!newList.includes(currentSrc)) {
-      current.parentElement.remove()
-      update = true
       const rawUrl = getRawUrl(currentSrc)
+      if (!shadowRoot.contains(current) || rawUrl === currentSrc) return
       for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
         if (imgNode.src === rawUrl) {
           imgNode.parentElement.classList.add('current')
@@ -1398,19 +1396,32 @@ window.ImageViewer = (function () {
       }
     }
 
-    for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
-      if (!newList.includes(imgNode.src)) {
-        imgNode.parentElement.remove()
-        update = true
-      }
+    preprocess()
+    const cleared = tryClear()
+    if (cleared) return
+
+    const currentUrlList = []
+    for (const data of currentImageList) {
+      const url = typeof data === 'string' ? data : data[0]
+      currentUrlList.push(url)
     }
+    const newUrlList = []
+    for (const data of newList) {
+      const url = typeof data === 'string' ? data : data[0]
+      newUrlList.push(url)
+    }
+
+    let updated = false
+    tryUpdate()
+    tryInsert()
+    tryRemove()
 
     currentImageList = Array.from(newList)
     lastUpdateTime = Date.now()
 
     shadowRoot.querySelector('#iv-index').style.display = 'inline'
     shadowRoot.querySelector('#iv-counter-total').innerHTML = currentImageList.length
-    if (update) console.log('Image viewer updated')
+    if (updated) console.log('Image viewer updated')
   }
 
   //==========main function==========
