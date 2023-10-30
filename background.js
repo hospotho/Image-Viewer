@@ -143,8 +143,8 @@ const checkIframeUrl = async (url, origin, complete = false) => {
         console.log(`${res.status} error but correct type. Testing GET method`, url)
         return checkIframeUrl(url, origin, true)
       }
-      if (res.status === 400) {
-        console.log('400 Bad Request. Testing GET method', url)
+      if (res.status >= 400 && res.status <= 499) {
+        console.log(`${res.status} client error. Testing GET method`, url)
         return checkIframeUrl(url, origin, true)
       }
     }
