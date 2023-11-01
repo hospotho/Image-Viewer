@@ -85,6 +85,7 @@ window.ImageViewerUtils = (function () {
   window.addEventListener(
     'keydown',
     e => {
+      if (!isImageViewerExist()) return
       // enable auto scroll
       if (checkKey(e, options.functionHotkey[0])) {
         e.preventDefault()
@@ -93,9 +94,7 @@ window.ImageViewerUtils = (function () {
         } else {
           document.documentElement.classList.remove('enableAutoScroll')
         }
-        if (isImageViewerExist()) {
-          autoScroll()
-        }
+        if (firstUnlazyCompleteFlag) autoScroll()
       }
       // download images
       if (typeof ImageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
