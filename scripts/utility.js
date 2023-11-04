@@ -168,7 +168,7 @@ window.ImageViewerUtils = (function () {
     if (result !== -1) return result
     return srcArray.indexOf(getRawUrl(query))
   }
-  function isEnableAutoScroll(options) {
+  function isEnabledAutoScroll(options) {
     if (document.documentElement.classList.contains('enableAutoScroll')) {
       return true
     }
@@ -181,7 +181,7 @@ window.ImageViewerUtils = (function () {
         domainList.push(str)
       }
     }
-    const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length
+    const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length > 0
     if (enableAutoScroll) document.documentElement.classList.add('enableAutoScroll')
     return enableAutoScroll
   }
@@ -698,7 +698,7 @@ window.ImageViewerUtils = (function () {
       if (typeof ImageViewer === 'function') ImageViewer('clear_image_list')
     }
 
-    isEnableAutoScroll(options) ? autoScroll() : scrollUnlazy()
+    isEnabledAutoScroll(options) ? autoScroll() : scrollUnlazy()
   }
 
   // get image
