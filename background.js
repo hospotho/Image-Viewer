@@ -234,21 +234,21 @@ function addMessageHandler() {
       }
       case 'check_iframes': {
         ;(async () => {
-          const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})).slice(1)
-          const badIframe = iframeList.filter(frame => {
-            if (frame.url === '' || frame.url === 'about:blank') return true
-            try {
-              chrome.scripting.executeScript({
-                target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
-                func: () => {}
-              })
-              return true
-            } catch (error) {
-              console.log(frame.url)
-            }
-            return false
+          const iframeList = await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})
+          const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
+          const asyncList = targetList.map(frame => {
+            const test = chrome.scripting.executeScript({
+              target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
+              func: () => {}
+            })
+            // handle error, don't display error to user
+            return test.then(
+              () => false,
+              () => frame.url
+            )
           })
-          const failedIframeList = [...new Set(badIframe.map(frame => frame.url))]
+          const badIframe = (await Promise.all(asyncList)).filter(Boolean)
+          const failedIframeList = [...new Set(badIframe)]
           sendResponse(failedIframeList, false)
         })()
         return true

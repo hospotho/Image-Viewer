@@ -1,6 +1,8 @@
 ;(function () {
   'use strict'
 
+  let removalComplete = false
+
   // normal web page mode
   function isNonTrivialUrl(iframe) {
     const src = iframe.src
@@ -37,7 +39,10 @@
         break
       }
     }
-    if (!found) return
+    if (!found) {
+      removalComplete = true
+      return
+    }
 
     const failedIframeList = await chrome.runtime.sendMessage('check_iframes')
     for (const src of failedIframeList) {
@@ -48,6 +53,7 @@
         console.log(`Remove failed iframe: ${src}`)
       }
     }
+    removalComplete = true
   }
   function initIframeObserver() {
     const observer = new MutationObserver(async mutationList => {
@@ -56,20 +62,24 @@
         const target = mutation.target
         if (target.tagName !== 'IFRAME') continue
         if (target.classList.contains('updateByTest')) {
-          target.classList.remove('updateByTest')
           const {width, height} = target.getBoundingClientRect()
           if (target.id === '' && target.className.replace('loadedWorker', '') === '' && width + height === 0) {
             target.remove()
+            continue
           }
+          target.classList.remove('updateByTest')
           continue
         }
         found = true
         target.classList.remove('loadedWorker')
       }
       if (!found && !document.querySelector('iframe:not(.loadedWorker)') && !document.querySelector('embed:not(.loadedWorker)')) return
-      await removeFailedIframe()
-      chrome.runtime.sendMessage('get_options')
-      chrome.runtime.sendMessage('load_worker')
+      if (removalComplete) {
+        removalComplete = false
+        await removeFailedIframe()
+        chrome.runtime.sendMessage('get_options')
+        chrome.runtime.sendMessage('load_worker')
+      }
     })
     observer.observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ['src']})
   }
