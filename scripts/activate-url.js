@@ -2,28 +2,6 @@
   'use strict'
 
   // normal web page mode
-  async function checkIframeUrl(url) {
-    if (url.startsWith('blob:')) return true
-
-    const controller = new AbortController()
-    setTimeout(() => controller.abort(), 3000)
-    try {
-      const res = await fetch(url, {method: 'HEAD', signal: controller.signal})
-      if (res.ok) {
-        const options = res.headers.get('X-Frame-Options')?.toUpperCase()
-        if (!options) {
-          return true
-        } else if (options === 'DENY') {
-          return false
-        } else if (options === 'SAMEORIGIN') {
-          const target = new URL(res.url).origin
-          const origin = new URL(location.href).origin
-          return target === origin
-        }
-      }
-    } catch (error) {}
-    return false
-  }
   function isNonTrivialUrl(iframe) {
     const src = iframe.src
     if (src === '' || src === 'about:blank') {
@@ -34,6 +12,10 @@
       iframe.classList.add('updateByTest')
       iframe.src = 'about:blank'
       return false
+    }
+    if (iframe.loading) {
+      iframe.loading = 'eager'
+      iframe.classList.remove('loadedWorker')
     }
     return true
   }
@@ -46,26 +28,21 @@
       }
     }
 
-    const iframeList = document.querySelectorAll('iframe:not(.loadedWorker)')
-    const testList = []
+    const iframeList = [...document.querySelectorAll('iframe:not(.loadedWorker)')]
+    let found = false
     for (const iframe of iframeList) {
       iframe.classList.add('loadedWorker')
       if (isNonTrivialUrl(iframe)) {
-        testList.push(iframe.src)
+        found = true
+        break
       }
     }
-    if (testList.length === 0) return
+    if (!found) return
 
-    const backgroundResult = chrome.runtime.sendMessage({msg: 'check_iframes', data: testList})
-    const localResult = Promise.all(testList.map(checkIframeUrl))
-    const asyncList = await Promise.all([backgroundResult, localResult])
-    for (let i = 0; i < testList.length; i++) {
-      const valid = asyncList[0][i] || asyncList[1][i]
-      if (valid) continue
-
-      const src = testList[i]
-      const iframe = document.querySelector(`iframe[src="${src}"]`)
-      if (iframe) {
+    const failedIframeList = await chrome.runtime.sendMessage('check_iframes')
+    for (const src of failedIframeList) {
+      const targetList = iframeList.filter(iframe => iframe.src === src)
+      for (const iframe of targetList) {
         iframe.classList.add('updateByTest')
         iframe.src = 'about:blank'
         console.log(`Remove failed iframe: ${src}`)

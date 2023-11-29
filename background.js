@@ -115,42 +115,6 @@ const getRedirectUrl = async srcList => {
 
   return redirectUrlList
 }
-const checkIframeUrl = async (url, origin, complete = false) => {
-  const controller = new AbortController()
-  setTimeout(() => controller.abort(), 3000)
-  try {
-    const method = complete ? 'GET' : 'HEAD'
-    const res = await fetch(url, {method: method})
-    if (res.ok) {
-      const options = res.headers.get('X-Frame-Options')?.toUpperCase()
-      if (!options) {
-        return true
-      } else if (options === 'DENY') {
-        return false
-      } else if (options === 'SAMEORIGIN') {
-        const target = new URL(res.url).origin
-        return target === origin
-      }
-    } else {
-      const policy = res.headers.get('referrer-policy')
-      if (policy === 'strict-origin-when-cross-origin') {
-        console.log('CORS error, assuming iframe url is valid', url)
-        return true
-      }
-      if (complete) return false
-      const type = res.headers.get('content-type')
-      if (type?.startsWith?.('text/html')) {
-        console.log(`${res.status} error but correct type. Testing GET method`, url)
-        return checkIframeUrl(url, origin, true)
-      }
-      if (res.status >= 400 && res.status <= 499) {
-        console.log(`${res.status} client error. Testing GET method`, url)
-        return checkIframeUrl(url, origin, true)
-      }
-    }
-  } catch (error) {}
-  return false
-}
 const resetLabel = () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
 
 // main function
@@ -270,11 +234,22 @@ function addMessageHandler() {
       }
       case 'check_iframes': {
         ;(async () => {
-          const iframeUrlList = request.data
-          const origin = new URL(sender.tab.url).origin
-          const asyncList = iframeUrlList.map(url => checkIframeUrl(url, origin))
-          const result = await Promise.all(asyncList)
-          sendResponse(result, false)
+          const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})).slice(1)
+          const badIframe = iframeList.filter(frame => {
+            if (frame.url === '' || frame.url === 'about:blank') return true
+            try {
+              chrome.scripting.executeScript({
+                target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
+                func: () => {}
+              })
+              return true
+            } catch (error) {
+              console.log(frame.url)
+            }
+            return false
+          })
+          const failedIframeList = [...new Set(badIframe.map(frame => frame.url))]
+          sendResponse(failedIframeList, false)
         })()
         return true
       }
