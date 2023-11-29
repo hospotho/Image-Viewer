@@ -580,13 +580,31 @@ window.ImageViewerUtils = (function () {
         continue
       }
 
-      let lazy = img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0
-      lazy ||= img.className.toLowerCase().includes('lazy')
-      if (!lazy) {
-        const {width, height} = img.getBoundingClientRect()
-        lazy ||= width >= minWidth && height >= minHeight
+      // check url and size
+      const lazy = img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0
+      if (lazy) {
+        imgWithAttrList.push([img, attrList])
+        continue
       }
-      if (lazy) imgWithAttrList.push([img, attrList])
+
+      // check class name
+      let lazyClass = false
+      for (const className of img.classList) {
+        if (className.toLowerCase().includes('lazy')) {
+          lazyClass = true
+          img.classList.remove(className)
+        }
+      }
+      if (lazyClass) {
+        imgWithAttrList.push([img, attrList])
+        continue
+      }
+
+      // init images with pass size filter
+      const {width, height} = img.getBoundingClientRect()
+      if (width >= minWidth && height >= minHeight) {
+        imgWithAttrList.push([img, attrList])
+      }
     }
     return {imgWithAttrList, allComplete}
   }
