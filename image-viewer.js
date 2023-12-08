@@ -404,7 +404,7 @@ window.ImageViewer = (function () {
       }
     }
     function height() {
-      const windowHeight = document.doctype ? document.documentElement.clientHeight : document.body.clientHeight
+      const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
       return (imageWidth, imageHeight) => {
         const imgRatio = imageWidth / imageHeight
         return [windowHeight * imgRatio, windowHeight]
