@@ -442,10 +442,10 @@ window.ImageViewer = (function () {
       </ul>
       <ul id="iv-info">
         <li>
-          <span class="label"><span data-i18n="width">Width</span>: </span><input id="iv-info-width">
+          <span class="label"><span data-i18n="width">Width</span>: </span><input id="iv-info-width" readonly>
         </li>
         <li>
-          <span class="label"><span data-i18n="height">Height</span>: </span><input id="iv-info-height">
+          <span class="label"><span data-i18n="height">Height</span>: </span><input id="iv-info-height" readonly>
         </li>
       </ul>
     </nav>
