@@ -453,13 +453,13 @@ window.ImageViewerUtils = (function () {
       img.src = src
     })
   }
-  async function getUrlSize(getSizeFunction, url) {
-    if (url.length === 1) {
-      const lazySize = await getSizeFunction(url[0])
-      return [lazySize, url[0]]
+  async function getUrlSize(getSizeFunction, urlList) {
+    if (urlList.length === 1) {
+      const lazySize = await getSizeFunction(urlList[0])
+      return [lazySize, urlList[0]]
     } else {
-      const [firstSize, lastSize] = await Promise.all(url.map(getSizeFunction))
-      return firstSize > lastSize ? [firstSize, url[0]] : [lastSize, url[1]]
+      const [firstSize, lastSize] = await Promise.all(urlList.map(getSizeFunction))
+      return firstSize > lastSize ? [firstSize, urlList[0]] : [lastSize, urlList[1]]
     }
   }
   async function checkUrl(img, bitSize, naturalSize, ...urlList) {
