@@ -416,9 +416,9 @@ window.ImageViewerUtils = (function () {
         _resolve(size)
       }
 
-      let complete = true
-      const updateComplete = () => {
-        !complete ? (complete = true) : resolve(0)
+      let waiting = false
+      const updateWaitingFlag = () => {
+        waiting ? (waiting = false) : resolve(0)
       }
 
       // protocol-relative URL
@@ -426,14 +426,14 @@ window.ImageViewerUtils = (function () {
       const href = url.href
 
       if (url.hostname !== location.hostname) {
-        complete = false
+        waiting = true
         chrome.runtime.sendMessage({msg: 'get_size', url: href}).then(reply => {
-          reply ? resolve(reply) : updateComplete()
+          reply ? resolve(reply) : updateWaitingFlag()
         })
       }
 
       localFetchBitSize(href).then(reply => {
-        reply ? resolve(reply) : updateComplete()
+        reply ? resolve(reply) : updateWaitingFlag()
       })
     })
   }
