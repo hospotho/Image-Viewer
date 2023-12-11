@@ -527,6 +527,7 @@ window.ImageViewerUtils = (function () {
   // unlazy main function
   function getUnlazyAttrList(img) {
     const rawUrl = getRawUrl(img.currentSrc)
+    const rawMatchArgs = rawUrl.match(argsRegex) !== null
     const attrList = []
     for (const attr of img.attributes) {
       if (passList.has(attr.name) || !attr.value.match(urlRegex)) continue
@@ -556,8 +557,10 @@ window.ImageViewerUtils = (function () {
       }
     }
     const anchor = img.closest('a')
-    if (anchor && anchor.href.match(argsRegex) && anchor.href !== img.currentSrc) {
-      attrList.push({name: 'parent anchor', value: anchor.href})
+    if (anchor && anchor.href !== img.currentSrc) {
+      const anchorMatchArgs = anchor.href.match(argsRegex) !== null
+      const sameType = anchorMatchArgs === rawMatchArgs
+      if (sameType) attrList.push({name: 'parent anchor', value: anchor.href})
     }
     return attrList
   }
