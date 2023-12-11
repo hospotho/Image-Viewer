@@ -462,63 +462,62 @@ window.ImageViewerUtils = (function () {
       return firstSize > lastSize ? [firstSize, urlList[0]] : [lastSize, urlList[1]]
     }
   }
-  async function checkUrl(img, bitSize, naturalSize, ...urlList) {
+  async function getBetterUrl(currentSrc, bitSize, naturalSize, ...urlList) {
     if (bitSize > 0) {
       const [lazyBitSize, url] = await getUrlSize(getImageBitSize, urlList)
-      if (lazyBitSize === -1) return false
+      if (lazyBitSize === -1) return null
       if (lazyBitSize >= bitSize) {
-        if (lazyBitSize === bitSize && getRawUrl(img.currentSrc) === getRawUrl(url)) return false
-        badImageList.add(img.currentSrc)
-        await updateImageSource(img, url)
-        return true
+        if (lazyBitSize === bitSize && getRawUrl(currentSrc) === getRawUrl(url)) return null
+        badImageList.add(currentSrc)
+        return url
       }
     }
     const [lazyRealSize, url] = await getUrlSize(getImageRealSize, urlList)
     if (lazyRealSize >= naturalSize) {
-      if (lazyRealSize === naturalSize && getRawUrl(img.currentSrc) === getRawUrl(url)) return false
-      badImageList.add(img.currentSrc)
-      await updateImageSource(img, url)
-      return true
+      if (lazyRealSize === naturalSize && getRawUrl(currentSrc) === getRawUrl(url)) return null
+      badImageList.add(currentSrc)
+      return url
     }
-    return false
+    return null
+  }
+  async function processAttribute(attr, currentSrc, bitSize, naturalSize) {
+    const match = [...attr.value.matchAll(urlRegex)]
+    if (match.length === 0) return null
+
+    if (match.length === 1) {
+      if (match[0][0] === currentSrc) return null
+      const newURL = match[0][0].replace(/https?:/, protocol)
+      return await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
+    }
+
+    if (match.length > 1) {
+      const first = match[0][0].replace(/https?:/, protocol)
+      const last = match[match.length - 1][0].replace(/https?:/, protocol)
+      return await getBetterUrl(currentSrc, bitSize, naturalSize, first, last)
+    }
   }
   async function checkImageAttr(img, attrList) {
     const successList = []
     let lastIndex = 0
     let complete = false
     while (!complete) {
-      const imageSrc = img.currentSrc.replace(/https?:/, protocol)
-      const bitSize = await getImageBitSize(imageSrc)
-      const naturalSize = await getImageRealSize(imageSrc)
+      // init var for current url and size
+      const currentSrc = img.currentSrc
+      const realSrc = currentSrc.replace(/https?:/, protocol)
+      const bitSize = await getImageBitSize(realSrc)
+      const naturalSize = await getImageRealSize(realSrc)
 
+      // loop thought remaining attr
       while (lastIndex < attrList.length) {
         const attr = attrList[lastIndex++]
         complete = lastIndex === attrList.length
-        const match = [...attr.value.matchAll(urlRegex)]
-        if (match.length === 0) continue
-
-        if (match.length === 1) {
-          if (match[0][0] === img.currentSrc) continue
-          const newURL = match[0][0].replace(/https?:/, protocol)
-          const isBetter = await checkUrl(img, bitSize, naturalSize, newURL)
-          if (isBetter) {
-            const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
-            img.removeAttribute(realAttrName)
-            successList.push(attr.name)
-            break
-          }
-        }
-
-        if (match.length > 1) {
-          const first = match[0][0].replace(/https?:/, protocol)
-          const last = match[match.length - 1][0].replace(/https?:/, protocol)
-          const isBetter = await checkUrl(img, bitSize, naturalSize, first, last)
-          if (isBetter) {
-            const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
-            img.removeAttribute(realAttrName)
-            successList.push(attr.name)
-            break
-          }
+        const betterUrl = await processAttribute(attr, currentSrc, bitSize, naturalSize)
+        if (betterUrl !== null) {
+          const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
+          img.removeAttribute(realAttrName)
+          successList.push(attr.name)
+          await updateImageSource(img, betterUrl)
+          break
         }
       }
     }
