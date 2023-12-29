@@ -259,7 +259,7 @@ window.ImageViewerUtils = (function () {
     const finalHeight = useMinSize ? getMinSize(rawHeight) : getRefSize(divHeight, small, optionSmall)
 
     // not allow size below 50 to prevent icon
-    const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight)) - 1
+    const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight)) - 3
     options.minWidth = Math.min(finalSize, options.minWidth)
     options.minHeight = Math.min(finalSize, options.minHeight)
   }
