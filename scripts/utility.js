@@ -283,6 +283,8 @@ window.ImageViewerUtils = (function () {
     let minWidth = domWidth
     let minHeight = domHeight
     for (const img of container.querySelectorAll(selector)) {
+      // skip img with data URL
+      if (img.src.startsWith('data')) continue
       const {width, height} = img.getBoundingClientRect()
       if (width !== 0 && height !== 0) {
         minWidth = Math.min(minWidth, width)
