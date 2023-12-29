@@ -190,22 +190,34 @@ window.ImageViewerUtils = (function () {
   }
 
   // wrapper size
+  function checkMatchSize(rawWidth, rawHeight) {
+    // below value should close to real img container size
+    const rawWidthMax = Math.max(...rawWidth) - 5
+    const rawHeightMax = Math.max(...rawHeight) - 5
+    let flag = true
+    for (let i = 0; i < rawWidth.length; i++) {
+      flag &&= rawWidth[i] >= rawWidthMax || rawHeight[i] >= rawHeightMax
+    }
+    return flag
+  }
   function processWrapperList(wrapperDivList) {
-    const width = []
-    const height = []
+    // treat long size as width
+    const divWidth = []
+    const divHeight = []
+    // store raw value of each img
     const rawWidth = []
     const rawHeight = []
-    const imageCountList = []
+    const imageCountPerDiv = []
     let imageCount = 0
-    let maxImage = 0
+    let maxImageCount = 0
     for (const div of wrapperDivList) {
       // ad may use same wrapper and adblock set it to display: none
       if (div.offsetParent === null && div.style.position !== 'fixed') continue
 
       const imgList = div.querySelectorAll('img')
       imageCount += imgList.length
-      maxImage = Math.max(maxImage, imgList.length)
-      imageCountList.push(imgList.length)
+      maxImageCount = Math.max(maxImageCount, imgList.length)
+      imageCountPerDiv.push(imgList.length)
       if (imgList.length === 0) continue
 
       const widthList = []
@@ -224,23 +236,27 @@ window.ImageViewerUtils = (function () {
       }
       const maxWidth = Math.max(...widthList)
       const maxHeight = Math.max(...heightList)
-      width.push(maxWidth)
-      height.push(maxHeight)
+      divWidth.push(maxWidth)
+      divHeight.push(maxHeight)
     }
-    return {maxImage, imageCount, imageCountList, rawWidth, rawHeight, width, height}
+    return {maxImageCount, imageCount, imageCountPerDiv, rawWidth, rawHeight, divWidth, divHeight}
   }
   function updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options) {
-    const {maxImage, imageCount, imageCountList, rawWidth, rawHeight, width, height} = processWrapperList(wrapperDivList)
+    const {maxImageCount, imageCount, imageCountPerDiv, rawWidth, rawHeight, divWidth, divHeight} = processWrapperList(wrapperDivList)
 
-    const largeContainer = maxImage >= 5 && imageCountList.filter(num => num === maxImage).length > 1
-    const oneToOne = imageCount === wrapperDivList.length && (Math.max(...rawWidth) === Math.min(...rawWidth) || Math.max(...rawHeight) === Math.min(...rawHeight))
-    const useMinSize = largeContainer || oneToOne
-    const sizeFunc = (sizeList, rawSizeList, domSize, optionSize) => Math.min(...(useMinSize ? rawSizeList.filter(Boolean) : sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize)))
+    const largeContainer = maxImageCount >= 5 && imageCountPerDiv.filter(num => num === maxImageCount).length > 1
+    const oneToOne = !largeContainer && imageCount === wrapperDivList.length
+    const matchSize = oneToOne && checkMatchSize(rawWidth, rawHeight)
+    const useMinSize = largeContainer || matchSize
 
+    const getMinSize = rawSizeList => Math.min(...rawSizeList.filter(Boolean))
+    const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
+
+    // treat long size as width
     const [large, small] = [domWidth, domHeight].sort((a, b) => b - a)
     const [optionLarge, optionSmall] = [options.minWidth, options.minHeight].sort((a, b) => b - a)
-    const finalWidth = sizeFunc(width, rawWidth, large, optionLarge)
-    const finalHeight = sizeFunc(height, rawHeight, small, optionSmall)
+    const finalWidth = useMinSize ? getMinSize(rawWidth) : getRefSize(divWidth, large, optionLarge)
+    const finalHeight = useMinSize ? getMinSize(rawHeight) : getRefSize(divHeight, small, optionSmall)
 
     // not allow size below 50 to prevent icon
     const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight)) - 1
