@@ -11,12 +11,13 @@ https://ko-fi.com/tonymilktea
 1. Collect and view all images on the page.
 2. Support video poster and images in iframes.
 3. Auto load most lazy loaded images.
-4. Go to original image on the page.
-5. Fit, zoom, rotate and mirror the image.
-6. Hotkey for image reverse search.
-7. Download collected images.
-8. Easy to use.
-9. And more...
+4. Redirect middle click to original image
+5. Go to original image on the page.
+6. Fit, zoom, rotate and mirror the image.
+7. Hotkey for image reverse search.
+8. Download collected images.
+9. Easy to use.
+10. And more...
 
 ## Installation
 
