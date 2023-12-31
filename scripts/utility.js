@@ -105,6 +105,18 @@ window.ImageViewerUtils = (function () {
     true
   )
 
+  // reset window.backupImageUrlList when href change
+  // navigation api not yet supported by Safari and Firefox
+  // navigation.addEventListener('navigate', () => (window.backupImageUrlList = []))
+  let oldHref = window.location.href
+  const hrefObserver = new MutationObserver(() => {
+    if (oldHref !== document.location.href) {
+      oldHref = document.location.href
+      window.backupImageUrlList = []
+    }
+  })
+  hrefObserver.observe(document.body, {childList: true, subtree: true})
+
   //==========utility==========
   function checkKey(e, hotkey) {
     const keyList = hotkey.split('+').map(str => str.trim())
