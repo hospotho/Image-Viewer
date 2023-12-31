@@ -484,14 +484,14 @@ window.ImageViewerUtils = (function () {
     if (bitSize > 0) {
       const [lazyBitSize, url] = await getUrlSize(getImageBitSize, urlList)
       if (lazyBitSize === -1) return null
-      if (lazyBitSize >= bitSize) {
+      if (lazyBitSize > 0 && lazyBitSize >= bitSize) {
         if (lazyBitSize === bitSize && getRawUrl(currentSrc) === getRawUrl(url)) return null
         badImageList.add(currentSrc)
         return url
       }
     }
     const [lazyRealSize, url] = await getUrlSize(getImageRealSize, urlList)
-    if (lazyRealSize >= naturalSize) {
+    if (lazyRealSize > 0 && lazyRealSize >= naturalSize) {
       if (lazyRealSize === naturalSize && getRawUrl(currentSrc) === getRawUrl(url)) return null
       badImageList.add(currentSrc)
       return url
