@@ -1114,12 +1114,12 @@ window.ImageViewer = (function () {
           zoomCount = newZoomCount
         } else {
           // mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
-          const deltaRotate = mirror * ((e.deltaY > 0) * 2 - 1)
+          const deltaRotate = (e.deltaY > 0) * 2 - 1
           rotateCount += deltaRotate
           // recalculate displacement for rotation around the center of the viewpoint
           const radial = Math.sqrt(moveX ** 2 + moveY ** 2)
           const angle = (Math.atan2(moveY, moveX) * 180) / Math.PI
-          const newAngle = angle + mirror * options.rotateDeg * deltaRotate
+          const newAngle = angle + options.rotateDeg * deltaRotate
           const newRadian = (newAngle / 180) * Math.PI
           moveX = radial * Math.cos(newRadian)
           moveY = radial * Math.sin(newRadian)
