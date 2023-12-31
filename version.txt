@@ -1,3 +1,11 @@
+1.32 [2023-12-31]:
+1. Improved accuracy of image middle click redirect
+2. Enhanced size filter referencing of picking an image by right click
+3. Solve CSS issues related to lazy images on some websites
+4. Added support for the embed element
+5. Refactored and improved code logic
+6. Other bug fixes and improvements
+
 1.31 [2023-10-22]:
 1. Rotation now rotates around the center of the viewpoint
 2. Auto scroll hotkey will toggle auto scroll instead of just starting it
