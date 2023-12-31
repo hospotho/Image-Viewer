@@ -560,7 +560,13 @@ window.ImageViewerUtils = (function () {
       }
     }
     if (img.srcset && img.srcset !== img.currentSrc) {
-      attrList.push(img.attributes.srcset)
+      const srcsetList = img.srcset.split(', ').map(str => str.split(' ')[0])
+      if (srcsetList.length === 1) {
+        attrList.push({name: 'srcset', value: srcsetList[0]})
+      } else {
+        attrList.push({name: 'srcset-first', value: srcsetList[0]})
+        attrList.push({name: 'srcset-last', value: srcsetList[srcsetList.length - 1]})
+      }
     }
     if (rawUrl !== img.currentSrc) {
       attrList.push({name: 'raw url', value: rawUrl})
