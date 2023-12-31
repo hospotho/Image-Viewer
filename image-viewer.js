@@ -1427,12 +1427,14 @@ window.ImageViewer = (function () {
 
   //==========main function==========
   function ImageViewer(imageList, options) {
+    // command mode
     if (arguments.length === 1) {
       const action = arguments[0]
       switch (action) {
         case 'get_image_list':
           return Array.from(currentImageList)
         case 'clear_image_list': {
+          // will try to clean when calling updateImageList
           clearFlag = true
           const current = shadowRoot.querySelector('li.current img')
           const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
