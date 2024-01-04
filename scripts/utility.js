@@ -281,11 +281,11 @@ window.ImageViewerUtils = (function () {
     let selector = 'img'
     while (curr.parentElement) {
       if (curr.classList.length > 1) {
-        selector = curr.tagName.toLowerCase() + ':is(.' + [...curr.classList].map(CSS.escape).join(', .') + ') ' + selector
+        selector = curr.tagName.toLowerCase() + ':is(.' + [...curr.classList].map(CSS.escape).join(', .') + ') > ' + selector
       } else if (curr.classList.length === 1) {
-        selector = curr.tagName.toLowerCase() + '.' + CSS.escape(curr.classList[0]) + ' ' + selector
+        selector = curr.tagName.toLowerCase() + '.' + CSS.escape(curr.classList[0]) + ' > ' + selector
       } else {
-        selector = curr.tagName.toLowerCase() + ' ' + selector
+        selector = curr.tagName.toLowerCase() + ' > ' + selector
       }
       curr = curr.parentElement
     }
@@ -296,7 +296,7 @@ window.ImageViewerUtils = (function () {
     let minHeight = domHeight
     for (const img of container.querySelectorAll(selector)) {
       // skip img with data URL
-      if (img.src.startsWith('data')) continue
+      if (img.src.startsWith('data') || !img.classList.contains('simpleUnlazy')) continue
       const {width, height} = img.getBoundingClientRect()
       if (width !== 0 && height !== 0) {
         minWidth = Math.min(minWidth, width)
