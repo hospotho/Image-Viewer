@@ -324,11 +324,12 @@ window.ImageViewerUtils = (function () {
     setTimeout(() => wrapper(window.scrollTo, currentX, totalHeight), ++scrollCount * 150)
     setTimeout(() => wrapper(window.scrollTo, currentX, currentY), ++scrollCount * 150)
   }
-  async function tryActivateLazyImage(domChangedPromise) {
+  async function tryActivateLazyImage(isDomChanged) {
     window.scrollTo(0, 0)
     window.scrollBy({top: window.innerHeight * 2})
+    await new Promise(resolve => setTimeout(resolve, 100))
 
-    const domChanged = await domChangedPromise
+    const domChanged = isDomChanged()
     if (domChanged || !isImageViewerExist()) return
 
     let maxHeight = 0
@@ -363,13 +364,19 @@ window.ImageViewerUtils = (function () {
       domChanged = true
 
       console.log('Unlazy by scroll')
+      // lazy image activated by scroll
       let found = false
       for (const mutation of mutationsList) {
+        // image updated to real url
         const element = mutation.target
-        if (element.tagName !== 'IMG') continue
-        if (!element.classList.contains('updateByObserver') || !element.classList.contains('simpleUnlazy')) {
-          found = true
-          break
+        if (element.tagName === 'IMG') {
+          found = !element.classList.contains('updateByObserver') || !element.classList.contains('simpleUnlazy')
+          if (found) break
+        }
+        // new image added to the page
+        if (mutation.addedNodes.length) {
+          found = [...mutation.addedNodes].some(node => node.tagName === 'IMG')
+          if (found) break
         }
       }
       if (!found) {
@@ -391,8 +398,8 @@ window.ImageViewerUtils = (function () {
       if (!domChanged) window.scrollTo(currentX, currentY)
     }, 1000)
 
-    const domChangedPromise = new Promise(resolve => setTimeout(() => resolve(domChanged), 100))
-    tryActivateLazyImage(domChangedPromise)
+    const isDomChanged = () => domChanged
+    tryActivateLazyImage(isDomChanged)
   }
 
   // attr unlazy
