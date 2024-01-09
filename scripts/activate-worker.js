@@ -211,31 +211,34 @@
     const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
     const isNewImageInfoBetter = async (newInfo, oldInfo) => {
       if (oldInfo === null) return true
-      const oldIsImage = oldInfo[2].tagName === 'IMG' || oldInfo[2].tagName === 'VIDEO'
-      const newIsImage = newInfo[2].tagName === 'IMG' || newInfo[2].tagName === 'VIDEO'
-      const oldIsPlaceholder = oldInfo[1] < 10
-      if (oldIsImage && !newIsImage && !oldIsPlaceholder) return false
-
+      // data url
       const newUrl = newInfo[0]
       const oldUrl = oldInfo[0]
-      if (!newUrl.startsWith('data')) {
-        const newIsSvg = newUrl.startsWith('data:image/svg') || newUrl.includes('.svg')
-        const oldIsSvg = oldUrl.startsWith('data:image/svg') || oldUrl.includes('.svg')
-        if (!newIsSvg && oldIsSvg) return true
-
-        if (oldIsImage !== newIsImage && !oldIsPlaceholder) {
-          const bgPos = window.getComputedStyle(oldInfo[2]).backgroundPosition
-          const isPartialBackground = bgPos.split('px').map(Number).some(Boolean)
-          return isPartialBackground
-        }
-        const [newBitSize, oldBitSize] = await Promise.all([newUrl, oldUrl].map(getImageBitSize))
-        if (newBitSize * oldBitSize !== 0) {
-          return newBitSize > oldBitSize
-        }
-        const [newRealSize, oldRealSize] = await Promise.all([newUrl, oldUrl].map(getImageRealSize))
-        return newRealSize > oldRealSize
+      if (newUrl.startsWith('data')) return false
+      if (oldUrl.startsWith('data')) return true
+      // svg image
+      const newIsSvg = newUrl.startsWith('data:image/svg') || newUrl.includes('.svg')
+      const oldIsSvg = oldUrl.startsWith('data:image/svg') || oldUrl.includes('.svg')
+      if (oldIsSvg && !newIsSvg) return true
+      // element type
+      const oldIsImage = oldInfo[2].tagName === 'IMG' || oldInfo[2].tagName === 'VIDEO'
+      const newIsImage = newInfo[2].tagName === 'IMG' || newInfo[2].tagName === 'VIDEO'
+      // placeholder
+      const oldIsPlaceholder = oldInfo[1] < 10
+      if (oldIsImage && !newIsImage && !oldIsPlaceholder) return false
+      // partial background
+      if (!oldIsImage && newIsImage && !oldIsPlaceholder) {
+        const bgPos = window.getComputedStyle(oldInfo[2]).backgroundPosition
+        const isPartialBackground = bgPos.split('px').map(Number).some(Boolean)
+        return isPartialBackground ? newInfo[1] > oldInfo[1] : true
       }
-      return false
+      // size check
+      const [newBitSize, oldBitSize] = await Promise.all([newUrl, oldUrl].map(getImageBitSize))
+      if (newBitSize * oldBitSize !== 0) {
+        return newBitSize > oldBitSize
+      }
+      const [newRealSize, oldRealSize] = await Promise.all([newUrl, oldUrl].map(getImageRealSize))
+      return newRealSize > oldRealSize
     }
     const getImageBitSize = async src => {
       // protocol-relative URL
