@@ -104,6 +104,10 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
     <td>Press the hotkeys defined in setting</td>
   </tr>
   <tr>
+    <td>Change background color<br>(loop: transparent -> black -> white)</td>
+    <td><kbd>Shift</kbd>+<kbd>b</kbd></td>
+  </tr>
+  <tr>
     <td>Download collected images</td>
     <td><kbd>Shift</kbd>+<kbd>d</kbd> (default)</td>
   </tr>
@@ -126,7 +130,7 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
 
 ## Browser support
 
-The entire project was written in Vanilla JavaScript with extension API support for Chromium-based browsers. ~~It should work on Firefox, but it has not been tested yet.~~ Part of the code uses CSS :has() selector, which Firefox still does not yet support in the stable version (Aug 2023).
+The entire project was written in Vanilla JavaScript with extension API support for Chromium-based browsers. It should work on Firefox, but it has not been tested yet.
 
 The standalone `image-viewer.js` should work on all modern browsers, and you can use it on your own website.
 
