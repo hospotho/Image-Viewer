@@ -1025,7 +1025,7 @@ window.ImageViewer = (function () {
       }
       keydownHandlerList.push(e => e.stopPropagation())
     }
-    function addSearchHotkeyEvent() {
+    function addImageReverseSearchHotkey() {
       function checkKey(e, hotkey) {
         const keyList = hotkey.split('+').map(str => str.trim())
         const key = keyList[keyList.length - 1] === e.key.toUpperCase()
@@ -1088,7 +1088,7 @@ window.ImageViewer = (function () {
     addCloseButtonEvent()
     addMiddleClickKeyEvent()
     disableWebsiteDefaultEvent()
-    addSearchHotkeyEvent()
+    addImageReverseSearchHotkey()
   }
 
   function addImageEvent(options) {
