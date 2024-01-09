@@ -714,7 +714,7 @@ window.ImageViewer = (function () {
   }
 
   //==========function define==========
-  function buildApp() {
+  function buildApp(options) {
     document.documentElement.classList.add('has-image-viewer')
 
     const shadowHolder = document.createElement('div')
@@ -730,6 +730,9 @@ window.ImageViewer = (function () {
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
     viewer.innerHTML = frame()
+    if (!options.closeButton) {
+      viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
+    }
 
     shadowRoot.append(stylesheet)
     shadowRoot.append(viewer)
@@ -1081,6 +1084,19 @@ window.ImageViewer = (function () {
         }
       })
     }
+    function addChangeBackgroundHotkey() {
+      const backgroundList = [
+        ['rgb(0, 0, 0)', 'important'],
+        ['rgb(255, 255, 255)', 'important']
+      ]
+      if (options.closeButton) backgroundList.unshift([''])
+      let index = 0
+      keydownHandlerList.push(e => {
+        if (!e.shiftKey || e.key.toUpperCase() !== 'B') return
+        index = (index + 1) % backgroundList.length
+        shadowRoot.querySelector('#image-viewer').style.setProperty('background', ...backgroundList[index])
+      })
+    }
 
     initKeydownHandler()
     addFitButtonEvent()
@@ -1089,6 +1105,7 @@ window.ImageViewer = (function () {
     addMiddleClickKeyEvent()
     disableWebsiteDefaultEvent()
     addImageReverseSearchHotkey()
+    addChangeBackgroundHotkey()
   }
 
   function addImageEvent(options) {
@@ -1451,7 +1468,7 @@ window.ImageViewer = (function () {
     if (imageList.length === 0) return
 
     if (!document.documentElement.classList.contains('has-image-viewer')) {
-      buildApp()
+      buildApp(options)
       buildImageList(imageList, options)
       initImageList(options)
       fitImage(options)
