@@ -287,26 +287,29 @@
         let tryCount = 0
         while (tryCount < maxTry) {
           const dom = elementList[index]
+          const visible = dom.offsetParent !== null || dom.style.position === 'fixed'
+          firstVisibleDom ??= visible ? dom : null
           const imageInfo = await (!imageInfoFromPoint ? extractImageInfoFromTree(dom) : extractImageInfo(dom))
           const valid = isImageInfoValid(imageInfo)
-
-          if (dom.offsetParent !== null || dom.style.position === 'fixed') {
-            firstVisibleDom ??= dom
-            if (valid && (await isNewImageInfoBetter(imageInfo, imageInfoFromPoint))) {
-              imageInfoFromPoint = imageInfo
-              imageDomLayer = index
-              const url = imageInfoFromPoint[0]
-              const isSvg = url.startsWith('data:image/svg') || url.includes('.svg')
-              if (!isSvg) tryCount = Math.max(maxTry - 5, tryCount)
-            }
-          } else {
-            if (valid) {
-              hiddenImageInfoFromPoint = imageInfo
-              hiddenDomLayer = index
-              tryCount = Math.max(maxTry - 5, tryCount)
-            }
+          if (!valid) {
+            index++
+            tryCount++
+            continue
           }
-
+          if (!visible) {
+            hiddenImageInfoFromPoint = imageInfo
+            hiddenDomLayer = index++
+            tryCount = Math.max(maxTry - 5, ++tryCount)
+            continue
+          }
+          const better = await isNewImageInfoBetter(imageInfo, imageInfoFromPoint)
+          if (better) {
+            imageInfoFromPoint = imageInfo
+            imageDomLayer = index
+            const url = imageInfoFromPoint[0]
+            const svgImg = url.startsWith('data:image/svg') || url.includes('.svg')
+            if (!svgImg) tryCount = Math.max(maxTry - 5, tryCount)
+          }
           index++
           tryCount++
         }
@@ -325,7 +328,7 @@
 
         const imageInfoFromTree = await searchImageFromTree(firstVisibleDom, viewportPos)
         if (isImageInfoValid(imageInfoFromTree)) {
-          console.log('Image node found, hide under sub tree')
+          console.log('Image node found, hide under dom tree')
           markingDom(imageInfoFromTree[2])
           return imageInfoFromTree
         }
