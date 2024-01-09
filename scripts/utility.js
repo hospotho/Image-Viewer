@@ -847,7 +847,7 @@ window.ImageViewerUtils = (function () {
       return width >= minWidth && height >= minHeight
     }
   }
-  function getImageList(options) {
+  async function getImageList(options) {
     const minWidth = options.minWidth
     const minHeight = options.minHeight
     if (minWidth === 0 && minHeight === 0) {
@@ -868,7 +868,8 @@ window.ImageViewerUtils = (function () {
 
     for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
       if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
-      const backgroundImage = window.getComputedStyle(node).backgroundImage
+      const nodeStyle = window.getComputedStyle(node)
+      const backgroundImage = nodeStyle.backgroundImage
       if (backgroundImage === 'none') {
         node.setAttribute('no-bg', '')
         continue
@@ -876,6 +877,12 @@ window.ImageViewerUtils = (function () {
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
         const url = bg.substring(5, bg.length - 2)
+        if (nodeStyle.backgroundRepeat === 'repeat') {
+          const realSize = await getImageRealSize(url)
+          node.setAttribute('data-width', realSize)
+          node.setAttribute('data-height', realSize)
+          if (realSize >= minWidth && realSize >= minHeight) imageDataList.push([url, node])
+        }
         imageDataList.push([url, node])
       }
     }
@@ -1116,7 +1123,7 @@ window.ImageViewerUtils = (function () {
 
       await simpleUnlazyImage(options)
 
-      const uniqueImageUrls = getImageList(options)
+      const uniqueImageUrls = await getImageList(options)
 
       const iframeList = [...document.getElementsByTagName('iframe')]
       const iframeSrcList = iframeList.map(iframe => iframe.src)

@@ -150,7 +150,7 @@
 
       const imageInfoList = []
       for (const dom of relatedDomList) {
-        const imageInfo = extractImageInfoFromNode(dom, false)
+        const imageInfo = await extractImageInfoFromNode(dom, false)
         if (isImageInfoValid(imageInfo)) imageInfoList.push(imageInfo)
       }
       if (imageInfoList.length === 0) {
@@ -166,7 +166,7 @@
     }
 
     // utility
-    function extractImageInfoFromNode(dom, checkChild = true) {
+    async function extractImageInfoFromNode(dom, checkChild = true) {
       const {width, height} = dom.getBoundingClientRect()
       if (dom.tagName === 'IMG') {
         const sizeList = [dom.naturalWidth, dom.naturalHeight, width, height]
@@ -179,11 +179,16 @@
         return [dom.poster, minSize, dom]
       }
 
-      const backgroundImage = window.getComputedStyle(dom).backgroundImage
+      const nodeStyle = window.getComputedStyle(dom)
+      const backgroundImage = nodeStyle.backgroundImage
       if (backgroundImage !== 'none') {
         const bg = backgroundImage.split(', ')[0]
         if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
           const bgUrl = bg.substring(5, bg.length - 2)
+          if (nodeStyle.backgroundRepeat === 'repeat') {
+            const realMinSize = await getImageRealSize(bgUrl)
+            return [bgUrl, realMinSize, dom]
+          }
           return [bgUrl, minSize, dom]
         }
       }
@@ -279,7 +284,7 @@
         let tryCount = 0
         while (tryCount < maxTry) {
           const dom = elementList[index]
-          const imageInfo = extractImageInfoFromNode(dom, !imageInfoFromPoint)
+          const imageInfo = await extractImageInfoFromNode(dom, !imageInfoFromPoint)
           const valid = isImageInfoValid(imageInfo)
 
           if (dom.offsetParent !== null || dom.style.position === 'fixed') {
