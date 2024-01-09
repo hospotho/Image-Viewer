@@ -192,7 +192,7 @@
       const allChildren = getAllChildElements(dom)
       if (allChildren.length < 5) {
         for (const children of allChildren) {
-          const info = extractImageInfoFromNode(children)
+          const info = await extractImageInfoFromNode(children, false)
           if (info) return info
         }
       }
