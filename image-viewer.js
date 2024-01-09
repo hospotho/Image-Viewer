@@ -874,9 +874,7 @@ window.ImageViewer = (function () {
         'keydown',
         e => {
           if (!document.documentElement.classList.contains('has-image-viewer')) return
-          for (const func of keydownHandlerList) {
-            func(e)
-          }
+          keydownHandlerList.map(func => func(e))
         },
         true
       )
