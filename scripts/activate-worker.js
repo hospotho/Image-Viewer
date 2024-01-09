@@ -19,7 +19,7 @@
   disableHoverCheck ||= regexList.map(regex => regex.test(location.href)).filter(Boolean).length
 
   if (window.top === window.self && !disableHoverCheck) {
-    const styles = '.disable-hover {pointer-events: none !important;}'
+    const styles = 'img {pointer-events: auto !important;} .disable-hover {pointer-events: none !important;}'
     const styleSheet = document.createElement('style')
     styleSheet.innerText = styles
     document.head.appendChild(styleSheet)
