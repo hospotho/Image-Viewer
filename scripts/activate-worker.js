@@ -150,7 +150,7 @@
 
       const imageInfoList = []
       for (const dom of relatedDomList) {
-        const imageInfo = await extractImageInfoFromNode(dom, false)
+        const imageInfo = await extractImageInfo(dom)
         if (isImageInfoValid(imageInfo)) imageInfoList.push(imageInfo)
       }
       if (imageInfoList.length === 0) {
@@ -166,43 +166,46 @@
     }
 
     // utility
-    async function extractImageInfoFromNode(dom, checkChild = true) {
+    async function extractBackgroundInfo(dom, minSize) {
+      const nodeStyle = window.getComputedStyle(dom)
+      const backgroundImage = nodeStyle.backgroundImage
+      if (backgroundImage === 'none') return null
+      const bg = backgroundImage.split(', ')[0]
+      if (!bg.startsWith('url') || bg.endsWith('.svg")')) return null
+
+      const bgUrl = bg.substring(5, bg.length - 2)
+      if (nodeStyle.backgroundRepeat === 'repeat') {
+        const realMinSize = await getImageRealSize(bgUrl)
+        return [bgUrl, realMinSize, dom]
+      } else {
+        return [bgUrl, minSize, dom]
+      }
+    }
+    async function extractImageInfo(dom) {
       const {width, height} = dom.getBoundingClientRect()
       if (dom.tagName === 'IMG') {
         const sizeList = [dom.naturalWidth, dom.naturalHeight, width, height]
         const minSize = Math.min(...sizeList.filter(Boolean))
         return [dom.currentSrc, minSize, dom]
       }
-
       const minSize = Math.min(width, height)
       if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
         return [dom.poster, minSize, dom]
       }
+      const bgInfo = extractBackgroundInfo(dom, minSize)
+      return bgInfo
+    }
+    async function extractImageInfoFromTree(dom) {
+      const domInfo = await extractImageInfo(dom)
+      if (domInfo) return domInfo
 
-      const nodeStyle = window.getComputedStyle(dom)
-      const backgroundImage = nodeStyle.backgroundImage
-      if (backgroundImage !== 'none') {
-        const bg = backgroundImage.split(', ')[0]
-        if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
-          const bgUrl = bg.substring(5, bg.length - 2)
-          if (nodeStyle.backgroundRepeat === 'repeat') {
-            const realMinSize = await getImageRealSize(bgUrl)
-            return [bgUrl, realMinSize, dom]
-          }
-          return [bgUrl, minSize, dom]
-        }
-      }
-
-      if (!checkChild) return null
       const allChildren = getAllChildElements(dom)
       if (allChildren.length < 5) {
         for (const children of allChildren) {
-          const info = await extractImageInfoFromNode(children, false)
+          const info = await extractImageInfo(children)
           if (info) return info
         }
       }
-
-      return null
     }
 
     const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
@@ -284,7 +287,7 @@
         let tryCount = 0
         while (tryCount < maxTry) {
           const dom = elementList[index]
-          const imageInfo = await extractImageInfoFromNode(dom, !imageInfoFromPoint)
+          const imageInfo = await (!imageInfoFromPoint ? extractImageInfoFromTree(dom) : extractImageInfo(dom))
           const valid = isImageInfoValid(imageInfo)
 
           if (dom.offsetParent !== null || dom.style.position === 'fixed') {
