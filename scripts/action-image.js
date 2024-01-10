@@ -25,11 +25,7 @@
   const dom = document.querySelector('.ImageViewerLastDom')
   const domRect = dom?.getBoundingClientRect()
   const domSize = domRect ? [domRect.width, domRect.height] : [0, 0]
-  if (dom?.tagName === 'IMG') {
-    ImageViewerUtils.updateWrapperSize(dom, domSize, options)
-  } else {
-    options.sizeCheck = true
-  }
+  ImageViewerUtils.updateWrapperSize(dom, domSize, options)
 
   const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)

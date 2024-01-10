@@ -1151,9 +1151,22 @@ window.ImageViewerUtils = (function () {
 
   return {
     updateWrapperSize: function (dom, domSize, options) {
+      const tagName = dom?.tagName
+      if (tagName !== 'IMG' && tagName !== 'DIV') {
+        options.sizeCheck = true
+        return
+      }
       const [domWidth, domHeight] = domSize
       if (!dom || !document.contains(dom) || domWidth === 0) return
 
+      // div
+      if (tagName === 'DIV') {
+        const selector = getDomSelector(dom)
+        updateSizeBySelector(domWidth, domHeight, document, selector, options)
+        return
+      }
+
+      // image
       const wrapper = dom.closest('div')
       const classList = wrapper ? '.' + [...wrapper?.classList].map(CSS.escape).join(', .') : ''
       const wrapperDivList = wrapper ? document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`) : []
