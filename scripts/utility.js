@@ -1147,7 +1147,6 @@ window.ImageViewerUtils = (function () {
 
       const wrapper = dom.closest('div')
       const classList = wrapper ? '.' + [...wrapper?.classList].map(CSS.escape).join(', .') : ''
-      // firefox still not yet support :has() (Aug 2023)
       const wrapperDivList = wrapper ? document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`) : []
 
       if (!wrapper || wrapperDivList.length <= 1) {
