@@ -1199,9 +1199,9 @@ window.ImageViewer = (function () {
       li.addEventListener('mousemove', e => {
         if (!dragFlag) return
         let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
         moveX = imagePos.x + e.clientX - startPos.x
         moveY = imagePos.y + e.clientY - startPos.y
-        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
         img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
