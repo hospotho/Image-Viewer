@@ -298,9 +298,9 @@ window.ImageViewerUtils = (function () {
     options.minHeight = Math.min(finalSize, options.minHeight)
   }
 
-  function getImageSelector(img) {
-    let curr = img.parentElement
-    let selector = 'img'
+  function getDomSelector(dom) {
+    let curr = dom.parentElement
+    let selector = dom.tagName.toLowerCase()
     while (curr.parentElement) {
       if (curr.classList.length > 1) {
         selector = curr.tagName.toLowerCase() + ':is(.' + [...curr.classList].map(CSS.escape).join(', .') + ') > ' + selector
@@ -1150,7 +1150,7 @@ window.ImageViewerUtils = (function () {
       const wrapperDivList = wrapper ? document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`) : []
 
       if (!wrapper || wrapperDivList.length <= 1) {
-        const selector = getImageSelector(dom)
+        const selector = getDomSelector(dom)
         updateSizeBySelector(domWidth, domHeight, document, selector, options)
         return
       }
