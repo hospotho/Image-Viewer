@@ -314,12 +314,16 @@ window.ImageViewerUtils = (function () {
     return selector
   }
   function updateSizeBySelector(domWidth, domHeight, container, selector, options) {
+    const elementTag = selector.slice(-3)
+    const domList = [...container.querySelectorAll(selector)]
+    // skip img with data URL
+    const isImgValid = img => !img.src.startsWith('data') && img.classList.contains('simpleUnlazy')
+    const targetDom = elementTag === 'img' ? domList.filter(isImgValid) : domList
+
     let minWidth = domWidth
     let minHeight = domHeight
-    for (const img of container.querySelectorAll(selector)) {
-      // skip img with data URL
-      if (img.src.startsWith('data') || !img.classList.contains('simpleUnlazy')) continue
-      const {width, height} = img.getBoundingClientRect()
+    for (const dom of targetDom) {
+      const {width, height} = dom.getBoundingClientRect()
       if (width !== 0 && height !== 0) {
         minWidth = Math.min(minWidth, width)
         minHeight = Math.min(minHeight, height)
