@@ -1259,6 +1259,32 @@ window.ImageViewer = (function () {
       li.addEventListener('dblclick', reset)
       // custom event
       li.addEventListener('resetTransform', reset)
+
+      // handle hotkey
+      li.addEventListener('hotkey', e => {
+        const {type, action} = e.detail
+        switch (type) {
+          case 'zoom': {
+            const deltaZoom = action === 1 ? -1 : 1
+            zoomCount += deltaZoom
+            updateZoom(img, deltaZoom, zoomCount, rotateCount)
+            break
+          }
+          case 'rotate': {
+            const deltaRotate = action === 3 ? 1 : -1
+            rotateCount += deltaRotate
+            updateRotate(img, deltaRotate, rotateCount)
+            break
+          }
+          case 'move': {
+            const displacement = 50 * ((action % 2) * 2 - 1)
+            action > 1 ? updateDisplacement(img, displacement, 0, rotateCount) : updateDisplacement(img, 0, displacement, rotateCount)
+            break
+          }
+          default:
+            break
+        }
+      })
     }
 
     for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not(.addedImageEvent)')) {
