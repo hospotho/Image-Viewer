@@ -853,6 +853,11 @@ window.ImageViewerUtils = (function () {
     }
 
     for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
+      // skip xml dom tree
+      if (node.tagName.charCodeAt(0) >= 97) {
+        node.setAttribute('no-bg', '')
+        continue
+      }
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') {
         node.setAttribute('no-bg', '')
