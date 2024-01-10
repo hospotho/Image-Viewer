@@ -859,6 +859,11 @@ window.ImageViewerUtils = (function () {
     }
 
     for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
+      const attrUrl = node.getAttribute('data-bg')
+      if (attrUrl !== null) {
+        imageDataList.push([attrUrl, node])
+        continue
+      }
       // skip xml dom tree
       if (node.tagName.charCodeAt(0) >= 97) {
         node.setAttribute('no-bg', '')
@@ -872,6 +877,7 @@ window.ImageViewerUtils = (function () {
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
         const url = bg.substring(5, bg.length - 2)
+        node.setAttribute('data-bg', url)
         imageDataList.push([url, node])
       }
     }
@@ -922,6 +928,11 @@ window.ImageViewerUtils = (function () {
 
     for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
       if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
+      const attrUrl = node.getAttribute('data-bg')
+      if (attrUrl !== null) {
+        imageDataList.push([attrUrl, node])
+        continue
+      }
       const nodeStyle = window.getComputedStyle(node)
       const backgroundImage = nodeStyle.backgroundImage
       if (backgroundImage === 'none') {
@@ -931,13 +942,15 @@ window.ImageViewerUtils = (function () {
       const bg = backgroundImage.split(', ')[0]
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
         const url = bg.substring(5, bg.length - 2)
+        node.setAttribute('data-bg', url)
         if (nodeStyle.backgroundRepeat === 'repeat') {
           const realSize = await getImageRealSize(url)
           node.setAttribute('data-width', realSize)
           node.setAttribute('data-height', realSize)
           if (realSize >= minWidth && realSize >= minHeight) imageDataList.push([url, node])
+        } else {
+          imageDataList.push([url, node])
         }
-        imageDataList.push([url, node])
       }
     }
 
