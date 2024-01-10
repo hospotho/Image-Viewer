@@ -396,6 +396,8 @@ window.ImageViewer = (function () {
         container = node
         currHeight = node.scrollHeight
       }
+      // only want topmost element
+      if (currHeight >= window.innerHeight) break
     }
     return container
   }
