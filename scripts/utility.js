@@ -993,9 +993,7 @@ window.ImageViewerUtils = (function () {
   // auto scroll
   function startAutoScroll() {
     let stopFlag = true
-    const getStopFlag = () => {
-      return stopFlag
-    }
+    const getStopFlag = () => stopFlag
     const action = async () => {
       await mutex.waitUnlock()
 
@@ -1097,14 +1095,12 @@ window.ImageViewerUtils = (function () {
     const container = getMainContainer()
     const startX = container.scrollX
     const startY = container.scrollY
+    const imageListLength = ImageViewer('get_image_list').length
 
-    if (typeof ImageViewer === 'function') {
-      const imageListLength = ImageViewer('get_image_list').length
-      if (imageListLength > 50) {
-        const totalHeight = container.scrollHeight
-        const targetHeight = Math.min(container.scrollY, totalHeight - window.innerHeight * 10)
-        container.scrollTo(startX, targetHeight)
-      }
+    if (imageListLength > 50) {
+      const totalHeight = container.scrollHeight
+      const targetHeight = Math.min(container.scrollY, totalHeight - window.innerHeight * 10)
+      container.scrollTo(startX, targetHeight)
     }
 
     const {getStopFlag, timer} = startAutoScroll()
@@ -1116,7 +1112,7 @@ window.ImageViewerUtils = (function () {
     })
     newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
     setTimeout(() => {
-      if (!existNewDom) {
+      if (!existNewDom || imageListLength === ImageViewer('get_image_list').length) {
         const container = getMainContainer()
         const totalHeight = container.scrollHeight
         container.scrollTo(startX, totalHeight)
