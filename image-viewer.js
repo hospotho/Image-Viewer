@@ -1181,7 +1181,7 @@ window.ImageViewer = (function () {
         const mirror = Math.sign(scaleX) * Math.sign(scaleY)
         rotate = (mirror * options.rotateDeg * rotateCount) % 360
         rotateCount *= -1
-        img.style.transform = VtoM(-scaleX, scaleY, rotate, moveX, moveY)
+        img.style.transform = VtoM(-scaleX, scaleY, rotate, -moveX, moveY)
       })
 
       // dragging
