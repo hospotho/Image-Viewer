@@ -413,10 +413,20 @@ window.ImageViewer = (function () {
         return [maxHeight * imgRatio, maxHeight]
       }
     }
+    function keep() {
+      const windowWidth = document.documentElement.clientWidth
+      const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
+      const windowRatio = windowWidth / windowHeight
+      return (imageWidth, imageHeight) => {
+        if (windowWidth >= imageWidth && windowHeight >= imageHeight) return [imageWidth, imageHeight]
+        const imgRatio = imageWidth / imageHeight
+        return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
+      }
+    }
     function none() {
       return (imageWidth, imageHeight) => [imageWidth, imageHeight]
     }
-    const dict = {both: both, width: width, height: height, none: none}
+    const dict = {both: both, width: width, height: height, keep: keep, none: none}
     return {
       get: function (funcName) {
         const fitFuncFactory = dict[funcName]
