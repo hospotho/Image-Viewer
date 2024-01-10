@@ -946,7 +946,7 @@ window.ImageViewer = (function () {
         const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
         const targetTop = totalHeight * ratio
         const container = getMainContainer()
-        container.scrollTo(container.scrollX, targetTop)
+        container.scrollTo(container.scrollLeft, targetTop)
         await new Promise(resolve => setTimeout(resolve, 100))
 
         const img = shadowRoot.querySelector('li.current img')
@@ -964,8 +964,8 @@ window.ImageViewer = (function () {
         }
         console.log('Move to image node')
         let currentY = -1
-        while (currentY !== container.scrollY) {
-          currentY = container.scrollY
+        while (currentY !== container.scrollTop) {
+          currentY = container.scrollTop
           imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
         }
         await new Promise(resolve => setTimeout(resolve, 50))

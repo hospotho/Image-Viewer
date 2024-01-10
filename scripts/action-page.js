@@ -67,8 +67,8 @@
 
   const observer = new MutationObserver(async () => {
     const container = ImageViewerUtils.getMainContainer()
-    let currentScrollX = container.scrollX
-    let currentScrollY = container.scrollY
+    let currentScrollX = container.scrollLeft
+    let currentScrollY = container.scrollTop
     if (!document.documentElement.classList.contains('has-image-viewer')) {
       observer.disconnect()
       return
@@ -76,9 +76,9 @@
     if (typeof updateRelease === 'function') {
       observer.disconnect()
       await new Promise(resolve => setTimeout(resolve, 50))
-      while (currentScrollX !== container.scrollX || currentScrollY !== container.scrollY) {
-        currentScrollX = container.scrollX
-        currentScrollY = container.scrollY
+      while (currentScrollX !== container.scrollLeft || currentScrollY !== container.scrollTop) {
+        currentScrollX = container.scrollLeft
+        currentScrollY = container.scrollTop
         await new Promise(resolve => setTimeout(resolve, 300))
       }
       observer.observe(document.documentElement, {childList: true, subtree: true})

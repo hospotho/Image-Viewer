@@ -381,8 +381,8 @@ window.ImageViewerUtils = (function () {
     release()
 
     const container = getMainContainer()
-    const currentX = container.scrollX
-    const currentY = container.scrollY
+    const currentX = container.scrollLeft
+    const currentY = container.scrollTop
     let domChanged = false
     const scrollObserver = new MutationObserver(mutationsList => {
       scrollObserver.disconnect()
@@ -1015,7 +1015,7 @@ window.ImageViewerUtils = (function () {
     const timer = async () => {
       stopFlag = false
       const container = getMainContainer()
-      let lastY = container.scrollY
+      let lastY = container.scrollTop
       let count = 0
       while (lastY < container.scrollHeight) {
         if (count > 5 || !isImageViewerExist()) break
@@ -1025,14 +1025,14 @@ window.ImageViewerUtils = (function () {
         }
 
         await action()
-        if (lastY === container.scrollY && isImageViewerExist()) {
+        if (lastY === container.scrollTop && isImageViewerExist()) {
           count++
           container.scrollBy(0, -100)
           container.scrollBy({top: window.innerHeight})
         } else {
           count = 0
         }
-        lastY = container.scrollY
+        lastY = container.scrollTop
       }
       stopFlag = true
     }
@@ -1049,13 +1049,13 @@ window.ImageViewerUtils = (function () {
         scrollFlag = true
       }
       const container = getMainContainer()
-      let currX = container.scrollX
-      let currY = container.scrollY
+      let currX = container.scrollLeft
+      let currY = container.scrollTop
       originalScrollIntoView.apply(this, arguments)
       // for unknown reason can't move to correct position with single scroll
-      while (currX !== container.scrollX || currY !== container.scrollY) {
-        currX = container.scrollX
-        currY = container.scrollY
+      while (currX !== container.scrollLeft || currY !== container.scrollTop) {
+        currX = container.scrollLeft
+        currY = container.scrollTop
         originalScrollIntoView.apply(this, arguments)
       }
     }
@@ -1093,13 +1093,13 @@ window.ImageViewerUtils = (function () {
     }
 
     const container = getMainContainer()
-    const startX = container.scrollX
-    const startY = container.scrollY
+    const startX = container.scrollLeft
+    const startY = container.scrollTop
     const imageListLength = ImageViewer('get_image_list').length
 
     if (imageListLength > 50) {
       const totalHeight = container.scrollHeight
-      const targetHeight = Math.min(container.scrollY, totalHeight - window.innerHeight * 10)
+      const targetHeight = Math.min(container.scrollTop, totalHeight - window.innerHeight * 10)
       container.scrollTo(startX, targetHeight)
     }
 
