@@ -76,24 +76,33 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
     <td><kbd>0</kbd> both number row and numeric keypad</td>
   </tr>
   <tr>
-    <td>Drag image</td>
+    <td>Fitting image</td>
+    <td>Click fitting buttons on the control bar</td>
+  </tr>
+  <tr>
+    <td rowspan="2">Move image</td>
     <td><kbd>click</kbd> and <kbd>drag</kbd></td>
   </tr>
   <tr>
-    <td>Fitting image</td>
-    <td>Click fitting buttons on the control bar</td>
+    <td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd><kbd>w</kbd><kbd>a</kbd><kbd>s</kbd><kbd>d</kbd></td>
   </tr>
   <tr>
     <td>Reset image</td>
     <td><kbd>double-click</kbd> anywhere</td>
   </tr>
   <tr>
-    <td>Zoom image</td>
+    <td rowspan="2">Zoom image</td>
     <td>Scroll on the image</td>
   </tr>
   <tr>
-    <td>Rotate image</td>
+    <td><kbd>Alt</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>w</kbd><kbd>s</kbd></td>
+  </tr>
+  <tr>
+    <td rowspan="2">Rotate image</td>
     <td>Hold <kbd>Alt</kbd> and scroll</td>
+  </tr>
+  <tr>
+    <td><kbd>Alt</kbd>+<kbd>←</kbd><kbd>→</kbd><kbd>a</kbd><kbd>d</kbd></td>
   </tr>
   <tr>
     <td>Mirror image</td>
