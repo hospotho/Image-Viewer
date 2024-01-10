@@ -1065,7 +1065,7 @@ window.ImageViewer = (function () {
         const keyList = hotkey.split('+').map(str => str.trim())
         const key = keyList[keyList.length - 1] === e.key.toUpperCase()
         const ctrl = keyList.includes('Ctrl') === e.ctrlKey
-        const alt = keyList.includes('Alt') === e.altKey || e.getModifierState('AltGraph')
+        const alt = keyList.includes('Alt') === (e.altKey || e.getModifierState('AltGraph'))
         const shift = keyList.includes('Shift') === e.shiftKey
         return key && ctrl && alt && shift
       }
