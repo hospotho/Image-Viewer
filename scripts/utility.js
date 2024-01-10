@@ -280,7 +280,8 @@ window.ImageViewerUtils = (function () {
   function updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options) {
     const {maxImageCount, imageCount, imageCountPerDiv, rawWidth, rawHeight, divWidth, divHeight} = processWrapperList(wrapperDivList)
 
-    const largeContainer = maxImageCount >= 5 && imageCountPerDiv.filter(num => num === maxImageCount).length > 1
+    const largeContainerCount = imageCountPerDiv.filter(num => num === maxImageCount).length
+    const largeContainer = maxImageCount >= 5 && wrapperDivList.length - largeContainerCount < 3
     const oneToOne = !largeContainer && imageCount === wrapperDivList.length
     const matchSize = oneToOne && checkMatchSize(rawWidth, rawHeight)
     const useMinSize = largeContainer || matchSize
