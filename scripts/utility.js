@@ -49,7 +49,7 @@ window.ImageViewerUtils = (function () {
   let firstUnlazyScrollFlag = false
   let autoScrollFlag = false
 
-  // init observer to prevent unlazy image being modify
+  // init observer for unlazy image being modify
   const unlazyObserver = new MutationObserver(mutationsList => {
     const updatedSet = new Set()
     const modifiedSet = new Set()
@@ -79,6 +79,14 @@ window.ImageViewerUtils = (function () {
     }
   })
   unlazyObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
+
+  // init observer for node background being modify
+  const styleObserver = new MutationObserver(mutationsList => {
+    for (const mutation of mutationsList) {
+      mutation.target.removeAttribute('no-bg')
+    }
+  })
+  styleObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['style']})
 
   // init function hotkey
   const options = window.ImageViewerOption
