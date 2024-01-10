@@ -330,22 +330,34 @@ window.ImageViewerUtils = (function () {
   }
 
   // scroll unlazy
+  async function slowScrollThoughDocument(currentX, currentY) {
+    const container = getMainContainer()
+    container.scrollTo(0, 0)
+    let currTop = -1
+    while (currTop !== container.scrollTop) {
+      currTop = container.scrollTop
+      container.scrollBy({top: window.innerHeight * 2, behavior: 'smooth'})
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
+    container.scrollTo(currentX, currentY)
+  }
   function scrollThoughDocument(currentX, currentY) {
     const wrapper = (func, ...args) => {
       if (isImageViewerExist()) func(...args)
     }
     const container = getMainContainer()
+    const scrollTo = container.scrollTo.bind(container)
     const totalHeight = container.scrollHeight
     const scrollDelta = window.innerHeight * 1.5
     let scrollCount = 0
     let top = 0
     while (top < totalHeight) {
       const currTop = top
-      setTimeout(() => wrapper(container.scrollTo, currentX, currTop), ++scrollCount * 150)
+      setTimeout(() => wrapper(scrollTo, currentX, currTop), ++scrollCount * 150)
       top += scrollDelta
     }
-    setTimeout(() => wrapper(container.scrollTo, currentX, totalHeight), ++scrollCount * 150)
-    setTimeout(() => wrapper(container.scrollTo, currentX, currentY), ++scrollCount * 150)
+    setTimeout(() => wrapper(scrollTo, currentX, totalHeight), ++scrollCount * 150)
+    setTimeout(() => wrapper(scrollTo, currentX, currentY), ++scrollCount * 150)
   }
   async function tryActivateLazyImage(isDomChanged) {
     const container = getMainContainer()
@@ -387,9 +399,8 @@ window.ImageViewerUtils = (function () {
     const scrollObserver = new MutationObserver(mutationsList => {
       scrollObserver.disconnect()
       domChanged = true
-
-      console.log('Unlazy by scroll')
       // lazy image activated by scroll
+      console.log('Unlazy by scroll')
       let found = false
       for (const mutation of mutationsList) {
         // image updated to real url
@@ -408,10 +419,8 @@ window.ImageViewerUtils = (function () {
         container.scrollTo(currentX, currentY)
         return
       }
-
       scrollThoughDocument(currentX, currentY)
     })
-
     scrollObserver.observe(document.documentElement, {
       attributes: true,
       subtree: true,
@@ -422,6 +431,15 @@ window.ImageViewerUtils = (function () {
       scrollObserver.disconnect()
       if (!domChanged) container.scrollTo(currentX, currentY)
     }, 1000)
+
+    // extra check for uncommon case
+    // eg. lazy background image
+    const imageListLength = ImageViewer('get_image_list').length
+    setTimeout(() => {
+      if (!domChanged && imageListLength !== ImageViewer('get_image_list').length) {
+        slowScrollThoughDocument(currentX, currentY)
+      }
+    }, 2000)
 
     const isDomChanged = () => domChanged
     tryActivateLazyImage(isDomChanged)
