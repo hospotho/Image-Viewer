@@ -385,6 +385,21 @@ window.ImageViewer = (function () {
     lastSrc = ''
   }
 
+  function getMainContainer() {
+    const windowWidth = document.documentElement.clientWidth
+    const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
+    const targetList = document.elementsFromPoint(windowWidth / 2, windowHeight / 2)
+    let container = null
+    let currHeight = 0
+    for (const node of targetList) {
+      if (node.scrollHeight > currHeight) {
+        container = node
+        currHeight = node.scrollHeight
+      }
+    }
+    return container
+  }
+
   const fitFuncDict = (function () {
     function both() {
       const windowWidth = document.documentElement.clientWidth
@@ -930,7 +945,8 @@ window.ImageViewer = (function () {
         const ratio = currIndex / imageListLength
         const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
         const targetTop = totalHeight * ratio
-        window.scrollTo(window.scrollX, targetTop)
+        const container = getMainContainer()
+        container.scrollTo(container.scrollX, targetTop)
         await new Promise(resolve => setTimeout(resolve, 100))
 
         const img = shadowRoot.querySelector('li.current img')
@@ -948,8 +964,8 @@ window.ImageViewer = (function () {
         }
         console.log('Move to image node')
         let currentY = -1
-        while (currentY !== window.scrollY) {
-          currentY = window.scrollY
+        while (currentY !== container.scrollY) {
+          currentY = container.scrollY
           imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
         }
         await new Promise(resolve => setTimeout(resolve, 50))

@@ -63,6 +63,7 @@
 
       if (!document.documentElement.classList.contains('has-image-viewer')) return
       if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
+        period = Math.min(1000, period)
         window.backupImageUrlList = Array.from(combinedImageList)
         ImageViewer(combinedImageList, options)
       }
@@ -89,8 +90,9 @@
   }
 
   const observer = new MutationObserver(async () => {
-    let currentScrollX = window.scrollX
-    let currentScrollY = window.scrollY
+    const container = ImageViewerUtils.getMainContainer()
+    let currentScrollX = container.scrollX
+    let currentScrollY = container.scrollY
     if (!document.documentElement.classList.contains('has-image-viewer')) {
       observer.disconnect()
       return
@@ -98,9 +100,9 @@
     if (typeof updateRelease === 'function') {
       observer.disconnect()
       await new Promise(resolve => setTimeout(resolve, 50))
-      while (currentScrollX !== window.scrollX || currentScrollY !== window.scrollY) {
-        currentScrollX = window.scrollX
-        currentScrollY = window.scrollY
+      while (currentScrollX !== container.scrollX || currentScrollY !== container.scrollY) {
+        currentScrollX = container.scrollX
+        currentScrollY = container.scrollY
         await new Promise(resolve => setTimeout(resolve, 300))
       }
       observer.observe(document.documentElement, {childList: true, subtree: true})

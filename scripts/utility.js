@@ -208,6 +208,20 @@ window.ImageViewerUtils = (function () {
   function isImageViewerExist() {
     return document.documentElement.classList.contains('has-image-viewer')
   }
+  function getMainContainer() {
+    const windowWidth = document.documentElement.clientWidth
+    const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
+    const targetList = document.elementsFromPoint(windowWidth / 2, windowHeight / 2)
+    let container = null
+    let currHeight = 0
+    for (const node of targetList) {
+      if (node.scrollHeight > currHeight) {
+        container = node
+        currHeight = node.scrollHeight
+      }
+    }
+    return container
+  }
 
   // wrapper size
   function checkMatchSize(rawWidth, rawHeight) {
@@ -320,21 +334,23 @@ window.ImageViewerUtils = (function () {
     const wrapper = (func, ...args) => {
       if (isImageViewerExist()) func(...args)
     }
-    const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
+    const container = getMainContainer()
+    const totalHeight = container.scrollHeight
     const scrollDelta = window.innerHeight * 1.5
     let scrollCount = 0
     let top = 0
     while (top < totalHeight) {
       const currTop = top
-      setTimeout(() => wrapper(window.scrollTo, currentX, currTop), ++scrollCount * 150)
+      setTimeout(() => wrapper(container.scrollTo, currentX, currTop), ++scrollCount * 150)
       top += scrollDelta
     }
-    setTimeout(() => wrapper(window.scrollTo, currentX, totalHeight), ++scrollCount * 150)
-    setTimeout(() => wrapper(window.scrollTo, currentX, currentY), ++scrollCount * 150)
+    setTimeout(() => wrapper(container.scrollTo, currentX, totalHeight), ++scrollCount * 150)
+    setTimeout(() => wrapper(container.scrollTo, currentX, currentY), ++scrollCount * 150)
   }
   async function tryActivateLazyImage(isDomChanged) {
-    window.scrollTo(0, 0)
-    window.scrollBy({top: window.innerHeight * 2})
+    const container = getMainContainer()
+    container.scrollTo(0, 0)
+    container.scrollBy({top: window.innerHeight * 2})
     await new Promise(resolve => setTimeout(resolve, 100))
 
     const domChanged = isDomChanged()
@@ -345,7 +361,7 @@ window.ImageViewerUtils = (function () {
       const height = img.clientHeight
       maxHeight = Math.max(maxHeight, height)
     }
-    window.scrollBy({top: maxHeight * 2})
+    container.scrollBy({top: maxHeight * 2})
   }
   async function scrollUnlazy() {
     if (firstUnlazyScrollFlag) return
@@ -364,8 +380,9 @@ window.ImageViewerUtils = (function () {
     const release = await mutex.acquire()
     release()
 
-    const currentX = window.scrollX
-    const currentY = window.scrollY
+    const container = getMainContainer()
+    const currentX = container.scrollX
+    const currentY = container.scrollY
     let domChanged = false
     const scrollObserver = new MutationObserver(mutationsList => {
       scrollObserver.disconnect()
@@ -388,7 +405,7 @@ window.ImageViewerUtils = (function () {
         }
       }
       if (!found) {
-        window.scrollTo(currentX, currentY)
+        container.scrollTo(currentX, currentY)
         return
       }
 
@@ -403,7 +420,7 @@ window.ImageViewerUtils = (function () {
     })
     setTimeout(() => {
       scrollObserver.disconnect()
-      if (!domChanged) window.scrollTo(currentX, currentY)
+      if (!domChanged) container.scrollTo(currentX, currentY)
     }, 1000)
 
     const isDomChanged = () => domChanged
@@ -999,9 +1016,10 @@ window.ImageViewerUtils = (function () {
     }
     const timer = async () => {
       stopFlag = false
-      let lastY = window.scrollY
+      const container = getMainContainer()
+      let lastY = container.scrollY
       let count = 0
-      while (lastY < (document.body.scrollHeight || document.documentElement.scrollHeight)) {
+      while (lastY < container.scrollHeight) {
         if (count > 5 || !isImageViewerExist()) break
 
         while (document.visibilityState !== 'visible' || !document.documentElement.classList.contains('enableAutoScroll')) {
@@ -1009,14 +1027,14 @@ window.ImageViewerUtils = (function () {
         }
 
         await action()
-        if (lastY === window.scrollY && isImageViewerExist()) {
+        if (lastY === container.scrollY && isImageViewerExist()) {
           count++
-          window.scrollBy(0, -100)
-          window.scrollBy({top: window.innerHeight})
+          container.scrollBy(0, -100)
+          container.scrollBy({top: window.innerHeight})
         } else {
           count = 0
         }
-        lastY = window.scrollY
+        lastY = container.scrollY
       }
       stopFlag = true
     }
@@ -1032,19 +1050,20 @@ window.ImageViewerUtils = (function () {
       if (!isImageViewerExist()) {
         scrollFlag = true
       }
-      let currX = window.scrollX
-      let currY = window.scrollY
+      const container = getMainContainer()
+      let currX = container.scrollX
+      let currY = container.scrollY
       originalScrollIntoView.apply(this, arguments)
       // for unknown reason can't move to correct position with single scroll
-      while (currX !== window.scrollX || currY !== window.scrollY) {
-        currX = window.scrollX
-        currY = window.scrollY
+      while (currX !== container.scrollX || currY !== container.scrollY) {
+        currX = container.scrollX
+        currY = container.scrollY
         originalScrollIntoView.apply(this, arguments)
       }
     }
 
-    const originalScrollTo = window.scrollTo
-    window.scrollTo = function () {
+    const originalScrollTo = Element.prototype.scrollTo
+    Element.prototype.scrollTo = function () {
       if (!isImageViewerExist()) {
         scrollFlag = true
       }
@@ -1057,9 +1076,10 @@ window.ImageViewerUtils = (function () {
       imageViewerObserver.disconnect()
       newNodeObserver.disconnect()
       setTimeout(() => {
-        if (!scrollFlag) window.scrollTo(startX, startY)
+        const container = getMainContainer()
+        if (!scrollFlag) container.scrollTo(startX, startY)
         Element.prototype.scrollIntoView = originalScrollIntoView
-        window.scrollTo = originalScrollTo
+        Element.prototype.scrollTo = originalScrollTo
       }, 500)
     })
     imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
@@ -1074,15 +1094,16 @@ window.ImageViewerUtils = (function () {
       return
     }
 
-    const startX = window.scrollX
-    const startY = window.scrollY
+    const container = getMainContainer()
+    const startX = container.scrollX
+    const startY = container.scrollY
 
     if (typeof ImageViewer === 'function') {
       const imageListLength = ImageViewer('get_image_list').length
       if (imageListLength > 50) {
-        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-        const targetHeight = Math.min(window.scrollY, totalHeight - window.innerHeight * 10)
-        window.scrollTo(startX, targetHeight)
+        const totalHeight = container.scrollHeight
+        const targetHeight = Math.min(container.scrollY, totalHeight - window.innerHeight * 10)
+        container.scrollTo(startX, targetHeight)
       }
     }
 
@@ -1096,8 +1117,9 @@ window.ImageViewerUtils = (function () {
     newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
     setTimeout(() => {
       if (!existNewDom) {
-        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-        window.scrollTo(startX, totalHeight)
+        const container = getMainContainer()
+        const totalHeight = container.scrollHeight
+        container.scrollTo(startX, totalHeight)
       }
     }, 3000)
 
@@ -1274,6 +1296,8 @@ window.ImageViewerUtils = (function () {
         .reduce((a, b) => a + b, 0)
 
       return newListStringLength === oldListStringLength
-    }
+    },
+
+    getMainContainer: getMainContainer
   }
 })()
