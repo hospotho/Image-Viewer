@@ -1168,6 +1168,42 @@ window.ImageViewer = (function () {
   }
 
   function addImageEvent(options) {
+    // transform function
+    function updateZoom(img, deltaZoom, zoomCount, rotateCount) {
+      let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+      const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+      scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
+      scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
+      // recalculate displacement for zooming at the center of the viewpoint
+      moveX = moveX * options.zoomRatio ** deltaZoom
+      moveY = moveY * options.zoomRatio ** deltaZoom
+      // rotate value must be reset every time after updating the transform matrix
+      rotate = (mirror * options.rotateDeg * rotateCount) % 360
+      img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
+    }
+    function updateRotate(img, deltaRotate, rotateCount) {
+      let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+      const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+      // recalculate displacement for rotation around the center of the viewpoint
+      const radial = Math.sqrt(moveX ** 2 + moveY ** 2)
+      const angle = (Math.atan2(moveY, moveX) * 180) / Math.PI
+      const newAngle = angle + options.rotateDeg * deltaRotate
+      const newRadian = (newAngle / 180) * Math.PI
+      moveX = radial * Math.cos(newRadian)
+      moveY = radial * Math.sin(newRadian)
+      // rotate value must be reset every time after updating the transform matrix
+      rotate = (mirror * options.rotateDeg * rotateCount) % 360
+      img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
+    }
+    function updateDisplacement(img, deltaX, deltaY, rotateCount) {
+      let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+      const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+      moveX += deltaX
+      moveY += deltaY
+      rotate = (mirror * options.rotateDeg * rotateCount) % 360
+      img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
+    }
+
     async function addTransformHandler(li) {
       const img = li.firstChild
       let zoomCount = 0
@@ -1176,31 +1212,16 @@ window.ImageViewer = (function () {
       // zoom & rotate
       li.addEventListener('wheel', e => {
         e.preventDefault()
-        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
-        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
         if (!e.altKey && !e.getModifierState('AltGraph')) {
-          const newZoomCount = e.deltaY > 0 ? zoomCount - 1 : zoomCount + 1
-          scaleX = Math.sign(scaleX) * options.zoomRatio ** newZoomCount
-          scaleY = Math.sign(scaleY) * options.zoomRatio ** newZoomCount
-          // recalculate displacement for zooming at the center of the viewpoint
-          moveX = moveX * options.zoomRatio ** (newZoomCount - zoomCount)
-          moveY = moveY * options.zoomRatio ** (newZoomCount - zoomCount)
-          zoomCount = newZoomCount
+          const deltaZoom = e.deltaY > 0 ? -1 : 1
+          zoomCount += deltaZoom
+          updateZoom(img, deltaZoom, zoomCount, rotateCount)
         } else {
           // mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
           const deltaRotate = (e.deltaY > 0) * 2 - 1
           rotateCount += deltaRotate
-          // recalculate displacement for rotation around the center of the viewpoint
-          const radial = Math.sqrt(moveX ** 2 + moveY ** 2)
-          const angle = (Math.atan2(moveY, moveX) * 180) / Math.PI
-          const newAngle = angle + options.rotateDeg * deltaRotate
-          const newRadian = (newAngle / 180) * Math.PI
-          moveX = radial * Math.cos(newRadian)
-          moveY = radial * Math.sin(newRadian)
+          updateRotate(img, deltaRotate, rotateCount)
         }
-        // rotate value must be reset every time after updating the transform matrix
-        rotate = (mirror * options.rotateDeg * rotateCount) % 360
-        img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
       })
 
       // mirror-reflect
@@ -1215,22 +1236,17 @@ window.ImageViewer = (function () {
 
       // dragging
       let dragFlag = false
-      let imagePos = {x: 0, y: 0}
-      let startPos = {x: 0, y: 0}
+      let lastPos = {x: 0, y: 0}
       li.addEventListener('mousedown', e => {
         dragFlag = true
-        const [moveX, moveY] = MtoV(img.style.transform).slice(-2)
-        imagePos = {x: moveX, y: moveY}
-        startPos = {x: e.clientX, y: e.clientY}
+        lastPos = {x: e.clientX, y: e.clientY}
       })
       li.addEventListener('mousemove', e => {
         if (!dragFlag) return
-        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
-        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
-        moveX = imagePos.x + e.clientX - startPos.x
-        moveY = imagePos.y + e.clientY - startPos.y
-        rotate = (mirror * options.rotateDeg * rotateCount) % 360
-        img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
+        const deltaX = e.clientX - lastPos.x
+        const deltaY = e.clientY - lastPos.y
+        lastPos = {x: e.clientX, y: e.clientY}
+        updateDisplacement(img, deltaX, deltaY, rotateCount)
       })
       li.addEventListener('mouseup', () => (dragFlag = false))
 
@@ -1239,8 +1255,6 @@ window.ImageViewer = (function () {
         zoomCount = 0
         rotateCount = 0
         img.style.transform = 'matrix(1,0,0,1,0,0)'
-        imagePos = {x: 0, y: 0}
-        startPos = {x: 0, y: 0}
       }
       li.addEventListener('dblclick', reset)
       // custom event
