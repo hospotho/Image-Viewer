@@ -392,21 +392,25 @@ window.ImageViewer = (function () {
       const windowRatio = windowWidth / windowHeight
       return (imageWidth, imageHeight) => {
         const imgRatio = imageWidth / imageHeight
-        return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
+        const maxWidth = Math.min(imageWidth * 3, windowWidth)
+        const maxHeight = Math.min(imageWidth * 3, windowHeight)
+        return imgRatio >= windowRatio ? [maxWidth, maxWidth / imgRatio] : [maxHeight * imgRatio, maxHeight]
       }
     }
     function width() {
       const windowWidth = document.documentElement.clientWidth
       return (imageWidth, imageHeight) => {
         const imgRatio = imageWidth / imageHeight
-        return [windowWidth, windowWidth / imgRatio]
+        const maxWidth = Math.min(imageWidth * 3, windowWidth)
+        return [maxWidth, maxWidth / imgRatio]
       }
     }
     function height() {
       const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
       return (imageWidth, imageHeight) => {
         const imgRatio = imageWidth / imageHeight
-        return [windowHeight * imgRatio, windowHeight]
+        const maxHeight = Math.min(imageWidth * 3, windowHeight)
+        return [maxHeight * imgRatio, maxHeight]
       }
     }
     function none() {
