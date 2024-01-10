@@ -400,6 +400,7 @@
   document.addEventListener(
     'contextmenu',
     async e => {
+      if (document.documentElement.classList.contains('has-image-viewer-listener')) return
       // release priority and allow contextmenu work properly
       await new Promise(resolve => setTimeout(resolve, 0))
       const viewportPosition = [e.clientX, e.clientY]
