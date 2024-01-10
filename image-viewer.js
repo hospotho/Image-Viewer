@@ -1129,6 +1129,32 @@ window.ImageViewer = (function () {
         shadowRoot.querySelector('#image-viewer').style.setProperty('background', ...backgroundList[index])
       })
     }
+    function addTransformationHotkey() {
+      const keyMap = {
+        ArrowUp: 0,
+        w: 0,
+        ArrowDown: 1,
+        s: 1,
+        ArrowLeft: 2,
+        a: 2,
+        ArrowRight: 3,
+        d: 3
+      }
+      let lastHotkeyTime = 0
+      keydownHandlerList.push(e => {
+        if (!(e.altKey || e.getModifierState('AltGraph')) || e.shiftKey) return
+        const action = keyMap[e.key]
+        if (action === undefined) return
+        if (e.repeat && Date.now() - lastHotkeyTime < 80) return
+        e.preventDefault()
+        lastHotkeyTime = Date.now()
+        const type = e.ctrlKey ? 'move' : action < 2 ? 'zoom' : 'rotate'
+        const data = {detail: {type: type, action: action}}
+        const event = new CustomEvent('hotkey', data)
+        const current = shadowRoot.querySelector('li.current')
+        current.dispatchEvent(event)
+      })
+    }
 
     initKeydownHandler()
     addFitButtonEvent()
@@ -1138,6 +1164,7 @@ window.ImageViewer = (function () {
     disableWebsiteDefaultEvent()
     addImageReverseSearchHotkey()
     addChangeBackgroundHotkey()
+    addTransformationHotkey()
   }
 
   function addImageEvent(options) {
