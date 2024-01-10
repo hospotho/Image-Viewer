@@ -41,6 +41,9 @@
   "fit_with_original_size": {
     "message": "Original size"
   },
+  "fit_with_original_size_not_exceeds_window": {
+    "message": "Original size (not exceeds window)"
+  },
   "fit_with_window": {
     "message": "Fit with window"
   },

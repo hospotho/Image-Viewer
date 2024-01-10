@@ -41,6 +41,9 @@
   "fit_with_original_size": {
     "message": "图像原本的大小"
   },
+  "fit_with_original_size_not_exceeds_window": {
+    "message": "图像原本的大小但不大於视窗"
+  },
   "fit_with_window": {
     "message": "视窗大小"
   },
