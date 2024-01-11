@@ -114,13 +114,25 @@ window.ImageViewerUtils = (function () {
   )
 
   // reset window.backupImageUrlList when href change
-  // navigation api not yet supported by Safari and Firefox
-  // navigation.addEventListener('navigate', () => (window.backupImageUrlList = []))
   let oldHref = window.location.href
-  const hrefObserver = new MutationObserver(() => {
-    if (oldHref !== document.location.href) {
+  let lastUpdate = 0
+  let hasAdd = false
+  let hasRemove = false
+  const hrefObserver = new MutationObserver(mutationList => {
+    const withinTimeWindow = Date.now() - lastUpdate < 300
+    if (oldHref !== document.location.href || withinTimeWindow) {
+      // prepare var for current href change
+      if (!withinTimeWindow) {
+        hasAdd = false
+        hasRemove = false
+      }
       oldHref = document.location.href
-      window.backupImageUrlList = []
+      lastUpdate = Date.now()
+      const nodeCount = mutationList.map(m => [m.addedNodes.length, m.removedNodes.length])
+      hasAdd |= nodeCount.some(count => count[0])
+      hasRemove |= nodeCount.some(count => count[1])
+      // skip reset if only add or only remove
+      if (hasAdd && hasRemove) window.backupImageUrlList = []
     }
   })
   hrefObserver.observe(document.body, {childList: true, subtree: true})
