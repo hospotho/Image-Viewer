@@ -49,6 +49,33 @@ window.ImageViewerUtils = (function () {
   let firstUnlazyScrollFlag = false
   let autoScrollFlag = false
 
+  // init function hotkey
+  const options = window.ImageViewerOption
+  window.addEventListener(
+    'keydown',
+    e => {
+      if (!isImageViewerExist()) return
+      // enable auto scroll
+      if (checkKey(e, options.functionHotkey[0])) {
+        e.preventDefault()
+        if (!document.documentElement.classList.contains('enableAutoScroll')) {
+          document.documentElement.classList.add('enableAutoScroll')
+          document.documentElement.classList.remove('disableAutoScroll')
+        } else {
+          document.documentElement.classList.add('disableAutoScroll')
+          document.documentElement.classList.remove('enableAutoScroll')
+        }
+        if (firstUnlazyCompleteFlag) autoScroll()
+      }
+      // download images
+      if (typeof ImageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
+        e.preventDefault()
+        chrome.runtime.sendMessage('download_images')
+      }
+    },
+    true
+  )
+
   // init observer for unlazy image being modify
   const unlazyObserver = new MutationObserver(mutationsList => {
     const updatedSet = new Set()
@@ -88,34 +115,7 @@ window.ImageViewerUtils = (function () {
   })
   styleObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['style']})
 
-  // init function hotkey
-  const options = window.ImageViewerOption
-  window.addEventListener(
-    'keydown',
-    e => {
-      if (!isImageViewerExist()) return
-      // enable auto scroll
-      if (checkKey(e, options.functionHotkey[0])) {
-        e.preventDefault()
-        if (!document.documentElement.classList.contains('enableAutoScroll')) {
-          document.documentElement.classList.add('enableAutoScroll')
-          document.documentElement.classList.remove('disableAutoScroll')
-        } else {
-          document.documentElement.classList.add('disableAutoScroll')
-          document.documentElement.classList.remove('enableAutoScroll')
-        }
-        if (firstUnlazyCompleteFlag) autoScroll()
-      }
-      // download images
-      if (typeof ImageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
-        e.preventDefault()
-        chrome.runtime.sendMessage('download_images')
-      }
-    },
-    true
-  )
-
-  // reset window.backupImageUrlList when href change
+  // init observer for reset window.backupImageUrlList when href change
   let oldHref = window.location.href
   let lastUpdate = 0
   let hasAdd = false
