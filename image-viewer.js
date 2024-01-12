@@ -47,10 +47,13 @@ window.ImageViewer = (function () {
   }
 
   function closeImageViewer() {
-    const current = shadowRoot.querySelector('li.current img')
-    lastSrc = current?.src || ''
     document.documentElement.classList.remove('has-image-viewer')
+    clearFlag = false
+    clearSrc = ''
+    clearIndex = -1
+    lastSrc = shadowRoot.querySelector('li.current img')?.src || ''
     keydownHandlerList.length = 0
+
     const root = document.querySelector('#image-viewer-root')
     if (root) {
       root.addEventListener('transitionend', root.remove)
