@@ -118,23 +118,24 @@ window.ImageViewerUtils = (function () {
   // init observer for reset window.backupImageUrlList when href change
   let oldHref = window.location.href
   let lastUpdate = 0
-  let hasAdd = false
-  let hasRemove = false
+  let addCount = false
+  let removeCount = false
   const hrefObserver = new MutationObserver(mutationList => {
     const withinTimeWindow = Date.now() - lastUpdate < 300
     if (oldHref !== document.location.href || withinTimeWindow) {
       // prepare var for current href change
       if (!withinTimeWindow) {
-        hasAdd = false
-        hasRemove = false
+        addCount = 0
+        removeCount = 0
       }
       oldHref = document.location.href
       lastUpdate = Date.now()
       const nodeCount = mutationList.map(m => [m.addedNodes.length, m.removedNodes.length])
-      hasAdd |= nodeCount.some(count => count[0])
-      hasRemove |= nodeCount.some(count => count[1])
+      addCount += nodeCount.reduce((n, count) => n + count[0], 0)
+      removeCount += nodeCount.reduce((n, count) => n + count[1], 0)
       // skip reset if only add or only remove
-      if (hasAdd && hasRemove) window.backupImageUrlList = []
+      const changeRatio = addCount < removeCount ? addCount / removeCount : removeCount / addCount
+      if (changeRatio > 0.8) window.backupImageUrlList = []
     }
   })
   hrefObserver.observe(document.body, {childList: true, subtree: true})
