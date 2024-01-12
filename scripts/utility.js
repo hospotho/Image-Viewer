@@ -823,6 +823,9 @@ window.ImageViewerUtils = (function () {
       clearWindowBackup(options)
       if (typeof ImageViewer === 'function') ImageViewer('clear_image_list')
     }
+    if (autoScrollFlag) {
+      ImageViewer('clear_image_list')
+    }
 
     isEnabledAutoScroll(options) ? autoScroll() : scrollUnlazy()
   }
