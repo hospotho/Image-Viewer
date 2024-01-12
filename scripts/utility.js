@@ -99,7 +99,9 @@ window.ImageViewerUtils = (function () {
         e.preventDefault()
         if (!document.documentElement.classList.contains('enableAutoScroll')) {
           document.documentElement.classList.add('enableAutoScroll')
+          document.documentElement.classList.remove('disableAutoScroll')
         } else {
+          document.documentElement.classList.add('disableAutoScroll')
           document.documentElement.classList.remove('enableAutoScroll')
         }
         if (firstUnlazyCompleteFlag) autoScroll()
@@ -203,6 +205,9 @@ window.ImageViewerUtils = (function () {
   function isEnabledAutoScroll(options) {
     if (document.documentElement.classList.contains('enableAutoScroll')) {
       return true
+    }
+    if (document.documentElement.classList.contains('disableAutoScroll')) {
+      return false
     }
     const domainList = []
     const regexList = []
