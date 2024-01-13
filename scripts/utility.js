@@ -812,6 +812,7 @@ window.ImageViewerUtils = (function () {
         .filter(i => i !== -1).length
       if (unchangedCount < 5) {
         window.backupImageUrlList = []
+        ImageViewer('reset_image_list')
       }
     }
     lastHref = location.href

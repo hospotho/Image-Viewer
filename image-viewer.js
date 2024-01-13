@@ -1559,8 +1559,9 @@ window.ImageViewer = (function () {
     if (arguments.length === 1) {
       const action = arguments[0]
       switch (action) {
-        case 'get_image_list':
+        case 'get_image_list': {
           return Array.from(currentImageList)
+        }
         case 'clear_image_list': {
           // will try to clean when calling updateImageList
           clearFlag = true
@@ -1570,9 +1571,14 @@ window.ImageViewer = (function () {
           clearIndex = counterCurrent.innerHTML - 1
           return
         }
-        case 'close_image_viewer':
+        case 'reset_image_list': {
+          currentImageList = []
+          return
+        }
+        case 'close_image_viewer': {
           closeImageViewer()
           return
+        }
         default:
           return
       }
