@@ -1075,6 +1075,7 @@ window.ImageViewer = (function () {
         return key && ctrl && alt && shift
       }
       const openNewTab = chrome.runtime ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
+      const getCurrentUrl = () => encodeURIComponent(shadowRoot.querySelector('li.current img').src)
 
       if (!options.searchHotkey || options.searchHotkey.length < 5) return
       const hotkey = options.searchHotkey
@@ -1089,7 +1090,7 @@ window.ImageViewer = (function () {
           if (hotkey[i] === '' || !checkKey(e, hotkey[i])) continue
 
           e.preventDefault()
-          const imgUrl = shadowRoot.querySelector('li.current img').src
+          const imgUrl = getCurrentUrl()
           const queryUrl = urlList[i].replace('{imgSrc}', imgUrl)
           openNewTab(queryUrl)
           break
@@ -1099,7 +1100,7 @@ window.ImageViewer = (function () {
       keydownHandlerList.push(e => {
         if (!checkKey(e, hotkey[4])) return
         e.preventDefault()
-        const imgUrl = shadowRoot.querySelector('li.current img').src
+        const imgUrl = getCurrentUrl()
         for (let i = urlList.length - 1; i >= 0; i--) {
           const queryUrl = urlList[i].replace('{imgSrc}', imgUrl)
           openNewTab(queryUrl)
@@ -1114,7 +1115,7 @@ window.ImageViewer = (function () {
           if (customHotkey[i] === '' || !checkKey(e, customHotkey[i])) continue
 
           e.preventDefault()
-          const imgUrl = shadowRoot.querySelector('li.current img').src
+          const imgUrl = getCurrentUrl()
           const queryUrl = customUrl[i].replace('{imgSrc}', imgUrl)
           openNewTab(queryUrl)
           break
