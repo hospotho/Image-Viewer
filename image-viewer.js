@@ -391,7 +391,10 @@ window.ImageViewer = (function () {
   function getMainContainer() {
     const windowWidth = document.documentElement.clientWidth
     const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-    const targetList = document.elementsFromPoint(windowWidth / 2, windowHeight / 2).slice(0, -2)
+    const targetList = document
+      .elementsFromPoint(windowWidth / 2, windowHeight / 2)
+      .slice(0, -2)
+      .filter(n => n.scrollHeight > n.clientHeight)
     let container = null
     let currHeight = 0
     for (const node of targetList) {

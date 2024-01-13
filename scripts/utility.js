@@ -207,7 +207,10 @@ window.ImageViewerUtils = (function () {
   function getMainContainer() {
     const windowWidth = document.documentElement.clientWidth
     const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-    const targetList = document.elementsFromPoint(windowWidth / 2, windowHeight / 2).slice(0, -2)
+    const targetList = document
+      .elementsFromPoint(windowWidth / 2, windowHeight / 2)
+      .slice(0, -2)
+      .filter(n => n.scrollHeight > n.clientHeight)
     let container = null
     let currHeight = 0
     for (const node of targetList) {
@@ -807,9 +810,7 @@ window.ImageViewerUtils = (function () {
       ImageViewer('clear_image_list')
     }
     if (lastHref !== '' && lastHref !== location.href) {
-      const unchangedCount = [...new Set(getImageListWithoutFilter(options).map(data => data[0]))]
-        .map(url => window.backupImageUrlList.indexOf(url))
-        .filter(i => i !== -1).length
+      const unchangedCount = [...new Set(getImageListWithoutFilter(options).map(data => data[0]))].map(url => window.backupImageUrlList.indexOf(url)).filter(i => i !== -1).length
       if (unchangedCount < 5) {
         window.backupImageUrlList = []
         ImageViewer('reset_image_list')
