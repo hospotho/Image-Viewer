@@ -524,24 +524,20 @@ window.ImageViewerUtils = (function () {
       }
 
       let waiting = false
-      const updateWaitingFlag = () => {
-        waiting ? (waiting = false) : resolve(0)
+      const updateSize = size => {
+        if (size) resolve(size)
+        else if (waiting) waiting = false
+        else resolve(0)
       }
 
       // protocol-relative URL
       const url = new URL(src, document.baseURI)
       const href = url.href
-
       if (url.hostname !== location.hostname) {
         waiting = true
-        chrome.runtime.sendMessage({msg: 'get_size', url: href}).then(reply => {
-          reply ? resolve(reply) : updateWaitingFlag()
-        })
+        chrome.runtime.sendMessage({msg: 'get_size', url: href}).then(updateSize)
       }
-
-      localFetchBitSize(href).then(reply => {
-        reply ? resolve(reply) : updateWaitingFlag()
-      })
+      localFetchBitSize(href).then(updateSize)
     })
   }
   function getImageRealSize(src) {
