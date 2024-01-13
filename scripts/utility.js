@@ -60,9 +60,11 @@ window.ImageViewerUtils = (function () {
       if (checkKey(e, options.functionHotkey[0])) {
         e.preventDefault()
         if (!document.documentElement.classList.contains('enableAutoScroll')) {
+          console.log('Enable auto scroll')
           document.documentElement.classList.add('enableAutoScroll')
           document.documentElement.classList.remove('disableAutoScroll')
         } else {
+          console.log('Disable auto scroll')
           document.documentElement.classList.add('disableAutoScroll')
           document.documentElement.classList.remove('enableAutoScroll')
         }
