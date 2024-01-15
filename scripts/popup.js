@@ -2,6 +2,19 @@
   'use strict'
 
   const rawText = `
+1.33 [2024-01-15]:
+Functional Update
+1. Added a new default fit mode option: "Original size (does not exceed window)"
+2. Added a maximum size limit (3x) for other fit modes to prevent enlarging small images too much
+3. Added a new hotkey (Shift + B) for switching the background color: transparent -> black -> white
+4. Added new hotkeys for image transformation:
+  // Move: Ctrl + Alt + ↑↓←→ / WASD
+  // Zoom: Alt + ↑↓ / WS
+  // Rotate: Alt + ←→ / AD
+5. Improved auto-scrolling
+6. Added support for more edge cases
+7. Other bug fixes and improvements
+
 1.32 [2023-12-31]:
 1. Improved accuracy of image middle click redirect
 2. Enhanced size filter referencing of picking an image by right click
