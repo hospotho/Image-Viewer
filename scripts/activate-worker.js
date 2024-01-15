@@ -19,10 +19,11 @@
   disableHoverCheck ||= regexList.map(regex => regex.test(location.href)).filter(Boolean).length
 
   if (window.top === window.self && !disableHoverCheck) {
-    const styles = 'img {pointer-events: auto !important;} .disable-hover {pointer-events: none !important;}'
+    const styles = 'html.iv-worker-idle img {pointer-events: auto !important;} .disable-hover {pointer-events: none !important;}'
     const styleSheet = document.createElement('style')
     styleSheet.innerText = styles
     document.head.appendChild(styleSheet)
+    document.documentElement.classList.add('iv-worker-idle')
   }
 
   const domSearcher = (function () {
@@ -347,15 +348,28 @@
     return disableHoverCheck
       ? e => document.elementsFromPoint(e.clientX, e.clientY)
       : async e => {
+          // get all elements include hover
           const elementsBeforeDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
+          // reset pointer event as default
+          document.documentElement.classList.remove('iv-worker-idle')
+          // disable hover
           for (const element of elementsBeforeDisableHover) {
             element.classList.add('disable-hover')
           }
-          await new Promise(resolve => setTimeout(resolve, 0))
+          const mouseLeaveEvent = new Event('mouseleave')
+          for (const element of elementsBeforeDisableHover) {
+            element.dispatchEvent(mouseLeaveEvent)
+          }
+          // release priority and allow other script clear up hover element
+          await new Promise(resolve => setTimeout(resolve, 10))
+          // clean up css
           for (const element of elementsBeforeDisableHover) {
             element.classList.remove('disable-hover')
           }
+          // get all non hover elements
           const elementsAfterDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
+          // lock pointer event back to auto
+          document.documentElement.classList.add('iv-worker-idle')
 
           const stableElements = []
           const unstableElements = []
