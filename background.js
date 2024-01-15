@@ -217,7 +217,23 @@ function addMessageHandler() {
         return true
       }
       case 'load_worker': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
+        ;(async () => {
+          const iframeList = await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})
+          const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
+          const asyncList = targetList.map(frame => {
+            const test = chrome.scripting.executeScript({
+              target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
+              files: ['/scripts/activate-worker.js']
+            })
+            // handle error, don't display error to user
+            return test.then(
+              () => null,
+              () => null
+            )
+          })
+          await Promise.all(asyncList)
+          sendResponse()
+        })()
         return true
       }
       case 'load_main_worker': {
