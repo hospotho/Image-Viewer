@@ -757,8 +757,8 @@ window.ImageViewer = (function () {
     document.documentElement.classList.add('has-image-viewer')
 
     const shadowHolder = document.createElement('div')
-    shadowHolder.style.all = 'revert'
     shadowHolder.id = 'image-viewer-root'
+    shadowHolder.style.all = 'revert'
     shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
     // shadowRoot = shadowHolder.attachShadow({mode: 'open'})
     document.body.appendChild(shadowHolder)
@@ -771,6 +771,16 @@ window.ImageViewer = (function () {
     viewer.innerHTML = frame()
     if (!options.closeButton) {
       viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
+      // prevent image loading flash
+      shadowHolder.style.all = ''
+      shadowHolder.style.opacity = '0'
+      const interval = setInterval(() => {
+        const image = shadowRoot.querySelector('img')
+        if (image?.complete) {
+          shadowHolder.style.opacity = '1'
+          clearInterval(interval)
+        }
+      }, 10)
     }
 
     shadowRoot.append(stylesheet)

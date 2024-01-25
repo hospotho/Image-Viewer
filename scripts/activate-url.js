@@ -161,7 +161,6 @@
       await chrome.runtime.sendMessage('load_script')
     }
     ImageViewer([isRawBetter ? rawUrl : image.src], options)
-    image.style.display = 'none'
   }
 
   async function init() {
