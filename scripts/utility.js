@@ -10,8 +10,13 @@ window.ImageViewerUtils = (function () {
   const rawUrlCache = new Map()
   const badImageList = new Set(['', 'about:blank'])
   const mutex = (() => {
+    // update image
     let promise = Promise.resolve()
     let busy = false
+    // parallel fetch
+    const maxParallel = 8
+    let fetchCount = 0
+    const isAvailable = () => fetchCount < maxParallel
     return {
       acquire: async function () {
         await promise
@@ -40,6 +45,17 @@ window.ImageViewerUtils = (function () {
 
         await wait
         await promise
+      },
+      waitSlot: async function () {
+        let executed = false
+        while (!isAvailable()) {
+          await new Promise(resolve => setTimeout(resolve, 50))
+        }
+        fetchCount++
+        return () => {
+          if (!executed) fetchCount--
+          executed = true
+        }
       }
     }
   })()
@@ -478,8 +494,12 @@ window.ImageViewerUtils = (function () {
     })
   }
   async function localFetchBitSize(href) {
+    const release = await mutex.waitSlot()
+    const controller = new AbortController()
+    setTimeout(() => controller.abort(), 5000)
     try {
-      const res = await fetch(href, {method: 'HEAD'})
+      const res = await fetch(href, {method: 'HEAD', signal: controller.signal})
+      release()
       if (res.ok) {
         if (res.redirected) return -1
         const type = res.headers.get('Content-Type')
@@ -490,6 +510,7 @@ window.ImageViewerUtils = (function () {
         }
       }
     } catch (error) {}
+    release()
     return 0
   }
   function getImageBitSize(src) {
