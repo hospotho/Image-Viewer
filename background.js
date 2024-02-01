@@ -2,24 +2,21 @@
 const srcBitSizeMap = new Map()
 const srcLocalRealSizeMap = new Map()
 const mutex = (function () {
+  // parallel fetch
   const maxParallel = 8
   let fetchCount = 0
   const isAvailable = () => fetchCount < maxParallel
-  const createRelease = () =>
-    (() => {
-      let executed = false
-      return () => {
-        if (!executed) fetchCount--
-        executed = true
-      }
-    })()
   return {
     waitSlot: async function () {
+      let executed = false
       while (!isAvailable()) {
         await new Promise(resolve => setTimeout(resolve, 50))
       }
       fetchCount++
-      return createRelease()
+      return () => {
+        if (!executed) fetchCount--
+        executed = true
+      }
     }
   }
 })()
