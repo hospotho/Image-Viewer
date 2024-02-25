@@ -337,8 +337,7 @@ window.ImageViewerUtils = (function () {
     const elementTag = selector.slice(-3)
     const domList = [...container.querySelectorAll(selector)]
     // skip img with data URL
-    const isImgValid = img => !img.src.startsWith('data') && img.classList.contains('simpleUnlazy')
-    const targetDom = elementTag === 'img' ? domList.filter(isImgValid) : domList
+    const targetDom = elementTag === 'img' ? domList.filter(img => !img.src.startsWith('data')) : domList
 
     let minWidth = domWidth
     let minHeight = domHeight
