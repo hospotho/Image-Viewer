@@ -225,10 +225,7 @@ Large Update
 First release on github
 `
   function createNotes() {
-    const data = rawText
-      .split('\n\n')
-      .map(t => t.trim())
-      .map(t => t.split('\n'))
+    const data = rawText.split('\n\n').map(t => t.trim().split('\n'))
 
     const noteContainerGroup = document.createElement('div')
     noteContainerGroup.classList.add('note-container-group')
@@ -261,7 +258,6 @@ First release on github
 
       noteContainer.appendChild(bar)
       noteContainer.appendChild(noteText)
-
       noteContainerGroup.appendChild(noteContainer)
     }
     document.body.appendChild(noteContainerGroup)

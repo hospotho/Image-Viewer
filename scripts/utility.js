@@ -484,8 +484,7 @@ window.ImageViewerUtils = (function () {
 
       const picture = img.parentNode
       if (picture?.tagName === 'PICTURE') {
-        const sources = picture.querySelectorAll('source')
-        for (const source of sources) {
+        for (const source of picture.querySelectorAll('source')) {
           source.srcset = src
         }
       }
@@ -726,10 +725,10 @@ window.ImageViewerUtils = (function () {
     if (!listSize) return allComplete
 
     console.log(`Try to unlazy ${listSize} image`)
-    imgWithAttrList.map(item => item[0].classList.add('simpleUnlazy', 'unlazyNotComplete'))
+    imgWithAttrList.forEach(item => item[0].classList.add('simpleUnlazy', 'unlazyNotComplete'))
 
     const asyncList = await Promise.all(imgWithAttrList.map(([img, attrList]) => checkImageAttr(img, attrList)))
-    imgWithAttrList.map(item => item[0].classList.remove('unlazyNotComplete'))
+    imgWithAttrList.forEach(item => item[0].classList.remove('unlazyNotComplete'))
     const lazyList = asyncList.flat()
 
     if (lazyList.length > listSize) console.log('Multiple unlazy attributes found')

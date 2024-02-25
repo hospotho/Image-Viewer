@@ -79,7 +79,7 @@ window.ImageViewer = (function () {
     const m = match[0]
       .slice(7, -1)
       .split(',')
-      .map(t => Number(t))
+      .map(Number)
     // https://www.w3.org/TR/css-transforms-1/#decomposing-a-2d-matrix
     let row0x = m[0]
     let row0y = m[2]
@@ -186,7 +186,7 @@ window.ImageViewer = (function () {
     }
     if (lastNode) return lastNode
     if (possibleNodeList.length !== 0 && possibleNodeList.length <= 2) {
-      possibleNodeList.map(updateLargestNode)
+      possibleNodeList.forEach(updateLargestNode)
     }
     if (lastNode) return lastNode
 
@@ -926,7 +926,7 @@ window.ImageViewer = (function () {
         'keydown',
         e => {
           if (!document.documentElement.classList.contains('has-image-viewer')) return
-          keydownHandlerList.map(func => func(e))
+          keydownHandlerList.forEach(func => func(e))
         },
         true
       )
@@ -937,9 +937,7 @@ window.ImageViewer = (function () {
       const fitBtnList = shadowRoot.querySelectorAll('#iv-control-buttons button[data-fit]')
       for (const fitBtn of fitBtnList) {
         fitBtn.addEventListener('click', () => {
-          for (const btn of fitBtnList) {
-            btn.classList.remove('on')
-          }
+          fitBtnList.forEach(btn => btn.classList.remove('on'))
           fitBtn.classList.add('on')
           options.fitMode = fitBtn.getAttribute('data-fit')
           fitImage(options)

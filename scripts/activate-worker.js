@@ -353,11 +353,9 @@
           // reset pointer event as default
           document.documentElement.classList.remove('iv-worker-idle')
           // disable hover
-          for (const element of elementsBeforeDisableHover) {
-            element.classList.add('disable-hover')
-          }
           const mouseLeaveEvent = new Event('mouseleave')
           for (const element of elementsBeforeDisableHover) {
+            element.classList.add('disable-hover')
             element.dispatchEvent(mouseLeaveEvent)
           }
           // release priority and allow other script clear up hover element

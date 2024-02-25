@@ -159,8 +159,7 @@
       if (part.includes('-')) {
         const [start, end] = part
           .split('-')
-          .map(Number)
-          .map(n => Math.min(length, Math.max(1, n)) - 1)
+          .map(n => Math.min(length, Math.max(1, Number(n))) - 1)
           .sort((a, b) => a - b)
         for (let i = start; i <= end; i++) {
           result[i] = true
