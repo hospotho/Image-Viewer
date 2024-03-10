@@ -175,12 +175,8 @@
       if (!bg.startsWith('url') || bg.endsWith('.svg")')) return null
 
       const bgUrl = bg.substring(5, bg.length - 2)
-      if (nodeStyle.backgroundRepeat === 'repeat') {
-        const realMinSize = await getImageRealSize(bgUrl)
-        return [bgUrl, realMinSize, dom]
-      } else {
-        return [bgUrl, minSize, dom]
-      }
+      const realMinSize = Math.min(minSize, await getImageRealSize(bgUrl))
+      return [bgUrl, realMinSize, dom]
     }
     async function extractImageInfo(dom) {
       const {width, height} = dom.getBoundingClientRect()
