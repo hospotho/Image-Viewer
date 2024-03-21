@@ -23,6 +23,7 @@ window.ImageViewer = (function () {
     li.appendChild(img)
 
     img.alt = ''
+    img.style.transform = 'matrix(1,0,0,1,0,0)'
     if (options.referrerPolicy) img.referrerPolicy = 'no-referrer'
     if (options.cors) img.crossOrigin = 'anonymous'
 
@@ -905,7 +906,6 @@ window.ImageViewer = (function () {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
       img.height = h
-      img.style.transform = 'matrix(1,0,0,1,0,0)'
       img.classList.add('loaded')
     }
     const event = new CustomEvent('resetTransform')
