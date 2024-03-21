@@ -1221,7 +1221,7 @@ window.ImageViewer = (function () {
       img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
     }
 
-    async function addTransformHandler(li) {
+    function addTransformHandler(li) {
       const img = li.firstChild
       let zoomCount = 0
       let rotateCount = 0
