@@ -228,7 +228,7 @@
       if (!oldIsImage && newIsImage && !oldIsPlaceholder) {
         const bgPos = window.getComputedStyle(oldInfo[2]).backgroundPosition
         const isPartialBackground = bgPos.split('px').map(Number).some(Boolean)
-        return isPartialBackground ? newInfo[1] > oldInfo[1] : true
+        return isPartialBackground ? newInfo[1] >= oldInfo[1] : true
       }
       // size check
       const [newBitSize, oldBitSize] = await Promise.all([newUrl, oldUrl].map(getImageBitSize))
