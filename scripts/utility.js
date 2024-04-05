@@ -8,6 +8,7 @@ window.ImageViewerUtils = (function () {
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
   const rawUrlCache = new Map()
+  const matchCache = new Map()
   const badImageList = new Set(['', 'about:blank'])
   const mutex = (() => {
     // update image
@@ -143,41 +144,57 @@ window.ImageViewerUtils = (function () {
     const shift = keyList.includes('Shift') === e.shiftKey
     return key && ctrl && alt && shift
   }
-  function getRawUrl(src) {
-    const cache = rawUrlCache.get(src)
+  function cachedArgsMatch(str) {
+    if (str.startsWith('data')) return null
+
+    const cache = matchCache.get(str)
     if (cache !== undefined) return cache
 
-    if (src.startsWith('data')) return src
+    const argsMatch = str.match(argsRegex)
+    matchCache.set(str, argsMatch)
+    return argsMatch
+  }
+  function matchUrlSearch(src) {
     try {
       // protocol-relative URL
       const url = new URL(src, document.baseURI)
-      const baseURI = url.origin + url.pathname
+      if (!url.search) return null
 
+      const baseURI = url.origin + url.pathname
       const searchList = url.search
         .slice(1)
         .split('&')
-        .filter(t => t.match(argsRegex))
+        .filter(t => cachedArgsMatch(t))
         .join('&')
       const imgSearch = searchList ? '?' + searchList : ''
       const noSearch = baseURI + imgSearch
 
-      const argsMatch = noSearch.match(argsRegex)
-      if (argsMatch) {
-        const rawUrl = argsMatch[1]
-        if (rawUrl !== src) {
-          rawUrlCache.set(src, rawUrl)
-          return rawUrl
-        }
-      }
-    } catch (error) {}
+      const argsMatch = cachedArgsMatch(noSearch)
+      return argsMatch
+    } catch (error) {
+      return null
+    }
+  }
+  function getRawUrl(src) {
+    if (src.startsWith('data')) return src
 
-    const argsMatch = src.match(argsRegex)
-    if (argsMatch) {
-      const rawUrl = argsMatch[1]
+    const cache = rawUrlCache.get(src)
+    if (cache !== undefined) return cache
+
+    const searchMatch = matchUrlSearch(src)
+    if (searchMatch) {
+      const rawUrl = searchMatch[1]
       if (rawUrl !== src) {
         rawUrlCache.set(src, rawUrl)
         return rawUrl
       }
+    }
+
+    const argsMatch = cachedArgsMatch(src)
+    if (argsMatch) {
+      const rawUrl = argsMatch[1]
+      rawUrlCache.set(src, rawUrl)
+      return rawUrl
     }
     rawUrlCache.set(src, src)
     return src
@@ -502,7 +519,7 @@ window.ImageViewerUtils = (function () {
         if (res.redirected) return -1
         const type = res.headers.get('Content-Type')
         const length = res.headers.get('Content-Length')
-        if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
+        if (type?.startsWith('image') || (type === 'application/octet-stream' && cachedArgsMatch(href))) {
           const size = Number(length)
           return size
         }
@@ -629,7 +646,7 @@ window.ImageViewerUtils = (function () {
   // unlazy main function
   function getUnlazyAttrList(img) {
     const rawUrl = getRawUrl(img.currentSrc)
-    const rawMatchArgs = rawUrl.match(argsRegex) !== null
+    const rawMatchArgs = cachedArgsMatch(rawUrl) !== null
     const attrList = []
     for (const attr of img.attributes) {
       if (passList.has(attr.name) || !attr.value.match(urlRegex)) continue
@@ -666,7 +683,7 @@ window.ImageViewerUtils = (function () {
     }
     const anchor = img.closest('a')
     if (anchor && anchor.href !== img.currentSrc) {
-      const anchorMatchArgs = anchor.href.match(argsRegex) !== null
+      const anchorMatchArgs = cachedArgsMatch(anchor.href) !== null
       const sameType = anchorMatchArgs === rawMatchArgs
       if (sameType) attrList.push({name: 'parent anchor', value: anchor.href})
     }
