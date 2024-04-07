@@ -48,6 +48,7 @@
     for (const src of failedIframeList) {
       const targetList = iframeList.filter(iframe => iframe.src === src)
       for (const iframe of targetList) {
+        if (iframe.src.startsWith('data')) continue
         iframe.classList.add('updateByTest')
         iframe.src = 'about:blank'
         console.log(`Remove failed iframe: ${src}`)
