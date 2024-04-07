@@ -109,7 +109,6 @@ const getRedirectUrl = async srcList => {
     return src
   })
   const redirectUrlList = await Promise.all(asyncList)
-
   return redirectUrlList
 }
 const resetLabel = () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
