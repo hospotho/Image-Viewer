@@ -814,10 +814,21 @@ window.ImageViewerUtils = (function () {
       }
     }
   }
+  function fakeUserHover() {
+    const enterEvent = new CustomEvent('mouseenter')
+    const overEvent = new CustomEvent('mouseover')
+    const leaveEvent = new CustomEvent('mouseleave')
+    for (const image of document.getElementsByTagName('img')) {
+      image.dispatchEvent(enterEvent)
+      image.dispatchEvent(overEvent)
+      image.dispatchEvent(leaveEvent)
+    }
+  }
   async function simpleUnlazyImage(options) {
     if (firstUnlazyFlag) {
       firstUnlazyFlag = false
       preprocessLazyPlaceholder()
+      fakeUserHover()
       const race = createFirstUnlazyRace(options)
       return race
     }
