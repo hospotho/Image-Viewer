@@ -32,7 +32,7 @@ const passDataToTab = (id, name, data, toAllFrames = true) => {
     }
   })
 }
-const getImageBitSize = async (src, complete = false) => {
+const getImageBitSize = async (src, useGetMethod = false) => {
   const cache = srcBitSizeMap.get(src)
   if (cache !== undefined) return cache
 
@@ -41,28 +41,32 @@ const getImageBitSize = async (src, complete = false) => {
   const controller = new AbortController()
   setTimeout(() => controller.abort(), 5000)
   try {
-    const method = complete === true ? 'GET' : 'HEAD'
+    const method = useGetMethod ? 'GET' : 'HEAD'
     const res = await fetch(src, {method: method, signal: controller.signal})
     release()
-    if (res.ok) {
-      if (res.redirected) return -1
-      const type = res.headers.get('Content-Type')
-      const length = res.headers.get('Content-Length')
-      if (type?.startsWith('image')) {
-        const size = Number(length)
-        // some server return strange content length for HEAD method
-        if (size > 100 || complete) {
-          const cache = srcBitSizeMap.get(src)
-          if (cache === undefined || cache === 0) srcBitSizeMap.set(src, size)
-          return size
-        } else {
-          return getImageBitSize(src, true)
-        }
-      }
+    if (!res.ok || res.redirected) {
+      srcBitSizeMap.set(src, 0)
+      return 0
     }
+
+    const type = res.headers.get('Content-Type')
+    if (!type?.startsWith('image')) {
+      srcBitSizeMap.set(src, 0)
+      return 0
+    }
+
+    const length = res.headers.get('Content-Length')
+    const size = Number(length)
+    // some server return strange content length for HEAD method
+    if (size < 100 && !useGetMethod) {
+      return getImageBitSize(src, true)
+    }
+    srcBitSizeMap.set(src, size)
+    return size
   } catch (error) {}
 
   release()
+  srcBitSizeMap.set(src, 0)
   return 0
 }
 const getImageLocalRealSize = (id, srcUrl) => {
