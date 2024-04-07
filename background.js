@@ -136,6 +136,8 @@ const defaultOptions = {
 
 let currOptions = defaultOptions
 let currOptionsWithoutSize = defaultOptions
+let lastImageNodeInfo = ['', 0]
+let lastImageNodeInfoID = 0
 let lastTabID = 0
 let lastTabIndex = 0
 let lastTabOpenIndex = 0
@@ -300,7 +302,7 @@ function addMessageHandler() {
         return true
       }
       case 'get_info': {
-        if (lastImageNodeInfo?.id === sender.tab.id) {
+        if (lastImageNodeInfoID === sender.tab.id) {
           sendResponse(lastImageNodeInfo)
         } else {
           sendResponse()
@@ -309,9 +311,9 @@ function addMessageHandler() {
       }
       case 'update_info': {
         lastImageNodeInfo = request.data
+        lastImageNodeInfoID = sender.tab.id
         console.log(...lastImageNodeInfo)
         sendResponse()
-        lastImageNodeInfo.id = sender.tab.id
         return true
       }
       case 'open_tab': {
