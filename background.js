@@ -22,6 +22,15 @@ const mutex = (function () {
 })()
 
 const i18n = tag => chrome.i18n.getMessage(tag)
+const oldExecuteScript = chrome.scripting.executeScript
+chrome.scripting.executeScript = async function () {
+  try {
+    const result = await oldExecuteScript.apply(this, arguments)
+    return result
+  } catch (error) {
+    return error
+  }
+}
 const passDataToTab = (id, name, data, toAllFrames = true) => {
   console.log('Pass data: ', id, name, data)
   return chrome.scripting.executeScript({
@@ -217,17 +226,12 @@ function addMessageHandler() {
         ;(async () => {
           const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})) || []
           const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
-          const asyncList = targetList.map(frame => {
-            const temp = chrome.scripting.executeScript({
+          const asyncList = targetList.map(frame =>
+            chrome.scripting.executeScript({
               target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
               files: ['/scripts/activate-worker.js']
             })
-            // handle error, don't display error to user
-            return temp.then(
-              () => null,
-              () => null
-            )
-          })
+          )
           await Promise.all(asyncList)
           sendResponse()
         })()
@@ -249,17 +253,12 @@ function addMessageHandler() {
         ;(async () => {
           const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})) || []
           const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
-          const asyncList = targetList.map(frame => {
-            const test = chrome.scripting.executeScript({
+          const asyncList = targetList.map(frame =>
+            chrome.scripting.executeScript({
               target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
               func: () => {}
             })
-            // handle error, don't display error to user
-            return test.then(
-              () => false,
-              () => frame.url
-            )
-          })
+          )
           const badIframe = (await Promise.all(asyncList)).filter(Boolean)
           const failedIframeList = [...new Set(badIframe)]
           sendResponse(failedIframeList, false)
