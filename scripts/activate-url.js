@@ -44,7 +44,7 @@
       return
     }
 
-    const failedIframeList = await chrome.runtime.sendMessage('check_iframes')
+    const failedIframeList = await chrome.runtime.sendMessage('check_frames')
     for (const src of failedIframeList) {
       const targetList = iframeList.filter(iframe => iframe.src === src)
       for (const iframe of targetList) {

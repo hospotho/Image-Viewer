@@ -248,7 +248,7 @@ function addMessageHandler() {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse())
         return true
       }
-      case 'check_iframes': {
+      case 'check_frames': {
         ;(async () => {
           const iframeList = await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})
           const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
