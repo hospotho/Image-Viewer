@@ -179,7 +179,7 @@ function addMessageHandler() {
     const type = request.msg || request
     console.log('Received message: ', sender.tab.id, type)
 
-    const sendResponse = (data, display = true) => {
+    const sendResponse = (data = null, display = true) => {
       const msg = ['Send response:    ', sender.tab.id, type]
       if (data && display) msg.push(data)
       console.log(...msg)
@@ -215,7 +215,7 @@ function addMessageHandler() {
       }
       case 'load_worker': {
         ;(async () => {
-          const iframeList = await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})
+          const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})) || []
           const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
           const asyncList = targetList.map(frame => {
             const temp = chrome.scripting.executeScript({
@@ -247,7 +247,7 @@ function addMessageHandler() {
       }
       case 'check_frames': {
         ;(async () => {
-          const iframeList = await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})
+          const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})) || []
           const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
           const asyncList = targetList.map(frame => {
             const test = chrome.scripting.executeScript({
