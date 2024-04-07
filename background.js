@@ -134,9 +134,8 @@ const defaultOptions = {
   autoScrollEnableList: ['twitter.com', 'instagram.com', 'facebook.com']
 }
 
-let currOptions = null
-let currOptionsWithoutSize = null
-let lastImageNodeInfo = null
+let currOptions = defaultOptions
+let currOptionsWithoutSize = defaultOptions
 let lastTabID = 0
 let lastTabIndex = 0
 let lastTabOpenIndex = 0
@@ -151,19 +150,12 @@ function resetLocalStorage() {
   chrome.storage.sync.get('options', res => {
     if (res && Object.keys(res).length === 0 && Object.getPrototypeOf(res) === Object.prototype) {
       chrome.storage.sync.set({options: defaultOptions}, () => {
-        console.log('Set options to default values')
+        console.log('Set options to default options')
         console.log(defaultOptions)
       })
-      currOptions = defaultOptions
-      currOptionsWithoutSize = Object.assign({}, currOptions)
-      currOptionsWithoutSize.minWidth = 0
-      currOptionsWithoutSize.minHeight = 0
       chrome.runtime.openOptionsPage()
     } else {
       currOptions = res.options
-      currOptionsWithoutSize = Object.assign({}, currOptions)
-      currOptionsWithoutSize.minWidth = 0
-      currOptionsWithoutSize.minHeight = 0
       console.log('Loaded options from storage')
       console.log(res.options)
 
@@ -174,6 +166,9 @@ function resetLocalStorage() {
         chrome.runtime.openOptionsPage()
       }
     }
+    currOptionsWithoutSize = Object.assign({}, currOptions)
+    currOptionsWithoutSize.minWidth = 0
+    currOptionsWithoutSize.minHeight = 0
   })
 }
 
