@@ -419,7 +419,7 @@ window.ImageViewer = (function () {
       return (imageWidth, imageHeight) => {
         const imgRatio = imageWidth / imageHeight
         const maxWidth = Math.min(imageWidth * 3, windowWidth)
-        const maxHeight = Math.min(imageWidth * 3, windowHeight)
+        const maxHeight = Math.min(imageHeight * 3, windowHeight)
         return imgRatio >= windowRatio ? [maxWidth, maxWidth / imgRatio] : [maxHeight * imgRatio, maxHeight]
       }
     }
