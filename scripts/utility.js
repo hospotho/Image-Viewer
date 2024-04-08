@@ -912,7 +912,8 @@ window.ImageViewerUtils = (function () {
 
     const rawImageList = [...document.querySelectorAll('img.simpleUnlazy')]
     for (const img of rawImageList) {
-      imageDataList.push([img.currentSrc, img])
+      const imgSrc = img.currentSrc || img.src
+      imageDataList.push([imgSrc, img])
     }
 
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
