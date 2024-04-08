@@ -1,6 +1,7 @@
 // utility function
 const srcBitSizeMap = new Map()
 const srcLocalRealSizeMap = new Map()
+const redirectUrlMap = new Map()
 const mutex = (function () {
   // parallel fetch
   const maxParallel = 8
@@ -110,16 +111,22 @@ const getImageLocalRealSize = (id, srcUrl) => {
     })
   })
 }
-const getRedirectUrl = async srcList => {
-  const asyncList = srcList.map(async src => {
-    if (src === '' || src === 'about:blank') return src
+const getRedirectUrl = async urlList => {
+  const asyncList = urlList.map(async url => {
+    if (url === '' || url === 'about:blank') return url
+
+    const cache = redirectUrlMap.get(url)
+    if (cache !== undefined) return cache
 
     try {
-      const res = await fetch(src)
-      return res.redirected ? res.url : src
+      const res = await fetch(url)
+      const finalUrl = res.redirected ? res.url : url
+      redirectUrlMap.set(url, finalUrl)
+      return finalUrl
     } catch (error) {}
 
-    return src
+    redirectUrlMap.set(url, url)
+    return url
   })
   const redirectUrlList = await Promise.all(asyncList)
   return redirectUrlList
