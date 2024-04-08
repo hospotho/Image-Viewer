@@ -1,8 +1,14 @@
 ;(async function () {
   'use strict'
 
+  const safeSendMessage = function (...args) {
+    if (chrome.runtime?.id) {
+      return chrome.runtime.sendMessage(...args)
+    }
+  }
+
   if (typeof ImageViewerUtils !== 'object') {
-    await chrome.runtime.sendMessage('load_utility')
+    await safeSendMessage('load_utility')
   }
 
   if (document.documentElement.classList.contains('has-image-viewer')) return
@@ -15,7 +21,7 @@
   window.backupImageUrlList ??= []
 
   // update image size filter
-  const nodeInfo = await chrome.runtime.sendMessage('get_info')
+  const nodeInfo = await safeSendMessage('get_info')
   const [srcUrl, nodeSize] = nodeInfo ?? []
   if (nodeSize) {
     options.minWidth = Math.min(nodeSize, options.minWidth)
@@ -40,7 +46,7 @@
   }
 
   if (typeof ImageViewer !== 'function') {
-    await chrome.runtime.sendMessage('load_script')
+    await safeSendMessage('load_script')
   }
   ImageViewer(window.backupImageUrlList, options)
 

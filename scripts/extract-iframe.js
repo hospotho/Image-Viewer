@@ -3,8 +3,14 @@
 
   if (window.top === window.self) return
 
+  const safeSendMessage = function (...args) {
+    if (chrome.runtime?.id) {
+      return chrome.runtime.sendMessage(...args)
+    }
+  }
+
   async function createDataUrl(srcUrl) {
-    const requests = [chrome.runtime.sendMessage({msg: 'get_local_size', url: srcUrl}), chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl})]
+    const requests = [safeSendMessage({msg: 'get_local_size', url: srcUrl}), safeSendMessage({msg: 'get_size', url: srcUrl})]
     const [localSize, globalSize] = await Promise.all(requests)
     if (localSize || globalSize) {
       return srcUrl
@@ -77,6 +83,6 @@
   const imageDataUrls = asyncList.filter(url => url !== '')
   const subFrame = document.getElementsByTagName('iframe')
   const subFrameHref = [...subFrame].map(iframe => iframe.src)
-  const subFrameRedirectedHref = await chrome.runtime.sendMessage({msg: 'get_redirect', data: subFrameHref})
+  const subFrameRedirectedHref = await safeSendMessage({msg: 'get_redirect', data: subFrameHref})
   return [location.href, subFrameRedirectedHref, imageDataUrls]
 })()

@@ -1,6 +1,12 @@
 ;(function () {
   'use strict'
 
+  const safeSendMessage = function (...args) {
+    if (chrome.runtime?.id) {
+      return chrome.runtime.sendMessage(...args)
+    }
+  }
+
   let removalComplete = false
 
   // normal web page mode
@@ -44,7 +50,7 @@
       return
     }
 
-    const failedIframeList = await chrome.runtime.sendMessage('check_frames')
+    const failedIframeList = await safeSendMessage('check_frames')
     for (const src of failedIframeList) {
       const targetList = iframeList.filter(iframe => iframe.src === src)
       for (const iframe of targetList) {
@@ -78,29 +84,29 @@
       if (removalComplete) {
         removalComplete = false
         await removeFailedIframe()
-        chrome.runtime.sendMessage('get_options')
-        chrome.runtime.sendMessage('load_worker')
+        safeSendMessage('get_options')
+        safeSendMessage('load_worker')
       }
     })
     observer.observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ['src']})
   }
 
   async function initWorker() {
-    chrome.runtime.sendMessage('load_main_worker')
+    safeSendMessage('load_main_worker')
 
     // chrome.scripting.executeScript never return on invalid iframe
     initIframeObserver()
     await removeFailedIframe()
 
     console.log('Init content script')
-    chrome.runtime.sendMessage('get_options')
-    chrome.runtime.sendMessage('load_worker')
+    safeSendMessage('get_options')
+    safeSendMessage('load_worker')
 
     // for some rare case
     setTimeout(async () => {
       await removeFailedIframe()
-      chrome.runtime.sendMessage('get_options')
-      chrome.runtime.sendMessage('load_worker')
+      safeSendMessage('get_options')
+      safeSendMessage('load_worker')
     }, 3000)
   }
 
@@ -159,20 +165,20 @@
     const isRawBetter = rawSize[0] > image.naturalWidth && Math.abs(rawRatio - currRatio) < 0.01
 
     if (typeof ImageViewer !== 'function') {
-      await chrome.runtime.sendMessage('load_script')
+      await safeSendMessage('load_script')
     }
     ImageViewer([isRawBetter ? rawUrl : image.src], options)
   }
 
   async function init() {
-    await chrome.runtime.sendMessage('get_main_options')
+    await safeSendMessage('get_main_options')
     // Chrome terminated service worker
     if (!window.ImageViewerOption) {
       console.log('Wait service worker ready')
     }
     while (!window.ImageViewerOption) {
       await new Promise(resolve => setTimeout(resolve, 50))
-      await chrome.runtime.sendMessage('get_main_options')
+      await safeSendMessage('get_main_options')
     }
 
     const image = document.querySelector(`img[src='${location.href}']`)

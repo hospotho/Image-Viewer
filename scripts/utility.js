@@ -1,6 +1,12 @@
 window.ImageViewerUtils = (function () {
   'use strict'
 
+  const safeSendMessage = function (...args) {
+    if (chrome.runtime?.id) {
+      return chrome.runtime.sendMessage(...args)
+    }
+  }
+
   const passList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
   const urlRegex = /(?:https?:\/)?\/\S+/g
   const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
@@ -90,7 +96,7 @@ window.ImageViewerUtils = (function () {
       // download images
       if (typeof ImageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
         e.preventDefault()
-        chrome.runtime.sendMessage('download_images')
+        safeSendMessage('download_images')
       }
     },
     true
@@ -552,7 +558,7 @@ window.ImageViewerUtils = (function () {
       const href = url.href
       if (url.hostname !== location.hostname) {
         waiting = true
-        chrome.runtime.sendMessage({msg: 'get_size', url: href}).then(updateSize)
+        safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
       }
       localFetchBitSize(href).then(updateSize)
     })
@@ -1035,7 +1041,7 @@ window.ImageViewerUtils = (function () {
     const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
     if (filteredList.length === 0) return dataList
 
-    const iframeRedirectSrcList = await chrome.runtime.sendMessage({msg: 'get_redirect', data: iframeSrcList})
+    const iframeRedirectSrcList = await safeSendMessage({msg: 'get_redirect', data: iframeSrcList})
 
     const imageDomList = []
     for (const data of dataList) {
@@ -1274,7 +1280,7 @@ window.ImageViewerUtils = (function () {
       const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
       if (filteredList.length) {
         const minSize = Math.min(options.minWidth, options.minHeight)
-        const iframeImage = await chrome.runtime.sendMessage({msg: 'extract_frames', minSize: minSize})
+        const iframeImage = await safeSendMessage({msg: 'extract_frames', minSize: minSize})
 
         const uniqueIframeImage = []
         const uniqueIframeImageUrls = new Set()

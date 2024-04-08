@@ -1,6 +1,12 @@
 ;(async function () {
   'use strict'
 
+  const safeSendMessage = function (...args) {
+    if (chrome.runtime?.id) {
+      return chrome.runtime.sendMessage(...args)
+    }
+  }
+
   if (document.documentElement.classList.contains('has-image-viewer-worker')) return
 
   document.documentElement.classList.add('has-image-viewer-worker')
@@ -271,7 +277,7 @@
             document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
             dom?.classList.add('ImageViewerLastDom')
           }
-        : () => chrome.runtime.sendMessage('reset_dom')
+        : () => safeSendMessage('reset_dom')
     })()
 
     return {
@@ -380,7 +386,7 @@
   })()
 
   async function createDataUrl(srcUrl) {
-    const requests = [chrome.runtime.sendMessage({msg: 'get_local_size', url: srcUrl}), chrome.runtime.sendMessage({msg: 'get_size', url: srcUrl})]
+    const requests = [safeSendMessage({msg: 'get_local_size', url: srcUrl}), safeSendMessage({msg: 'get_size', url: srcUrl})]
     const [localSize, globalSize] = await Promise.all(requests)
     if (localSize || globalSize) return srcUrl
 
@@ -423,7 +429,7 @@
       }
       // image size maybe decreased in dataURL
       imageNodeInfo[1] -= 3
-      chrome.runtime.sendMessage({msg: 'update_info', data: imageNodeInfo})
+      safeSendMessage({msg: 'update_info', data: imageNodeInfo})
     },
     true
   )

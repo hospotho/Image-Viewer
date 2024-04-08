@@ -213,7 +213,7 @@
       options.autoScrollEnableList = autoScrollEnableList
 
       chrome.storage.sync.set({options: options}, () => {
-        chrome.runtime.sendMessage('update_options')
+        if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
         console.log(options)
         alert('Options have been saved.')
       })

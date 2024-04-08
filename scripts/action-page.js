@@ -1,8 +1,14 @@
 ;(async function () {
   'use strict'
 
+  const safeSendMessage = function (...args) {
+    if (chrome.runtime?.id) {
+      return chrome.runtime.sendMessage(...args)
+    }
+  }
+
   if (typeof ImageViewerUtils !== 'object') {
-    await chrome.runtime.sendMessage('load_utility')
+    await safeSendMessage('load_utility')
   }
 
   if (document.documentElement.classList.contains('has-image-viewer')) {
@@ -23,7 +29,7 @@
   window.backupImageUrlList = Array.from(combinedImageList)
 
   if (typeof ImageViewer !== 'function') {
-    await chrome.runtime.sendMessage('load_script')
+    await safeSendMessage('load_script')
   }
   ImageViewer(window.backupImageUrlList, options)
 

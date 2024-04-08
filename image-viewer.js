@@ -1008,7 +1008,7 @@ window.ImageViewer = (function () {
       closeButton.addEventListener('click', closeImageViewer)
       closeButton.addEventListener('contextmenu', e => {
         e.preventDefault()
-        chrome.runtime ? chrome.runtime.sendMessage('close_tab') : window.close()
+        chrome.runtime?.id ? chrome.runtime.sendMessage('close_tab') : window.close()
       })
       keydownHandlerList.push(e => {
         if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
@@ -1019,7 +1019,7 @@ window.ImageViewer = (function () {
       })
     }
     function addMiddleClickKeyEvent() {
-      const openNewTab = chrome.runtime ? anchor => chrome.runtime.sendMessage({msg: 'open_tab', url: anchor.href}) : anchor => window.open(anchor.href, '_blank')
+      const openNewTab = chrome.runtime?.id ? anchor => chrome.runtime.sendMessage({msg: 'open_tab', url: anchor.href}) : anchor => window.open(anchor.href, '_blank')
       const dispatchEvent = anchor => anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
 
       const action = taskFunc => {
@@ -1085,7 +1085,7 @@ window.ImageViewer = (function () {
         const shift = keyList.includes('Shift') === e.shiftKey
         return key && ctrl && alt && shift
       }
-      const openNewTab = chrome.runtime ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
+      const openNewTab = chrome.runtime?.id ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
       const getCurrentUrl = () => encodeURIComponent(shadowRoot.querySelector('li.current img').src)
 
       if (!options.searchHotkey || options.searchHotkey.length < 5) return
