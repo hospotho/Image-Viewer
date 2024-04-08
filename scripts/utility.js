@@ -1045,7 +1045,8 @@ window.ImageViewerUtils = (function () {
   }
   async function sortImageDataList(dataList) {
     const imageDomList = await mapSrcToIframe(dataList)
-    imageDomList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
+    const bitMask = Node.DOCUMENT_POSITION_FOLLOWING
+    imageDomList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & bitMask ? -1 : 1))
 
     const sortedDataList = []
     for (const [url, dom] of imageDomList) {
