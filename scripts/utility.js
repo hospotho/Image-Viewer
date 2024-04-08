@@ -909,11 +909,14 @@ window.ImageViewerUtils = (function () {
   }
   function getImageListWithoutFilter(options) {
     const imageDataList = []
-    for (const img of document.querySelectorAll('img.simpleUnlazy')) {
+
+    const rawImageList = [...document.querySelectorAll('img.simpleUnlazy')]
+    for (const img of rawImageList) {
       imageDataList.push([img.currentSrc, img])
     }
 
-    for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
+    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
+    for (const node of uncheckedNodeList) {
       const attrUrl = node.getAttribute('data-bg')
       if (attrUrl !== null) {
         imageDataList.push([attrUrl, node])
@@ -937,7 +940,8 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    for (const video of document.querySelectorAll('video[poster]')) {
+    const videoList = document.querySelectorAll('video[poster]')
+    for (const video of videoList) {
       imageDataList.push([video.poster, video])
     }
 
@@ -971,7 +975,8 @@ window.ImageViewerUtils = (function () {
 
     const imageDataList = []
 
-    for (const img of document.querySelectorAll('img.simpleUnlazy')) {
+    const rawImageList = [...document.querySelectorAll('img.simpleUnlazy')]
+    for (const img of rawImageList) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
       if ((width >= minWidth && height >= minHeight) || img.classList.contains('ImageViewerLastDom')) {
@@ -981,7 +986,8 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    for (const node of document.body.querySelectorAll('*:not([no-bg])')) {
+    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
+    for (const node of uncheckedNodeList) {
       if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
       const attrUrl = node.getAttribute('data-bg')
       if (attrUrl !== null) {
@@ -1009,7 +1015,8 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    for (const video of document.querySelectorAll('video[poster]')) {
+    const videoList = document.querySelectorAll('video[poster]')
+    for (const video of videoList) {
       const {width, height} = video.getBoundingClientRect()
       if (width >= minWidth && height >= minHeight) {
         imageDataList.push([video.poster, video])
