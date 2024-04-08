@@ -77,10 +77,7 @@ window.ImageViewer = (function () {
   function MtoV(str) {
     const match = str.match(/matrix\([-\d.e, ]+\)/)
     if (!match) return
-    const m = match[0]
-      .slice(7, -1)
-      .split(',')
-      .map(Number)
+    const m = match[0].slice(7, -1).split(',').map(Number)
     // https://www.w3.org/TR/css-transforms-1/#decomposing-a-2d-matrix
     let row0x = m[0]
     let row0y = m[2]
