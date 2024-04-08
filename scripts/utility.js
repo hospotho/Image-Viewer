@@ -1299,6 +1299,7 @@ window.ImageViewerUtils = (function () {
           const retryResult = await new Promise(resolve => setTimeout(() => resolve(this.getOrderedImageUrls(options, retryCount + 1)), 1000))
           return retryResult
         }
+        console.log('Found no image')
         return []
       }
 
