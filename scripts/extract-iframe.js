@@ -9,7 +9,11 @@
     }
   }
 
+  window.badImageUrlList ??= new Set()
+
   async function createDataUrl(srcUrl) {
+    if (window.badImageUrlList.has(srcUrl)) return ''
+
     const requests = [safeSendMessage({msg: 'get_local_size', url: srcUrl}), safeSendMessage({msg: 'get_size', url: srcUrl})]
     const [localSize, globalSize] = await Promise.all(requests)
     if (localSize || globalSize) {
@@ -29,6 +33,7 @@
         resolve(url)
       }
       img.onerror = () => {
+        window.badImageUrlList.add(srcUrl)
         console.log(new URL(srcUrl).hostname + ' block your access outside iframe')
         resolve('')
       }
