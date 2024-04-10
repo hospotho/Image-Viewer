@@ -2,6 +2,17 @@
   'use strict'
 
   const rawText = `
+1.34 [2024-04-11]:
+Stability update
+1. Prevented image loading flash in URL mode
+2. Add smooth transition for image transform
+3. Fixed a bug where AltGraph could not be used with Ctrl in hotkey combinations
+  // related hotkey: image transformation and image reverse search
+4. Improved code performance
+5. Implemented error handling to minimize minor errors displayed to users
+6. Added support for new type of unlazy (simulate mouse hover)
+7. Other bug fixes and improvements
+
 1.33 [2024-01-15]:
 Functional Update
 1. Added a new default fit mode option: "Original size (does not exceed window)"
