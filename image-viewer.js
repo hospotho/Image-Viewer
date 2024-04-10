@@ -1200,9 +1200,8 @@ window.ImageViewer = (function () {
       const mirror = Math.sign(scaleX) * Math.sign(scaleY)
       // recalculate displacement for rotation around the center of the viewpoint
       const radial = Math.sqrt(moveX ** 2 + moveY ** 2)
-      const angle = (Math.atan2(moveY, moveX) * 180) / Math.PI
-      const newAngle = angle + options.rotateDeg * deltaRotate
-      const newRadian = (newAngle / 180) * Math.PI
+      const deltaRadian = ((options.rotateDeg * deltaRotate) / 180) * Math.PI
+      const newRadian = Math.atan2(moveY, moveX) + deltaRadian
       moveX = radial * Math.cos(newRadian)
       moveY = radial * Math.sin(newRadian)
       // rotate value must be reset every time after updating the transform matrix
