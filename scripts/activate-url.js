@@ -50,7 +50,7 @@
       return
     }
 
-    const failedIframeList = await safeSendMessage('check_frames')
+    const failedIframeList = await safeSendMessage('check_frames') || []
     for (const src of failedIframeList) {
       const targetList = iframeList.filter(iframe => iframe.src === src)
       for (const iframe of targetList) {

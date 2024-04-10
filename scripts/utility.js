@@ -1041,7 +1041,7 @@ window.ImageViewerUtils = (function () {
     const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
     if (filteredList.length === 0) return dataList
 
-    const iframeRedirectSrcList = await safeSendMessage({msg: 'get_redirect', data: iframeSrcList})
+    const iframeRedirectSrcList = (await safeSendMessage({msg: 'get_redirect', data: iframeSrcList})) || []
 
     const imageDomList = []
     for (const data of dataList) {

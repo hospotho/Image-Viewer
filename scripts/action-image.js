@@ -21,8 +21,8 @@
   window.backupImageUrlList ??= []
 
   // update image size filter
-  const nodeInfo = await safeSendMessage('get_info')
-  const [srcUrl, nodeSize] = nodeInfo ?? []
+  const nodeInfo = await safeSendMessage('get_info') || []
+  const [srcUrl, nodeSize] = nodeInfo
   if (nodeSize) {
     options.minWidth = Math.min(nodeSize, options.minWidth)
     options.minHeight = Math.min(nodeSize, options.minHeight)
