@@ -913,6 +913,17 @@ window.ImageViewerUtils = (function () {
 
     return uniqueDataList
   }
+  // function getShadowRootHolderList() {
+  //   const shadowRootHolderList = [...document.body.querySelectorAll('*:not([no-shadow])')]
+  //   for (let i = shadowRootHolderList.length - 1; i >= 0; i--) {
+  //     const node = shadowRootHolderList[i]
+  //     if (!node?.shadowRoot || node.shadowRoot.querySelectorAll('img').length === 0) {
+  //       node.setAttribute('no-shadow', '')
+  //       shadowRootHolderList.splice(i, 1)
+  //     }
+  //   }
+  //   return shadowRootHolderList
+  // }
   function getImageListWithoutFilter(options) {
     const imageDataList = []
 
@@ -921,6 +932,15 @@ window.ImageViewerUtils = (function () {
       const imgSrc = img.currentSrc || img.src
       imageDataList.push([imgSrc, img])
     }
+
+    // const shadowRootHolderList = getShadowRootHolderList()
+    // for (const node of shadowRootHolderList) {
+    //   const imageList = node.shadowRoot.querySelectorAll('img')
+    //   for (const img of imageList) {
+    //     const imgSrc = img.currentSrc || img.src
+    //     imageDataList.push([imgSrc, node])
+    //   }
+    // }
 
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
     for (const node of uncheckedNodeList) {
@@ -992,6 +1012,20 @@ window.ImageViewerUtils = (function () {
         imageDataList.push([imgSrc, img])
       }
     }
+
+    // const shadowRootHolderList = getShadowRootHolderList()
+    // for (const node of shadowRootHolderList) {
+    //   const imageList = node.shadowRoot.querySelectorAll('img')
+    //   for (const img of imageList) {
+    //     // only client size should be checked in order to bypass large icon or hidden image
+    //     const {width, height} = img.getBoundingClientRect()
+    //     if ((width >= minWidth && height >= minHeight) || img.classList.contains('ImageViewerLastDom')) {
+    //       // currentSrc might be empty during unlazy or update
+    //       const imgSrc = img.currentSrc || img.src
+    //       imageDataList.push([imgSrc, node])
+    //     }
+    //   }
+    // }
 
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
     for (const node of uncheckedNodeList) {
@@ -1280,7 +1314,7 @@ window.ImageViewerUtils = (function () {
       const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
       if (filteredList.length) {
         const minSize = Math.min(options.minWidth, options.minHeight)
-        const iframeImage = await safeSendMessage({msg: 'extract_frames', minSize: minSize})
+        const iframeImage = (await safeSendMessage({msg: 'extract_frames', minSize: minSize})) || []
 
         const uniqueIframeImage = []
         const uniqueIframeImageUrls = new Set()
