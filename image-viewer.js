@@ -1159,9 +1159,10 @@ window.ImageViewer = (function () {
         if (!(e.altKey || e.getModifierState('AltGraph')) || e.shiftKey) return
         const action = keyMap[e.key]
         if (action === undefined) return
-        if (e.repeat && Date.now() - lastHotkeyTime < 80) return
+        const now = Date.now()
+        if (e.repeat && now - lastHotkeyTime < 30) return
+        lastHotkeyTime = now
         e.preventDefault()
-        lastHotkeyTime = Date.now()
         const type = e.ctrlKey ? 'move' : action < 2 ? 'zoom' : 'rotate'
         const data = {detail: {type: type, action: action}}
         const event = new CustomEvent('hotkey', data)
