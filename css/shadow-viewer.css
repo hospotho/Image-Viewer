@@ -46,6 +46,7 @@
   max-width: 100%;
   max-height: 100%;
   text-align: center;
+  transition: transform 0.05s linear;
 }
 #iv-image-list li img.loaded {
   max-width: none;

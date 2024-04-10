@@ -536,6 +536,7 @@ window.ImageViewer = (function () {
         max-width: 100%;
         max-height: 100%;
         text-align: center;
+        transition: transform 0.05s linear;
       }
       #iv-image-list li img.loaded {
         max-width: none;
@@ -1251,15 +1252,24 @@ window.ImageViewer = (function () {
       // dragging
       let dragFlag = false
       let lastPos = {x: 0, y: 0}
+      let finalDragTimeout = 0
       li.addEventListener('mousedown', e => {
         dragFlag = true
-        lastPos = {x: e.clientX, y: e.clientY}
+        lastPos.x = e.clientX
+        lastPos.y = e.clientY
       })
       li.addEventListener('mousemove', e => {
         if (!dragFlag) return
         const deltaX = e.clientX - lastPos.x
         const deltaY = e.clientY - lastPos.y
-        lastPos = {x: e.clientX, y: e.clientY}
+        lastPos.x = e.clientX
+        lastPos.y = e.clientY
+        // reset transition
+        clearTimeout(finalDragTimeout)
+        finalDragTimeout = setTimeout(() => {
+          img.style.transition = ''
+        }, 30)
+        img.style.transition = 'none'
         updateDisplacement(img, deltaX, deltaY, rotateCount)
       })
       li.addEventListener('mouseup', () => (dragFlag = false))
