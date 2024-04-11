@@ -920,11 +920,21 @@ window.ImageViewer = (function () {
     function initKeydownHandler() {
       if (document.documentElement.classList.contains('has-image-viewer-listener')) return
       document.documentElement.classList.add('has-image-viewer-listener')
+      let ctrlWithAltGraph = false
       window.addEventListener(
         'keydown',
         e => {
           if (!document.documentElement.classList.contains('has-image-viewer')) return
+          ctrlWithAltGraph = e.getModifierState('AltGraph') && e.key === 'Control' ? true : ctrlWithAltGraph
+          e.ctrlWithAltGraph = ctrlWithAltGraph
           keydownHandlerList.forEach(func => func(e))
+        },
+        true
+      )
+      window.addEventListener(
+        'keyup',
+        e => {
+          ctrlWithAltGraph = e.getModifierState('AltGraph') && e.key === 'Control' ? false : ctrlWithAltGraph
         },
         true
       )
@@ -1078,7 +1088,7 @@ window.ImageViewer = (function () {
       function checkKey(e, hotkey) {
         const keyList = hotkey.split('+').map(str => str.trim())
         const key = keyList[keyList.length - 1] === e.key.toUpperCase()
-        const ctrl = keyList.includes('Ctrl') === e.ctrlKey
+        const ctrl = keyList.includes('Ctrl') === e.ctrlKey || e.ctrlWithAltGraph
         const alt = keyList.includes('Alt') === (e.altKey || e.getModifierState('AltGraph'))
         const shift = keyList.includes('Shift') === e.shiftKey
         return key && ctrl && alt && shift
@@ -1164,7 +1174,7 @@ window.ImageViewer = (function () {
         if (e.repeat && now - lastHotkeyTime < 30) return
         lastHotkeyTime = now
         e.preventDefault()
-        const type = e.ctrlKey ? 'move' : action < 2 ? 'zoom' : 'rotate'
+        const type = e.ctrlKey || e.ctrlWithAltGraph ? 'move' : action < 2 ? 'zoom' : 'rotate'
         const data = {detail: {type: type, action: action}}
         const event = new CustomEvent('hotkey', data)
         const current = shadowRoot.querySelector('li.current')
