@@ -743,7 +743,7 @@ window.ImageViewerUtils = (function () {
   async function startUnlazy(minWidth, minHeight) {
     const {imgWithAttrList, allComplete} = getUnlazyImageList(minWidth, minHeight)
     const listSize = imgWithAttrList.length
-    if (!listSize) return allComplete
+    if (listSize === 0) return allComplete
 
     console.log(`Try to unlazy ${listSize} image`)
     imgWithAttrList.forEach(item => item[0].classList.add('simpleUnlazy', 'unlazyNotComplete'))
