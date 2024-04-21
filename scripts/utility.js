@@ -844,12 +844,9 @@ window.ImageViewerUtils = (function () {
     const minHeight = Math.min(options.minHeight, 100)
 
     let allComplete = await startUnlazy(minWidth, minHeight)
-    if (!allComplete) {
-      console.log('Wait all images load complete')
-      while (!allComplete) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-        allComplete = await startUnlazy(minWidth, minHeight)
-      }
+    while (!allComplete) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+      allComplete = await startUnlazy(minWidth, minHeight)
     }
 
     if (!firstUnlazyCompleteFlag) {
