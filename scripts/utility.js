@@ -758,7 +758,7 @@ window.ImageViewerUtils = (function () {
       console.log(`Unlazy ${lazyList.filter(x => x === name).length} img with ${name}`)
     }
 
-    return allComplete
+    return false
   }
   function clearWindowBackup(options) {
     const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data[0]))
