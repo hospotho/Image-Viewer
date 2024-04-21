@@ -9,7 +9,7 @@ window.ImageViewerUtils = (function () {
 
   const passList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
   const urlRegex = /(?:https?:\/)?\/\S+/g
-  const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+  const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
   const protocol = window.location.protocol
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
@@ -150,15 +150,15 @@ window.ImageViewerUtils = (function () {
     const shift = keyList.includes('Shift') === e.shiftKey
     return key && ctrl && alt && shift
   }
-  function cachedArgsMatch(str) {
+  function cachedExtensionMatch(str) {
     if (str.startsWith('data')) return null
 
     const cache = matchCache.get(str)
     if (cache !== undefined) return cache
 
-    const argsMatch = str.match(argsRegex)
-    matchCache.set(str, argsMatch)
-    return argsMatch
+    const extensionMatch = str.match(extensionRegex)
+    matchCache.set(str, extensionMatch)
+    return extensionMatch
   }
   function matchUrlSearch(src) {
     try {
@@ -170,13 +170,13 @@ window.ImageViewerUtils = (function () {
       const searchList = url.search
         .slice(1)
         .split('&')
-        .filter(t => cachedArgsMatch(t))
+        .filter(t => cachedExtensionMatch(t))
         .join('&')
       const imgSearch = searchList ? '?' + searchList : ''
       const noSearch = baseURI + imgSearch
 
-      const argsMatch = cachedArgsMatch(noSearch)
-      return argsMatch
+      const extensionMatch = cachedExtensionMatch(noSearch)
+      return extensionMatch
     } catch (error) {
       return null
     }
@@ -196,9 +196,9 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    const argsMatch = cachedArgsMatch(src)
-    if (argsMatch) {
-      const rawUrl = argsMatch[1]
+    const extensionMatch = cachedExtensionMatch(src)
+    if (extensionMatch) {
+      const rawUrl = extensionMatch[1]
       rawUrlCache.set(src, rawUrl)
       return rawUrl
     }
@@ -525,7 +525,7 @@ window.ImageViewerUtils = (function () {
         if (res.redirected) return -1
         const type = res.headers.get('Content-Type')
         const length = res.headers.get('Content-Length')
-        if (type?.startsWith('image') || (type === 'application/octet-stream' && cachedArgsMatch(href))) {
+        if (type?.startsWith('image') || (type === 'application/octet-stream' && cachedExtensionMatch(href))) {
           const size = Number(length)
           return size
         }
@@ -688,10 +688,9 @@ window.ImageViewerUtils = (function () {
     }
     const anchor = img.closest('a')
     if (anchor && anchor.href !== img.currentSrc) {
-      const anchorMatchArgs = cachedArgsMatch(anchor.href) !== null
-      const rawMatchArgs = cachedArgsMatch(rawUrl) !== null
-      const sameType = anchorMatchArgs === rawMatchArgs
-      if (sameType) attrList.push({name: 'parent anchor', value: anchor.href})
+      const anchorHaveExtension = cachedExtensionMatch(anchor.href) !== null
+      const rawHaveExtension = cachedExtensionMatch(rawUrl) !== null
+      if (anchorHaveExtension === rawHaveExtension) attrList.push({name: 'parent anchor', value: anchor.href})
     }
     return attrList
   }
