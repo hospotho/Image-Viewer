@@ -838,7 +838,11 @@ window.ImageViewerUtils = (function () {
       return race
     }
     // wait first unlazy complete
-    if (!options.firstTime && !firstUnlazyCompleteFlag) return
+    if (!options.firstTime && !firstUnlazyCompleteFlag) {
+      while (!firstUnlazyCompleteFlag) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+    }
 
     const minWidth = Math.min(options.minWidth, 100)
     const minHeight = Math.min(options.minHeight, 100)
