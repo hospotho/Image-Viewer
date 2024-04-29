@@ -1450,7 +1450,7 @@ window.ImageViewer = (function () {
     const fastNavigation = e => {
       if (!e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
       const action = keyMap[e.key]
-      if (action !== undefined) {
+      if (action !== undefined && e.key.length !== 1) {
         e.preventDefault()
         const currIndex = Number(current.innerHTML) - 1
         const newIndex = action === 1 ? Math.min(currIndex + 10, Number(total.innerHTML) - 1) : Math.max(currIndex - 10, 0)
