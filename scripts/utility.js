@@ -240,6 +240,11 @@ window.ImageViewerUtils = (function () {
     if (enableAutoScroll) document.documentElement.classList.add('enableAutoScroll')
     return enableAutoScroll
   }
+  function isLazyClass(className) {
+    if (className === '') return false
+    const lower = className.toLowerCase()
+    return lower.includes('lazy') || lower.includes('loading')
+  }
   function isImageViewerExist() {
     return document.documentElement.classList.contains('has-image-viewer')
   }
@@ -722,7 +727,7 @@ window.ImageViewerUtils = (function () {
       // check class name
       let lazyClass = false
       for (const className of img.classList) {
-        if (className.toLowerCase().includes('lazy')) {
+        if (isLazyClass(className)) {
           lazyClass = true
           img.classList.remove(className)
         }
@@ -796,11 +801,9 @@ window.ImageViewerUtils = (function () {
     return race
   }
   function preprocessLazyPlaceholder() {
-    const lazySrcList = [...document.getElementsByTagName('img')]
-      .filter(image => image.className.toLowerCase().includes('lazy') && image.src)
-      .map(image => image.currentSrc.replace(/https?:/, protocol))
-
+    const lazySrcList = [...document.getElementsByTagName('img')].filter(image => isLazyClass(image.className) && image.src).map(image => image.currentSrc.replace(/https?:/, protocol))
     if (lazySrcList.length === 0) return
+
     const countMap = {}
     for (const src of lazySrcList) {
       if (countMap[src] === undefined) {
