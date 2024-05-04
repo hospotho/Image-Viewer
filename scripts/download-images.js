@@ -188,6 +188,8 @@
     if (selectionRange === null) return
 
     const selectedUrlList = imageUrlList.map((v, i) => [v, i]).filter(item => selectionRange[item[1]])
+    if (selectedUrlList.length === 0) return
+
     const imageBinaryList = await Promise.all(selectedUrlList.map(async item => [await getImageBinary(item[0]), item[1]]))
 
     const localFileHeaderList = []
