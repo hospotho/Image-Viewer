@@ -16,6 +16,7 @@ window.ImageViewerUtils = (function () {
   const rawUrlCache = new Map()
   const matchCache = new Map()
   const badImageList = new Set(['', 'about:blank'])
+  const corsHostList = new Set()
   const mutex = (() => {
     // update image
     let promise = Promise.resolve()
@@ -519,12 +520,17 @@ window.ImageViewerUtils = (function () {
       waitSrcUpdate(img, resolve)
     })
   }
-  async function localFetchBitSize(href) {
+  async function localFetchBitSize(url) {
     const release = await mutex.waitSlot()
+    if (corsHostList.has(url.hostname)) {
+      release()
+      return 0
+    }
+
     const controller = new AbortController()
     setTimeout(() => controller.abort(), 5000)
     try {
-      const res = await fetch(href, {method: 'HEAD', signal: controller.signal})
+      const res = await fetch(url.href, {method: 'HEAD', signal: controller.signal})
       release()
       if (res.ok) {
         if (res.redirected) return -1
@@ -535,7 +541,9 @@ window.ImageViewerUtils = (function () {
           return size
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      if (!controller.signal.aborted) corsHostList.add(url.hostname)
+    }
     release()
     return 0
   }
@@ -565,7 +573,7 @@ window.ImageViewerUtils = (function () {
         waiting = true
         safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
       }
-      localFetchBitSize(href).then(updateSize)
+      localFetchBitSize(url).then(updateSize)
     })
   }
   function getImageRealSize(src) {
