@@ -326,10 +326,10 @@ window.ImageViewerUtils = (function () {
     const {maxImageCount, imageCount, imageCountPerDiv, rawWidth, rawHeight, divWidth, divHeight} = processWrapperList(wrapperDivList)
 
     const largeContainerCount = imageCountPerDiv.filter(num => num === maxImageCount).length
-    const largeContainer = maxImageCount >= 5 && wrapperDivList.length - largeContainerCount < 3
-    const oneToOne = !largeContainer && imageCount === wrapperDivList.length
-    const matchSize = oneToOne && checkMatchSize(rawWidth, rawHeight)
-    const useMinSize = largeContainer || matchSize
+    const isLargeContainer = maxImageCount >= 5 && wrapperDivList.length - largeContainerCount < 3
+    const isOneToOne = !isLargeContainer && imageCount === wrapperDivList.length
+    const isMatchSize = isOneToOne && checkMatchSize(rawWidth, rawHeight)
+    const useMinSize = isLargeContainer || isMatchSize
 
     const getMinSize = rawSizeList => Math.min(...rawSizeList.filter(Boolean))
     const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
