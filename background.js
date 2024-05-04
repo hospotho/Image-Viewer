@@ -111,6 +111,14 @@ const getImageLocalRealSize = (id, srcUrl) => {
     })
   })
 }
+const getImageArray = async src => {
+  const release = await mutex.waitSlot()
+  const res = await fetch(src)
+  const arrayBuffer = await res.arrayBuffer()
+  const data = Array.from(new Uint8Array(arrayBuffer))
+  release()
+  return data
+}
 const getRedirectUrl = async urlList => {
   const asyncList = urlList.map(async url => {
     if (url === '' || url === 'about:blank') return url
@@ -360,6 +368,13 @@ function addMessageHandler() {
       }
       case 'download_images': {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/download-images.js']}, () => sendResponse())
+        return true
+      }
+      case 'request_cors_image': {
+        ;(async () => {
+          const rawArray = await getImageArray(request.src)
+          sendResponse(rawArray)
+        })()
         return true
       }
     }

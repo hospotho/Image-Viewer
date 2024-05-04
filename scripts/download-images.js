@@ -1,6 +1,12 @@
 ;(function () {
   'use strict'
 
+  const safeSendMessage = function (...args) {
+    if (chrome.runtime?.id) {
+      return chrome.runtime.sendMessage(...args)
+    }
+  }
+
   // zip
   function generateCRCTable() {
     const crcTable = new Uint32Array(256)
@@ -176,6 +182,10 @@
     return fetch(url)
       .then(response => response.arrayBuffer())
       .then(arrayBuffer => new Uint8Array(arrayBuffer))
+      .catch(async () => {
+        const rawArray = await safeSendMessage({msg: 'request_cors_image', src: url})
+        return new Uint8Array(rawArray)
+      })
   }
 
   // main
