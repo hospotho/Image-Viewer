@@ -335,8 +335,8 @@ window.ImageViewerUtils = (function () {
     const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
 
     // treat long size as width
-    const [large, small] = [domWidth, domHeight].sort((a, b) => b - a)
-    const [optionLarge, optionSmall] = [options.minWidth, options.minHeight].sort((a, b) => b - a)
+    const [large, small] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
+    const [optionLarge, optionSmall] = options.minWidth > options.minHeight ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
     const finalWidth = useMinSize ? getMinSize(rawWidth) : getRefSize(divWidth, large, optionLarge)
     const finalHeight = useMinSize ? getMinSize(rawHeight) : getRefSize(divHeight, small, optionSmall)
 
