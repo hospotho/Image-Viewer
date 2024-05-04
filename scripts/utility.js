@@ -701,9 +701,10 @@ window.ImageViewerUtils = (function () {
     }
     const anchor = img.closest('a')
     if (anchor && anchor.href !== img.currentSrc) {
-      const anchorHaveExtension = cachedExtensionMatch(anchor.href) !== null
-      const rawHaveExtension = cachedExtensionMatch(rawUrl) !== null
-      if (anchorHaveExtension === rawHaveExtension) attrList.push({name: 'parent anchor', value: anchor.href})
+      const anchorHaveExt = cachedExtensionMatch(anchor.href) !== null
+      const rawHaveExt = cachedExtensionMatch(rawUrl) !== null
+      const maybeLarger = anchorHaveExt || anchorHaveExt  === rawHaveExt
+      if (maybeLarger) attrList.push({name: 'parent anchor', value: anchor.href})
     }
     return attrList
   }
