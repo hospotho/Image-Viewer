@@ -703,7 +703,7 @@ window.ImageViewerUtils = (function () {
     if (anchor && anchor.href !== img.currentSrc) {
       const anchorHaveExt = cachedExtensionMatch(anchor.href) !== null
       const rawHaveExt = cachedExtensionMatch(rawUrl) !== null
-      const maybeLarger = anchorHaveExt || anchorHaveExt  === rawHaveExt
+      const maybeLarger = anchorHaveExt || anchorHaveExt === rawHaveExt || rawUrl.slice(0,12).includes('cdn.')
       if (maybeLarger) attrList.push({name: 'parent anchor', value: anchor.href})
     }
     return attrList
