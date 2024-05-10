@@ -1231,12 +1231,18 @@ window.ImageViewer = (function () {
 
     function addTransformHandler(li) {
       const img = li.firstChild
-      let zoomCount = 0
-      let rotateCount = 0
 
       // zoom & rotate
+      let zoomCount = 0
+      let rotateCount = 0
       li.addEventListener('wheel', e => {
         e.preventDefault()
+        // transition cause flash when high zoom rate
+        if (options.zoomRatio ** zoomCount > 2) {
+          img.style.transition = 'none'
+        } else {
+          img.style.transition = ''
+        }
         if (!e.altKey && !e.getModifierState('AltGraph')) {
           const deltaZoom = e.deltaY > 0 ? -1 : 1
           zoomCount += deltaZoom
