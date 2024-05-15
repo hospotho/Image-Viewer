@@ -51,67 +51,76 @@
   ImageViewer(window.backupImageUrlList, options)
 
   // auto update
-  let period = 500
+  let initComplete = true
+  let badInit = false
+  let updateRelease = () => {}
+  let initPeriod = 500
+  let updatePeriod = 500
   const multiplier = 1.2
-  let updateRelease = null
-  const action = async () => {
-    while (document.documentElement.classList.contains('has-image-viewer')) {
-      if (dom?.tagName === 'IMG') {
-        ImageViewerUtils.updateWrapperSize(dom, domSize, options)
-      }
-      const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
-      const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-      const currentImageList = ImageViewer('get_image_list')
 
-      if (!document.documentElement.classList.contains('has-image-viewer')) return
-      if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
-        period = Math.min(1000, period)
-        window.backupImageUrlList = Array.from(combinedImageList)
-        ImageViewer(combinedImageList, options)
-      }
-      await new Promise(resolve => {
-        let fulfilled = false
-        const release = async () => {
-          if (fulfilled) return
-          fulfilled = true
-          if (document.visibilityState !== 'visible') {
-            console.log('Wait document visible')
-            while (document.visibilityState !== 'visible') {
-              await new Promise(resolve => setTimeout(resolve, 100))
-            }
-          }
-          resolve()
-        }
-        setTimeout(() => {
-          period *= multiplier
-          release()
-        }, period)
-        updateRelease = release
-      })
-    }
-  }
+  const initObserver = new MutationObserver(mutationList => {
+    initComplete = !mutationList.some(mutation => mutation.addedNodes.length)
+  })
+  initObserver.observe(document.documentElement, {childList: true, subtree: true})
 
-  const observer = new MutationObserver(async () => {
+  const updateObserver = new MutationObserver(async () => {
     const container = ImageViewerUtils.getMainContainer()
     let currentScrollX = container.scrollLeft
     let currentScrollY = container.scrollTop
-    if (!document.documentElement.classList.contains('has-image-viewer')) {
-      observer.disconnect()
-      return
+    await new Promise(resolve => setTimeout(resolve, 50))
+    // check scroll complete
+    while (currentScrollX !== container.scrollLeft || currentScrollY !== container.scrollTop) {
+      currentScrollX = container.scrollLeft
+      currentScrollY = container.scrollTop
+      await new Promise(resolve => setTimeout(resolve, 300))
     }
-    if (typeof updateRelease === 'function') {
-      observer.disconnect()
-      await new Promise(resolve => setTimeout(resolve, 50))
-      while (currentScrollX !== container.scrollLeft || currentScrollY !== container.scrollTop) {
-        currentScrollX = container.scrollLeft
-        currentScrollY = container.scrollTop
-        await new Promise(resolve => setTimeout(resolve, 300))
-      }
-      observer.observe(document.documentElement, {childList: true, subtree: true})
-      period = 500
-      updateRelease()
-    }
+    updatePeriod = 500
+    updateRelease()
   })
-  observer.observe(document.documentElement, {childList: true, subtree: true})
-  action()
+  updateObserver.observe(document.documentElement, {childList: true, subtree: true})
+
+  while (document.documentElement.classList.contains('has-image-viewer')) {
+    // wait website init
+    await new Promise(resolve => setTimeout(resolve, initPeriod))
+    if (badInit) {
+      initComplete = false
+      initPeriod -= 100
+    }
+    while (!initComplete) {
+      initPeriod += 100
+      initComplete = true
+      badInit = true
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+
+    // update image viewer
+    if (dom?.tagName === 'IMG') {
+      ImageViewerUtils.updateWrapperSize(dom, domSize, options)
+    }
+    const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
+    const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
+    const currentImageList = ImageViewer('get_image_list')
+
+    if (!document.documentElement.classList.contains('has-image-viewer')) return
+    if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
+      updatePeriod = Math.min(1000, updatePeriod)
+      window.backupImageUrlList = Array.from(combinedImageList)
+      ImageViewer(combinedImageList, options)
+    }
+
+    // wait website update
+    await new Promise(resolve => {
+      setTimeout(resolve, updatePeriod)
+      updateRelease = resolve
+      updatePeriod *= multiplier
+    })
+
+    // wait visible
+    if (document.visibilityState !== 'visible') {
+      console.log('Wait document visible')
+      while (document.visibilityState !== 'visible') {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+    }
+  }
 })()
