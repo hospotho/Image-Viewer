@@ -1152,13 +1152,10 @@ window.ImageViewerUtils = (function () {
   function startAutoScroll() {
     let stopFlag = true
     const getStopFlag = () => stopFlag
-    const action = async () => {
-      await mutex.waitUnlock()
-
-      const allImage = document.getElementsByTagName('img')
+    const action = () => {
       let currBottom = 0
       let bottomImg = null
-      for (const img of allImage) {
+      for (const img of document.getElementsByTagName('img')) {
         const {bottom} = img.getBoundingClientRect()
         if (bottom > currBottom) {
           currBottom = bottom
@@ -1168,7 +1165,6 @@ window.ImageViewerUtils = (function () {
 
       if (!isImageViewerExist()) return
       bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
-      await new Promise(resolve => setTimeout(resolve, 500))
     }
     const timer = async () => {
       stopFlag = false
@@ -1182,7 +1178,10 @@ window.ImageViewerUtils = (function () {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
 
-        await action()
+        await mutex.waitUnlock()
+        action()
+        await new Promise(resolve => setTimeout(resolve, 500))
+
         if (lastY === container.scrollTop && isImageViewerExist()) {
           count++
           container.scrollBy(0, -100)
