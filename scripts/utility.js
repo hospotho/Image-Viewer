@@ -1153,10 +1153,14 @@ window.ImageViewerUtils = (function () {
     let stopFlag = true
     const getStopFlag = () => stopFlag
     const action = () => {
+      const container = getMainContainer()
+      const scrollY = container.scrollTop
       let currBottom = 0
       let bottomImg = null
       for (const img of document.getElementsByTagName('img')) {
-        const {bottom} = img.getBoundingClientRect()
+        const scrollBottom = img.getAttribute('scroll-bottom')
+        const bottom = scrollBottom ? Number(scrollBottom) : img.getBoundingClientRect().bottom + scrollY
+        img.setAttribute('scroll-bottom', bottom)
         if (bottom > currBottom) {
           currBottom = bottom
           bottomImg = img
