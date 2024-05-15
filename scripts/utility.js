@@ -458,12 +458,12 @@ window.ImageViewerUtils = (function () {
         // image updated to real url
         const element = mutation.target
         if (element.tagName === 'IMG') {
-          found = !element.classList.contains('updateByObserver') || !element.classList.contains('simpleUnlazy')
+          found = !element.classList.contains('updateByObserver') && !element.classList.contains('simpleUnlazy')
           if (found) break
         }
         // new image added to the page
         if (mutation.addedNodes.length) {
-          found = [...mutation.addedNodes].some(node => node.tagName === 'IMG')
+          found = [...mutation.addedNodes].flatMap(node => [node, ...node.childNodes]).some(node => node.tagName === 'IMG')
           if (found) break
         }
       }
