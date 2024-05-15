@@ -1598,9 +1598,13 @@ window.ImageViewer = (function () {
         }
         case 'clear_image_list': {
           // will try to clean when calling updateImageList
-          clearFlag = true
           const current = shadowRoot.querySelector('li.current img')
           const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+          if (current === null) {
+            setTimeout(() => ImageViewer('clear_image_list'), 1000)
+            return
+          }
+          clearFlag = true
           clearSrc = current.src
           clearIndex = counterCurrent.innerHTML - 1
           return
