@@ -859,6 +859,8 @@ window.ImageViewerUtils = (function () {
     const minWidth = Math.min(options.minWidth, 100)
     const minHeight = Math.min(options.minHeight, 100)
 
+    // wait init load
+    await new Promise(resolve => setTimeout(resolve, 500))
     let allComplete = await startUnlazy(minWidth, minHeight)
     while (!allComplete) {
       await new Promise(resolve => setTimeout(resolve, 100))
