@@ -9,6 +9,7 @@ window.ImageViewer = (function () {
   let clearSrc = ''
   let clearIndex = -1
   let lastSrc = ''
+  let lastUrl = location.href
 
   const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
   const failedImageSet = new Set()
@@ -360,6 +361,15 @@ window.ImageViewer = (function () {
   function restoreIndex(options) {
     const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastSrc !== '')
     if (!neededToRestore) return
+
+    // reset after url change
+    if (lastUrl !== location.href) {
+      lastUrl = location.href
+      clearSrc = ''
+      clearIndex = -1
+      lastSrc = ''
+      return
+    }
 
     const current = shadowRoot.querySelector('#iv-counter-current')
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
