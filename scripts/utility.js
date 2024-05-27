@@ -679,13 +679,12 @@ window.ImageViewerUtils = (function () {
       }
     }
     if (img.srcset && img.srcset !== img.currentSrc) {
-      const srcsetList = img.srcset.split(', ').map(str => str.split(' ')[0])
-      if (srcsetList.length === 1) {
-        attrList.push({name: 'srcset', value: srcsetList[0]})
-      } else {
-        attrList.push({name: 'srcset-first', value: srcsetList[0]})
-        attrList.push({name: 'srcset-last', value: srcsetList[srcsetList.length - 1]})
-      }
+      const srcsetList = img.srcset
+        .split(',')
+        .map(str => str.trim().split(/ +/))
+        .map(([url, size]) => [url, size ? Number(size.slice(0, -1)) : 1])
+        .sort((a, b) => b[1] - a[1])
+      attrList.push({name: 'srcset', value: srcsetList[0][0]})
     }
     if (rawUrl !== img.currentSrc) {
       attrList.push({name: 'raw url', value: rawUrl})
