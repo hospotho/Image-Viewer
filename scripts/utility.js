@@ -766,9 +766,16 @@ window.ImageViewerUtils = (function () {
     const lazyList = asyncList.flat()
 
     if (lazyList.length > listSize) console.log('Multiple unlazy attributes found')
-    const lazySet = new Set(lazyList)
-    for (const name of lazySet) {
-      console.log(`Unlazy ${lazyList.filter(x => x === name).length} img with ${name}`)
+    const attrCount = {}
+    for (const name of lazyList) {
+      if (attrCount[name]) {
+        attrCount[name]++
+      } else {
+        attrCount[name] = 1
+      }
+    }
+    for (const name in attrCount) {
+      console.log(`Unlazy ${attrCount[name]} img with ${name}`)
     }
 
     return false
