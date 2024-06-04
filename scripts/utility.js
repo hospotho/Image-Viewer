@@ -1152,7 +1152,7 @@ window.ImageViewerUtils = (function () {
   // auto scroll
   function startAutoScroll() {
     let stopFlag = true
-    const getStopFlag = () => stopFlag
+    const isStopped = () => stopFlag
     const action = () => {
       const container = getMainContainer()
       const scrollY = container.scrollTop
@@ -1200,7 +1200,7 @@ window.ImageViewerUtils = (function () {
     }
 
     timer()
-    return {getStopFlag, timer}
+    return {isStopped, timer}
   }
   function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
     let scrollFlag = false
@@ -1265,12 +1265,12 @@ window.ImageViewerUtils = (function () {
       container.scrollTo(startX, targetHeight)
     }
 
-    const {getStopFlag, timer} = startAutoScroll()
+    const {isStopped, timer} = startAutoScroll()
 
     let existNewDom = false
     const newNodeObserver = new MutationObserver(() => {
       existNewDom = true
-      if (getStopFlag()) timer()
+      if (isStopped()) timer()
     })
     newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
     setTimeout(() => {
