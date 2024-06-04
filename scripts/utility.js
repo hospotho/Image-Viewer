@@ -1154,6 +1154,7 @@ window.ImageViewerUtils = (function () {
     let stopFlag = true
     const isStopped = () => stopFlag
     const action = () => {
+      if (!isImageViewerExist()) return
       const container = getMainContainer()
       const scrollY = container.scrollTop
       let currBottom = 0
@@ -1167,8 +1168,6 @@ window.ImageViewerUtils = (function () {
           bottomImg = img
         }
       }
-
-      if (!isImageViewerExist()) return
       bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
     }
     const timer = async () => {
