@@ -158,16 +158,17 @@
     options.minWidth = 0
     options.minHeight = 0
 
+    if (typeof ImageViewer !== 'function') {
+      await safeSendMessage('load_script')
+    }
+    ImageViewer([image.src], options)
+
     const rawUrl = getRawUrl(image.src)
     const rawSize = rawUrl === image.src ? [0, 0] : await getRawSize(rawUrl)
     const rawRatio = rawSize[0] ? rawSize[0] / rawSize[1] : 0
     const currRatio = image.naturalWidth / image.naturalHeight
-    const isRawBetter = rawSize[0] > image.naturalWidth && Math.abs(rawRatio - currRatio) < 0.01
-
-    if (typeof ImageViewer !== 'function') {
-      await safeSendMessage('load_script')
-    }
-    ImageViewer([isRawBetter ? rawUrl : image.src], options)
+    const isRawBetter = rawSize[0] >= image.naturalWidth && Math.abs(rawRatio - currRatio) < 0.01
+    if (isRawBetter) ImageViewer([rawUrl], options)
   }
 
   async function init() {
