@@ -947,7 +947,7 @@ window.ImageViewerUtils = (function () {
   function getImageListWithoutFilter(options) {
     const imageDataList = []
 
-    const rawImageList = [...document.querySelectorAll('img.simpleUnlazy')]
+    const rawImageList = document.querySelectorAll('img.simpleUnlazy')
     for (const img of rawImageList) {
       const imgSrc = img.currentSrc || img.src
       imageDataList.push([imgSrc, img])
@@ -1022,7 +1022,7 @@ window.ImageViewerUtils = (function () {
 
     const imageDataList = []
 
-    const rawImageList = [...document.querySelectorAll('img.simpleUnlazy')]
+    const rawImageList = document.querySelectorAll('img.simpleUnlazy')
     for (const img of rawImageList) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
