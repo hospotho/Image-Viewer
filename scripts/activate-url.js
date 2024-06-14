@@ -167,7 +167,7 @@
     const rawSize = rawUrl === image.src ? [0, 0] : await getRawSize(rawUrl)
     const rawRatio = rawSize[0] ? rawSize[0] / rawSize[1] : 0
     const currRatio = image.naturalWidth / image.naturalHeight
-    const isRawBetter = rawSize[0] >= image.naturalWidth && Math.abs(rawRatio - currRatio) < 0.01
+    const isRawBetter = rawSize[0] >= image.naturalWidth && (currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01)
     if (isRawBetter) ImageViewer([rawUrl], options)
   }
 
