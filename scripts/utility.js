@@ -189,20 +189,19 @@ window.ImageViewerUtils = (function () {
     if (cache !== undefined) return cache
 
     const searchMatch = matchUrlSearch(src)
-    if (searchMatch) {
-      const rawUrl = searchMatch[1]
-      if (rawUrl !== src) {
-        rawUrlCache.set(src, rawUrl)
-        return rawUrl
-      }
+    const rawSearchUrl = searchMatch?.[1]
+    if (rawSearchUrl && rawSearchUrl !== src) {
+      rawUrlCache.set(src, rawSearchUrl)
+      return rawSearchUrl
     }
 
     const extensionMatch = cachedExtensionMatch(src)
-    if (extensionMatch) {
-      const rawUrl = extensionMatch[1]
-      rawUrlCache.set(src, rawUrl)
-      return rawUrl
+    const rawExtensionUrl = extensionMatch?.[1]
+    if (rawExtensionUrl && rawExtensionUrl !== src) {
+      rawUrlCache.set(src, rawExtensionUrl)
+      return rawExtensionUrl
     }
+
     rawUrlCache.set(src, src)
     return src
   }

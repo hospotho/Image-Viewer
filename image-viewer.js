@@ -11,9 +11,10 @@ window.ImageViewer = (function () {
   let lastSrc = ''
   let lastUrl = location.href
 
-  const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+  const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
   const failedImageSet = new Set()
   const rawUrlCache = new Map()
+  const matchCache = new Map()
   const rawFilenameCache = new Map()
   const keydownHandlerList = []
 
@@ -116,45 +117,62 @@ window.ImageViewer = (function () {
     rawFilenameCache.set(src, filename)
     return filename
   }
-  function getRawUrl(src) {
-    const cache = rawUrlCache.get(src)
+
+  function cachedExtensionMatch(str) {
+    if (str.startsWith('data')) return null
+
+    const cache = matchCache.get(str)
     if (cache !== undefined) return cache
 
-    if (typeof src !== 'string' || src.startsWith('data')) return src
+    const extensionMatch = str.match(extensionRegex)
+    matchCache.set(str, extensionMatch)
+    return extensionMatch
+  }
+  function matchUrlSearch(src) {
     try {
       // protocol-relative URL
       const url = new URL(src, document.baseURI)
-      const baseURI = url.origin + url.pathname
+      if (!url.search) return null
 
+      const baseURI = url.origin + url.pathname
       const searchList = url.search
         .slice(1)
         .split('&')
-        .filter(t => t.match(argsRegex))
+        .filter(t => cachedExtensionMatch(t))
         .join('&')
       const imgSearch = searchList ? '?' + searchList : ''
       const noSearch = baseURI + imgSearch
 
-      const argsMatch = noSearch.match(argsRegex)
-      if (argsMatch) {
-        const rawUrl = argsMatch[1]
-        if (rawUrl !== src) {
-          rawUrlCache.set(src, rawUrl)
-          return rawUrl
-        }
-      }
-    } catch (error) {}
-
-    const argsMatch = src.match(argsRegex)
-    if (argsMatch) {
-      const rawUrl = argsMatch[1]
-      if (rawUrl !== src) {
-        rawUrlCache.set(src, rawUrl)
-        return rawUrl
-      }
+      const extensionMatch = cachedExtensionMatch(noSearch)
+      return extensionMatch
+    } catch (error) {
+      return null
     }
+  }
+  function getRawUrl(src) {
+    if (src.startsWith('data')) return src
+
+    const cache = rawUrlCache.get(src)
+    if (cache !== undefined) return cache
+
+    const searchMatch = matchUrlSearch(src)
+    const rawSearchUrl = searchMatch?.[1]
+    if (rawSearchUrl && rawSearchUrl !== src) {
+      rawUrlCache.set(src, rawSearchUrl)
+      return rawSearchUrl
+    }
+
+    const extensionMatch = cachedExtensionMatch(src)
+    const rawExtensionUrl = extensionMatch?.[1]
+    if (rawExtensionUrl && rawExtensionUrl !== src) {
+      rawUrlCache.set(src, rawExtensionUrl)
+      return rawExtensionUrl
+    }
+
     rawUrlCache.set(src, src)
     return src
   }
+
   function searchImgNode(img) {
     const iframeSrc = img.getAttribute('data-iframe-src')
     if (iframeSrc) {
