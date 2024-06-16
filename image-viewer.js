@@ -349,9 +349,6 @@ window.ImageViewer = (function () {
   }
 
   function isCurrentListBad(newList) {
-    if (!clearFlag) return false
-    clearFlag = false
-
     if (currentImageList.length > newList.length) return true
     for (const img of currentImageList) {
       if (typeof img === 'string' && newList.indexOf(img) === -1) return true
@@ -1501,8 +1498,9 @@ window.ImageViewer = (function () {
       }
     }
     function tryClear() {
-      if (isCurrentListBad(newList)) {
+      if (clearFlag && isCurrentListBad(newList)) {
         console.log('Clear bad image list')
+        clearFlag = false
         currentImageList.length = 0
         const imageListNode = shadowRoot.querySelector('#iv-image-list')
         imageListNode.innerHTML = ''
