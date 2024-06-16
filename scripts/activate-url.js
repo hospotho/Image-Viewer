@@ -50,7 +50,7 @@
       return
     }
 
-    const failedIframeList = await safeSendMessage('check_frames') || []
+    const failedIframeList = (await safeSendMessage('check_frames')) || []
     for (const src of failedIframeList) {
       const targetList = iframeList.filter(iframe => iframe.src === src)
       for (const iframe of targetList) {
@@ -167,8 +167,11 @@
     const rawSize = rawUrl === image.src ? [0, 0] : await getRawSize(rawUrl)
     const rawRatio = rawSize[0] ? rawSize[0] / rawSize[1] : 0
     const currRatio = image.naturalWidth / image.naturalHeight
-    const isRawBetter = rawSize[0] >= image.naturalWidth && (currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01)
-    if (isRawBetter) ImageViewer([rawUrl], options)
+    // non trivial size or with proper ratio
+    const isRawCandidate = rawSize[0] % 10 || rawSize[1] % 10 || currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01
+    if (rawSize[0] >= image.naturalWidth && isRawCandidate) {
+      ImageViewer([rawUrl], options)
+    }
   }
 
   async function init() {
