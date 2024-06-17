@@ -391,8 +391,10 @@ window.ImageViewer = (function () {
     const infoWidth = shadowRoot.querySelector('#iv-info-width')
     const infoHeight = shadowRoot.querySelector('#iv-info-height')
 
-    const srcIndex = currentImageList.map(item => (typeof item === 'string' ? item : item[0])).indexOf(clearSrc || lastSrc)
-    const newIndex = clearIndex === 0 ? 0 : srcIndex === -1 ? Math.max(clearIndex, currentImageList.length - 1) : srcIndex
+    const targetSrc = clearSrc || lastSrc
+    const rawUrl = getRawUrl(targetSrc)
+    const srcIndex = currentImageList.map(item => (typeof item === 'string' ? item : item[0])).findIndex(src => src === targetSrc || src === rawUrl)
+    const newIndex = clearIndex === 0 ? 0 : srcIndex === -1 ? Math.min(clearIndex, currentImageList.length - 1) : srcIndex
 
     current.innerHTML = newIndex + 1
 
