@@ -769,7 +769,7 @@ window.ImageViewerUtils = (function () {
     }
     return {imgWithAttrList, allComplete}
   }
-  async function startUnlazy(minWidth, minHeight) {
+  async function unlazyImage(minWidth, minHeight) {
     const {imgWithAttrList, allComplete} = getUnlazyImageList(minWidth, minHeight)
     const listSize = imgWithAttrList.length
     if (listSize === 0) return allComplete
@@ -805,7 +805,7 @@ window.ImageViewerUtils = (function () {
       if (!allImageUrlSet.has(url)) backup.splice(i, 1)
     }
   }
-  function createFirstUnlazyRace(options) {
+  function createUnlazyRace(options) {
     // slow connection alert
     setTimeout(() => {
       if (firstUnlazyCompleteFlag) return
@@ -868,7 +868,7 @@ window.ImageViewerUtils = (function () {
       firstUnlazyFlag = false
       preprocessLazyPlaceholder()
       fakeUserHover()
-      const race = createFirstUnlazyRace(options)
+      const race = createUnlazyRace(options)
       return race
     }
     // wait first unlazy complete
@@ -883,10 +883,10 @@ window.ImageViewerUtils = (function () {
 
     // wait init load
     await new Promise(resolve => setTimeout(resolve, 500))
-    let allComplete = await startUnlazy(minWidth, minHeight)
+    let allComplete = await unlazyImage(minWidth, minHeight)
     while (!allComplete) {
       await new Promise(resolve => setTimeout(resolve, 100))
-      allComplete = await startUnlazy(minWidth, minHeight)
+      allComplete = await unlazyImage(minWidth, minHeight)
     }
 
     if (!firstUnlazyCompleteFlag) {
