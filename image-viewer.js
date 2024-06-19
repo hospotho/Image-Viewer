@@ -1632,39 +1632,43 @@ window.ImageViewer = (function () {
     if (updated) console.log('Image viewer updated')
   }
 
+  function executeCommand(command) {
+    switch (command) {
+      case 'get_image_list': {
+        return Array.from(currentImageList)
+      }
+      case 'clear_image_list': {
+        // will try to clean when calling updateImageList
+        const current = shadowRoot.querySelector('li.current img')
+        const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+        if (current === null) {
+          setTimeout(() => ImageViewer('clear_image_list'), 1000)
+          return
+        }
+        clearFlag = true
+        clearSrc = current.src
+        clearIndex = counterCurrent.innerHTML - 1
+        return
+      }
+      case 'reset_image_list': {
+        currentImageList = []
+        return
+      }
+      case 'close_image_viewer': {
+        closeImageViewer()
+        return
+      }
+      default:
+        return
+    }
+  }
+
   //==========main function==========
   function ImageViewer(imageList, options) {
     // command mode
     if (arguments.length === 1) {
-      const action = arguments[0]
-      switch (action) {
-        case 'get_image_list': {
-          return Array.from(currentImageList)
-        }
-        case 'clear_image_list': {
-          // will try to clean when calling updateImageList
-          const current = shadowRoot.querySelector('li.current img')
-          const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
-          if (current === null) {
-            setTimeout(() => ImageViewer('clear_image_list'), 1000)
-            return
-          }
-          clearFlag = true
-          clearSrc = current.src
-          clearIndex = counterCurrent.innerHTML - 1
-          return
-        }
-        case 'reset_image_list': {
-          currentImageList = []
-          return
-        }
-        case 'close_image_viewer': {
-          closeImageViewer()
-          return
-        }
-        default:
-          return
-      }
+      const command = arguments[0]
+      return executeCommand(command)
     }
 
     if (imageList.length === 0) return
