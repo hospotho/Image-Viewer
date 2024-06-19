@@ -515,6 +515,140 @@ window.ImageViewerUtils = (function () {
     tryActivateLazyImage(isDomChanged)
   }
 
+  // auto scroll
+  function startAutoScroll() {
+    let stopFlag = true
+    const isStopped = () => stopFlag
+    const action = () => {
+      if (!isImageViewerExist() || lastUnlazyEndTime > lastRaceEndTime) return
+      const container = getMainContainer()
+      const scrollY = container.scrollTop
+      let currBottom = 0
+      let bottomImg = null
+      for (const img of document.getElementsByTagName('img')) {
+        const scrollBottom = img.getAttribute('scroll-bottom')
+        const bottom = scrollBottom ? Number(scrollBottom) : img.getBoundingClientRect().bottom + scrollY
+        img.setAttribute('scroll-bottom', bottom)
+        if (bottom > currBottom) {
+          currBottom = bottom
+          bottomImg = img
+        }
+      }
+      bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
+    }
+    const timer = async () => {
+      stopFlag = false
+      const container = getMainContainer()
+      let lastY = container.scrollTop
+      let count = 0
+      while (lastY < container.scrollHeight) {
+        if (count > 5 || !isImageViewerExist()) break
+
+        while (document.visibilityState !== 'visible' || !document.documentElement.classList.contains('enableAutoScroll')) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+
+        await mutex.waitUnlock()
+        action()
+        await new Promise(resolve => setTimeout(resolve, 500))
+
+        if (lastY === container.scrollTop && isImageViewerExist()) {
+          count++
+          container.scrollBy(0, -100)
+          container.scrollBy({top: window.innerHeight})
+        } else {
+          count = 0
+        }
+        lastY = container.scrollTop
+      }
+      stopFlag = true
+    }
+
+    timer()
+    return {isStopped, timer}
+  }
+  function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
+    let scrollFlag = false
+
+    const originalScrollIntoView = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function () {
+      if (!isImageViewerExist()) {
+        scrollFlag = true
+      }
+      const container = getMainContainer()
+      let currX = container.scrollLeft
+      let currY = container.scrollTop
+      originalScrollIntoView.apply(this, arguments)
+      // for unknown reason can't move to correct position with single scroll
+      while (currX !== container.scrollLeft || currY !== container.scrollTop) {
+        currX = container.scrollLeft
+        currY = container.scrollTop
+        originalScrollIntoView.apply(this, arguments)
+      }
+    }
+
+    const originalScrollTo = Element.prototype.scrollTo
+    Element.prototype.scrollTo = function () {
+      if (!isImageViewerExist()) {
+        scrollFlag = true
+      }
+      originalScrollTo.apply(this, arguments)
+    }
+
+    const imageViewerObserver = new MutationObserver(() => {
+      if (isImageViewerExist()) return
+      autoScrollFlag = false
+      imageViewerObserver.disconnect()
+      newNodeObserver.disconnect()
+      setTimeout(() => {
+        const container = getMainContainer()
+        if (!scrollFlag) container.scrollTo(startX, startY)
+        Element.prototype.scrollIntoView = originalScrollIntoView
+        Element.prototype.scrollTo = originalScrollTo
+      }, 500)
+    })
+    imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
+  }
+  async function autoScroll() {
+    if (autoScrollFlag) return
+
+    autoScrollFlag = true
+    await new Promise(resolve => setTimeout(resolve, 500))
+    if (!isImageViewerExist()) {
+      autoScrollFlag = false
+      return
+    }
+
+    const container = getMainContainer()
+    const startX = container.scrollLeft
+    const startY = container.scrollTop
+    const imageListLength = ImageViewer('get_image_list').length
+
+    if (imageListLength > 50) {
+      const totalHeight = container.scrollHeight
+      const targetHeight = Math.min(container.scrollTop, totalHeight - window.innerHeight * 10)
+      container.scrollTo(startX, targetHeight)
+    }
+
+    const {isStopped, timer} = startAutoScroll()
+
+    let existNewDom = false
+    const newNodeObserver = new MutationObserver(() => {
+      existNewDom = true
+      if (isStopped()) timer()
+    })
+    newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+    setTimeout(() => {
+      if (!existNewDom || imageListLength === ImageViewer('get_image_list').length) {
+        const container = getMainContainer()
+        const totalHeight = container.scrollHeight
+        container.scrollTo(startX, totalHeight)
+      }
+    }, 3000)
+
+    stopAutoScrollOnExit(newNodeObserver, startX, startY)
+  }
+
   // attr unlazy
   async function waitSrcUpdate(img, _resolve) {
     const srcUrl = new URL(img.src, document.baseURI)
@@ -1172,140 +1306,6 @@ window.ImageViewerUtils = (function () {
         oldList[i] = rawUrl
       }
     }
-  }
-
-  // auto scroll
-  function startAutoScroll() {
-    let stopFlag = true
-    const isStopped = () => stopFlag
-    const action = () => {
-      if (!isImageViewerExist() || lastUnlazyEndTime > lastRaceEndTime) return
-      const container = getMainContainer()
-      const scrollY = container.scrollTop
-      let currBottom = 0
-      let bottomImg = null
-      for (const img of document.getElementsByTagName('img')) {
-        const scrollBottom = img.getAttribute('scroll-bottom')
-        const bottom = scrollBottom ? Number(scrollBottom) : img.getBoundingClientRect().bottom + scrollY
-        img.setAttribute('scroll-bottom', bottom)
-        if (bottom > currBottom) {
-          currBottom = bottom
-          bottomImg = img
-        }
-      }
-      bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
-    }
-    const timer = async () => {
-      stopFlag = false
-      const container = getMainContainer()
-      let lastY = container.scrollTop
-      let count = 0
-      while (lastY < container.scrollHeight) {
-        if (count > 5 || !isImageViewerExist()) break
-
-        while (document.visibilityState !== 'visible' || !document.documentElement.classList.contains('enableAutoScroll')) {
-          await new Promise(resolve => setTimeout(resolve, 100))
-        }
-
-        await mutex.waitUnlock()
-        action()
-        await new Promise(resolve => setTimeout(resolve, 500))
-
-        if (lastY === container.scrollTop && isImageViewerExist()) {
-          count++
-          container.scrollBy(0, -100)
-          container.scrollBy({top: window.innerHeight})
-        } else {
-          count = 0
-        }
-        lastY = container.scrollTop
-      }
-      stopFlag = true
-    }
-
-    timer()
-    return {isStopped, timer}
-  }
-  function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
-    let scrollFlag = false
-
-    const originalScrollIntoView = Element.prototype.scrollIntoView
-    Element.prototype.scrollIntoView = function () {
-      if (!isImageViewerExist()) {
-        scrollFlag = true
-      }
-      const container = getMainContainer()
-      let currX = container.scrollLeft
-      let currY = container.scrollTop
-      originalScrollIntoView.apply(this, arguments)
-      // for unknown reason can't move to correct position with single scroll
-      while (currX !== container.scrollLeft || currY !== container.scrollTop) {
-        currX = container.scrollLeft
-        currY = container.scrollTop
-        originalScrollIntoView.apply(this, arguments)
-      }
-    }
-
-    const originalScrollTo = Element.prototype.scrollTo
-    Element.prototype.scrollTo = function () {
-      if (!isImageViewerExist()) {
-        scrollFlag = true
-      }
-      originalScrollTo.apply(this, arguments)
-    }
-
-    const imageViewerObserver = new MutationObserver(() => {
-      if (isImageViewerExist()) return
-      autoScrollFlag = false
-      imageViewerObserver.disconnect()
-      newNodeObserver.disconnect()
-      setTimeout(() => {
-        const container = getMainContainer()
-        if (!scrollFlag) container.scrollTo(startX, startY)
-        Element.prototype.scrollIntoView = originalScrollIntoView
-        Element.prototype.scrollTo = originalScrollTo
-      }, 500)
-    })
-    imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
-  }
-  async function autoScroll() {
-    if (autoScrollFlag) return
-
-    autoScrollFlag = true
-    await new Promise(resolve => setTimeout(resolve, 500))
-    if (!isImageViewerExist()) {
-      autoScrollFlag = false
-      return
-    }
-
-    const container = getMainContainer()
-    const startX = container.scrollLeft
-    const startY = container.scrollTop
-    const imageListLength = ImageViewer('get_image_list').length
-
-    if (imageListLength > 50) {
-      const totalHeight = container.scrollHeight
-      const targetHeight = Math.min(container.scrollTop, totalHeight - window.innerHeight * 10)
-      container.scrollTo(startX, targetHeight)
-    }
-
-    const {isStopped, timer} = startAutoScroll()
-
-    let existNewDom = false
-    const newNodeObserver = new MutationObserver(() => {
-      existNewDom = true
-      if (isStopped()) timer()
-    })
-    newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
-    setTimeout(() => {
-      if (!existNewDom || imageListLength === ImageViewer('get_image_list').length) {
-        const container = getMainContainer()
-        const totalHeight = container.scrollHeight
-        container.scrollTo(startX, totalHeight)
-      }
-    }, 3000)
-
-    stopAutoScrollOnExit(newNodeObserver, startX, startY)
   }
 
   return {
