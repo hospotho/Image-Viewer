@@ -73,8 +73,8 @@ window.ImageViewerUtils = (function () {
   let firstUnlazyCompleteFlag = false
   let firstUnlazyScrollFlag = false
   let autoScrollFlag = false
-  let lastUnlazyEndTime = 0
-  let lastRaceEndTime = 0
+  let unlazyCount = 0
+  let raceCount = 0
   let lastHref = ''
 
   // init function hotkey
@@ -520,7 +520,7 @@ window.ImageViewerUtils = (function () {
     let stopFlag = true
     const isStopped = () => stopFlag
     const action = () => {
-      if (!isImageViewerExist() || lastUnlazyEndTime > lastRaceEndTime) return
+      if (!isImageViewerExist()) return
       const container = getMainContainer()
       const scrollY = container.scrollTop
       let currBottom = 0
@@ -549,6 +549,10 @@ window.ImageViewerUtils = (function () {
         }
 
         await mutex.waitUnlock()
+        // unlazy incomplete
+        while (raceCount >= unlazyCount) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
         action()
         await new Promise(resolve => setTimeout(resolve, 500))
 
@@ -945,8 +949,6 @@ window.ImageViewerUtils = (function () {
     const minWidth = Math.min(options.minWidth, 100)
     const minHeight = Math.min(options.minHeight, 100)
 
-    // wait init load
-    await new Promise(resolve => setTimeout(resolve, 500))
     let allComplete = await unlazyImage(minWidth, minHeight)
     while (!allComplete) {
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -969,7 +971,7 @@ window.ImageViewerUtils = (function () {
         ImageViewer('reset_image_list')
       }
     }
-    lastUnlazyEndTime = Date.now()
+    unlazyCount++
     lastHref = location.href
 
     isEnabledAutoScroll(options) ? autoScroll() : scrollUnlazy()
@@ -992,9 +994,9 @@ window.ImageViewerUtils = (function () {
     const timeout = new Promise(resolve =>
       setTimeout(() => {
         resolve()
+        raceCount++
         if (!firstUnlazyCompleteFlag) {
           console.log('Unlazy timeout')
-          lastRaceEndTime = Date.now()
         }
       }, 1000)
     )
