@@ -172,6 +172,7 @@
     // non trivial size or with proper ratio
     const isRawCandidate = rawSize[0] % 10 || rawSize[1] % 10 || currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01
     if (rawSize[0] >= image.naturalWidth && isRawCandidate) {
+      ImageViewer('clear_image_list')
       ImageViewer([rawUrl], options)
     }
   }
