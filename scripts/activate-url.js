@@ -158,9 +158,7 @@
     options.minWidth = 0
     options.minHeight = 0
 
-    if (typeof ImageViewer !== 'function') {
-      await safeSendMessage('load_script')
-    }
+    await safeSendMessage('load_script')
     ImageViewer([image.src], options)
 
     const rawUrl = getRawUrl(image.src)
