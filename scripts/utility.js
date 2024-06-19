@@ -73,6 +73,8 @@ window.ImageViewerUtils = (function () {
   let firstUnlazyCompleteFlag = false
   let firstUnlazyScrollFlag = false
   let autoScrollFlag = false
+  let lastUnlazyEndTime = 0
+  let lastRaceEndTime = 0
   let lastHref = ''
 
   // init function hotkey
@@ -805,6 +807,41 @@ window.ImageViewerUtils = (function () {
       if (!allImageUrlSet.has(url)) backup.splice(i, 1)
     }
   }
+  async function simpleUnlazyImage(options) {
+    const minWidth = Math.min(options.minWidth, 100)
+    const minHeight = Math.min(options.minHeight, 100)
+
+    // wait init load
+    await new Promise(resolve => setTimeout(resolve, 500))
+    let allComplete = await unlazyImage(minWidth, minHeight)
+    while (!allComplete) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+      allComplete = await unlazyImage(minWidth, minHeight)
+    }
+
+    if (!firstUnlazyCompleteFlag) {
+      console.log('First unlazy complete')
+      firstUnlazyCompleteFlag = true
+      clearWindowBackup(options)
+      if (typeof ImageViewer === 'function') ImageViewer('clear_image_list')
+    }
+    if (autoScrollFlag) {
+      ImageViewer('clear_image_list')
+    }
+    if (lastHref !== '' && lastHref !== location.href) {
+      const unchangedCount = [...new Set(getImageListWithoutFilter(options).map(data => data[0]))].map(url => window.backupImageUrlList.indexOf(url)).filter(i => i !== -1).length
+      if (unchangedCount < 5) {
+        window.backupImageUrlList = []
+        ImageViewer('reset_image_list')
+      }
+    }
+    lastUnlazyEndTime = Date.now()
+    lastHref = location.href
+
+    isEnabledAutoScroll(options) ? autoScroll() : scrollUnlazy()
+  }
+
+  // before unlazy
   function createUnlazyRace(options) {
     // slow connection alert
     setTimeout(() => {
@@ -823,6 +860,7 @@ window.ImageViewerUtils = (function () {
         resolve()
         if (!firstUnlazyCompleteFlag) {
           console.log('Unlazy timeout')
+          lastRaceEndTime = Date.now()
         }
       }, 1000)
     )
@@ -863,51 +901,14 @@ window.ImageViewerUtils = (function () {
       image.dispatchEvent(leaveEvent)
     }
   }
-  async function simpleUnlazyImage(options) {
+  function startUnlazy() {
     if (firstUnlazyFlag) {
       firstUnlazyFlag = false
       preprocessLazyPlaceholder()
       fakeUserHover()
-      const race = createUnlazyRace(options)
-      return race
     }
-    // wait first unlazy complete
-    if (!options.firstTime && !firstUnlazyCompleteFlag) {
-      while (!firstUnlazyCompleteFlag) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-    }
-
-    const minWidth = Math.min(options.minWidth, 100)
-    const minHeight = Math.min(options.minHeight, 100)
-
-    // wait init load
-    await new Promise(resolve => setTimeout(resolve, 500))
-    let allComplete = await unlazyImage(minWidth, minHeight)
-    while (!allComplete) {
-      await new Promise(resolve => setTimeout(resolve, 100))
-      allComplete = await unlazyImage(minWidth, minHeight)
-    }
-
-    if (!firstUnlazyCompleteFlag) {
-      console.log('First unlazy complete')
-      firstUnlazyCompleteFlag = true
-      clearWindowBackup(options)
-      if (typeof ImageViewer === 'function') ImageViewer('clear_image_list')
-    }
-    if (autoScrollFlag) {
-      ImageViewer('clear_image_list')
-    }
-    if (lastHref !== '' && lastHref !== location.href) {
-      const unchangedCount = [...new Set(getImageListWithoutFilter(options).map(data => data[0]))].map(url => window.backupImageUrlList.indexOf(url)).filter(i => i !== -1).length
-      if (unchangedCount < 5) {
-        window.backupImageUrlList = []
-        ImageViewer('reset_image_list')
-      }
-    }
-    lastHref = location.href
-
-    isEnabledAutoScroll(options) ? autoScroll() : scrollUnlazy()
+    const race = createUnlazyRace(options)
+    return race
   }
 
   // get image
@@ -1178,7 +1179,7 @@ window.ImageViewerUtils = (function () {
     let stopFlag = true
     const isStopped = () => stopFlag
     const action = () => {
-      if (!isImageViewerExist()) return
+      if (!isImageViewerExist() || lastUnlazyEndTime > lastRaceEndTime) return
       const container = getMainContainer()
       const scrollY = container.scrollTop
       let currBottom = 0
@@ -1344,7 +1345,7 @@ window.ImageViewerUtils = (function () {
     getOrderedImageUrls: async function (options, retryCount = 0) {
       const release = await mutex.acquire()
 
-      await simpleUnlazyImage(options)
+      await startUnlazy(options)
 
       const uniqueImageUrls = await getImageList(options)
 
