@@ -114,6 +114,10 @@
   function getRawUrl(src) {
     const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
     if (src.startsWith('data')) return src
+
+    const filenameMatch = src.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
+    if (filenameMatch !== src) return filenameMatch
+
     try {
       // protocol-relative URL
       const url = new URL(src, document.baseURI)

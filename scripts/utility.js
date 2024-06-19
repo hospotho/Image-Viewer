@@ -14,6 +14,7 @@ window.ImageViewerUtils = (function () {
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
   const rawUrlCache = new Map()
+  const filenameCache = new Map()
   const matchCache = new Map()
   const badImageList = new Set(['', 'about:blank'])
   const corsHostList = new Set()
@@ -182,11 +183,27 @@ window.ImageViewerUtils = (function () {
       return null
     }
   }
+  function cachedGetFilename(str) {
+    if (str.startsWith('data')) return null
+
+    const cache = filenameCache.get(str)
+    if (cache !== undefined) return cache
+
+    const rawFilename = str.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
+    filenameCache.set(str, rawFilename)
+    return rawFilename
+  }
   function getRawUrl(src) {
     if (src.startsWith('data')) return src
 
     const cache = rawUrlCache.get(src)
     if (cache !== undefined) return cache
+
+    const rawFilenameUrl = cachedGetFilename(src)
+    if (rawFilenameUrl !== src) {
+      rawUrlCache.set(src, rawFilenameUrl)
+      return rawFilenameUrl
+    }
 
     const searchMatch = matchUrlSearch(src)
     const rawSearchUrl = searchMatch?.[1]
