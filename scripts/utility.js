@@ -933,13 +933,14 @@ window.ImageViewerUtils = (function () {
     return uniqueDataList
   }
   // function getShadowRootHolderList() {
-  //   const shadowRootHolderList = [...document.body.querySelectorAll('*:not([no-shadow])')]
-  //   for (let i = shadowRootHolderList.length - 1; i >= 0; i--) {
-  //     const node = shadowRootHolderList[i]
+  //   const shadowRootHolderList = []
+  //   const uncheckedNodeList = document.body.querySelectorAll('*:not([no-shadow])')
+  //   for (const node of uncheckedNodeList) {
   //     if (!node?.shadowRoot || node.shadowRoot.querySelectorAll('img').length === 0) {
   //       node.setAttribute('no-shadow', '')
-  //       shadowRootHolderList.splice(i, 1)
+  //       continue
   //     }
+  //     shadowRootHolderList.push(node)
   //   }
   //   return shadowRootHolderList
   // }
