@@ -154,6 +154,7 @@ window.ImageViewerUtils = (function () {
     const shift = keyList.includes('Shift') === e.shiftKey
     return key && ctrl && alt && shift
   }
+
   function cachedExtensionMatch(str) {
     if (str.startsWith('data')) return null
 
@@ -224,21 +225,7 @@ window.ImageViewerUtils = (function () {
     rawUrlCache.set(src, src)
     return src
   }
-  function getDomUrl(dom) {
-    const tag = dom.tagName
-    if (tag === 'IMG') return dom.currentSrc || dom.src
-    if (tag === 'VIDEO') return dom.poster
-    const backgroundImage = window.getComputedStyle(dom).backgroundImage
-    const bg = backgroundImage.split(', ')[0]
-    return bg.substring(5, bg.length - 2)
-  }
-  function getImageInfoIndex(array, data) {
-    const srcArray = array.map(item => (typeof item === 'string' ? item : item[0]))
-    const query = typeof data === 'string' ? data : data[0]
-    const result = srcArray.indexOf(query)
-    if (result !== -1) return result
-    return srcArray.indexOf(getRawUrl(query))
-  }
+
   function isEnabledAutoScroll(options) {
     if (document.documentElement.classList.contains('enableAutoScroll')) {
       return true
@@ -287,6 +274,22 @@ window.ImageViewerUtils = (function () {
       if (currHeight >= window.innerHeight) break
     }
     return container || document.documentElement
+  }
+
+  function getDomUrl(dom) {
+    const tag = dom.tagName
+    if (tag === 'IMG') return dom.currentSrc || dom.src
+    if (tag === 'VIDEO') return dom.poster
+    const backgroundImage = window.getComputedStyle(dom).backgroundImage
+    const bg = backgroundImage.split(', ')[0]
+    return bg.substring(5, bg.length - 2)
+  }
+  function getImageInfoIndex(array, data) {
+    const srcArray = array.map(item => (typeof item === 'string' ? item : item[0]))
+    const query = typeof data === 'string' ? data : data[0]
+    const result = srcArray.indexOf(query)
+    if (result !== -1) return result
+    return srcArray.indexOf(getRawUrl(query))
   }
 
   // wrapper size
