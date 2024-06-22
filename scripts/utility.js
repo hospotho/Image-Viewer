@@ -69,13 +69,11 @@ window.ImageViewerUtils = (function () {
     }
   })()
 
-  let firstUnlazyFlag = true
-  let firstUnlazyCompleteFlag = false
-  let scrollUnlazyFlag = false
-  let autoScrollFlag = false
   let unlazyCount = 0
   let raceCount = 0
   let lastHref = ''
+  let scrollUnlazyFlag = false
+  let autoScrollFlag = false
 
   // init function hotkey
   const options = window.ImageViewerOption
@@ -95,7 +93,7 @@ window.ImageViewerUtils = (function () {
           document.documentElement.classList.add('disableAutoScroll')
           document.documentElement.classList.remove('enableAutoScroll')
         }
-        if (firstUnlazyCompleteFlag) autoScroll()
+        if (unlazyCount > 0) autoScroll()
       }
       // download images
       if (typeof ImageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
@@ -958,9 +956,8 @@ window.ImageViewerUtils = (function () {
       allComplete = await unlazyImage(minWidth, minHeight)
     }
 
-    if (!firstUnlazyCompleteFlag) {
+    if (unlazyCount === 0) {
       console.log('First unlazy complete')
-      firstUnlazyCompleteFlag = true
       clearWindowBackup(options)
       if (typeof ImageViewer === 'function') ImageViewer('clear_image_list')
     }
@@ -984,7 +981,7 @@ window.ImageViewerUtils = (function () {
   function createUnlazyRace(options) {
     // slow connection alert
     setTimeout(() => {
-      if (firstUnlazyCompleteFlag) return
+      if (unlazyCount > 0) return
       const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
       const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
       if (stillLoading) {
@@ -998,7 +995,7 @@ window.ImageViewerUtils = (function () {
       setTimeout(() => {
         resolve()
         raceCount++
-        if (!firstUnlazyCompleteFlag) {
+        if (raceCount > unlazyCount) {
           console.log('Unlazy timeout')
         }
       }, 1000)
@@ -1041,8 +1038,7 @@ window.ImageViewerUtils = (function () {
     }
   }
   function startUnlazy() {
-    if (firstUnlazyFlag) {
-      firstUnlazyFlag = false
+    if (unlazyCount + raceCount === 0) {
       preprocessLazyPlaceholder()
       fakeUserHover()
     }
