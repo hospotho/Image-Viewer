@@ -1034,6 +1034,10 @@ window.ImageViewer = (function () {
         const img = shadowRoot.querySelector('li.current img')
         let imgNode = searchImgNode(img)
         if (imgNode === null) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+          imgNode = searchImgNode(img)
+        }
+        if (imgNode === null) {
           imgNode = await deepSearchImgNode(img)
           if (imgNode === null) {
             console.log('Image node not found')
