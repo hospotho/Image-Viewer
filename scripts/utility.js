@@ -71,7 +71,7 @@ window.ImageViewerUtils = (function () {
 
   let firstUnlazyFlag = true
   let firstUnlazyCompleteFlag = false
-  let firstUnlazyScrollFlag = false
+  let scrollUnlazyFlag = false
   let autoScrollFlag = false
   let unlazyCount = 0
   let raceCount = 0
@@ -449,16 +449,16 @@ window.ImageViewerUtils = (function () {
     container.scrollBy({top: maxHeight * 2})
   }
   async function scrollUnlazy() {
-    if (firstUnlazyScrollFlag) return
+    if (scrollUnlazyFlag) return
 
-    firstUnlazyScrollFlag = true
+    scrollUnlazyFlag = true
     while (document.readyState !== 'complete') {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
     await new Promise(resolve => setTimeout(resolve, 500))
     if (!isImageViewerExist()) {
-      firstUnlazyScrollFlag = false
+      scrollUnlazyFlag = false
       return
     }
 
