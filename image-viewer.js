@@ -39,16 +39,6 @@ window.ImageViewer = (function () {
     }
     return li
   }
-  function insertImageNode(node, index) {
-    const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    const list = shadowRoot.querySelectorAll('#iv-image-list li')
-
-    if (index === list.length) {
-      imageListNode.appendChild(node)
-    } else {
-      imageListNode.insertBefore(node, list[index])
-    }
-  }
 
   function closeImageViewer() {
     document.documentElement.classList.remove('has-image-viewer')
@@ -108,15 +98,6 @@ window.ImageViewer = (function () {
     }
     const rotate = Math.atan2(row0y, row0x)
     return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
-  }
-
-  function getFilename(src) {
-    const cache = rawFilenameCache.get(src)
-    if (cache !== undefined) return cache
-
-    const filename = src.split('/').pop().split('?').shift().split('.').shift()
-    rawFilenameCache.set(src, filename)
-    return filename
   }
 
   function cachedExtensionMatch(str) {
@@ -190,6 +171,14 @@ window.ImageViewer = (function () {
     return src
   }
 
+  function getFilename(src) {
+    const cache = rawFilenameCache.get(src)
+    if (cache !== undefined) return cache
+
+    const filename = src.split('/').pop().split('?').shift().split('.').shift()
+    rawFilenameCache.set(src, filename)
+    return filename
+  }
   function searchImgNode(img) {
     const iframeSrc = img.getAttribute('data-iframe-src')
     if (iframeSrc) {
@@ -241,30 +230,6 @@ window.ImageViewer = (function () {
     }
     return lastNode
   }
-  function searchImgAnchor(imgNode) {
-    const closestAnchor = imgNode.closest('a')
-    if (closestAnchor) return closestAnchor
-
-    const {width: rootWidth, height: rootHeight, top: rootTop, left: rootLeft} = imgNode.getBoundingClientRect()
-    let el = imgNode
-    while (el.parentElement) {
-      el = el.parentElement
-      const anchorList = el.querySelectorAll(':scope > a')
-      for (const anchor of anchorList) {
-        const {width, height, top, left} = anchor.getBoundingClientRect()
-        const include = top <= rootTop && left <= rootLeft && top + height >= rootTop + rootHeight && left + width >= rootLeft + rootWidth
-        if (include) return anchor
-      }
-    }
-
-    const prevSibling = imgNode.previousElementSibling
-    const nextSibling = imgNode.nextElementSibling
-    if (prevSibling?.tagName === 'A') return prevSibling
-    if (nextSibling?.tagName === 'A') return nextSibling
-
-    return null
-  }
-
   function searchNearestPageImgNode(img) {
     const imgList = [...shadowRoot.querySelectorAll('img')]
     const imgUrlList = imgList.map(img => img.src)
@@ -341,115 +306,6 @@ window.ImageViewer = (function () {
         setTimeout(() => resolve(true), 3000)
       })
     }
-  }
-  function displayBorder(imgNode) {
-    const border = document.createElement('div')
-    border.style.position = 'fixed'
-    border.style.top = '0px'
-    border.style.left = '0px'
-    border.style.border = '5px solid red'
-    border.style.boxSizing = 'border-box'
-    border.style.zIndex = '2147483647'
-    border.style.pointerEvents = 'none'
-    document.body.appendChild(border)
-
-    const action = entryList => {
-      const entry = entryList[0]
-      const rect = entry.intersectionRect
-      const {top, left, width, height} = rect
-      border.style.transform = `translate(${left - 1}px, ${top - 1}px)`
-      border.style.width = `${width + 4}px`
-      border.style.height = `${height + 4}px`
-      observer.unobserve(imgNode)
-    }
-    const observer = new IntersectionObserver(action)
-    observer.observe(imgNode)
-
-    let count = 0
-    let {top, left} = imgNode.getBoundingClientRect()
-    const displayFrame = 60
-    const fps = 1000 / displayFrame
-    const interval = setInterval(() => {
-      const {top: currTop, left: currLeft} = imgNode.getBoundingClientRect()
-      if (top !== currTop || left !== currLeft || count % 5 === 0) {
-        top = currTop
-        left = currLeft
-        observer.observe(imgNode)
-      }
-      if (count++ > displayFrame) {
-        clearInterval(interval)
-        border.remove()
-      }
-    }, fps)
-  }
-
-  function isCurrentListBad(newList) {
-    if (currentImageList.length > newList.length) return true
-    for (const img of currentImageList) {
-      if (typeof img === 'string' && newList.indexOf(img) === -1) return true
-    }
-    return false
-  }
-  function restoreIndex(options) {
-    const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastSrc !== '')
-    if (!neededToRestore) return
-
-    // reset after url change
-    if (lastUrl !== location.href) {
-      lastUrl = location.href
-      clearSrc = ''
-      clearIndex = -1
-      lastSrc = ''
-      return
-    }
-
-    const current = shadowRoot.querySelector('#iv-counter-current')
-    const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    const infoWidth = shadowRoot.querySelector('#iv-info-width')
-    const infoHeight = shadowRoot.querySelector('#iv-info-height')
-
-    const targetSrc = clearSrc || lastSrc
-    const rawUrl = getRawUrl(targetSrc)
-    const srcIndex = currentImageList.map(item => (typeof item === 'string' ? item : item[0])).findIndex(src => src === targetSrc || src === rawUrl)
-    const newIndex = clearIndex === 0 ? 0 : srcIndex === -1 ? Math.min(clearIndex, currentImageList.length - 1) : srcIndex
-
-    current.innerHTML = newIndex + 1
-
-    imageListNode.style.translate = `0 ${-newIndex * 100}%`
-    imageListNode.querySelector('li.current')?.classList.remove('current')
-
-    const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
-    relateListItem.classList.add('current')
-
-    const relateImage = relateListItem.querySelector('img')
-    infoWidth.value = relateImage.naturalWidth
-    infoHeight.value = relateImage.naturalHeight
-
-    clearSrc = ''
-    clearIndex = -1
-    lastSrc = ''
-  }
-
-  function getMainContainer() {
-    const windowWidth = document.documentElement.clientWidth
-    const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-    const targetList = document
-      .elementsFromPoint(windowWidth / 2, windowHeight / 2)
-      .slice(0, -2)
-      .filter(n => n.scrollHeight > n.clientHeight)
-    let container = null
-    let currHeight = 0
-    for (const node of targetList) {
-      const overflowY = window.getComputedStyle(node).overflowY
-      if (overflowY !== 'auto' && overflowY !== 'scroll') continue
-      if (node.scrollHeight > currHeight) {
-        container = node
-        currHeight = node.scrollHeight
-      }
-      // only want topmost element
-      if (currHeight >= window.innerHeight) break
-    }
-    return container || document.documentElement
   }
 
   const fitFuncDict = (function () {
@@ -983,151 +839,6 @@ window.ImageViewer = (function () {
         true
       )
     }
-    function addFitButtonEvent() {
-      const currFitBtn = shadowRoot.querySelector(`#iv-control-${options.fitMode}`)
-      currFitBtn?.classList.add('on')
-      const fitBtnList = shadowRoot.querySelectorAll('#iv-control-buttons button[data-fit]')
-      for (const fitBtn of fitBtnList) {
-        fitBtn.addEventListener('click', () => {
-          fitBtnList.forEach(btn => btn.classList.remove('on'))
-          fitBtn.classList.add('on')
-          options.fitMode = fitBtn.getAttribute('data-fit')
-          fitImage(options)
-        })
-      }
-      window.addEventListener('resize', () => fitImage(options))
-    }
-    function addMoveToButtonEvent() {
-      if (!options.closeButton) return
-
-      async function moveTo() {
-        const current = shadowRoot.querySelector('#iv-counter-current')
-        const total = shadowRoot.querySelector('#iv-counter-total')
-        const currIndex = Number(current.innerHTML) - 1
-        const imageListLength = Number(total.innerHTML)
-        closeImageViewer()
-
-        const htmlTemp = document.documentElement.style.scrollBehavior
-        const bodyTemp = document.body.style.scrollBehavior
-        document.documentElement.style.scrollBehavior = 'auto'
-        document.body.style.scrollBehavior = 'auto'
-
-        const ratio = currIndex / imageListLength
-        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-        const targetTop = totalHeight * ratio
-        const container = getMainContainer()
-        container.scrollTo(container.scrollLeft, targetTop)
-        await new Promise(resolve => setTimeout(resolve, 100))
-
-        const img = shadowRoot.querySelector('li.current img')
-        let imgNode = searchImgNode(img)
-        if (imgNode === null) {
-          imgNode = await deepSearchImgNode(img)
-          if (imgNode === null) {
-            console.log('Image node not found')
-            return
-          }
-        }
-        // check visibility by offsetParent
-        if (imgNode.offsetParent === null && imgNode.style.position !== 'fixed') {
-          console.log('Image node not visible')
-        }
-        console.log('Move to image node')
-        let currentY = -1
-        while (currentY !== container.scrollTop) {
-          currentY = container.scrollTop
-          imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
-        }
-        await new Promise(resolve => setTimeout(resolve, 50))
-        document.documentElement.style.scrollBehavior = htmlTemp
-        document.body.style.scrollBehavior = bodyTemp
-        displayBorder(imgNode)
-      }
-
-      shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
-      keydownHandlerList.push(e => {
-        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-        if (e.key === 'Enter') {
-          e.preventDefault()
-          moveTo()
-        }
-      })
-    }
-    function addCloseButtonEvent() {
-      if (!options.closeButton) return
-      const closeButton = shadowRoot.querySelector('#iv-control-close')
-      closeButton.classList.add('show')
-      closeButton.addEventListener('click', closeImageViewer)
-      closeButton.addEventListener('contextmenu', e => {
-        e.preventDefault()
-        chrome.runtime?.id ? chrome.runtime.sendMessage('close_tab') : window.close()
-      })
-      keydownHandlerList.push(e => {
-        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-        if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
-          e.preventDefault()
-          closeImageViewer()
-        }
-      })
-    }
-    function addMiddleClickKeyEvent() {
-      const openNewTab = chrome.runtime?.id ? anchor => chrome.runtime.sendMessage({msg: 'open_tab', url: anchor.href}) : anchor => window.open(anchor.href, '_blank')
-      const dispatchEvent = anchor => anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
-
-      const action = taskFunc => {
-        const img = shadowRoot.querySelector('li.current img')
-        const imgNode = searchImgNode(img)
-        if (!imgNode) return
-        const anchor = searchImgAnchor(imgNode)
-        if (!anchor) return
-        taskFunc(anchor)
-      }
-
-      keydownHandlerList.push(e => {
-        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-        if (e.key === 'Insert' || e.key === '0') {
-          e.preventDefault()
-          action(openNewTab)
-        }
-      })
-      // call preventDefault to trigger auxclick event
-      viewer.addEventListener('mousedown', e => {
-        if (e.button === 1) e.preventDefault()
-      })
-      // browsers map middle click to opening a link in a new tab without switching
-      // opening a link in auxclick event handler can do the same job (undocumented?)
-      viewer.addEventListener('auxclick', e => {
-        if (e.button === 1) action(dispatchEvent)
-      })
-    }
-    function disableWebsiteDefaultEvent() {
-      const disableList = [
-        'click',
-        'contextmenu',
-        'dblclick',
-        'keypress',
-        'keyup',
-        'mousedown',
-        'mouseenter',
-        'mouseleave',
-        'mousemove',
-        'mouseover',
-        'mouseup',
-        'pointerdown',
-        'pointerenter',
-        'pointerleave',
-        'pointermove',
-        'pointerout',
-        'pointerover',
-        'pointerup',
-        'wheel'
-      ]
-
-      for (const event of disableList) {
-        viewer.addEventListener(event, e => e.stopPropagation())
-      }
-      keydownHandlerList.push(e => e.stopPropagation())
-    }
     function addImageReverseSearchHotkey() {
       function checkKey(e, hotkey) {
         const keyList = hotkey.split('+').map(str => str.trim())
@@ -1225,16 +936,244 @@ window.ImageViewer = (function () {
         current.dispatchEvent(event)
       })
     }
+    function addFitButtonEvent() {
+      const currFitBtn = shadowRoot.querySelector(`#iv-control-${options.fitMode}`)
+      currFitBtn?.classList.add('on')
+      const fitBtnList = shadowRoot.querySelectorAll('#iv-control-buttons button[data-fit]')
+      for (const fitBtn of fitBtnList) {
+        fitBtn.addEventListener('click', () => {
+          fitBtnList.forEach(btn => btn.classList.remove('on'))
+          fitBtn.classList.add('on')
+          options.fitMode = fitBtn.getAttribute('data-fit')
+          fitImage(options)
+        })
+      }
+      window.addEventListener('resize', () => fitImage(options))
+    }
+    function addMoveToButtonEvent() {
+      function displayBorder(imgNode) {
+        const border = document.createElement('div')
+        border.style.position = 'fixed'
+        border.style.top = '0px'
+        border.style.left = '0px'
+        border.style.border = '5px solid red'
+        border.style.boxSizing = 'border-box'
+        border.style.zIndex = '2147483647'
+        border.style.pointerEvents = 'none'
+        document.body.appendChild(border)
+
+        const action = entryList => {
+          const entry = entryList[0]
+          const rect = entry.intersectionRect
+          const {top, left, width, height} = rect
+          border.style.transform = `translate(${left - 1}px, ${top - 1}px)`
+          border.style.width = `${width + 4}px`
+          border.style.height = `${height + 4}px`
+          observer.unobserve(imgNode)
+        }
+        const observer = new IntersectionObserver(action)
+        observer.observe(imgNode)
+
+        let count = 0
+        let {top, left} = imgNode.getBoundingClientRect()
+        const displayFrame = 60
+        const fps = 1000 / displayFrame
+        const interval = setInterval(() => {
+          const {top: currTop, left: currLeft} = imgNode.getBoundingClientRect()
+          if (top !== currTop || left !== currLeft || count % 5 === 0) {
+            top = currTop
+            left = currLeft
+            observer.observe(imgNode)
+          }
+          if (count++ > displayFrame) {
+            clearInterval(interval)
+            border.remove()
+          }
+        }, fps)
+      }
+      function getMainContainer() {
+        const windowWidth = document.documentElement.clientWidth
+        const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
+        const targetList = document
+          .elementsFromPoint(windowWidth / 2, windowHeight / 2)
+          .slice(0, -2)
+          .filter(n => n.scrollHeight > n.clientHeight)
+        let container = null
+        let currHeight = 0
+        for (const node of targetList) {
+          const overflowY = window.getComputedStyle(node).overflowY
+          if (overflowY !== 'auto' && overflowY !== 'scroll') continue
+          if (node.scrollHeight > currHeight) {
+            container = node
+            currHeight = node.scrollHeight
+          }
+          // only want topmost element
+          if (currHeight >= window.innerHeight) break
+        }
+        return container || document.documentElement
+      }
+      async function moveTo() {
+        const current = shadowRoot.querySelector('#iv-counter-current')
+        const total = shadowRoot.querySelector('#iv-counter-total')
+        const currIndex = Number(current.innerHTML) - 1
+        const imageListLength = Number(total.innerHTML)
+        closeImageViewer()
+
+        const htmlTemp = document.documentElement.style.scrollBehavior
+        const bodyTemp = document.body.style.scrollBehavior
+        document.documentElement.style.scrollBehavior = 'auto'
+        document.body.style.scrollBehavior = 'auto'
+
+        const ratio = currIndex / imageListLength
+        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
+        const targetTop = totalHeight * ratio
+        const container = getMainContainer()
+        container.scrollTo(container.scrollLeft, targetTop)
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        const img = shadowRoot.querySelector('li.current img')
+        let imgNode = searchImgNode(img)
+        if (imgNode === null) {
+          imgNode = await deepSearchImgNode(img)
+          if (imgNode === null) {
+            console.log('Image node not found')
+            return
+          }
+        }
+        // check visibility by offsetParent
+        if (imgNode.offsetParent === null && imgNode.style.position !== 'fixed') {
+          console.log('Image node not visible')
+        }
+        console.log('Move to image node')
+        let currentY = -1
+        while (currentY !== container.scrollTop) {
+          currentY = container.scrollTop
+          imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
+        }
+        await new Promise(resolve => setTimeout(resolve, 50))
+        document.documentElement.style.scrollBehavior = htmlTemp
+        document.body.style.scrollBehavior = bodyTemp
+        displayBorder(imgNode)
+      }
+
+      shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
+      keydownHandlerList.push(e => {
+        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          moveTo()
+        }
+      })
+    }
+    function addCloseButtonEvent() {
+      const closeButton = shadowRoot.querySelector('#iv-control-close')
+      closeButton.classList.add('show')
+      closeButton.addEventListener('click', closeImageViewer)
+      closeButton.addEventListener('contextmenu', e => {
+        e.preventDefault()
+        chrome.runtime?.id ? chrome.runtime.sendMessage('close_tab') : window.close()
+      })
+      keydownHandlerList.push(e => {
+        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
+        if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
+          e.preventDefault()
+          closeImageViewer()
+        }
+      })
+    }
+    function addMiddleClickKeyEvent() {
+      function searchImgAnchor(imgNode) {
+        const closestAnchor = imgNode.closest('a')
+        if (closestAnchor) return closestAnchor
+
+        const {width: rootWidth, height: rootHeight, top: rootTop, left: rootLeft} = imgNode.getBoundingClientRect()
+        let el = imgNode
+        while (el.parentElement) {
+          el = el.parentElement
+          const anchorList = el.querySelectorAll(':scope > a')
+          for (const anchor of anchorList) {
+            const {width, height, top, left} = anchor.getBoundingClientRect()
+            const include = top <= rootTop && left <= rootLeft && top + height >= rootTop + rootHeight && left + width >= rootLeft + rootWidth
+            if (include) return anchor
+          }
+        }
+
+        const prevSibling = imgNode.previousElementSibling
+        const nextSibling = imgNode.nextElementSibling
+        if (prevSibling?.tagName === 'A') return prevSibling
+        if (nextSibling?.tagName === 'A') return nextSibling
+
+        return null
+      }
+      const openNewTab = chrome.runtime?.id ? anchor => chrome.runtime.sendMessage({msg: 'open_tab', url: anchor.href}) : anchor => window.open(anchor.href, '_blank')
+      const dispatchEvent = anchor => anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
+
+      const action = taskFunc => {
+        const img = shadowRoot.querySelector('li.current img')
+        const imgNode = searchImgNode(img)
+        if (!imgNode) return
+        const anchor = searchImgAnchor(imgNode)
+        if (!anchor) return
+        taskFunc(anchor)
+      }
+
+      keydownHandlerList.push(e => {
+        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
+        if (e.key === 'Insert' || e.key === '0') {
+          e.preventDefault()
+          action(openNewTab)
+        }
+      })
+      // call preventDefault to trigger auxclick event
+      viewer.addEventListener('mousedown', e => {
+        if (e.button === 1) e.preventDefault()
+      })
+      // browsers map middle click to opening a link in a new tab without switching
+      // opening a link in auxclick event handler can do the same job (undocumented?)
+      viewer.addEventListener('auxclick', e => {
+        if (e.button === 1) action(dispatchEvent)
+      })
+    }
+    function disableWebsiteDefaultEvent() {
+      const disableList = [
+        'click',
+        'contextmenu',
+        'dblclick',
+        'keypress',
+        'keyup',
+        'mousedown',
+        'mouseenter',
+        'mouseleave',
+        'mousemove',
+        'mouseover',
+        'mouseup',
+        'pointerdown',
+        'pointerenter',
+        'pointerleave',
+        'pointermove',
+        'pointerout',
+        'pointerover',
+        'pointerup',
+        'wheel'
+      ]
+
+      for (const event of disableList) {
+        viewer.addEventListener(event, e => e.stopPropagation())
+      }
+      keydownHandlerList.push(e => e.stopPropagation())
+    }
 
     initKeydownHandler()
-    addFitButtonEvent()
-    addMoveToButtonEvent()
-    addCloseButtonEvent()
-    addMiddleClickKeyEvent()
-    disableWebsiteDefaultEvent()
     addImageReverseSearchHotkey()
     addChangeBackgroundHotkey()
     addTransformationHotkey()
+    addFitButtonEvent()
+    if (options.closeButton) {
+      addMoveToButtonEvent()
+      addCloseButtonEvent()
+      addMiddleClickKeyEvent()
+      disableWebsiteDefaultEvent()
+    }
   }
 
   function addImageEvent(options) {
@@ -1535,7 +1474,8 @@ window.ImageViewer = (function () {
       }
     }
     function tryClear() {
-      if (clearFlag && isCurrentListBad(newList)) {
+      const isCurrentListBad = currentImageList.length > newList.length || currentImageList.some(img => typeof img === 'string' && newList.indexOf(img) === -1)
+      if (clearFlag && isCurrentListBad) {
         console.log('Clear bad image list')
         clearFlag = false
         currentImageList.length = 0
@@ -1565,6 +1505,15 @@ window.ImageViewer = (function () {
       }
     }
     function tryInsert() {
+      function insertImageNode(node, index) {
+        const list = shadowRoot.querySelectorAll('#iv-image-list li')
+        if (index === list.length) {
+          imageListNode.appendChild(node)
+        } else {
+          imageListNode.insertBefore(node, list[index])
+        }
+      }
+      const imageListNode = shadowRoot.querySelector('#iv-image-list')
       const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
       const currentIndex = counterCurrent.innerHTML - 1
       for (let i = 0; i < newList.length; i++) {
@@ -1630,6 +1579,46 @@ window.ImageViewer = (function () {
     shadowRoot.querySelector('#iv-index').style.display = 'inline'
     shadowRoot.querySelector('#iv-counter-total').innerHTML = currentImageList.length
     if (updated) console.log('Image viewer updated')
+  }
+
+  function restoreIndex(options) {
+    const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastSrc !== '')
+    if (!neededToRestore) return
+
+    // reset after url change
+    if (lastUrl !== location.href) {
+      lastUrl = location.href
+      clearSrc = ''
+      clearIndex = -1
+      lastSrc = ''
+      return
+    }
+
+    const current = shadowRoot.querySelector('#iv-counter-current')
+    const imageListNode = shadowRoot.querySelector('#iv-image-list')
+    const infoWidth = shadowRoot.querySelector('#iv-info-width')
+    const infoHeight = shadowRoot.querySelector('#iv-info-height')
+
+    const targetSrc = clearSrc || lastSrc
+    const rawUrl = getRawUrl(targetSrc)
+    const srcIndex = currentImageList.map(item => (typeof item === 'string' ? item : item[0])).findIndex(src => src === targetSrc || src === rawUrl)
+    const newIndex = clearIndex === 0 ? 0 : srcIndex === -1 ? Math.min(clearIndex, currentImageList.length - 1) : srcIndex
+
+    current.innerHTML = newIndex + 1
+
+    imageListNode.style.translate = `0 ${-newIndex * 100}%`
+    imageListNode.querySelector('li.current')?.classList.remove('current')
+
+    const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
+    relateListItem.classList.add('current')
+
+    const relateImage = relateListItem.querySelector('img')
+    infoWidth.value = relateImage.naturalWidth
+    infoHeight.value = relateImage.naturalHeight
+
+    clearSrc = ''
+    clearIndex = -1
+    lastSrc = ''
   }
 
   function executeCommand(command) {
