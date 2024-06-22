@@ -1051,6 +1051,24 @@ window.ImageViewerUtils = (function () {
   }
 
   // get image
+  async function getIframeImage(options) {
+    const iframeList = [...document.getElementsByTagName('iframe')]
+    const iframeSrcList = iframeList.map(iframe => iframe.src)
+    const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
+    if (filteredList.length === 0) return []
+
+    const uniqueIframeImage = []
+    const uniqueIframeImageUrls = new Set()
+    const minSize = Math.min(options.minWidth, options.minHeight)
+    const iframeImage = (await safeSendMessage({msg: 'extract_frames', minSize: minSize})) || []
+    for (const img of iframeImage) {
+      if (!uniqueIframeImageUrls.has(img[0])) {
+        uniqueIframeImageUrls.add(img[0])
+        uniqueIframeImage.push(img)
+      }
+    }
+    return uniqueIframeImage
+  }
   function processImageDataList(options, imageDataList) {
     const isBadImage = options.svgFilter ? url => badImageList.has(url) || url.startsWith('data:image/svg') || url.includes('.svg') : url => badImageList.has(url)
 
@@ -1353,24 +1371,8 @@ window.ImageViewerUtils = (function () {
       await startUnlazy(options)
 
       const uniqueImageUrls = await getImageList(options)
-
-      const iframeList = [...document.getElementsByTagName('iframe')]
-      const iframeSrcList = iframeList.map(iframe => iframe.src)
-      const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
-      if (filteredList.length) {
-        const minSize = Math.min(options.minWidth, options.minHeight)
-        const iframeImage = (await safeSendMessage({msg: 'extract_frames', minSize: minSize})) || []
-
-        const uniqueIframeImage = []
-        const uniqueIframeImageUrls = new Set()
-        for (const img of iframeImage) {
-          if (!uniqueIframeImageUrls.has(img[0])) {
-            uniqueIframeImageUrls.add(img[0])
-            uniqueIframeImage.push(img)
-          }
-        }
-        uniqueImageUrls.push(...uniqueIframeImage)
-      }
+      const uniqueIframeImage = await getIframeImage(options)
+      uniqueImageUrls.push(...uniqueIframeImage)
 
       if (uniqueImageUrls.length === 0) {
         release()
