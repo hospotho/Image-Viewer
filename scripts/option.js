@@ -61,7 +61,7 @@
       const tag = el.getAttribute('data-i18n')
       const message = chrome.i18n.getMessage(tag)
       if (!message) continue
-      el.innerHTML = message
+      el.textContent = message
       if (el.value !== '') el.value = message
     }
   }
@@ -107,9 +107,9 @@
     try {
       document.querySelector(`input#fit-${options.fitMode}`).checked = true
       zoom.value = options.zoomRatio
-      zoom.nextElementSibling.innerHTML = options.zoomRatio
+      zoom.nextElementSibling.textContent = options.zoomRatio
       rotate.value = options.rotateDeg
-      rotate.nextElementSibling.innerHTML = options.rotateDeg
+      rotate.nextElementSibling.textContent = options.rotateDeg
 
       width.value = options.minWidth
       height.value = options.minHeight
@@ -154,12 +154,12 @@
   //==========main==========
   function initFormEvent() {
     zoom.addEventListener('input', () => {
-      document.querySelector('span#zoomDisplay').innerHTML = zoom.value
+      document.querySelector('span#zoomDisplay').textContent = zoom.value
     })
 
     rotate.addEventListener('input', () => {
       const span = document.querySelector('span#rotateDisplay')
-      span.innerHTML = rotate.value
+      span.textContent = rotate.value
       span.nextElementSibling.style = 360 % rotate.value !== 0 ? 'display: inline' : ''
     })
 

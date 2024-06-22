@@ -302,7 +302,7 @@ First release on github
       const tag = el.getAttribute('data-i18n')
       const message = chrome.i18n.getMessage(tag)
       if (!message) continue
-      el.innerHTML = message
+      el.textContent = message
       if (el.value !== '') el.value = message
     }
   }

@@ -27,7 +27,7 @@
   if (window.top === window.self && !disableHoverCheck) {
     const styles = 'html.iv-worker-idle img {pointer-events: auto !important;} .disable-hover {pointer-events: none !important;}'
     const styleSheet = document.createElement('style')
-    styleSheet.innerText = styles
+    styleSheet.textContent = styles
     document.head.appendChild(styleSheet)
     document.documentElement.classList.add('iv-worker-idle')
   }

@@ -663,7 +663,7 @@ window.ImageViewer = (function () {
     document.body.appendChild(shadowHolder)
 
     const stylesheet = document.createElement('style')
-    stylesheet.innerHTML = style()
+    stylesheet.textContent = style()
     const viewer = document.createElement('div')
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
@@ -690,7 +690,7 @@ window.ImageViewer = (function () {
       for (const node of shadowRoot.querySelectorAll('[data-i18n]')) {
         const msg = chrome.i18n.getMessage(node.getAttribute('data-i18n'))
         if (msg) {
-          node.innerHTML = msg
+          node.textContent = msg
           if (node.value !== '') node.value = msg
         }
       }
@@ -706,7 +706,7 @@ window.ImageViewer = (function () {
 
     if (imageList.length === 1) return
     shadowRoot.querySelector('#iv-index').style.display = 'inline'
-    shadowRoot.querySelector('#iv-counter-total').innerHTML = imageList.length
+    shadowRoot.querySelector('#iv-counter-total').textContent = imageList.length
     for (let i = 1; i < imageList.length; i++) {
       const li = buildImageNode(imageList[i], options)
       _imageList.appendChild(li)
@@ -728,8 +728,8 @@ window.ImageViewer = (function () {
       const current = shadowRoot.querySelector('li.current') || list[Math.min(length - 1, lastIndex)]
       const currIndex = list.indexOf(current)
 
-      counterTotal.innerHTML = length
-      counterCurrent.innerHTML = currIndex + 1
+      counterTotal.textContent = length
+      counterCurrent.textContent = currIndex + 1
       imageListNode.style.translate = `0 ${-currIndex * 100}%`
     }
     function removeFailedImg() {
@@ -1015,8 +1015,8 @@ window.ImageViewer = (function () {
       async function moveTo() {
         const current = shadowRoot.querySelector('#iv-counter-current')
         const total = shadowRoot.querySelector('#iv-counter-total')
-        const currIndex = Number(current.innerHTML) - 1
-        const imageListLength = Number(total.innerHTML)
+        const currIndex = Number(current.textContent) - 1
+        const imageListLength = Number(total.textContent)
         closeImageViewer()
 
         const htmlTemp = document.documentElement.style.scrollBehavior
@@ -1331,7 +1331,7 @@ window.ImageViewer = (function () {
     let debounceFlag = false
 
     function moveToNode(index) {
-      current.innerHTML = index + 1
+      current.textContent = index + 1
       imageListNode.style.translate = `0 ${-index * 100}%`
       imageListNode.querySelector('li.current')?.classList.remove('current')
 
@@ -1349,8 +1349,8 @@ window.ImageViewer = (function () {
         debounceFlag = false
         throttleTimestamp = Date.now()
       }
-      const currentIndex = Number(current.innerHTML) - 1
-      const imageListLength = Number(total.innerHTML)
+      const currentIndex = Number(current.textContent) - 1
+      const imageListLength = Number(total.textContent)
       const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
 
       if (!repeat) {
@@ -1362,8 +1362,8 @@ window.ImageViewer = (function () {
         if (!debounceFlag) {
           debounceTimeout = setTimeout(
             () => {
-              const currentIndex = Number(current.innerHTML) - 1
-              const imageListLength = Number(total.innerHTML)
+              const currentIndex = Number(current.textContent) - 1
+              const imageListLength = Number(total.textContent)
               const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
               moveToNode(prevIndex)
               debounceFlag = false
@@ -1386,8 +1386,8 @@ window.ImageViewer = (function () {
         debounceFlag = false
         throttleTimestamp = Date.now()
       }
-      const currentIndex = Number(current.innerHTML) - 1
-      const imageListLength = Number(total.innerHTML)
+      const currentIndex = Number(current.textContent) - 1
+      const imageListLength = Number(total.textContent)
       const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
 
       if (!repeat) {
@@ -1399,8 +1399,8 @@ window.ImageViewer = (function () {
         if (!debounceFlag) {
           debounceTimeout = setTimeout(
             () => {
-              const currentIndex = Number(current.innerHTML) - 1
-              const imageListLength = Number(total.innerHTML)
+              const currentIndex = Number(current.textContent) - 1
+              const imageListLength = Number(total.textContent)
               const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
               moveToNode(nextIndex)
               debounceFlag = false
@@ -1441,8 +1441,8 @@ window.ImageViewer = (function () {
       const action = keyMap[e.key]
       if (action !== undefined && e.key.length !== 1) {
         e.preventDefault()
-        const currIndex = Number(current.innerHTML) - 1
-        const newIndex = action === 1 ? Math.min(currIndex + 10, Number(total.innerHTML) - 1) : Math.max(currIndex - 10, 0)
+        const currIndex = Number(current.textContent) - 1
+        const newIndex = action === 1 ? Math.min(currIndex + 10, Number(total.textContent) - 1) : Math.max(currIndex - 10, 0)
         moveToNode(newIndex)
       }
     }
@@ -1515,7 +1515,7 @@ window.ImageViewer = (function () {
       }
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
       const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
-      const currentIndex = counterCurrent.innerHTML - 1
+      const currentIndex = counterCurrent.textContent - 1
       for (let i = 0; i < newList.length; i++) {
         const data = newList[i]
         const url = typeof data === 'string' ? data : data[0]
@@ -1577,7 +1577,7 @@ window.ImageViewer = (function () {
     lastUpdateTime = Date.now()
 
     shadowRoot.querySelector('#iv-index').style.display = 'inline'
-    shadowRoot.querySelector('#iv-counter-total').innerHTML = currentImageList.length
+    shadowRoot.querySelector('#iv-counter-total').textContent = currentImageList.length
     if (updated) console.log('Image viewer updated')
   }
 
@@ -1604,7 +1604,7 @@ window.ImageViewer = (function () {
     const srcIndex = currentImageList.map(item => (typeof item === 'string' ? item : item[0])).findIndex(src => src === targetSrc || src === rawUrl)
     const newIndex = clearIndex === 0 ? 0 : srcIndex === -1 ? Math.min(clearIndex, currentImageList.length - 1) : srcIndex
 
-    current.innerHTML = newIndex + 1
+    current.textContent = newIndex + 1
 
     imageListNode.style.translate = `0 ${-newIndex * 100}%`
     imageListNode.querySelector('li.current')?.classList.remove('current')
@@ -1636,7 +1636,7 @@ window.ImageViewer = (function () {
         }
         clearFlag = true
         clearSrc = current.src
-        clearIndex = counterCurrent.innerHTML - 1
+        clearIndex = counterCurrent.textContent - 1
         return
       }
       case 'reset_image_list': {
