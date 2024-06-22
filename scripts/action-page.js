@@ -35,10 +35,9 @@
 
   // auto update
   let initComplete = true
-  let badInit = false
-  let updateRelease = () => {}
   let initPeriod = 500
   let updatePeriod = 500
+  let updateRelease = () => {}
   const multiplier = 1.2
 
   const initObserver = new MutationObserver(mutationList => {
@@ -65,15 +64,9 @@
   while (document.documentElement.classList.contains('has-image-viewer')) {
     // wait website init
     await new Promise(resolve => setTimeout(resolve, initPeriod))
-    if (badInit) {
-      initComplete = false
-      initPeriod -= 100
-    }
     while (!initComplete) {
-      initPeriod += 100
       initComplete = true
-      badInit = true
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, initPeriod))
     }
 
     // update image viewer
