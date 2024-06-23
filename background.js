@@ -269,10 +269,12 @@ function addMessageHandler() {
           const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})) || []
           const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
           const asyncList = targetList.map(frame =>
-            chrome.scripting.executeScript({
-              target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
-              func: () => {}
-            })
+            chrome.scripting
+              .executeScript({
+                target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
+                func: () => {}
+              })
+              .then(result => (result instanceof Error ? frame.url : false))
           )
           const badIframe = (await Promise.all(asyncList)).filter(Boolean)
           const failedIframeList = [...new Set(badIframe)]
