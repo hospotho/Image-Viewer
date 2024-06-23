@@ -21,7 +21,7 @@
       iframe.src = 'about:blank'
       return false
     }
-    if (iframe.loading) {
+    if (iframe.loading !== 'eager') {
       iframe.loading = 'eager'
       iframe.classList.remove('loadedWorker')
     }
@@ -55,8 +55,15 @@
       const targetList = iframeList.filter(iframe => iframe.src === src)
       for (const iframe of targetList) {
         if (iframe.src.startsWith('data')) continue
-        iframe.classList.add('updateByTest')
-        iframe.src = 'about:blank'
+        const newIframe = document.createElement('iframe')
+        newIframe.id = iframe.id
+        newIframe.className = iframe.className
+        newIframe.style = iframe.style
+        newIframe.width = iframe.width
+        newIframe.height = iframe.height
+        newIframe.loading = iframe.loading
+        newIframe.src = 'about:blank'
+        iframe.parentNode.replaceChild(newIframe, iframe)
         console.log(`Remove failed iframe: ${src}`)
       }
     }
