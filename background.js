@@ -33,7 +33,6 @@ chrome.scripting.executeScript = async function () {
   }
 }
 const passDataToTab = (id, name, data, toAllFrames = true) => {
-  console.log('Pass data: ', id, name, data)
   return chrome.scripting.executeScript({
     args: [data, name],
     target: {tabId: id, allFrames: toAllFrames},
@@ -201,10 +200,10 @@ function resetLocalStorage() {
 function addMessageHandler() {
   chrome.runtime.onMessage.addListener((request, sender, _sendResponse) => {
     const type = request.msg || request
-    console.log('Received message: ', sender.tab.id, type)
+    console.log('Messages: ', sender.tab.id, type)
 
     const sendResponse = (data = null, display = true) => {
-      const msg = ['Send response:    ', sender.tab.id, type]
+      const msg = ['Response: ', sender.tab.id, type]
       if (data && display) msg.push(data)
       console.log(...msg)
       _sendResponse(data)
@@ -408,7 +407,6 @@ function createContextMenu() {
     const supported = tab.url.startsWith('http') || (tab.url.startsWith('file') && (await chrome.extension.isAllowedFileSchemeAccess()))
     if (!supported) return
 
-    console.log('Context menus event: ', tab.id, info.menuItemId)
     switch (info.menuItemId) {
       case 'view_images_in_image_viewer': {
         await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
