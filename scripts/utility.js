@@ -956,7 +956,7 @@ window.ImageViewerUtils = (function () {
       allComplete = await unlazyImage(minWidth, minHeight)
     }
 
-    if (unlazyCount === 0) {
+    if (unlazyCount++ === 0) {
       console.log('First unlazy complete')
       clearWindowBackup(options)
       if (typeof ImageViewer === 'function') ImageViewer('clear_image_list')
@@ -964,15 +964,6 @@ window.ImageViewerUtils = (function () {
     if (autoScrollFlag) {
       ImageViewer('clear_image_list')
     }
-    if (lastHref !== '' && lastHref !== location.href) {
-      const unchangedCount = [...new Set(getImageListWithoutFilter(options).map(data => data[0]))].map(url => window.backupImageUrlList.indexOf(url)).filter(i => i !== -1).length
-      if (unchangedCount < 5) {
-        window.backupImageUrlList = []
-        ImageViewer('reset_image_list')
-      }
-    }
-    unlazyCount++
-    lastHref = location.href
 
     isEnabledAutoScroll(options) ? autoScroll() : scrollUnlazy()
   }
@@ -1042,6 +1033,15 @@ window.ImageViewerUtils = (function () {
       preprocessLazyPlaceholder()
       fakeUserHover()
     }
+    if (lastHref !== '' && lastHref !== location.href) {
+      const allImageOnPage = new Set(getImageListWithoutFilter(options).map(data => data[0]))
+      const unchangedCount = new Set(window.backupImageUrlList).intersection(allImageOnPage).size
+      if (unchangedCount < 5) {
+        window.backupImageUrlList = []
+        ImageViewer('reset_image_list')
+      }
+    }
+    lastHref = location.href
     const race = createUnlazyRace(options)
     return race
   }
