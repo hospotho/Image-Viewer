@@ -1171,21 +1171,20 @@ window.ImageViewerUtils = (function () {
   }
   function isNodeSizeEnough(node, minWidth, minHeight) {
     const widthAttr = node.getAttribute('data-width')
-    if (widthAttr) {
-      const heightAttr = node.getAttribute('data-height')
+    const heightAttr = node.getAttribute('data-height')
+    if (widthAttr && heightAttr) {
       const width = Number(widthAttr)
       const height = Number(heightAttr)
       return width >= minWidth && height >= minHeight
-    } else {
-      const {width, height} = node.getBoundingClientRect()
-      if (width === 0 || height === 0) {
-        node.setAttribute('no-bg', '')
-        return false
-      }
-      node.setAttribute('data-width', width)
-      node.setAttribute('data-height', height)
-      return width >= minWidth && height >= minHeight
     }
+    const {width, height} = node.getBoundingClientRect()
+    if (width === 0 || height === 0) {
+      node.setAttribute('no-bg', '')
+      return false
+    }
+    node.setAttribute('data-width', width)
+    node.setAttribute('data-height', height)
+    return width >= minWidth && height >= minHeight
   }
   async function getImageList(options) {
     const minWidth = options.minWidth
