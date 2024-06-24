@@ -80,14 +80,15 @@
   while (window.ImageViewerOption === undefined) {
     await new Promise(resolve => setTimeout(resolve, 50))
   }
-  const options = window.ImageViewerOption
-  const imageList = getImageList(options)
-  if (imageList.length === 0) return
-
-  const asyncList = await Promise.all(imageList.map(createDataUrl))
-  const imageDataUrls = asyncList.filter(url => url !== '')
   const subFrame = document.getElementsByTagName('iframe')
   const subFrameHref = [...subFrame].map(iframe => iframe.src)
   const subFrameRedirectedHref = await safeSendMessage({msg: 'get_redirect', data: subFrameHref})
+
+  const options = window.ImageViewerOption
+  const imageList = getImageList(options)
+  if (imageList.length === 0) return [location.href, subFrameRedirectedHref, []]
+
+  const asyncList = await Promise.all(imageList.map(createDataUrl))
+  const imageDataUrls = asyncList.filter(url => url !== '')
   return [location.href, subFrameRedirectedHref, imageDataUrls]
 })()
