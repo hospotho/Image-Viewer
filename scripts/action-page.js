@@ -28,9 +28,6 @@
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
   window.backupImageUrlList = Array.from(combinedImageList)
 
-  if (typeof ImageViewer !== 'function') {
-    await safeSendMessage('load_script')
-  }
   ImageViewer(window.backupImageUrlList, options)
 
   // auto update

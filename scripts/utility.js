@@ -96,7 +96,7 @@ window.ImageViewerUtils = (function () {
         if (unlazyCount > 0) autoScroll()
       }
       // download images
-      if (typeof ImageViewer === 'function' && checkKey(e, options.functionHotkey[1])) {
+      if (checkKey(e, options.functionHotkey[1])) {
         e.preventDefault()
         safeSendMessage('download_images')
       }
@@ -959,7 +959,7 @@ window.ImageViewerUtils = (function () {
     if (unlazyCount++ === 0) {
       console.log('First unlazy complete')
       clearWindowBackup(options)
-      if (typeof ImageViewer === 'function') ImageViewer('clear_image_list')
+      ImageViewer('clear_image_list')
     }
     if (autoScrollFlag) {
       ImageViewer('clear_image_list')

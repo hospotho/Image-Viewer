@@ -45,9 +45,6 @@
     console.log('Unshift image to list')
   }
 
-  if (typeof ImageViewer !== 'function') {
-    await safeSendMessage('load_script')
-  }
   ImageViewer(window.backupImageUrlList, options)
 
   // auto update
