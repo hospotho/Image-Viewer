@@ -65,6 +65,7 @@
       initComplete = true
       await new Promise(resolve => setTimeout(resolve, initPeriod))
     }
+    if (!document.documentElement.classList.contains('has-image-viewer')) return
 
     // update image viewer
     const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
