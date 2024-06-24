@@ -139,6 +139,9 @@ window.ImageViewerUtils = (function () {
   const styleObserver = new MutationObserver(mutationsList => {
     for (const mutation of mutationsList) {
       mutation.target.removeAttribute('no-bg')
+      mutation.target.removeAttribute('data-bg')
+      mutation.target.removeAttribute('data-width')
+      mutation.target.removeAttribute('data-height')
     }
   })
   styleObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['style']})
