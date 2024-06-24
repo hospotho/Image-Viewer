@@ -1480,8 +1480,13 @@ window.ImageViewer = (function () {
     function tryClear() {
       const isCurrentListBad = currentImageList.length > newList.length || currentImageList.some(img => typeof img === 'string' && newList.indexOf(img) === -1)
       if (clearFlag && isCurrentListBad) {
-        console.log('Clear bad image list')
+        console.log('Clear image list')
+        const current = shadowRoot.querySelector('li.current img')
+        const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
         clearFlag = false
+        clearSrc = current.src
+        clearIndex = counterCurrent.textContent - 1
+
         currentImageList.length = 0
         const imageListNode = shadowRoot.querySelector('#iv-image-list')
         imageListNode.innerHTML = ''
@@ -1632,15 +1637,7 @@ window.ImageViewer = (function () {
       }
       case 'clear_image_list': {
         // will try to clean when calling updateImageList
-        const current = shadowRoot.querySelector('li.current img')
-        const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
-        if (current === null) {
-          setTimeout(() => ImageViewer('clear_image_list'), 1000)
-          return
-        }
         clearFlag = true
-        clearSrc = current.src
-        clearIndex = counterCurrent.textContent - 1
         return
       }
       case 'reset_image_list': {
