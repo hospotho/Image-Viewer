@@ -105,7 +105,6 @@
     initIframeObserver()
     await removeFailedIframe()
 
-    console.log('Init content script')
     safeSendMessage('get_options')
     safeSendMessage('load_worker')
 

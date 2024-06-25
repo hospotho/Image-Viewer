@@ -433,4 +433,6 @@
     },
     true
   )
+
+  console.log('Initialized content script')
 })()
