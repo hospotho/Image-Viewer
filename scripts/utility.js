@@ -974,15 +974,16 @@ window.ImageViewerUtils = (function () {
   // before unlazy
   function createUnlazyRace(options) {
     // slow connection alert
-    setTimeout(() => {
-      if (unlazyCount > 0) return
-      const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
-      const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
-      if (stillLoading) {
-        console.log('Slow connection, images still loading')
-        alert('Slow connection, images still loading')
-      }
-    }, 10000)
+    if (raceCount + unlazyCount === 0) {
+      setTimeout(() => {
+        const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
+        const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
+        if (stillLoading) {
+          console.log('Slow connection, images still loading')
+          alert('Slow connection, images still loading')
+        }
+      }, 10000)
+    }
 
     // set timeout for first unlazy
     const timeout = new Promise(resolve =>
@@ -995,7 +996,6 @@ window.ImageViewerUtils = (function () {
       }, 1000)
     )
     const clone = structuredClone(options)
-    clone.firstTime = true
     const race = Promise.race([simpleUnlazyImage(clone), timeout])
     return race
   }
