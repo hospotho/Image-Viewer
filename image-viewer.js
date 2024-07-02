@@ -1102,10 +1102,8 @@ window.ImageViewer = (function () {
           }
         }
 
-        const prevSibling = imgNode.previousElementSibling
-        const nextSibling = imgNode.nextElementSibling
-        if (prevSibling?.tagName === 'A') return prevSibling
-        if (nextSibling?.tagName === 'A') return nextSibling
+        const siblingAnchor = [...imgNode.parentElement.children].find(node => node?.tagName === 'A')
+        if (siblingAnchor) return siblingAnchor
 
         return null
       }
