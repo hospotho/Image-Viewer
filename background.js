@@ -210,20 +210,7 @@ function addMessageHandler() {
     }
 
     switch (type) {
-      case 'get_options': {
-        ;(async () => {
-          await passDataToTab(sender.tab.id, 'ImageViewerOption', currOptions)
-          sendResponse()
-        })()
-        return true
-      }
-      case 'get_main_options': {
-        ;(async () => {
-          await passDataToTab(sender.tab.id, 'ImageViewerOption', currOptions, false)
-          sendResponse()
-        })()
-        return true
-      }
+      // option
       case 'update_options': {
         ;(async () => {
           const res = await chrome.storage.sync.get('options')
@@ -236,23 +223,22 @@ function addMessageHandler() {
         })()
         return true
       }
-      case 'load_worker': {
-        ;(async () => {
-          const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})) || []
-          const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
-          const asyncList = targetList.map(frame =>
-            chrome.scripting.executeScript({
-              target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
-              files: ['/scripts/activate-worker.js']
-            })
-          )
-          await Promise.all(asyncList)
-          sendResponse()
-        })()
+      // init
+      case 'get_options': {
+        chrome.scripting.executeScript(
+          {
+            args: [currOptions, 'ImageViewerOption'],
+            target: {tabId: sender.tab.id, frameIds: [sender.frameId]},
+            func: (data, name) => {
+              window[name] = data
+            }
+          },
+          () => sendResponse()
+        )
         return true
       }
-      case 'load_main_worker': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
+      case 'load_worker': {
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
         return true
       }
       case 'load_utility': {
@@ -264,21 +250,40 @@ function addMessageHandler() {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse())
         return true
       }
-      case 'check_frames': {
+      // worker
+      case 'reset_dom': {
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: resetLabel}, () => sendResponse())
+        return true
+      }
+      case 'update_info': {
+        lastImageNodeInfo = request.data
+        lastImageNodeInfoID = sender.tab.id
+        console.log(...lastImageNodeInfo)
+        sendResponse()
+        return true
+      }
+      case 'get_info': {
+        if (lastImageNodeInfoID === sender.tab.id) {
+          sendResponse(lastImageNodeInfo)
+        } else {
+          sendResponse()
+        }
+        return true
+      }
+      // utility
+      case 'get_size': {
         ;(async () => {
-          const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})) || []
-          const targetList = iframeList.slice(1).filter(frame => frame.url !== '' && frame.url !== 'about:blank')
-          const asyncList = targetList.map(frame =>
-            chrome.scripting
-              .executeScript({
-                target: {tabId: sender.tab.id, frameIds: [frame.frameId]},
-                func: () => {}
-              })
-              .then(result => (result instanceof Error ? frame.url : false))
-          )
-          const badIframe = (await Promise.all(asyncList)).filter(Boolean)
-          const failedIframeList = [...new Set(badIframe)]
-          sendResponse(failedIframeList, false)
+          const size = await getImageBitSize(request.url)
+          sendResponse(size, false)
+          console.log(request.url, size)
+        })()
+        return true
+      }
+      case 'get_local_size': {
+        ;(async () => {
+          const size = await getImageLocalRealSize(sender.tab.id, request.url)
+          sendResponse(size, false)
+          console.log(request.url, size)
         })()
         return true
       }
@@ -313,25 +318,14 @@ function addMessageHandler() {
         })()
         return true
       }
-      case 'reset_dom': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: resetLabel}, () => sendResponse())
+      case 'get_redirect': {
+        ;(async () => {
+          const resultList = await getRedirectUrl(request.data)
+          sendResponse(resultList)
+        })()
         return true
       }
-      case 'get_info': {
-        if (lastImageNodeInfoID === sender.tab.id) {
-          sendResponse(lastImageNodeInfo)
-        } else {
-          sendResponse()
-        }
-        return true
-      }
-      case 'update_info': {
-        lastImageNodeInfo = request.data
-        lastImageNodeInfoID = sender.tab.id
-        console.log(...lastImageNodeInfo)
-        sendResponse()
-        return true
-      }
+      // image viewer
       case 'open_tab': {
         if (lastTabID !== sender.tab.id || lastTabIndex !== sender.tab.index) {
           lastTabID = sender.tab.id
@@ -345,29 +339,7 @@ function addMessageHandler() {
         chrome.tabs.remove(sender.tab.id, () => sendResponse())
         return true
       }
-      case 'get_size': {
-        ;(async () => {
-          const size = await getImageBitSize(request.url)
-          sendResponse(size, false)
-          console.log(request.url, size)
-        })()
-        return true
-      }
-      case 'get_local_size': {
-        ;(async () => {
-          const size = await getImageLocalRealSize(sender.tab.id, request.url)
-          sendResponse(size, false)
-          console.log(request.url, size)
-        })()
-        return true
-      }
-      case 'get_redirect': {
-        ;(async () => {
-          const resultList = await getRedirectUrl(request.data)
-          sendResponse(resultList)
-        })()
-        return true
-      }
+      // download
       case 'download_images': {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/download-images.js']}, () => sendResponse())
         return true
