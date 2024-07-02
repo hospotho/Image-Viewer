@@ -32,12 +32,12 @@ chrome.scripting.executeScript = async function () {
     return error
   }
 }
-const passDataToTab = (id, name, data, toAllFrames = true) => {
+const passOptionToTab = (id, option, toAllFrames = false) => {
   return chrome.scripting.executeScript({
-    args: [data, name],
+    args: [option],
     target: {tabId: id, allFrames: toAllFrames},
-    func: (data, name) => {
-      window[name] = data
+    func: option => {
+      window.ImageViewerOption = option
     }
   })
 }
@@ -110,14 +110,6 @@ const getImageLocalRealSize = (id, srcUrl) => {
     })
   })
 }
-const getImageArray = async src => {
-  const release = await mutex.waitSlot()
-  const res = await fetch(src)
-  const arrayBuffer = await res.arrayBuffer()
-  const data = Array.from(new Uint8Array(arrayBuffer))
-  release()
-  return data
-}
 const getRedirectUrl = async urlList => {
   const asyncList = urlList.map(async url => {
     if (url === '' || url === 'about:blank') return url
@@ -138,7 +130,6 @@ const getRedirectUrl = async urlList => {
   const redirectUrlList = await Promise.all(asyncList)
   return redirectUrlList
 }
-const resetLabel = () => document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
 
 // main function
 const defaultOptions = {
@@ -227,10 +218,10 @@ function addMessageHandler() {
       case 'get_options': {
         chrome.scripting.executeScript(
           {
-            args: [currOptions, 'ImageViewerOption'],
+            args: [currOptions],
             target: {tabId: sender.tab.id, frameIds: [sender.frameId]},
-            func: (data, name) => {
-              window[name] = data
+            func: option => {
+              window.ImageViewerOption = option
             }
           },
           () => sendResponse()
@@ -252,7 +243,15 @@ function addMessageHandler() {
       }
       // worker
       case 'reset_dom': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, func: resetLabel}, () => sendResponse())
+        chrome.scripting.executeScript(
+          {
+            target: {tabId: sender.tab.id},
+            func: () => {
+              document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
+            }
+          },
+          () => sendResponse()
+        )
         return true
       }
       case 'update_info': {
@@ -292,7 +291,7 @@ function addMessageHandler() {
           const newOptions = Object.assign({}, currOptions)
           newOptions.minWidth = request.minSize
           newOptions.minHeight = request.minSize
-          await passDataToTab(sender.tab.id, 'ImageViewerOption', newOptions)
+          await passOptionToTab(sender.tab.id, newOptions, true)
           const results = await chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/extract-iframe.js']})
 
           const relation = new Map()
@@ -346,7 +345,11 @@ function addMessageHandler() {
       }
       case 'request_cors_image': {
         ;(async () => {
-          const rawArray = await getImageArray(request.src)
+          const release = await mutex.waitSlot()
+          const res = await fetch(request.src)
+          release()
+          const arrayBuffer = await res.arrayBuffer()
+          const rawArray = Array.from(new Uint8Array(arrayBuffer))
           sendResponse(rawArray)
         })()
         return true
@@ -381,17 +384,17 @@ function createContextMenu() {
 
     switch (info.menuItemId) {
       case 'view_images_in_image_viewer': {
-        await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
+        await passOptionToTab(tab.id, currOptions)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-image.js']})
         break
       }
       case 'view_all_image_in_image_viewer': {
-        await passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
+        await passOptionToTab(tab.id, currOptionsWithoutSize)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         break
       }
       case 'view_last_right_click_image_in_image_viewer': {
-        await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
+        await passOptionToTab(tab.id, currOptions)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-image.js']})
         break
       }
@@ -402,7 +405,7 @@ function createContextMenu() {
 function addToolbarIconHandler() {
   chrome.action.onClicked.addListener(async tab => {
     if (!tab.url) return
-    await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
+    await passOptionToTab(tab.id, currOptions)
     chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
   })
 }
@@ -412,12 +415,12 @@ function addCommandHandler() {
     if (!tab.url) return
     switch (command) {
       case 'open-image-viewer': {
-        await passDataToTab(tab.id, 'ImageViewerOption', currOptions)
+        await passOptionToTab(tab.id, currOptions)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         break
       }
       case 'open-image-viewer-without-size-filter': {
-        await passDataToTab(tab.id, 'ImageViewerOption', currOptionsWithoutSize)
+        await passOptionToTab(tab.id, currOptionsWithoutSize)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         break
       }
