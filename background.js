@@ -293,6 +293,10 @@ function addMessageHandler() {
           newOptions.minHeight = request.minSize
           await passOptionToTab(sender.tab.id, newOptions, true)
           const results = await chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/extract-iframe.js']})
+          if (results instanceof Error) {
+            sendResponse([])
+            return
+          }
 
           const relation = new Map()
           const imageDataList = []
