@@ -23,7 +23,8 @@
   "content_scripts": [
     {
       "js": ["/scripts/activate-url.js"],
-      "matches": ["*://*/*", "file:///*"]
+      "matches": ["*://*/*", "file:///*"],
+      "all_frames": true
     }
   ],
   "commands": {
