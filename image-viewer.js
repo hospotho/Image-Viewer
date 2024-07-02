@@ -34,8 +34,9 @@ window.ImageViewer = (function () {
       img.src = data
     }
     if (typeof data === 'object') {
-      img.src = data[0]
       img.setAttribute('data-iframe-src', data[1])
+      img.referrerPolicy = 'no-referrer'
+      img.src = data[0]
     }
     return li
   }
