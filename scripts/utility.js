@@ -985,14 +985,11 @@ window.ImageViewerUtils = (function () {
       }, 10000)
     }
 
-    // set timeout for first unlazy
+    // set timeout for unlazy
     const timeout = new Promise(resolve =>
       setTimeout(() => {
         resolve()
         raceCount++
-        if (raceCount > unlazyCount) {
-          console.log('Unlazy timeout')
-        }
       }, 1000)
     )
     const clone = structuredClone(options)

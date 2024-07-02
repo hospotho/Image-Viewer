@@ -89,7 +89,6 @@
   if (document.visibilityState === 'visible') {
     init()
   } else {
-    console.log('Waiting user to view the page')
     const handleEvent = () => {
       document.removeEventListener('visibilitychange', handleEvent)
       window.removeEventListener('focus', handleEvent)

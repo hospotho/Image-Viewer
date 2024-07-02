@@ -107,11 +107,8 @@
     })
 
     // wait visible
-    if (document.visibilityState !== 'visible') {
-      console.log('Wait document visible')
-      while (document.visibilityState !== 'visible') {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
+    while (document.visibilityState !== 'visible') {
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
   }
 })()
