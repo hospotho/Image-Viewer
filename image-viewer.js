@@ -19,6 +19,8 @@ window.ImageViewer = (function () {
   const rawFilenameCache = new Map()
   const keydownHandlerList = []
 
+  window.addEventListener('popstate', closeImageViewer)
+
   //==========utility==========
   function buildImageNode(data, options) {
     const li = document.createElement('li')
