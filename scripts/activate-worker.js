@@ -187,11 +187,12 @@
     async function extractImageInfo(dom) {
       const {width, height} = dom.getBoundingClientRect()
       if (dom.tagName === 'IMG') {
-        const sizeList = [dom.naturalWidth, dom.naturalHeight, width, height]
+        // real time size and rendered size
+        const sizeList = [width, height, dom.clientWidth, dom.clientHeight, dom.naturalWidth, dom.naturalHeight]
         const minSize = Math.min(...sizeList.filter(Boolean))
         return [dom.currentSrc, minSize, dom]
       }
-      const minSize = Math.min(width, height)
+      const minSize = Math.min(width, height, dom.clientWidth, dom.clientHeight)
       if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
         return [dom.poster, minSize, dom]
       }
