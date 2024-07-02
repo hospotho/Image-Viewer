@@ -1266,18 +1266,27 @@ window.ImageViewerUtils = (function () {
     if (filteredList.length === 0) return dataList
 
     const iframeRedirectSrcList = (await safeSendMessage({msg: 'get_redirect', data: iframeSrcList})) || []
+    const rawIframeRedirectSrcList = iframeRedirectSrcList.map(src => src.slice(0, src.indexOf('/', 8)))
 
     const imageDomList = []
     for (const data of dataList) {
       const iframeSrc = data[1]
-      if (typeof iframeSrc === 'string') {
-        const index = iframeRedirectSrcList.indexOf(iframeSrc)
-        if (index !== -1) {
-          imageDomList.push([data[0], iframeList[index]])
-        }
-      } else {
+      if (typeof iframeSrc !== 'string') {
         imageDomList.push(data)
+        continue
       }
+      const index = iframeRedirectSrcList.indexOf(iframeSrc)
+      if (index !== -1) {
+        imageDomList.push([data[0], iframeList[index]])
+        continue
+      }
+      // document url maybe change, search index by url origin
+      const rawIndex = rawIframeRedirectSrcList.indexOf(iframeSrc)
+      if (rawIndex !== -1) {
+        imageDomList.push([data[0], iframeList[rawIndex]])
+        continue
+      }
+      imageDomList.push([data[0], iframeList[0]])
     }
     return imageDomList
   }
