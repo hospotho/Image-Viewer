@@ -32,10 +32,10 @@ chrome.scripting.executeScript = async function () {
     return error
   }
 }
-const passOptionToTab = (id, option, toAllFrames = false) => {
+const passOptionToTab = (id, option) => {
   return chrome.scripting.executeScript({
     args: [option],
-    target: {tabId: id, allFrames: toAllFrames},
+    target: {tabId: id},
     func: option => {
       window.ImageViewerOption = option
     }
@@ -291,8 +291,22 @@ function addMessageHandler() {
           const newOptions = Object.assign({}, currOptions)
           newOptions.minWidth = request.minSize
           newOptions.minHeight = request.minSize
-          await passOptionToTab(sender.tab.id, newOptions, true)
-          const results = await chrome.scripting.executeScript({target: {tabId: sender.tab.id, allFrames: true}, files: ['/scripts/extract-iframe.js']})
+
+          // must use frameIds, allFrames: true wont works in most cases
+          const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})).slice(1)
+          const asyncList = iframeList.map(async iframe => {
+            // pass options
+            await chrome.scripting.executeScript({
+              args: [newOptions],
+              target: {tabId: sender.tab.id, frameIds: [iframe.frameId]},
+              func: option => {
+                window.ImageViewerOption = option
+              }
+            })
+            // inject script
+            return chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [iframe.frameId]}, files: ['/scripts/extract-iframe.js']})
+          })
+          const results = (await Promise.all(asyncList)).flat()
           if (results instanceof Error) {
             sendResponse([])
             return
