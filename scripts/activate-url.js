@@ -67,7 +67,9 @@
     const rawRatio = rawSize[0] ? rawSize[0] / rawSize[1] : 0
     const currRatio = image.naturalWidth / image.naturalHeight
     // non trivial size or with proper ratio
-    const isRawCandidate = rawSize[0] % 10 || rawSize[1] % 10 || currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01
+    const nonTrivialSize = rawSize[0] % 10 || rawSize[1] % 10
+    const properRatio = currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01 || rawRatio > 3 || rawRatio < 1 / 3
+    const isRawCandidate = nonTrivialSize || properRatio
     if (rawSize[0] >= image.naturalWidth && isRawCandidate) {
       ImageViewer('clear_image_list')
       ImageViewer([rawUrl], options)
