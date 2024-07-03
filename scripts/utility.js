@@ -728,6 +728,7 @@ window.ImageViewerUtils = (function () {
       const updateSize = size => {
         if (size) resolve(size)
         else if (waiting) waiting = false
+        else if (src.startsWith('blob')) return resolve(Number.MAX_SAFE_INTEGER)
         else resolve(0)
       }
 
