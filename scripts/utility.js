@@ -768,18 +768,15 @@ window.ImageViewerUtils = (function () {
     }
   }
   async function getBetterUrl(currentSrc, bitSize, naturalSize, ...urlList) {
-    if (bitSize > 0) {
-      const [lazyBitSize, url] = await getUrlSize(getImageBitSize, urlList)
-      if (lazyBitSize === -1) return null
-      if (lazyBitSize > 0 && lazyBitSize >= bitSize) {
-        if (lazyBitSize === bitSize && getRawUrl(currentSrc) === getRawUrl(url)) return null
-        badImageList.add(currentSrc)
-        return url
-      }
+    const baseSize = bitSize > 0 ? bitSize : naturalSize
+    const [lazySize, url] = await getUrlSize(bitSize > 0 ? getImageBitSize : getImageRealSize, urlList)
+    if (lazySize === 0 || lazySize < baseSize) return null
+    if (lazySize > baseSize) {
+      badImageList.add(currentSrc)
+      return url
     }
-    const [lazyRealSize, url] = await getUrlSize(getImageRealSize, urlList)
-    if (lazyRealSize > 0 && lazyRealSize >= naturalSize) {
-      if (lazyRealSize === naturalSize && getRawUrl(currentSrc) === getRawUrl(url)) return null
+    const isSameImage = getRawUrl(currentSrc) === getRawUrl(url) || currentSrc.split('/').pop() === url.split('/').pop()
+    if (!isSameImage) {
       badImageList.add(currentSrc)
       return url
     }
@@ -823,6 +820,11 @@ window.ImageViewerUtils = (function () {
           await updateImageSource(img, betterUrl)
           break
         }
+      }
+    }
+    if (successList.length) {
+      for (const className of img.classList) {
+        if (isLazyClass(className)) img.classList.remove(className)
       }
     }
     return successList
@@ -899,14 +901,7 @@ window.ImageViewerUtils = (function () {
       }
 
       // check class name
-      let lazyClass = false
-      for (const className of img.classList) {
-        if (isLazyClass(className)) {
-          lazyClass = true
-          img.classList.remove(className)
-        }
-      }
-      if (lazyClass) {
+      if (isLazyClass(img.className)) {
         imgWithAttrList.push([img, attrList])
         continue
       }
