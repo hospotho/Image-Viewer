@@ -2,6 +2,15 @@
   'use strict'
 
   const rawText = `
+1.35 [2024-07-03]:
+1. Reduced zoom & rotate transition flash
+2. Improved auto update logic
+3. Enhanced ability to find larger size raw images
+4. Reworked unlazy logic, no longer need to wait when reopening within a short time
+5. Reworked iframe logic, can now handle iframe in iframe cases
+6. Fixed a bug that changed current index after image list update
+7. Other bug fixes and improvements
+
 1.34 [2024-04-11]:
 Stability update
 1. Prevented image loading flash in URL mode

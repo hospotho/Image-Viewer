@@ -1,7 +1,7 @@
 # Image Viewer
 
 <p align="center"><img src="icon/icon128.png"></p>
-<p align="center">Image Viewer is a manifest V3 Chrome extension that  improves your image viewing experience.</p>
+<p align="center">Image Viewer is a manifest V3 Chrome extension that improves your image viewing experience.</p>
 
 If you like this extension, you can buy me a coffee at:
 https://ko-fi.com/tonymilktea
@@ -10,8 +10,8 @@ https://ko-fi.com/tonymilktea
 
 1. Collect and view all images on the page.
 2. Support video poster and images in iframes.
-3. Auto load most lazy loaded images.
-4. Redirect middle click to original image
+3. Auto replace lazy loaded or resized images with original image.
+4. Redirect middle click to original image to open link you want.
 5. Go to original image on the page.
 6. Fit, zoom, rotate and mirror the image.
 7. Hotkey for image reverse search.
@@ -148,8 +148,8 @@ You can also use `image-viewer.js` with your own script by Tampermonkey or other
 ## ToDo
 
 1. `image-viewer.min.js`
-2. handle more edgy cases
-3. bugs fix
+2. Demo page
+3. Improve data structure to support custom elements in V2
 
 ## History
 
@@ -159,7 +159,7 @@ The first release v0.1 was launched on 2012-07-05, and the last release v0.1.6 w
 
 The author of the translation in `_locales` is unknown.
 
-Since I started using this extension, many new features have been added to the project. You can find the oldest version that I have [here](https://github.com/hospotho/Image-Viewer-backup), and some mirroring websites may still have the raw version of v0.1.6.
+Since I started using this extension, many new features have been added to the project. You can find the oldest version that at [here](https://github.com/hospotho/Image-Viewer-Legacy), some mirroring websites may still have the raw version of v0.1.6.
 
 The old version was hard to extend, and I felt tired of it in June 2022. Therefore, I decided to clean up all the old-style, messy jQuery code and rewrite the project completely.
 
