@@ -558,9 +558,13 @@ window.ImageViewerUtils = (function () {
         while (raceCount >= unlazyCount) {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
-        action()
+        // wait for image collection
         await new Promise(resolve => setTimeout(resolve, 500))
 
+        action()
+
+        // check scroll complete
+        await new Promise(resolve => setTimeout(resolve, 500))
         if (lastY === container.scrollTop && isImageViewerExist()) {
           count++
           container.scrollBy(0, -100)
