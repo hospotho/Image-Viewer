@@ -405,15 +405,16 @@ window.ImageViewerUtils = (function () {
 
   // scroll unlazy
   async function slowScrollThoughDocument(currentX, currentY) {
+    if (!isImageViewerExist()) return
     const container = getMainContainer()
-    container.scrollTo(0, 0)
     let currTop = -1
-    while (currTop !== container.scrollTop) {
+    container.scrollTo(0, 0)
+    while (currTop !== container.scrollTop && isImageViewerExist()) {
       currTop = container.scrollTop
       container.scrollBy({top: window.innerHeight * 2, behavior: 'smooth'})
       await new Promise(resolve => setTimeout(resolve, 500))
     }
-    container.scrollTo(currentX, currentY)
+    if (isImageViewerExist()) container.scrollTo(currentX, currentY)
   }
   function scrollThoughDocument(currentX, currentY) {
     const wrapper = (func, ...args) => {
