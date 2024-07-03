@@ -981,6 +981,7 @@ window.ImageViewerUtils = (function () {
     // slow connection alert
     if (raceCount + unlazyCount === 0) {
       setTimeout(() => {
+        if (unlazyCount !== 0) return
         const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
         const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
         if (stillLoading) {
