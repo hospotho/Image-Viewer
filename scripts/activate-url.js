@@ -84,8 +84,14 @@
       await safeSendMessage('get_options')
     }
 
-    const image = document.querySelector(`img[src='${location.href}']`)
-    image && window.top === window.self ? initImageViewer(image) : safeSendMessage('load_worker')
+    try {
+      const image = document.querySelector(`img[src='${location.href}']`)
+      if (image && window.top === window.self) {
+        initImageViewer(image)
+        return
+      }
+    } catch (error) {}
+    safeSendMessage('load_worker')
   }
 
   if (document.visibilityState === 'visible') {
