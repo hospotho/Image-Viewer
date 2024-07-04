@@ -190,6 +190,8 @@ function resetLocalStorage() {
 
 function addMessageHandler() {
   chrome.runtime.onMessage.addListener((request, sender, _sendResponse) => {
+    if (!sender.tab) return
+
     const type = request.msg || request
     console.log('Messages: ', sender.tab.id, type)
 
