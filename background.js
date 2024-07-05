@@ -316,7 +316,7 @@ function addMessageHandler() {
             if (!result.result) continue
             const [href, subHrefList, imageList] = result.result
             for (const subHref of subHrefList) {
-              relation.set(subHref, href)
+              if (subHref !== href) relation.set(subHref, href)
             }
             imageDataList.push([imageList, href])
           }
