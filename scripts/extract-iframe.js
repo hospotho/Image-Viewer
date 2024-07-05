@@ -82,7 +82,7 @@
   }
   const subFrame = document.getElementsByTagName('iframe')
   const subFrameHref = [...subFrame].map(iframe => iframe.src)
-  const subFrameRedirectedHref = await safeSendMessage({msg: 'get_redirect', data: subFrameHref})
+  const subFrameRedirectedHref = subFrameHref.length ? await safeSendMessage({msg: 'get_redirect', data: subFrameHref}) : []
 
   const options = window.ImageViewerOption
   const imageList = getImageList(options)
