@@ -742,11 +742,7 @@ window.ImageViewer = (function () {
         const sign = Math.sign(ratio)
         const [adjustWidth, adjustHeight] = [img.naturalWidth, img.naturalHeight].sort((a, b) => sign * (b - a))
         if (adjustWidth === 0 || adjustHeight === 0 || adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
-          const currentUrlList = []
-          for (const data of currentImageList) {
-            const url = typeof data === 'string' ? data : data[0]
-            currentUrlList.push(url)
-          }
+          const currentUrlList = currentImageList.map(data => typeof data === 'string' ? data : data[0])
           const src = img.src
           const index = currentUrlList.indexOf(src)
           currentImageList.splice(index, 1)
