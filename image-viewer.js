@@ -1586,8 +1586,10 @@ window.ImageViewer = (function () {
     currentImageList = Array.from(newList)
     lastUpdateTime = Date.now()
 
-    shadowRoot.querySelector('#iv-index').style.display = 'inline'
-    shadowRoot.querySelector('#iv-counter-total').textContent = currentImageList.length
+    if (options.closeButton) {
+      shadowRoot.querySelector('#iv-index').style.display = 'inline'
+      shadowRoot.querySelector('#iv-counter-total').textContent = currentImageList.length
+    }
     if (updated) console.log('Image viewer updated')
   }
 
