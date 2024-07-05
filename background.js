@@ -234,6 +234,10 @@ function addMessageHandler() {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
         return true
       }
+      case 'load_extractor': {
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/extract-iframe.js']}, () => sendResponse())
+        return true
+      }
       case 'load_utility': {
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse())
         chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, () => sendResponse())
@@ -296,19 +300,11 @@ function addMessageHandler() {
 
           // must use frameIds, allFrames: true wont works in most cases
           const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})).slice(1)
-          const asyncList = iframeList.map(async iframe => {
-            // pass options
-            await chrome.scripting.executeScript({
-              args: [newOptions],
-              target: {tabId: sender.tab.id, frameIds: [iframe.frameId]},
-              func: option => {
-                window.ImageViewerOption = option
-              }
-            })
-            // inject script
-            return chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [iframe.frameId]}, files: ['/scripts/extract-iframe.js']})
+          const results = await chrome.scripting.executeScript({
+            args: [newOptions],
+            target: {tabId: sender.tab.id, frameIds: iframeList.map(frame => frame.frameId)},
+            func: async option => await window.ImageViewerExtractor.extractImage(option)
           })
-          const results = (await Promise.all(asyncList)).flat()
 
           const relation = new Map()
           const imageDataList = []

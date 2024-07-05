@@ -1,7 +1,5 @@
-;(async function () {
+window.ImageViewerExtractor = (function () {
   'use strict'
-
-  if (window.top === window.self) return
 
   const safeSendMessage = function (...args) {
     if (chrome.runtime?.id) {
@@ -9,10 +7,10 @@
     }
   }
 
-  window.badImageUrlList ??= new Set()
+  const badImageUrlList = new Set()
 
   async function createDataUrl(srcUrl) {
-    if (window.badImageUrlList.has(srcUrl)) return ''
+    if (badImageUrlList.has(srcUrl)) return ''
 
     const requests = [safeSendMessage({msg: 'get_local_size', url: srcUrl}), safeSendMessage({msg: 'get_size', url: srcUrl})]
     const [localSize, globalSize] = await Promise.all(requests)
@@ -33,7 +31,7 @@
         resolve(url)
       }
       img.onerror = () => {
-        window.badImageUrlList.add(srcUrl)
+        badImageUrlList.add(srcUrl)
         console.log(new URL(srcUrl).hostname + ' block your access outside iframe')
         resolve('')
       }
@@ -76,19 +74,18 @@
       : [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
   }
 
-  // options init maybe delayed in iframe
-  while (window.ImageViewerOption === undefined) {
-    await new Promise(resolve => setTimeout(resolve, 50))
+  return {
+    extractImage: async function (options) {
+      const subFrame = document.getElementsByTagName('iframe')
+      const subFrameHref = [...subFrame].map(iframe => iframe.src)
+      const subFrameRedirectedHref = subFrameHref.length ? await safeSendMessage({msg: 'get_redirect', data: subFrameHref}) : []
+
+      const imageList = getImageList(options)
+      if (imageList.length === 0) return [location.href, subFrameRedirectedHref, []]
+
+      const asyncList = await Promise.all(imageList.map(createDataUrl))
+      const imageDataUrls = asyncList.filter(url => url !== '')
+      return [location.href, subFrameRedirectedHref, imageDataUrls]
+    }
   }
-  const subFrame = document.getElementsByTagName('iframe')
-  const subFrameHref = [...subFrame].map(iframe => iframe.src)
-  const subFrameRedirectedHref = subFrameHref.length ? await safeSendMessage({msg: 'get_redirect', data: subFrameHref}) : []
-
-  const options = window.ImageViewerOption
-  const imageList = getImageList(options)
-  if (imageList.length === 0) return [location.href, subFrameRedirectedHref, []]
-
-  const asyncList = await Promise.all(imageList.map(createDataUrl))
-  const imageDataUrls = asyncList.filter(url => url !== '')
-  return [location.href, subFrameRedirectedHref, imageDataUrls]
 })()
