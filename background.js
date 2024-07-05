@@ -309,10 +309,6 @@ function addMessageHandler() {
             return chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [iframe.frameId]}, files: ['/scripts/extract-iframe.js']})
           })
           const results = (await Promise.all(asyncList)).flat()
-          if (results instanceof Error) {
-            sendResponse([])
-            return
-          }
 
           const relation = new Map()
           const imageDataList = []
