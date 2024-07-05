@@ -1594,6 +1594,21 @@ window.ImageViewer = (function () {
   }
 
   function restoreIndex(options) {
+    function getRestoreIndex() {
+      if (clearIndex === 0 && options.index === undefined) return 0
+
+      const targetSrc = clearSrc || lastSrc
+      const rawUrl = getRawUrl(targetSrc)
+      const srcList = currentImageList.map(item => (typeof item === 'string' ? item : item[0]))
+      const srcIndex = srcList.findIndex(src => src === targetSrc || src === rawUrl)
+      if (srcIndex !== -1) return srcIndex
+
+      const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(data => data[0] === getFilename(targetSrc))
+      if (filenameIndexList.length === 1) return filenameIndexList[0][1]
+
+      return Math.min(clearIndex, currentImageList.length - 1)
+    }
+
     const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastSrc !== '')
     if (!neededToRestore) return
 
@@ -1606,27 +1621,18 @@ window.ImageViewer = (function () {
       return
     }
 
-    const current = shadowRoot.querySelector('#iv-counter-current')
+    const newIndex = getRestoreIndex()
+    shadowRoot.querySelector('#iv-counter-current').textContent = newIndex + 1
+
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    const infoWidth = shadowRoot.querySelector('#iv-info-width')
-    const infoHeight = shadowRoot.querySelector('#iv-info-height')
-
-    const targetSrc = clearSrc || lastSrc
-    const rawUrl = getRawUrl(targetSrc)
-    const srcIndex = currentImageList.map(item => (typeof item === 'string' ? item : item[0])).findIndex(src => src === targetSrc || src === rawUrl)
-    const newIndex = clearIndex === 0 && options.index === undefined ? 0 : srcIndex !== -1 ? srcIndex : Math.min(clearIndex, currentImageList.length - 1)
-
-    current.textContent = newIndex + 1
-
+    const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
     imageListNode.style.translate = `0 ${-newIndex * 100}%`
     imageListNode.querySelector('li.current')?.classList.remove('current')
-
-    const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
     relateListItem.classList.add('current')
 
     const relateImage = relateListItem.querySelector('img')
-    infoWidth.value = relateImage.naturalWidth
-    infoHeight.value = relateImage.naturalHeight
+    shadowRoot.querySelector('#iv-info-width').value = relateImage.naturalWidth
+    shadowRoot.querySelector('#iv-info-height').value = relateImage.naturalHeight
 
     clearSrc = ''
     clearIndex = -1
