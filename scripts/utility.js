@@ -179,9 +179,9 @@ window.ImageViewerUtils = (function () {
         .filter(t => cachedExtensionMatch(t))
         .join('&')
       const imgSearch = searchList ? '?' + searchList : ''
-      const noSearch = baseURI + imgSearch
+      const rawSearch = baseURI + imgSearch
 
-      const extensionMatch = cachedExtensionMatch(noSearch)
+      const extensionMatch = cachedExtensionMatch(rawSearch)
       return extensionMatch
     } catch (error) {
       return null
@@ -867,11 +867,10 @@ window.ImageViewerUtils = (function () {
           const filenameWithExt = pathname + '.' + extMatch[0]
           const rawExtension = img.currentSrc.replace(pathname + search, filenameWithExt)
           attrList.push({name: 'raw extension', value: rawExtension})
-        } else {
-          const rawFilename = img.currentSrc.replace(pathname + search, pathname)
-          attrList.push({name: 'raw filename', value: rawFilename})
         }
       }
+      const noQuery = img.currentSrc.replace(pathname + search, pathname)
+      attrList.push({name: 'no query', value: noQuery})
     } catch (error) {}
     const anchor = img.closest('a')
     if (anchor && anchor.href !== img.currentSrc) {

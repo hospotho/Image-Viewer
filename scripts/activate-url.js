@@ -26,9 +26,9 @@
         .filter(t => t.match(argsRegex))
         .join('&')
       const imgSearch = searchList ? '?' + searchList : ''
-      const noSearch = baseURI + imgSearch
+      const rawSearch = baseURI + imgSearch
 
-      const argsMatch = noSearch.match(argsRegex)
+      const argsMatch = rawSearch.match(argsRegex)
       if (argsMatch) {
         const rawUrl = argsMatch[1]
         if (rawUrl !== src) return rawUrl
