@@ -50,6 +50,31 @@
       img.src = rawUrl
     })
   }
+  function getUnlazyAttrList(src) {
+    if (src.startsWith('data')) return []
+
+    const rawUrl = getRawUrl(src)
+    const attrList = []
+    if (rawUrl !== src) {
+      attrList.push({name: 'raw url', value: rawUrl})
+    }
+    try {
+      const url = new URL(src, document.baseURI)
+      const pathname = url.pathname
+      const search = url.search
+      if (!pathname.includes('.')) {
+        const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
+        if (extMatch) {
+          const filenameWithExt = pathname + '.' + extMatch[0]
+          const rawExtension = src.replace(pathname + search, filenameWithExt)
+          attrList.push({name: 'raw extension', value: rawExtension})
+        }
+      }
+      const noQuery = src.replace(pathname + search, pathname)
+      attrList.push({name: 'no query', value: noQuery})
+    } catch (error) {}
+    return attrList
+  }
 
   async function initImageViewer(image) {
     console.log('Start image mode')
@@ -62,16 +87,20 @@
     await safeSendMessage('load_script')
     ImageViewer([image.src], options)
 
-    const rawUrl = getRawUrl(image.src)
-    const rawSize = rawUrl === image.src ? [0, 0] : await getRawSize(rawUrl)
-    const rawRatio = rawSize[0] ? rawSize[0] / rawSize[1] : 0
-    const currRatio = image.naturalWidth / image.naturalHeight
-    // non trivial size or with proper ratio
-    const nonTrivialSize = rawSize[0] % 10 || rawSize[1] % 10
-    const properRatio = currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01 || rawRatio > 3 || rawRatio < 1 / 3
-    const isRawCandidate = nonTrivialSize || properRatio
-    if (rawSize[0] >= image.naturalWidth && isRawCandidate) {
-      ImageViewer([rawUrl], options)
+    const attrList = getUnlazyAttrList(image.src)
+    for (const attr of attrList) {
+      const rawSize = attr.value === image.src ? [0, 0] : await getRawSize(attr.value)
+      const rawRatio = rawSize[0] ? rawSize[0] / rawSize[1] : 0
+      const currRatio = image.naturalWidth / image.naturalHeight
+      // non trivial size or with proper ratio
+      const nonTrivialSize = rawSize[0] % 10 || rawSize[1] % 10
+      const properRatio = currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01 || rawRatio > 3 || rawRatio < 1 / 3
+      const isRawCandidate = nonTrivialSize || properRatio
+      if (rawSize[0] >= image.naturalWidth && isRawCandidate) {
+        console.log(`Unlazy img with ${attr.name}`)
+        ImageViewer([attr.value], options)
+        break
+      }
     }
   }
 
