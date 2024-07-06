@@ -83,14 +83,14 @@
       await safeSendMessage('get_options')
     }
 
-    safeSendMessage('load_worker')
     if (window.top !== window.self) {
+      safeSendMessage('load_worker')
       safeSendMessage('load_extractor')
       return
     }
     try {
       const image = document.querySelector(`img[src='${location.href}']`)
-      if (image) initImageViewer(image)
+      image ? initImageViewer(image) : safeSendMessage('load_worker')
     } catch (error) {}
   }
 
