@@ -178,7 +178,7 @@ window.ImageViewer = (function () {
     const cache = rawFilenameCache.get(src)
     if (cache !== undefined) return cache
 
-    const filename = src.split('/').pop().split('?').shift().split('.').shift()
+    const filename = src.split('?')[0].split('/').at(-1).split('.')[0]
     rawFilenameCache.set(src, filename)
     return filename
   }

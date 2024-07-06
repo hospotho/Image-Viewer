@@ -775,7 +775,7 @@ window.ImageViewerUtils = (function () {
       badImageList.add(currentSrc)
       return url
     }
-    const isSameImage = getRawUrl(currentSrc) === getRawUrl(url) || currentSrc.split('/').pop() === url.split('/').pop()
+    const isSameImage = getRawUrl(currentSrc) === getRawUrl(url) || currentSrc.split('?')[0].split('/').at(-1) === url.split('?')[0].split('/').at(-1)
     if (!isSameImage) {
       badImageList.add(currentSrc)
       return url

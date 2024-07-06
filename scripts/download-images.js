@@ -206,7 +206,7 @@
     for (const [data, index] of imageBinaryList) {
       const indexString = ('0000' + (index + 1)).slice(-5)
       const url = imageUrlList[index]
-      const name = url.startsWith('data') ? '' : '_' + url.split('/').pop().split('?').shift()
+      const name = url.startsWith('data') ? '' : '_' + url.split('?')[0].split('/').at(-1)
       const extension = name.includes('.') ? '' : '.jpg'
       const filename = indexString + name + extension
 
