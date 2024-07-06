@@ -857,15 +857,22 @@ window.ImageViewerUtils = (function () {
     if (rawUrl !== img.currentSrc) {
       attrList.push({name: 'raw url', value: rawUrl})
     }
-    const filename = img.currentSrc.split('/').pop()
-    if (!filename.includes('.')) {
-      const extMatch = filename.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
-      if (extMatch) {
-        const filenameWithExt = filename.split('?').shift() + '.' + extMatch[0]
-        const rawExt = img.currentSrc.replace(filename, filenameWithExt)
-        attrList.push({name: 'raw extension', value: rawExt})
+    try {
+      const url = new URL(img.currentSrc, document.baseURI)
+      const pathname = url.pathname
+      const search = url.search
+      if (!pathname.includes('.')) {
+        const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
+        if (extMatch) {
+          const filenameWithExt = pathname + '.' + extMatch[0]
+          const rawExtension = img.currentSrc.replace(pathname + search, filenameWithExt)
+          attrList.push({name: 'raw extension', value: rawExtension})
+        } else {
+          const rawFilename = img.currentSrc.replace(pathname + search, pathname)
+          attrList.push({name: 'raw filename', value: rawFilename})
+        }
       }
-    }
+    } catch (error) {}
     const anchor = img.closest('a')
     if (anchor && anchor.href !== img.currentSrc) {
       const anchorHaveExt = cachedExtensionMatch(anchor.href) !== null
