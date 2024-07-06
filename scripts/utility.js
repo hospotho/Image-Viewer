@@ -1288,6 +1288,7 @@ window.ImageViewerUtils = (function () {
         imageDomList.push([data[0], iframeList[rawIndex]])
         continue
       }
+      // not found pass first iframe as fallback
       imageDomList.push([data[0], iframeList[0]])
     }
     return imageDomList
