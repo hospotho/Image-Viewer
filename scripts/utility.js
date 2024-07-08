@@ -553,13 +553,12 @@ window.ImageViewerUtils = (function () {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
 
-        await mutex.waitUnlock()
         // unlazy incomplete
         while (raceCount >= unlazyCount) {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
         // wait for image collection
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await mutex.waitUnlock()
 
         action()
 
@@ -1409,15 +1408,9 @@ window.ImageViewerUtils = (function () {
         const currIndex = imageList.indexOf(currentUrl)
         if (currIndex !== -1) return currIndex
 
-        // handle url update lag
-        // init large quantity cause lag, index should near end
-        const rawUrl = getRawUrl(currentUrl)
-        for (let i = imageList.length - 1; i >= 0; i--) {
-          const url = imageList[i]
-          if (typeof url === 'string' && url.startsWith(rawUrl)) {
-            return i
-          }
-        }
+        const filename = currentUrl.split('?')[0].split('/').at(-1).split('.')[0]
+        const filenameIndex = imageList.findIndex(url => typeof url === 'string' && url.split('?')[0].split('/').at(-1).split('.')[0] === filename)
+        if (filenameIndex !== -1) return filenameIndex
 
         return -1
       }
