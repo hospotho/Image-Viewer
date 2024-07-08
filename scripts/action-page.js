@@ -51,7 +51,7 @@
     while (currentScrollX !== container.scrollLeft || currentScrollY !== container.scrollTop) {
       currentScrollX = container.scrollLeft
       currentScrollY = container.scrollTop
-      await new Promise(resolve => setTimeout(resolve, 300))
+      await new Promise(resolve => setTimeout(resolve, 200))
     }
     updatePeriod = 500
     updateRelease()
