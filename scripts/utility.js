@@ -151,7 +151,7 @@ window.ImageViewerUtils = (function () {
     return key && ctrl && alt && shift
   }
 
-  const cachedExtensionMatch = (() => {
+  const cachedExtensionMatch = (function () {
     const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
     const matchCache = new Map()
     return str => {
@@ -165,7 +165,7 @@ window.ImageViewerUtils = (function () {
       return extensionMatch
     }
   })()
-  const cachedUrlSearchMatch = (() => {
+  const cachedUrlSearchMatch = (function () {
     const urlSearchCache = new Map()
     return src => {
       try {
@@ -191,7 +191,7 @@ window.ImageViewerUtils = (function () {
       }
     }
   })()
-  const cachedGetFilename = (() => {
+  const cachedGetFilename = (function () {
     const filenameCache = new Map()
     return str => {
       if (str.startsWith('data')) return null
@@ -204,7 +204,7 @@ window.ImageViewerUtils = (function () {
       return rawFilename
     }
   })()
-  const getRawUrl = (() => {
+  const getRawUrl = (function () {
     const rawUrlCache = new Map()
     return src => {
       if (src.startsWith('data')) return src
@@ -1518,6 +1518,8 @@ window.ImageViewerUtils = (function () {
       return newListStringLength === oldListStringLength
     },
 
-    getMainContainer: getMainContainer
+    getMainContainer: getMainContainer,
+
+    getRawUrl: getRawUrl
   }
 })()

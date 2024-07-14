@@ -239,8 +239,11 @@ function addMessageHandler() {
         return true
       }
       case 'load_utility': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse())
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']}, () => sendResponse())
+        ;(async () => {
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']})
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']})
+          sendResponse()
+        })()
         return true
       }
       case 'load_script': {
