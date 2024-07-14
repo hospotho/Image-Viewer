@@ -1047,7 +1047,7 @@ window.ImageViewerUtils = (function () {
       image.dispatchEvent(leaveEvent)
     }
   }
-  function startUnlazy() {
+  function startUnlazy(options) {
     if (unlazyCount + raceCount === 0) {
       preprocessLazyPlaceholder()
       fakeUserHover()
