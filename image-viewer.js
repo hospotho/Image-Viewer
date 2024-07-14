@@ -11,12 +11,7 @@ window.ImageViewer = (function () {
   let lastSrc = ''
   let lastUrl = location.href
 
-  const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
   const failedImageSet = new Set()
-  const rawUrlCache = new Map()
-  const filenameCache = new Map()
-  const matchCache = new Map()
-  const rawFilenameCache = new Map()
   const keydownHandlerList = []
 
   window.addEventListener('popstate', closeImageViewer)
@@ -103,85 +98,103 @@ window.ImageViewer = (function () {
     return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
   }
 
-  function cachedExtensionMatch(str) {
-    if (str.startsWith('data')) return null
+  const cachedExtensionMatch = (() => {
+    const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+    const matchCache = new Map()
+    return str => {
+      if (str.startsWith('data')) return null
 
-    const cache = matchCache.get(str)
-    if (cache !== undefined) return cache
+      const cache = matchCache.get(str)
+      if (cache !== undefined) return cache
 
-    const extensionMatch = str.match(extensionRegex)
-    matchCache.set(str, extensionMatch)
-    return extensionMatch
-  }
-  function matchUrlSearch(src) {
-    try {
-      // protocol-relative URL
-      const url = new URL(src, document.baseURI)
-      if (!url.search) return null
-
-      const baseURI = url.origin + url.pathname
-      const searchList = url.search
-        .slice(1)
-        .split('&')
-        .filter(t => cachedExtensionMatch(t))
-        .join('&')
-      const imgSearch = searchList ? '?' + searchList : ''
-      const noSearch = baseURI + imgSearch
-
-      const extensionMatch = cachedExtensionMatch(noSearch)
+      const extensionMatch = str.match(extensionRegex)
+      matchCache.set(str, extensionMatch)
       return extensionMatch
-    } catch (error) {
-      return null
     }
-  }
-  function cachedGetFilename(str) {
-    if (str.startsWith('data')) return null
+  })()
+  const cachedUrlSearchMatch = (() => {
+    const urlSearchCache = new Map()
+    return src => {
+      try {
+        // protocol-relative URL
+        const url = new URL(src, document.baseURI)
+        if (!url.search) return null
 
-    const cache = filenameCache.get(str)
-    if (cache !== undefined) return cache
+        const baseURI = url.origin + url.pathname
+        const searchList = url.search
+          .slice(1)
+          .split('&')
+          .filter(t => cachedExtensionMatch(t))
+          .join('&')
+        const imgSearch = searchList ? '?' + searchList : ''
+        const rawSearch = baseURI + imgSearch
 
-    const rawFilename = str.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
-    filenameCache.set(str, rawFilename)
-    return rawFilename
-  }
-  function getRawUrl(src) {
-    if (src.startsWith('data')) return src
-
-    const cache = rawUrlCache.get(src)
-    if (cache !== undefined) return cache
-
-    const rawFilenameUrl = cachedGetFilename(src)
-    if (rawFilenameUrl !== src) {
-      rawUrlCache.set(src, rawFilenameUrl)
-      return rawFilenameUrl
+        const extensionMatch = cachedExtensionMatch(rawSearch)
+        urlSearchCache.set(src, extensionMatch)
+        return extensionMatch
+      } catch (error) {
+        urlSearchCache.set(src, null)
+        return null
+      }
     }
+  })()
+  const cachedGetFilename = (() => {
+    const filenameCache = new Map()
+    return str => {
+      if (str.startsWith('data')) return null
 
-    const searchMatch = matchUrlSearch(src)
-    const rawSearchUrl = searchMatch?.[1]
-    if (rawSearchUrl && rawSearchUrl !== src) {
-      rawUrlCache.set(src, rawSearchUrl)
-      return rawSearchUrl
+      const cache = filenameCache.get(str)
+      if (cache !== undefined) return cache
+
+      const rawFilename = str.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
+      filenameCache.set(str, rawFilename)
+      return rawFilename
     }
+  })()
+  const getRawUrl = (() => {
+    const rawUrlCache = new Map()
+    return src => {
+      if (src.startsWith('data')) return src
 
-    const extensionMatch = cachedExtensionMatch(src)
-    const rawExtensionUrl = extensionMatch?.[1]
-    if (rawExtensionUrl && rawExtensionUrl !== src) {
-      rawUrlCache.set(src, rawExtensionUrl)
-      return rawExtensionUrl
+      const cache = rawUrlCache.get(src)
+      if (cache !== undefined) return cache
+
+      const rawFilenameUrl = cachedGetFilename(src)
+      if (rawFilenameUrl !== src) {
+        rawUrlCache.set(src, rawFilenameUrl)
+        return rawFilenameUrl
+      }
+
+      const searchMatch = cachedUrlSearchMatch(src)
+      const rawSearchUrl = searchMatch?.[1]
+      if (rawSearchUrl && rawSearchUrl !== src) {
+        rawUrlCache.set(src, rawSearchUrl)
+        return rawSearchUrl
+      }
+
+      const extensionMatch = cachedExtensionMatch(src)
+      const rawExtensionUrl = extensionMatch?.[1]
+      if (rawExtensionUrl && rawExtensionUrl !== src) {
+        rawUrlCache.set(src, rawExtensionUrl)
+        return rawExtensionUrl
+      }
+
+      rawUrlCache.set(src, src)
+      return src
     }
+  })()
 
-    rawUrlCache.set(src, src)
-    return src
-  }
+  const getFilename = (() => {
+    const rawFilenameCache = new Map()
+    return src => {
+      const cache = rawFilenameCache.get(src)
+      if (cache !== undefined) return cache
 
-  function getFilename(src) {
-    const cache = rawFilenameCache.get(src)
-    if (cache !== undefined) return cache
-
-    const filename = src.split('?')[0].split('/').at(-1).split('.')[0]
-    rawFilenameCache.set(src, filename)
-    return filename
-  }
+      const filename = src.split('?')[0].split('/').at(-1).split('.')[0]
+      rawFilenameCache.set(src, filename)
+      return filename
+    }
+  })()
   function searchImgNode(img) {
     const iframeSrc = img.getAttribute('data-iframe-src')
     if (iframeSrc) {
@@ -742,7 +755,7 @@ window.ImageViewer = (function () {
         const sign = Math.sign(ratio)
         const [adjustWidth, adjustHeight] = [img.naturalWidth, img.naturalHeight].sort((a, b) => sign * (b - a))
         if (adjustWidth === 0 || adjustHeight === 0 || adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
-          const currentUrlList = currentImageList.map(data => typeof data === 'string' ? data : data[0])
+          const currentUrlList = currentImageList.map(data => (typeof data === 'string' ? data : data[0]))
           const src = img.src
           const index = currentUrlList.indexOf(src)
           currentImageList.splice(index, 1)
