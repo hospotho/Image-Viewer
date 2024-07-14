@@ -1398,10 +1398,11 @@ window.ImageViewerUtils = (function () {
       const uniqueIframeImage = await getIframeImage(options)
       uniqueImageUrls.push(...uniqueIframeImage)
 
+      release()
       if (uniqueImageUrls.length === 0) {
-        release()
         if (retryCount < 3) {
-          const retryResult = await new Promise(resolve => setTimeout(() => resolve(this.getOrderedImageUrls(options, retryCount + 1)), 1000))
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          const retryResult = await this.getOrderedImageUrls(options, retryCount + 1)
           return retryResult
         }
         console.log('Found no image')
@@ -1410,7 +1411,6 @@ window.ImageViewerUtils = (function () {
 
       const orderedImageUrls = await sortImageDataList(uniqueImageUrls)
 
-      release()
       return orderedImageUrls
     },
 
