@@ -9,13 +9,9 @@ window.ImageViewerUtils = (function () {
 
   const passList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
   const urlRegex = /(?:https?:\/)?\/\S+/g
-  const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
   const protocol = window.location.protocol
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
-  const rawUrlCache = new Map()
-  const filenameCache = new Map()
-  const matchCache = new Map()
   const badImageList = new Set(['', 'about:blank'])
   const corsHostList = new Set()
   const mutex = (() => {
@@ -156,76 +152,91 @@ window.ImageViewerUtils = (function () {
     return key && ctrl && alt && shift
   }
 
-  function cachedExtensionMatch(str) {
-    if (str.startsWith('data')) return null
+  const cachedExtensionMatch = (() => {
+    const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+    const matchCache = new Map()
+    return str => {
+      if (str.startsWith('data')) return null
 
-    const cache = matchCache.get(str)
-    if (cache !== undefined) return cache
+      const cache = matchCache.get(str)
+      if (cache !== undefined) return cache
 
-    const extensionMatch = str.match(extensionRegex)
-    matchCache.set(str, extensionMatch)
-    return extensionMatch
-  }
-  function matchUrlSearch(src) {
-    try {
-      // protocol-relative URL
-      const url = new URL(src, document.baseURI)
-      if (!url.search) return null
-
-      const baseURI = url.origin + url.pathname
-      const searchList = url.search
-        .slice(1)
-        .split('&')
-        .filter(t => cachedExtensionMatch(t))
-        .join('&')
-      const imgSearch = searchList ? '?' + searchList : ''
-      const rawSearch = baseURI + imgSearch
-
-      const extensionMatch = cachedExtensionMatch(rawSearch)
+      const extensionMatch = str.match(extensionRegex)
+      matchCache.set(str, extensionMatch)
       return extensionMatch
-    } catch (error) {
-      return null
     }
-  }
-  function cachedGetFilename(str) {
-    if (str.startsWith('data')) return null
+  })()
+  const cachedUrlSearchMatch = (() => {
+    const urlSearchCache = new Map()
+    return src => {
+      try {
+        // protocol-relative URL
+        const url = new URL(src, document.baseURI)
+        if (!url.search) return null
 
-    const cache = filenameCache.get(str)
-    if (cache !== undefined) return cache
+        const baseURI = url.origin + url.pathname
+        const searchList = url.search
+          .slice(1)
+          .split('&')
+          .filter(t => cachedExtensionMatch(t))
+          .join('&')
+        const imgSearch = searchList ? '?' + searchList : ''
+        const rawSearch = baseURI + imgSearch
 
-    const rawFilename = str.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
-    filenameCache.set(str, rawFilename)
-    return rawFilename
-  }
-  function getRawUrl(src) {
-    if (src.startsWith('data')) return src
-
-    const cache = rawUrlCache.get(src)
-    if (cache !== undefined) return cache
-
-    const rawFilenameUrl = cachedGetFilename(src)
-    if (rawFilenameUrl !== src) {
-      rawUrlCache.set(src, rawFilenameUrl)
-      return rawFilenameUrl
+        const extensionMatch = cachedExtensionMatch(rawSearch)
+        urlSearchCache.set(src, extensionMatch)
+        return extensionMatch
+      } catch (error) {
+        urlSearchCache.set(src, null)
+        return null
+      }
     }
+  })()
+  const cachedGetFilename = (() => {
+    const filenameCache = new Map()
+    return str => {
+      if (str.startsWith('data')) return null
 
-    const searchMatch = matchUrlSearch(src)
-    const rawSearchUrl = searchMatch?.[1]
-    if (rawSearchUrl && rawSearchUrl !== src) {
-      rawUrlCache.set(src, rawSearchUrl)
-      return rawSearchUrl
+      const cache = filenameCache.get(str)
+      if (cache !== undefined) return cache
+
+      const rawFilename = str.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
+      filenameCache.set(str, rawFilename)
+      return rawFilename
     }
+  })()
+  const getRawUrl = (() => {
+    const rawUrlCache = new Map()
+    return src => {
+      if (src.startsWith('data')) return src
 
-    const extensionMatch = cachedExtensionMatch(src)
-    const rawExtensionUrl = extensionMatch?.[1]
-    if (rawExtensionUrl && rawExtensionUrl !== src) {
-      rawUrlCache.set(src, rawExtensionUrl)
-      return rawExtensionUrl
+      const cache = rawUrlCache.get(src)
+      if (cache !== undefined) return cache
+
+      const rawFilenameUrl = cachedGetFilename(src)
+      if (rawFilenameUrl !== src) {
+        rawUrlCache.set(src, rawFilenameUrl)
+        return rawFilenameUrl
+      }
+
+      const searchMatch = cachedUrlSearchMatch(src)
+      const rawSearchUrl = searchMatch?.[1]
+      if (rawSearchUrl && rawSearchUrl !== src) {
+        rawUrlCache.set(src, rawSearchUrl)
+        return rawSearchUrl
+      }
+
+      const extensionMatch = cachedExtensionMatch(src)
+      const rawExtensionUrl = extensionMatch?.[1]
+      if (rawExtensionUrl && rawExtensionUrl !== src) {
+        rawUrlCache.set(src, rawExtensionUrl)
+        return rawExtensionUrl
+      }
+
+      rawUrlCache.set(src, src)
+      return src
     }
-
-    rawUrlCache.set(src, src)
-    return src
-  }
+  })()
 
   function isEnabledAutoScroll(options) {
     if (document.documentElement.classList.contains('enableAutoScroll')) {
