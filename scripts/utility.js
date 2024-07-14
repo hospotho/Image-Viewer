@@ -72,13 +72,12 @@ window.ImageViewerUtils = (function () {
   let autoScrollFlag = false
 
   // init function hotkey
-  const options = window.ImageViewerOption
   window.addEventListener(
     'keydown',
     e => {
       if (!isImageViewerExist()) return
       // enable auto scroll
-      if (checkKey(e, options.functionHotkey[0])) {
+      if (checkKey(e, window.ImageViewerOption.functionHotkey[0])) {
         e.preventDefault()
         if (!document.documentElement.classList.contains('enableAutoScroll')) {
           console.log('Enable auto scroll')
@@ -92,7 +91,7 @@ window.ImageViewerUtils = (function () {
         if (unlazyCount > 0) autoScroll()
       }
       // download images
-      if (checkKey(e, options.functionHotkey[1])) {
+      if (checkKey(e, window.ImageViewerOption.functionHotkey[1])) {
         e.preventDefault()
         safeSendMessage('download_images')
       }
