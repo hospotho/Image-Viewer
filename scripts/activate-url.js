@@ -53,11 +53,9 @@
   function getUnlazyAttrList(src) {
     if (src.startsWith('data')) return []
 
-    const rawUrl = getRawUrl(src)
     const attrList = []
-    if (rawUrl !== src) {
-      attrList.push({name: 'raw url', value: rawUrl})
-    }
+    const rawUrl = getRawUrl(src)
+    attrList.push({name: 'raw url', value: rawUrl})
     try {
       const url = new URL(src, document.baseURI)
       const pathname = url.pathname
@@ -73,7 +71,7 @@
       const noQuery = src.replace(pathname + search, pathname)
       attrList.push({name: 'no query', value: noQuery})
     } catch (error) {}
-    return attrList
+    return attrList.filter(attr => attr.value !== src)
   }
 
   async function initImageViewer(image) {
