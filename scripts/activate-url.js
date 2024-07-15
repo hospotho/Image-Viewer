@@ -42,11 +42,11 @@
     }
     return src
   }
-  function getRawSize(rawUrl) {
+  function getImage(rawUrl) {
     return new Promise(resolve => {
       const img = new Image()
-      img.onload = () => resolve([img.naturalWidth, img.naturalHeight])
-      img.onerror = () => resolve([0, 0])
+      img.onload = () => resolve(img)
+      img.onerror = () => resolve(img)
       img.src = rawUrl
     })
   }
@@ -87,7 +87,8 @@
 
     const attrList = getUnlazyAttrList(image.src)
     for (const attr of attrList) {
-      const rawSize = attr.value === image.src ? [0, 0] : await getRawSize(attr.value)
+      const rawImage = await getImage(attr.value)
+      const rawSize = [rawImage.naturalWidth, rawImage.naturalHeight]
       if (image.naturalWidth > rawSize[0]) continue
       const rawRatio = rawSize[0] / rawSize[1]
       const currRatio = image.naturalWidth / image.naturalHeight
