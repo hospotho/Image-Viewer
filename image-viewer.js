@@ -430,11 +430,6 @@ window.ImageViewer = (function () {
       #iv-image-list {
         width: 100%;
         height: 100%;
-        padding: 0;
-        margin: 0;
-        position: absolute;
-        left: 0;
-        top: 0;
         transition: 0s;
       }
       #iv-image-list li {
@@ -442,19 +437,14 @@ window.ImageViewer = (function () {
         width: 100%;
         height: 100%;
         list-style: none;
-        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         overflow: hidden;
       }
       #iv-image-list li img {
-        position: absolute;
-        margin: auto;
-        left: 0px;
-        right: 0px;
-        top: 0px;
-        bottom: 0px;
         max-width: 100%;
         max-height: 100%;
-        text-align: center;
         transition: transform 0.05s linear;
       }
       #iv-image-list li img.loaded {
