@@ -90,7 +90,7 @@
     const attrList = getUnlazyAttrList(image.src)
     for (const attr of attrList) {
       const rawSize = attr.value === image.src ? [0, 0] : await getRawSize(attr.value)
-      const rawRatio = rawSize[0] ? rawSize[0] / rawSize[1] : 0
+      const rawRatio = rawSize[0] / rawSize[1]
       const currRatio = image.naturalWidth / image.naturalHeight
       // non trivial size or with proper ratio
       const nonTrivialSize = rawSize[0] % 10 || rawSize[1] % 10
