@@ -90,13 +90,14 @@
     const attrList = getUnlazyAttrList(image.src)
     for (const attr of attrList) {
       const rawSize = attr.value === image.src ? [0, 0] : await getRawSize(attr.value)
+      if (image.naturalWidth > rawSize[0]) continue
       const rawRatio = rawSize[0] / rawSize[1]
       const currRatio = image.naturalWidth / image.naturalHeight
       // non trivial size or with proper ratio
       const nonTrivialSize = rawSize[0] % 10 || rawSize[1] % 10
       const properRatio = currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01 || rawRatio > 3 || rawRatio < 1 / 3
       const isRawCandidate = nonTrivialSize || properRatio
-      if (rawSize[0] >= image.naturalWidth && isRawCandidate) {
+      if (isRawCandidate) {
         console.log(`Unlazy img with ${attr.name}`)
         ImageViewer([attr.value], options)
         break
