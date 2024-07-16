@@ -884,6 +884,7 @@ window.ImageViewerUtils = (function () {
       attrList.push({name: 'raw url', value: rawUrl})
     }
     try {
+      if (img.currentSrc === '') throw new Error()
       const url = new URL(img.currentSrc, document.baseURI)
       const pathname = url.pathname
       const search = url.search
@@ -895,7 +896,7 @@ window.ImageViewerUtils = (function () {
           attrList.push({name: 'raw extension', value: rawExtension})
         }
       }
-      if (search.includes("width=") || search.includes("height=")) {
+      if (search.includes('width=') || search.includes('height=')) {
         const noSizeQuery = search.replace(/&width=\d+|&height=\d+/g, '')
         const rawQuery = img.currentSrc.replace(search, noSizeQuery)
         attrList.push({name: 'no size query', value: rawQuery})
