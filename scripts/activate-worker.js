@@ -69,17 +69,7 @@
         return 1
       }
     }
-    function checkTreeIndex(e1, e2, dom) {
-      const childrenList = [...dom.children]
-      const e1Order = childrenList.indexOf(e1)
-      const e2Order = childrenList.indexOf(e2)
-      if (e1Order > e2Order) {
-        return -1
-      } else {
-        return 1
-      }
-    }
-    function getTopElement(e1, e2, dom) {
+    function getTopElement(e1, e2) {
       // e1 -1, e2 1, same 0
       if (e1 === e2) return 0
 
@@ -91,7 +81,7 @@
       if (e1Position === 'absolute' || e2Position === 'absolute') {
         result = checkPosition(e1, e2)
       } else {
-        result = checkTreeIndex(e1, e2, dom)
+        result = e1.compareDocumentPosition(e2) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
       }
       return result
     }
@@ -169,7 +159,7 @@
 
       imageInfoList.sort((a, b) => {
         if (a[2].tagName === 'IMG' && b[2].tagName === 'IMG') return a[2].compareDocumentPosition(b[2]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
-        if (a[2].tagName !== 'IMG' && b[2].tagName !== 'IMG') return getTopElement(a[2], b[2], dom)
+        if (a[2].tagName !== 'IMG' && b[2].tagName !== 'IMG') return getTopElement(a[2], b[2])
         if (a[2].tagName === 'IMG') return -1
         if (b[2].tagName === 'IMG') return 1
         return 0
