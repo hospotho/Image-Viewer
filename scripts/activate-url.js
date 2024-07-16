@@ -8,6 +8,53 @@
   }
 
   // image url mode
+  function isSubImage(small, large) {
+    const canvas1 = document.createElement('canvas')
+    const canvas2 = document.createElement('canvas')
+    const ctx1 = canvas1.getContext('2d')
+    const ctx2 = canvas2.getContext('2d', {willReadFrequently: true})
+
+    // pooling
+    const poolingWidth = 256
+    const smallRatio = small.width / small.height
+    const largeRatio = large.width / large.height
+
+    canvas1.width = poolingWidth
+    canvas1.height = poolingWidth / smallRatio
+    ctx1.drawImage(small, 0, 0, small.width, small.height, 0, 0, poolingWidth, canvas1.height)
+
+    canvas2.width = poolingWidth
+    canvas2.height = poolingWidth / largeRatio
+    ctx2.drawImage(large, 0, 0, large.width, large.height, 0, 0, poolingWidth, canvas2.height)
+
+    // compare pixels
+    const threshold = 0.5
+    const base = ctx1.getImageData(0, 0, poolingWidth, canvas1.height).data
+    const pixelCount = base.length / 4
+
+    // check if center
+    let diffCount = 0
+    const center = ctx2.getImageData(0, (canvas2.height - canvas1.height) / 2, poolingWidth, canvas1.height).data
+    for (let i = 0; i < base.length; i += 4) {
+      if (Math.abs(base[i] - center[i]) + Math.abs(base[i + 1] - center[i + 1]) + Math.abs(base[i + 2] - center[i + 2]) > 24) {
+        diffCount++
+      }
+    }
+    if (diffCount / pixelCount < threshold) return true
+
+    // check if topmost
+    diffCount = 0
+    const top = ctx2.getImageData(0, 0, poolingWidth, canvas1.height).data
+    for (let i = 0; i < base.length; i += 4) {
+      if (Math.abs(base[i] - top[i]) + Math.abs(base[i + 1] - top[i + 1]) + Math.abs(base[i + 2] - top[i + 2]) > 24) {
+        diffCount++
+      }
+    }
+    if (diffCount / pixelCount < threshold) return true
+
+    return false
+  }
+
   function getRawUrl(src) {
     const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
     if (src.startsWith('data')) return src
@@ -97,6 +144,12 @@
       const properRatio = currRatio === 1 || Math.abs(rawRatio - currRatio) < 0.01 || rawRatio > 3 || rawRatio < 1 / 3
       const isRawCandidate = nonTrivialSize || properRatio
       if (isRawCandidate) {
+        console.log(`Unlazy img with ${attr.name}`)
+        ImageViewer([attr.value], options)
+        break
+      }
+      // sub image
+      if (image.naturalWidth >= 256 && rawRatio < currRatio && isSubImage(image, rawImage)) {
         console.log(`Unlazy img with ${attr.name}`)
         ImageViewer([attr.value], options)
         break
