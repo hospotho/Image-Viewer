@@ -1343,7 +1343,7 @@ window.ImageViewerUtils = (function () {
     }
     return collection
   }
-  function compNodesInDifferentTree(a, b) {
+  function compareRootPosition(a, b) {
     const aRootList = getNodeRootList(a)
     const bRootList = getNodeRootList(b)
     const minLength = Math.min(aRootList.length, bRootList.length)
@@ -1361,7 +1361,7 @@ window.ImageViewerUtils = (function () {
       if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
         return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
       }
-      return compNodesInDifferentTree(a.dom, b.dom)
+      return compareRootPosition(a.dom, b.dom)
     })
   }
 
