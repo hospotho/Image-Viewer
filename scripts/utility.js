@@ -236,6 +236,17 @@ window.ImageViewerUtils = (function () {
       return src
     }
   })()
+  const getFilename = (function () {
+    const rawFilenameCache = new Map()
+    return src => {
+      const cache = rawFilenameCache.get(src)
+      if (cache !== undefined) return cache
+
+      const filename = src.split('?')[0].split('/').at(-1).split('.')[0]
+      rawFilenameCache.set(src, filename)
+      return filename
+    }
+  })()
 
   function isEnabledAutoScroll(options) {
     if (document.documentElement.classList.contains('enableAutoScroll')) {
@@ -295,12 +306,16 @@ window.ImageViewerUtils = (function () {
     const bg = backgroundImage.split(', ')[0]
     return bg.substring(5, bg.length - 2)
   }
-  function getImageInfoIndex(dataList, data) {
-    const srcArray = dataList.map(data => data.src)
-    const query = typeof data === 'string' ? data : data.src
-    const result = srcArray.indexOf(query)
-    if (result !== -1) return result
-    return srcArray.indexOf(getRawUrl(query))
+  function getImageInfoIndex(imageDataList, src) {
+    const srcList = imageDataList.map(data => data.src)
+    const index = srcList.indexOf(src)
+    if (index !== -1) return index
+    const rawIndex = srcList.indexOf(getRawUrl(src))
+    if (rawIndex !== -1) return rawIndex
+    const filename = getFilename(src)
+    const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(item => item[0] === filename)
+    if (filenameIndexList.length === 1) return filenameIndexList[0][1]
+    return -1
   }
 
   // wrapper size
@@ -1427,19 +1442,8 @@ window.ImageViewerUtils = (function () {
     },
 
     searchImageInfoIndex: function (input, imageList) {
-      if (typeof input === 'object') {
-        const currentUrl = getDomUrl(input)
-        const currIndex = imageList.findIndex(data => data.src === currentUrl)
-        if (currIndex !== -1) return currIndex
-
-        const filename = currentUrl.split('?')[0].split('/').at(-1).split('.')[0]
-        const filenameIndex = imageList.findIndex(data => data.src.split('?')[0].split('/').at(-1).split('.')[0] === filename)
-        if (filenameIndex !== -1) return filenameIndex
-
-        return -1
-      }
-
-      return getImageInfoIndex(imageList, input)
+      const src = typeof input === 'object' ? getDomUrl(input) : input
+      return getImageInfoIndex(imageList, src)
     },
 
     combineImageList: function (newList, oldList) {
@@ -1461,8 +1465,8 @@ window.ImageViewerUtils = (function () {
       while (rightIndex < newList.length) {
         const right = newList[rightIndex]
 
-        indexAtOldArray = getImageInfoIndex(oldList, right)
-        indexAtCombinedArray = getImageInfoIndex(combinedImageList, right)
+        indexAtOldArray = getImageInfoIndex(oldList, right.src)
+        indexAtCombinedArray = getImageInfoIndex(combinedImageList, right.src)
 
         // right is not a anchor
         if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {

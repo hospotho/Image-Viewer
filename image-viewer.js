@@ -1592,7 +1592,8 @@ window.ImageViewer = (function () {
       const srcIndex = srcList.findIndex(src => src === targetSrc || src === rawUrl)
       if (srcIndex !== -1) return srcIndex
 
-      const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(item => item[0] === getFilename(targetSrc))
+      const filename = getFilename(targetSrc)
+      const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(item => item[0] === filename)
       if (filenameIndexList.length === 1) return filenameIndexList[0][1]
 
       return Math.min(clearIndex, currentImageList.length - 1)
