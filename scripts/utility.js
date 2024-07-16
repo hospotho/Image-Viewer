@@ -1520,7 +1520,9 @@ window.ImageViewerUtils = (function () {
           uniqueFinalList.push(data)
         }
       }
-      return uniqueFinalList
+
+      const orderedFinalList = sortImageDataList(uniqueFinalList)
+      return orderedFinalList
     },
 
     isStrLengthEqual: function (newList, oldList) {
