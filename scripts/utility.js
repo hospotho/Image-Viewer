@@ -1393,10 +1393,7 @@ window.ImageViewerUtils = (function () {
       const release = await mutex.acquire()
 
       await startUnlazy(options)
-
-      const uniqueImageUrls = await getImageList(options)
-      const uniqueIframeImage = await getIframeImage(options)
-      uniqueImageUrls.push(...uniqueIframeImage)
+      const uniqueImageUrls = (await Promise.all([getImageList(options), getIframeImage(options)])).flat()
 
       release()
       if (uniqueImageUrls.length === 0) {
