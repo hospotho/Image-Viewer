@@ -115,6 +115,11 @@
           attrList.push({name: 'raw extension', value: rawExtension})
         }
       }
+      if (search.includes('width=') || search.includes('height=')) {
+        const noSizeQuery = search.replace(/&width=\d+|&height=\d+/g, '')
+        const rawQuery = src.replace(search, noSizeQuery)
+        attrList.push({name: 'no size query', value: rawQuery})
+      }
       const noQuery = src.replace(pathname + search, pathname)
       attrList.push({name: 'no query', value: noQuery})
     } catch (error) {}
