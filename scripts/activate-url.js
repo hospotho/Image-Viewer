@@ -8,7 +8,7 @@
   }
 
   // image url mode
-  function isSubImage(small, large) {
+  function isImageContained(small, large) {
     const canvas1 = document.createElement('canvas')
     const canvas2 = document.createElement('canvas')
     const ctx1 = canvas1.getContext('2d')
@@ -149,7 +149,7 @@
         break
       }
       // sub image
-      if (image.naturalWidth >= 256 && rawRatio < currRatio && isSubImage(image, rawImage)) {
+      if (image.naturalWidth >= 256 && rawRatio < currRatio && isImageContained(image, rawImage)) {
         console.log(`Unlazy img with ${attr.name}`)
         ImageViewer([attr.value], options)
         break
