@@ -965,34 +965,26 @@ window.ImageViewer = (function () {
         border.style.pointerEvents = 'none'
         document.body.appendChild(border)
 
-        const action = entryList => {
-          const entry = entryList[0]
-          const rect = entry.intersectionRect
-          const {top, left, width, height} = rect
-          border.style.transform = `translate(${left - 1}px, ${top - 1}px)`
-          border.style.width = `${width + 4}px`
-          border.style.height = `${height + 4}px`
-          observer.unobserve(imgNode)
+        let endFlag = false
+        let lastTop = 0
+        let lastLeft = 0
+        const drawBorder = () => {
+          if (endFlag) return
+          const {top, left, width, height} = imgNode.getBoundingClientRect()
+          if (top !== lastTop || left !== lastLeft) {
+            lastTop = top
+            lastLeft = left
+            border.style.transform = `translate(${left - 1}px, ${top - 1}px)`
+            border.style.width = `${width + 4}px`
+            border.style.height = `${height + 4}px`
+          }
+          requestAnimationFrame(drawBorder)
         }
-        const observer = new IntersectionObserver(action)
-        observer.observe(imgNode)
-
-        let count = 0
-        let {top, left} = imgNode.getBoundingClientRect()
-        const displayFrame = 60
-        const fps = 1000 / displayFrame
-        const interval = setInterval(() => {
-          const {top: currTop, left: currLeft} = imgNode.getBoundingClientRect()
-          if (top !== currTop || left !== currLeft || count % 5 === 0) {
-            top = currTop
-            left = currLeft
-            observer.observe(imgNode)
-          }
-          if (count++ > displayFrame) {
-            clearInterval(interval)
-            border.remove()
-          }
-        }, fps)
+        drawBorder()
+        setTimeout(() => {
+          endFlag = true
+          border.remove()
+        }, 1000)
       }
       function getMainContainer() {
         const windowWidth = document.documentElement.clientWidth
