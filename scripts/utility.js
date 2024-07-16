@@ -9,7 +9,8 @@ window.ImageViewerUtils = (function () {
 
   const passList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
   const urlRegex = /(?:https?:\/)?\/\S+/g
-  const protocol = window.location.protocol
+  const protocol = location.protocol
+  const origin = location.origin + '/'
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
   const badImageList = new Set(['', 'about:blank'])
@@ -784,45 +785,26 @@ window.ImageViewerUtils = (function () {
       img.src = src
     })
   }
-  async function getUrlSize(getSizeFunction, urlList) {
-    if (urlList.length === 1) {
-      const lazySize = await getSizeFunction(urlList[0])
-      return [lazySize, urlList[0]]
-    } else {
-      const [firstSize, lastSize] = await Promise.all(urlList.map(getSizeFunction))
-      return firstSize > lastSize ? [firstSize, urlList[0]] : [lastSize, urlList[1]]
-    }
-  }
-  async function getBetterUrl(currentSrc, bitSize, naturalSize, ...urlList) {
+  async function getBetterUrl(currentSrc, bitSize, naturalSize, newURL) {
     const baseSize = bitSize > 0 ? bitSize : naturalSize
-    const [lazySize, url] = await getUrlSize(bitSize > 0 ? getImageBitSize : getImageRealSize, urlList)
+    const getSizeFunction = bitSize > 0 ? getImageBitSize : getImageRealSize
+    const lazySize = await getSizeFunction(newURL)
     if (lazySize === 0 || lazySize < baseSize) return null
     if (lazySize > baseSize) {
       badImageList.add(currentSrc)
-      return url
+      return newURL
     }
-    const isSameImage = getRawUrl(currentSrc) === getRawUrl(url) || currentSrc.split('?')[0].split('/').at(-1) === url.split('?')[0].split('/').at(-1)
+    const isSameImage = getRawUrl(currentSrc) === getRawUrl(newURL) || currentSrc.split('?')[0].split('/').at(-1) === newURL.split('?')[0].split('/').at(-1)
     if (!isSameImage) {
       badImageList.add(currentSrc)
-      return url
+      return newURL
     }
     return null
   }
   async function processAttribute(attr, currentSrc, bitSize, naturalSize) {
-    const match = [...attr.value.matchAll(urlRegex)]
-    if (match.length === 0) return null
-
-    if (match.length === 1) {
-      if (match[0][0] === currentSrc) return null
-      const newURL = match[0][0].replace(/https?:/, protocol)
-      return await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
-    }
-
-    if (match.length > 1) {
-      const first = match[0][0].replace(/https?:/, protocol)
-      const last = match[match.length - 1][0].replace(/https?:/, protocol)
-      return await getBetterUrl(currentSrc, bitSize, naturalSize, first, last)
-    }
+    if (attr.value === currentSrc) return null
+    const newURL = attr.value.replace(/https?:/, protocol).replace(/^\/(?:[^\/])/, origin)
+    return await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
   }
   async function checkImageAttr(img, attrList) {
     const successList = []
@@ -905,7 +887,7 @@ window.ImageViewerUtils = (function () {
       attrList.push({name: 'no query', value: noQuery})
     } catch (error) {}
     const anchor = img.closest('a')
-    if (anchor && anchor.href !== img.currentSrc) {
+    if (anchor && anchor.href !== img.currentSrc && anchor.href.match(urlRegex)) {
       const anchorHaveExt = cachedExtensionMatch(anchor.href) !== null
       const rawHaveExt = cachedExtensionMatch(rawUrl) !== null
       const maybeLarger = anchorHaveExt || anchorHaveExt === rawHaveExt || rawUrl.slice(0, 12).includes('cdn.')
