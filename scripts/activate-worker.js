@@ -236,11 +236,11 @@
         return isPartialBackground ? newInfo[1] >= oldInfo[1] : true
       }
       // size check
-      const [newBitSize, oldBitSize] = await Promise.all([newUrl, oldUrl].map(getImageBitSize))
+      const asyncList = [[newUrl, oldUrl].map(getImageBitSize), [newUrl, oldUrl].map(getImageRealSize)].flat()
+      const [newBitSize, oldBitSize, newRealSize, oldRealSize] = await Promise.all(asyncList)
       if (newBitSize * oldBitSize !== 0) {
-        return newBitSize > oldBitSize
+        return newBitSize / newRealSize > oldBitSize / oldRealSize
       }
-      const [newRealSize, oldRealSize] = await Promise.all([newUrl, oldUrl].map(getImageRealSize))
       return newRealSize > oldRealSize
     }
     const getImageBitSize = async src => {
