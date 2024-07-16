@@ -347,12 +347,57 @@
     }
   })()
 
+  function deepGetElementFromPoint(x, y) {
+    const queue = []
+    const visited = new Set()
+    const elementList = document.elementsFromPoint(x, y)
+
+    function travel(root) {
+      // lazy evaluation
+      return () => {
+        const result = []
+        const elementList = root.elementsFromPoint(x, y)
+        for (const element of elementList) {
+          if (visited.has(element) || visited.has(element.shadowRoot)) continue
+          if (element.shadowRoot) {
+            visited.add(element.shadowRoot)
+            result.push(travel(element.shadowRoot))
+          } else {
+            visited.add(element)
+            result.push(element)
+          }
+        }
+        return result
+      }
+    }
+
+    for (const element of elementList) {
+      if (element.shadowRoot) {
+        visited.add(element.shadowRoot)
+        queue.push(travel(element.shadowRoot))
+      } else {
+        visited.add(element)
+        queue.push(element)
+      }
+    }
+
+    function evaluate(queue) {
+      if (queue.some(i => typeof i === 'function')) {
+        queue = queue.map(i => (typeof i === 'function' ? i() : i)).flat()
+        return evaluate(queue)
+      }
+      return queue
+    }
+    const result = evaluate(queue)
+    return result
+  }
+
   const getOrderedElement = (function () {
     return disableHoverCheck
-      ? e => document.elementsFromPoint(e.clientX, e.clientY)
+      ? e => deepGetElementFromPoint(e.clientX, e.clientY)
       : async e => {
           // get all elements include hover
-          const elementsBeforeDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
+          const elementsBeforeDisableHover = deepGetElementFromPoint(e.clientX, e.clientY)
           // reset pointer event as default
           document.documentElement.classList.remove('iv-worker-idle')
           // disable hover
@@ -368,7 +413,7 @@
             element.classList.remove('disable-hover')
           }
           // get all non hover elements
-          const elementsAfterDisableHover = document.elementsFromPoint(e.clientX, e.clientY)
+          const elementsAfterDisableHover = deepGetElementFromPoint(e.clientX, e.clientY)
           // lock pointer event back to auto
           document.documentElement.classList.add('iv-worker-idle')
 
