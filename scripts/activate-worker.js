@@ -128,7 +128,7 @@
       hasSameKindSibling ||= prevSibling ? prevClassList === rootClassList || prevSibling.tagName === root.tagName : false
       hasSameKindSibling ||= nextSibling ? nextClassList === rootClassList || nextSibling.tagName === root.tagName : false
       while (!hasSameKindSibling) {
-        if (root === document.documentElement) return null
+        if (root === document.documentElement || root === null) return null
         root = root.parentElement
         prevSibling = root.previousElementSibling
         nextSibling = root.nextElementSibling
