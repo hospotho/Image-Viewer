@@ -1120,18 +1120,31 @@ window.ImageViewerUtils = (function () {
 
     return uniqueDataList
   }
-  // function getShadowRootHolderList() {
-  //   const shadowRootHolderList = []
-  //   const uncheckedNodeList = document.body.querySelectorAll('*:not([no-shadow])')
-  //   for (const node of uncheckedNodeList) {
-  //     if (!node?.shadowRoot || node.shadowRoot.querySelectorAll('img').length === 0) {
-  //       node.setAttribute('no-shadow', '')
-  //       continue
-  //     }
-  //     shadowRootHolderList.push(node)
-  //   }
-  //   return shadowRootHolderList
-  // }
+  function getShadowRootHolderList() {
+    const shadowRootHolderList = []
+    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-shadow])')
+    for (const node of uncheckedNodeList) {
+      if (node.shadowRoot) {
+        shadowRootHolderList.push(node)
+      } else {
+        node.setAttribute('no-shadow', '')
+      }
+    }
+    return shadowRootHolderList
+  }
+  function getImageFromShadowRoot(shadowRoot) {
+    const result = []
+    for (const node of shadowRoot.querySelectorAll('img, *:not([no-shadow])')) {
+      if (node.tagName === 'IMG') {
+        result.push(node)
+      } else if (node.shadowRoot) {
+        result.push(...getImageFromShadowRoot(node.shadowRoot))
+      } else {
+        node.setAttribute('no-shadow', '')
+      }
+    }
+    return result
+  }
   function getImageListWithoutFilter(options) {
     const imageDataList = []
 
@@ -1141,14 +1154,14 @@ window.ImageViewerUtils = (function () {
       imageDataList.push({src: imgSrc, dom: img})
     }
 
-    // const shadowRootHolderList = getShadowRootHolderList()
-    // for (const node of shadowRootHolderList) {
-    //   const imageList = node.shadowRoot.querySelectorAll('img')
-    //   for (const img of imageList) {
-    //     const imgSrc = img.currentSrc || img.src
-    //     imageDataList.push([imgSrc, node])
-    //   }
-    // }
+    const shadowRootHolderList = getShadowRootHolderList()
+    for (const node of shadowRootHolderList) {
+      const imageList = getImageFromShadowRoot(node.shadowRoot)
+      for (const img of imageList) {
+        const imgSrc = img.currentSrc || img.src
+        imageDataList.push({src: imgSrc, dom: img})
+      }
+    }
 
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
     for (const node of uncheckedNodeList) {
@@ -1220,19 +1233,19 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    // const shadowRootHolderList = getShadowRootHolderList()
-    // for (const node of shadowRootHolderList) {
-    //   const imageList = node.shadowRoot.querySelectorAll('img')
-    //   for (const img of imageList) {
-    //     // only client size should be checked in order to bypass large icon or hidden image
-    //     const {width, height} = img.getBoundingClientRect()
-    //     if ((width >= minWidth && height >= minHeight) || img.classList.contains('ImageViewerLastDom')) {
-    //       // currentSrc might be empty during unlazy or update
-    //       const imgSrc = img.currentSrc || img.src
-    //       imageDataList.push([imgSrc, node])
-    //     }
-    //   }
-    // }
+    const shadowRootHolderList = getShadowRootHolderList()
+    for (const node of shadowRootHolderList) {
+      const imageList = getImageFromShadowRoot(node.shadowRoot)
+      for (const img of imageList) {
+        // only client size should be checked in order to bypass large icon or hidden image
+        const {width, height} = img.getBoundingClientRect()
+        if ((width >= minWidth && height >= minHeight) || img.classList.contains('ImageViewerLastDom')) {
+          // currentSrc might be empty during unlazy or update
+          const imgSrc = img.currentSrc || img.src
+          imageDataList.push({src: imgSrc, dom: img})
+        }
+      }
+    }
 
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
     for (const node of uncheckedNodeList) {
