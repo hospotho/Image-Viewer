@@ -1579,6 +1579,11 @@ window.ImageViewer = (function () {
       if (clearIndex === 0 && options.index === undefined) return 0
 
       const targetSrc = clearSrc || lastSrc
+      const current = shadowRoot.querySelector('#iv-image-list li.current')
+      if (!targetSrc && current) {
+        return [...shadowRoot.querySelectorAll('#iv-image-list li')].indexOf(current)
+      }
+
       const rawUrl = getRawUrl(targetSrc)
       const srcList = currentImageList.map(data => data.src)
       const srcIndex = srcList.findIndex(src => src === targetSrc || src === rawUrl)
