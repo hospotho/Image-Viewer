@@ -1086,25 +1086,25 @@ window.ImageViewerUtils = (function () {
     }
 
     // src + iframe dom
-    const imageDomList = []
+    const imageDataList = []
     const iframeRedirectSrcList = (await safeSendMessage({msg: 'get_redirect', data: iframeSrcList})) || []
     const rawIframeRedirectSrcList = iframeRedirectSrcList.map(src => src.slice(0, src.indexOf('/', 8)))
     for (const [imageSrc, iframeSrc] of uniqueIframeImage) {
       const index = iframeRedirectSrcList.indexOf(iframeSrc)
       if (index !== -1) {
-        imageDomList.push({src: imageSrc, dom: iframeList[index]})
+        imageDataList.push({src: imageSrc, dom: iframeList[index]})
         continue
       }
       // document url maybe change, search index by url origin
       const rawIndex = rawIframeRedirectSrcList.indexOf(iframeSrc)
       if (rawIndex !== -1) {
-        imageDomList.push({src: imageSrc, dom: iframeList[rawIndex]})
+        imageDataList.push({src: imageSrc, dom: iframeList[rawIndex]})
         continue
       }
       // not found, pass first iframe as fallback
-      imageDomList.push({src: imageSrc, dom: iframeList[0]})
+      imageDataList.push({src: imageSrc, dom: iframeList[0]})
     }
-    return imageDomList
+    return imageDataList
   }
   function processImageDataList(options, imageDataList) {
     const isBadImage = options.svgFilter ? url => badImageList.has(url) || url.startsWith('data:image/svg') || url.includes('.svg') : url => badImageList.has(url)
