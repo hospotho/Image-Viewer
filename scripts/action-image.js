@@ -28,7 +28,7 @@
     options.minHeight = Math.min(nodeSize, options.minHeight)
   }
 
-  const dom = document.querySelector('.ImageViewerLastDom')
+  const dom = window.ImageViewerLastDom
   const domRect = dom?.getBoundingClientRect()
   const domSize = domRect ? [domRect.width, domRect.height] : [0, 0]
   ImageViewerUtils.updateWrapperSize(dom, domSize, options)

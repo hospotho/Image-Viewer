@@ -275,8 +275,7 @@
     const markingDom = (function () {
       return window.top === window.self
         ? dom => {
-            document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
-            dom?.classList.add('ImageViewerLastDom')
+            window.ImageViewerLastDom = dom
           }
         : () => safeSendMessage('reset_dom')
     })()
@@ -341,7 +340,7 @@
           return imageInfoFromTree
         }
 
-        markingDom()
+        markingDom(null)
         return null
       }
     }

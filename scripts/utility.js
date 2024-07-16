@@ -1266,7 +1266,7 @@ window.ImageViewerUtils = (function () {
     for (const img of rawImageList) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
-      if ((width >= minWidth && height >= minHeight) || img.classList.contains('ImageViewerLastDom')) {
+      if ((width >= minWidth && height >= minHeight) || img === window.ImageViewerLastDom) {
         // currentSrc might be empty during unlazy or update
         const imgSrc = img.currentSrc || img.src
         imageDataList.push({src: imgSrc, dom: img})
@@ -1279,7 +1279,7 @@ window.ImageViewerUtils = (function () {
       for (const img of imageList) {
         // only client size should be checked in order to bypass large icon or hidden image
         const {width, height} = img.getBoundingClientRect()
-        if ((width >= minWidth && height >= minHeight) || img.classList.contains('ImageViewerLastDom')) {
+        if ((width >= minWidth && height >= minHeight) || img === window.ImageViewerLastDom) {
           // currentSrc might be empty during unlazy or update
           const imgSrc = img.currentSrc || img.src
           imageDataList.push({src: imgSrc, dom: img})

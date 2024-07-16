@@ -256,7 +256,7 @@ function addMessageHandler() {
           {
             target: {tabId: sender.tab.id},
             func: () => {
-              document.querySelector('.ImageViewerLastDom')?.classList.remove('ImageViewerLastDom')
+              window.ImageViewerLastDom = null
             }
           },
           () => sendResponse()
