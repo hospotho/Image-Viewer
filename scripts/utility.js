@@ -191,7 +191,7 @@ window.ImageViewerUtils = (function () {
       }
     }
   })()
-  const cachedGetFilename = (function () {
+  const cachedGetRawFilename = (function () {
     const filenameCache = new Map()
     return str => {
       if (str.startsWith('data')) return null
@@ -212,7 +212,7 @@ window.ImageViewerUtils = (function () {
       const cache = rawUrlCache.get(src)
       if (cache !== undefined) return cache
 
-      const rawFilenameUrl = cachedGetFilename(src)
+      const rawFilenameUrl = cachedGetRawFilename(src)
       if (rawFilenameUrl !== src) {
         rawUrlCache.set(src, rawFilenameUrl)
         return rawFilenameUrl
