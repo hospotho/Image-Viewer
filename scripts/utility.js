@@ -1070,17 +1070,38 @@ window.ImageViewerUtils = (function () {
     const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
     if (filteredList.length === 0) return []
 
+    // src + iframe url
     const uniqueIframeImage = []
     const uniqueIframeImageUrls = new Set()
     const minSize = Math.min(options.minWidth, options.minHeight)
     const iframeImage = (await safeSendMessage({msg: 'extract_frames', minSize: minSize})) || []
-    for (const img of iframeImage) {
-      if (!uniqueIframeImageUrls.has(img[0])) {
-        uniqueIframeImageUrls.add(img[0])
-        uniqueIframeImage.push(img)
+    for (const image of iframeImage) {
+      if (!uniqueIframeImageUrls.has(image[0])) {
+        uniqueIframeImageUrls.add(image[0])
+        uniqueIframeImage.push(image)
       }
     }
-    return uniqueIframeImage
+
+    // src + iframe dom
+    const imageDomList = []
+    const iframeRedirectSrcList = (await safeSendMessage({msg: 'get_redirect', data: iframeSrcList})) || []
+    const rawIframeRedirectSrcList = iframeRedirectSrcList.map(src => src.slice(0, src.indexOf('/', 8)))
+    for (const [imageSrc, iframeSrc] of uniqueIframeImage) {
+      const index = iframeRedirectSrcList.indexOf(iframeSrc)
+      if (index !== -1) {
+        imageDomList.push({src: imageSrc, dom: iframeList[index]})
+        continue
+      }
+      // document url maybe change, search index by url origin
+      const rawIndex = rawIframeRedirectSrcList.indexOf(iframeSrc)
+      if (rawIndex !== -1) {
+        imageDomList.push({src: imageSrc, dom: iframeList[rawIndex]})
+        continue
+      }
+      // not found, pass first iframe as fallback
+      imageDomList.push({src: imageSrc, dom: iframeList[0]})
+    }
+    return imageDomList
   }
   function processImageDataList(options, imageDataList) {
     const isBadImage = options.svgFilter ? url => badImageList.has(url) || url.startsWith('data:image/svg') || url.includes('.svg') : url => badImageList.has(url)
@@ -1289,38 +1310,6 @@ window.ImageViewerUtils = (function () {
   }
 
   // sort image list
-  async function mapSrcToIframe(dataList) {
-    const iframeList = [...document.getElementsByTagName('iframe')]
-    const iframeSrcList = iframeList.map(iframe => iframe.src)
-    const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
-    if (filteredList.length === 0) return dataList
-
-    const iframeRedirectSrcList = (await safeSendMessage({msg: 'get_redirect', data: iframeSrcList})) || []
-    const rawIframeRedirectSrcList = iframeRedirectSrcList.map(src => src.slice(0, src.indexOf('/', 8)))
-
-    const imageDomList = []
-    for (const data of dataList) {
-      const iframeSrc = data[1]
-      if (typeof iframeSrc !== 'string') {
-        imageDomList.push(data)
-        continue
-      }
-      const index = iframeRedirectSrcList.indexOf(iframeSrc)
-      if (index !== -1) {
-        imageDomList.push([data[0], iframeList[index]])
-        continue
-      }
-      // document url maybe change, search index by url origin
-      const rawIndex = rawIframeRedirectSrcList.indexOf(iframeSrc)
-      if (rawIndex !== -1) {
-        imageDomList.push([data[0], iframeList[rawIndex]])
-        continue
-      }
-      // not found pass first iframe as fallback
-      imageDomList.push([data[0], iframeList[0]])
-    }
-    return imageDomList
-  }
   async function sortImageDataList(dataList) {
     const imageDomList = await mapSrcToIframe(dataList)
     const bitMask = Node.DOCUMENT_POSITION_FOLLOWING
