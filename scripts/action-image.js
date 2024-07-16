@@ -39,9 +39,9 @@
 
   // find image index
   options.index = ImageViewerUtils.searchImageInfoIndex(dom || srcUrl, window.backupImageUrlList)
-  if (options.index === -1) {
+  if (dom && options.index === -1) {
     options.index = 0
-    window.backupImageUrlList.unshift(srcUrl)
+    window.backupImageUrlList.unshift({src: srcUrl, dom: dom})
     console.log('Unshift image to list')
   }
 
