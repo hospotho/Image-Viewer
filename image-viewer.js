@@ -1469,7 +1469,9 @@ window.ImageViewer = (function () {
       }
     }
     function tryClear() {
-      const isCurrentListBad = currentImageList.length > newList.length || currentImageList.some(img => typeof img === 'string' && newList.indexOf(img) === -1)
+      const invalidImageList = currentImageList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > currentImageList.length
+      const newSrcSet = invalidImageList || new Set(newList.map(data => data.src))
+      const isCurrentListBad = invalidImageList || currentImageList.some(data => !newSrcSet.has(data.src))
       if (clearFlag && isCurrentListBad) {
         console.log('Clear image list')
         const current = shadowRoot.querySelector('li.current img')
