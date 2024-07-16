@@ -1344,7 +1344,11 @@ window.ImageViewerUtils = (function () {
       if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
         return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
       }
-      return compareRootPosition(a.dom, b.dom)
+      if (a.dom.getRootNode({composed: true}) === document && b.dom.getRootNode({composed: true}) === document) {
+        return compareRootPosition(a.dom, b.dom)
+      }
+      // node not attached to document
+      return 0
     })
   }
 
