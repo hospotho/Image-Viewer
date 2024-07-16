@@ -1310,20 +1310,35 @@ window.ImageViewerUtils = (function () {
   }
 
   // sort image list
-  async function sortImageDataList(dataList) {
-    const imageDomList = await mapSrcToIframe(dataList)
-    const bitMask = Node.DOCUMENT_POSITION_FOLLOWING
-    imageDomList.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & bitMask ? -1 : 1))
-
-    const sortedDataList = []
-    for (const [url, dom] of imageDomList) {
-      if (dom.tagName === 'IFRAME') {
-        sortedDataList.push([url, dom.src])
-      } else {
-        sortedDataList.push(url)
+  function getNodeRootList(node) {
+    const collection = [node]
+    let root = node.getRootNode()
+    while (root !== document) {
+      collection.push(root.host)
+      root = root.host.getRootNode()
+    }
+    return collection
+  }
+  function compNodesInDifferentTree(a, b) {
+    const aRootList = getNodeRootList(a)
+    const bRootList = getNodeRootList(b)
+    const minLength = Math.min(aRootList.length, bRootList.length)
+    for (let i = 1; i < minLength; i++) {
+      const topA = aRootList[aRootList.length - i]
+      const topB = bRootList[bRootList.length - i]
+      if (topA !== topB) {
+        return topA.compareDocumentPosition(topB) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
       }
     }
-    return sortedDataList
+  }
+  function sortImageDataList(dataList) {
+    return dataList.sort((a, b) => {
+      const comparison = a.dom.compareDocumentPosition(b.dom)
+      if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
+        return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+      }
+      return compNodesInDifferentTree(a.dom, b.dom)
+    })
   }
 
   // combine image list
@@ -1403,8 +1418,7 @@ window.ImageViewerUtils = (function () {
         return []
       }
 
-      const orderedImageUrls = await sortImageDataList(uniqueImageUrls)
-
+      const orderedImageUrls = sortImageDataList(uniqueImageUrls)
       return orderedImageUrls
     },
 
