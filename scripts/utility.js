@@ -1330,7 +1330,7 @@ window.ImageViewerUtils = (function () {
     const aRootList = getNodeRootList(a)
     const bRootList = getNodeRootList(b)
     const minLength = Math.min(aRootList.length, bRootList.length)
-    for (let i = 1; i < minLength; i++) {
+    for (let i = 1; i <= minLength; i++) {
       const topA = aRootList[aRootList.length - i]
       const topB = bRootList[bRootList.length - i]
       if (topA !== topB) {
