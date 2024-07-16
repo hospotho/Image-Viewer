@@ -895,7 +895,10 @@ window.ImageViewerUtils = (function () {
   function getUnlazyImageList(minWidth, minHeight) {
     const imgWithAttrList = []
     let allComplete = true
-    for (const img of document.querySelectorAll('img:not(.simpleUnlazy)')) {
+
+    const targetImageList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
+    targetImageList.push(...getImageFromShadowRoot(document).filter(img => !img.classList.contains('simpleUnlazy')))
+    for (const img of targetImageList) {
       img.loading = 'eager'
       if (img.getAttribute('decoding')) img.decoding = 'sync'
 
