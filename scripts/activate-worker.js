@@ -429,13 +429,11 @@
   })()
 
   async function createDataUrl(srcUrl) {
-    const requests = [safeSendMessage({msg: 'get_local_size', url: srcUrl}), safeSendMessage({msg: 'get_size', url: srcUrl})]
-    const [localSize, globalSize] = await Promise.all(requests)
-    if (localSize || globalSize) return srcUrl
+    const localSize = await safeSendMessage({msg: 'get_local_size', url: srcUrl})
+    if (localSize) return srcUrl
 
     return new Promise(resolve => {
       const img = new Image()
-
       img.onload = () => {
         const c = document.createElement('canvas')
         const ctx = c.getContext('2d')
@@ -449,7 +447,6 @@
         console.log(new URL(srcUrl).hostname + ' block your access outside iframe')
         resolve('')
       }
-
       img.crossOrigin = 'anonymous'
       img.src = srcUrl
     })
