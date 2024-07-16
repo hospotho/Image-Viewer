@@ -130,7 +130,8 @@
     options.minHeight = 0
 
     await safeSendMessage('load_script')
-    ImageViewer([image.src], options)
+    const imageDate = {src: image.src, dom: image}
+    ImageViewer([imageDate], options)
 
     const attrList = getUnlazyAttrList(image.src)
     for (const attr of attrList) {
@@ -145,13 +146,15 @@
       const isRawCandidate = nonTrivialSize || properRatio
       if (isRawCandidate) {
         console.log(`Unlazy img with ${attr.name}`)
-        ImageViewer([attr.value], options)
+        const rawData = {src: attr.value, dom: image}
+        ImageViewer([rawData], options)
         break
       }
       // sub image
       if (image.naturalWidth >= 256 && rawRatio < currRatio && isImageContained(image, rawImage)) {
         console.log(`Unlazy img with ${attr.name}`)
-        ImageViewer([attr.value], options)
+        const rawData = {src: attr.value, dom: image}
+        ImageViewer([rawData], options)
         break
       }
     }

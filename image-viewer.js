@@ -29,11 +29,12 @@ window.ImageViewer = (function () {
 
     if (typeof data === 'string') {
       img.src = data
-    }
-    if (typeof data === 'object') {
-      img.setAttribute('data-iframe-src', data[1])
-      img.referrerPolicy = 'no-referrer'
-      img.src = data[0]
+    } else {
+      if (data.dom.tagName === 'IFRAME') {
+        img.setAttribute('data-iframe-src', data.dom.src)
+        img.referrerPolicy = 'no-referrer'
+      }
+      img.src = data.src
     }
     return li
   }
@@ -186,7 +187,6 @@ window.ImageViewer = (function () {
         return src
       }
     })()
-
   const getFilename = (function () {
     const rawFilenameCache = new Map()
     return src => {
@@ -198,13 +198,17 @@ window.ImageViewer = (function () {
       return filename
     }
   })()
+
   function searchImgNode(img) {
+    const imgUrl = img.src
+    const dom = currentImageList.find(data => data.src === imgUrl)?.dom
+    if (dom && dom.getRootNode({composed: true}) === document) return dom
+
     const iframeSrc = img.getAttribute('data-iframe-src')
     if (iframeSrc) {
       return [...document.getElementsByTagName('iframe')].find(iframe => iframe.src === iframeSrc)
     }
 
-    const imgUrl = img.src
     const imgFilename = getFilename(img.src)
     const possibleNodeList = []
     let lastSize = 0
@@ -218,33 +222,28 @@ window.ImageViewer = (function () {
       }
     }
 
-    for (const img of document.getElementsByTagName('img')) {
-      if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) {
-        updateLargestNode(img)
+    // search image on dom document
+    if (dom.tagName === 'IMG') {
+      // img dom
+      for (const img of document.getElementsByTagName('img')) {
+        if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) updateLargestNode(img)
+        if (imgFilename === getFilename(img.src)) possibleNodeList.push(img)
       }
-      if (imgFilename === getFilename(img.src)) {
-        possibleNodeList.push(img)
+      if (lastNode) return lastNode
+      if (possibleNodeList.length !== 0 && possibleNodeList.length <= 2) possibleNodeList.forEach(updateLargestNode)
+    } else if (dom.tagName === 'VIDEO') {
+      // video dom
+      for (const video of document.getElementsByTagName('video')) {
+        if (imgUrl === video.poster) updateLargestNode(video)
       }
-    }
-    if (lastNode) return lastNode
-    if (possibleNodeList.length !== 0 && possibleNodeList.length <= 2) {
-      possibleNodeList.forEach(updateLargestNode)
-    }
-    if (lastNode) return lastNode
-
-    for (const video of document.getElementsByTagName('video')) {
-      if (imgUrl === video.poster) {
-        updateLargestNode(video)
-      }
-    }
-    if (lastNode) return lastNode
-
-    for (const node of document.body.getElementsByTagName('*')) {
-      const backgroundImage = window.getComputedStyle(node).backgroundImage
-      if (backgroundImage === 'none') continue
-      const bg = backgroundImage.split(', ')[0]
-      if (bg !== 'none' && imgUrl === bg.substring(5, bg.length - 2)) {
-        updateLargestNode(node)
+    } else if (!dom.tagName.includes('-')) {
+      // not custom element
+      const targetList = window.ImageViewerUtils ? document.querySelectorAll('*:not([no-bg])') : document.body.getElementsByTagName('*')
+      for (const node of targetList) {
+        const backgroundImage = window.getComputedStyle(node).backgroundImage
+        if (backgroundImage === 'none') continue
+        const bg = backgroundImage.split(', ')[0]
+        if (bg !== 'none' && imgUrl === bg.substring(5, bg.length - 2)) updateLargestNode(node)
       }
     }
     return lastNode
@@ -748,9 +747,8 @@ window.ImageViewer = (function () {
         const sign = Math.sign(ratio)
         const [adjustWidth, adjustHeight] = [img.naturalWidth, img.naturalHeight].sort((a, b) => sign * (b - a))
         if (adjustWidth === 0 || adjustHeight === 0 || adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
-          const currentUrlList = currentImageList.map(data => (typeof data === 'string' ? data : data[0]))
           const src = img.src
-          const index = currentUrlList.indexOf(src)
+          const index = currentImageList.findIndex(data => data.src === src)
           currentImageList.splice(index, 1)
           failedImageSet.add(src)
           img.parentNode.remove()
@@ -1473,9 +1471,7 @@ window.ImageViewer = (function () {
   function updateImageList(newList, options) {
     function preprocess() {
       for (let i = newList.length - 1; i >= 0; i--) {
-        const data = newList[i]
-        const url = typeof data === 'string' ? data : data[0]
-        if (failedImageSet.has(url)) {
+        if (failedImageSet.has(newList[i].src)) {
           newList.splice(i, 1)
         }
       }
@@ -1530,8 +1526,7 @@ window.ImageViewer = (function () {
       const currentIndex = counterCurrent.textContent - 1
       for (let i = 0; i < newList.length; i++) {
         const data = newList[i]
-        const url = typeof data === 'string' ? data : data[0]
-        const index = currentUrlList.indexOf(url)
+        const index = currentUrlList.indexOf(data.src)
         if (index !== -1) continue
 
         const node = buildImageNode(data, options)
@@ -1567,16 +1562,8 @@ window.ImageViewer = (function () {
     const cleared = tryClear()
     if (cleared) return
 
-    const currentUrlList = []
-    for (const data of currentImageList) {
-      const url = typeof data === 'string' ? data : data[0]
-      currentUrlList.push(url)
-    }
-    const newUrlList = []
-    for (const data of newList) {
-      const url = typeof data === 'string' ? data : data[0]
-      newUrlList.push(url)
-    }
+    const currentUrlList = currentImageList.map(data => data.src)
+    const newUrlList = newList.map(data => data.src)
 
     let updated = false
     tryUpdate()
@@ -1601,11 +1588,11 @@ window.ImageViewer = (function () {
 
       const targetSrc = clearSrc || lastSrc
       const rawUrl = getRawUrl(targetSrc)
-      const srcList = currentImageList.map(item => (typeof item === 'string' ? item : item[0]))
+      const srcList = currentImageList.map(data => data.src)
       const srcIndex = srcList.findIndex(src => src === targetSrc || src === rawUrl)
       if (srcIndex !== -1) return srcIndex
 
-      const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(data => data[0] === getFilename(targetSrc))
+      const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(item => item[0] === getFilename(targetSrc))
       if (filenameIndexList.length === 1) return filenameIndexList[0][1]
 
       return Math.min(clearIndex, currentImageList.length - 1)

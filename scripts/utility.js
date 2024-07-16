@@ -295,9 +295,9 @@ window.ImageViewerUtils = (function () {
     const bg = backgroundImage.split(', ')[0]
     return bg.substring(5, bg.length - 2)
   }
-  function getImageInfoIndex(array, data) {
-    const srcArray = array.map(item => (typeof item === 'string' ? item : item[0]))
-    const query = typeof data === 'string' ? data : data[0]
+  function getImageInfoIndex(dataList, data) {
+    const srcArray = dataList.map(data => data.src)
+    const query = typeof data === 'string' ? data : data.src
     const result = srcArray.indexOf(query)
     if (result !== -1) return result
     return srcArray.indexOf(getRawUrl(query))
@@ -959,12 +959,10 @@ window.ImageViewerUtils = (function () {
     return false
   }
   function clearWindowBackup(options) {
-    const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data[0]))
+    const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data.src))
     const backup = window.backupImageUrlList
     for (let i = backup.length - 1; i >= 0; i--) {
-      const url = backup[i]
-      if (typeof url !== 'string') continue
-      if (!allImageUrlSet.has(url)) backup.splice(i, 1)
+      if (!allImageUrlSet.has(backup[i].src)) backup.splice(i, 1)
     }
   }
   async function simpleUnlazyImage(options) {
@@ -1053,7 +1051,7 @@ window.ImageViewerUtils = (function () {
       fakeUserHover()
     }
     if (lastHref !== '' && lastHref !== location.href) {
-      const allImageOnPage = new Set(getImageListWithoutFilter(options).map(data => data[0]))
+      const allImageOnPage = new Set(getImageListWithoutFilter(options).map(data => data.src))
       const unchangedCount = new Set(window.backupImageUrlList).intersection(allImageOnPage).size
       if (unchangedCount < 5) {
         window.backupImageUrlList = []
@@ -1087,12 +1085,12 @@ window.ImageViewerUtils = (function () {
   function processImageDataList(options, imageDataList) {
     const isBadImage = options.svgFilter ? url => badImageList.has(url) || url.startsWith('data:image/svg') || url.includes('.svg') : url => badImageList.has(url)
 
-    const filteredDataList = imageDataList.filter(data => !isBadImage(data[0]))
+    const filteredDataList = imageDataList.filter(data => !isBadImage(data.src))
 
-    let imageUrlSet = new Set(filteredDataList.map(data => data[0]))
+    let imageUrlSet = new Set(filteredDataList.map(data => data.src))
     const imageUrlOrderedList = [...imageUrlSet]
     for (const data of filteredDataList) {
-      const url = data[0]
+      const url = data.src
       const rawUrl = getRawUrl(url)
       if (url !== rawUrl && imageUrlSet.has(rawUrl)) {
         const urlIndex = imageUrlOrderedList.indexOf(url)
@@ -1103,7 +1101,7 @@ window.ImageViewerUtils = (function () {
           imageUrlSet.delete(url)
           imageUrlOrderedList.splice(urlIndex, 1)
         } else {
-          data[0] = rawUrl
+          data.src = rawUrl
           imageUrlOrderedList[urlIndex] = imageUrlOrderedList[rawUrlIndex]
           imageUrlOrderedList.splice(rawUrlIndex, 1)
           imageUrlSet = new Set(imageUrlOrderedList)
@@ -1113,7 +1111,7 @@ window.ImageViewerUtils = (function () {
 
     const uniqueDataList = []
     for (const data of filteredDataList) {
-      const url = data[0]
+      const url = data.src
       if (imageUrlSet.has(url)) {
         imageUrlSet.delete(url)
         uniqueDataList.push(data)
@@ -1140,7 +1138,7 @@ window.ImageViewerUtils = (function () {
     const rawImageList = document.querySelectorAll('img.simpleUnlazy')
     for (const img of rawImageList) {
       const imgSrc = img.currentSrc || img.src
-      imageDataList.push([imgSrc, img])
+      imageDataList.push({src: imgSrc, dom: img})
     }
 
     // const shadowRootHolderList = getShadowRootHolderList()
@@ -1156,7 +1154,7 @@ window.ImageViewerUtils = (function () {
     for (const node of uncheckedNodeList) {
       const attrUrl = node.getAttribute('data-bg')
       if (attrUrl !== null) {
-        imageDataList.push([attrUrl, node])
+        imageDataList.push({src: attrUrl, dom: node})
         continue
       }
       // skip xml dom tree
@@ -1173,13 +1171,13 @@ window.ImageViewerUtils = (function () {
       if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
         const url = bg.substring(5, bg.length - 2)
         node.setAttribute('data-bg', url)
-        imageDataList.push([url, node])
+        imageDataList.push({src: url, dom: node})
       }
     }
 
     const videoList = document.querySelectorAll('video[poster]')
     for (const video of videoList) {
-      imageDataList.push([video.poster, video])
+      imageDataList.push({src: video.poster, dom: video})
     }
 
     const uniqueDataList = processImageDataList(options, imageDataList)
@@ -1218,7 +1216,7 @@ window.ImageViewerUtils = (function () {
       if ((width >= minWidth && height >= minHeight) || img.classList.contains('ImageViewerLastDom')) {
         // currentSrc might be empty during unlazy or update
         const imgSrc = img.currentSrc || img.src
-        imageDataList.push([imgSrc, img])
+        imageDataList.push({src: imgSrc, dom: img})
       }
     }
 
@@ -1241,7 +1239,7 @@ window.ImageViewerUtils = (function () {
       if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
       const attrUrl = node.getAttribute('data-bg')
       if (attrUrl !== null) {
-        imageDataList.push([attrUrl, node])
+        imageDataList.push({src: attrUrl, dom: node})
         continue
       }
       const nodeStyle = window.getComputedStyle(node)
@@ -1258,9 +1256,9 @@ window.ImageViewerUtils = (function () {
           const realSize = await getImageRealSize(url)
           node.setAttribute('data-width', realSize)
           node.setAttribute('data-height', realSize)
-          if (realSize >= minWidth && realSize >= minHeight) imageDataList.push([url, node])
+          if (realSize >= minWidth && realSize >= minHeight) imageDataList.push({src: url, dom: node})
         } else {
-          imageDataList.push([url, node])
+          imageDataList.push({src: url, dom: node})
         }
       }
     }
@@ -1269,7 +1267,7 @@ window.ImageViewerUtils = (function () {
     for (const video of videoList) {
       const {width, height} = video.getBoundingClientRect()
       if (width >= minWidth && height >= minHeight) {
-        imageDataList.push([video.poster, video])
+        imageDataList.push({src: video.poster, dom: video})
       }
     }
 
@@ -1329,28 +1327,25 @@ window.ImageViewerUtils = (function () {
   // combine image list
   function removeRepeatNonRaw(newList, oldList) {
     const tempList = newList.concat(oldList)
-    const tempImageUrlSet = new Set(tempList.map(data => (typeof data === 'string' ? data : data[0])))
-    for (const url of tempList) {
-      if (typeof url !== 'string') continue
-      const rawUrl = getRawUrl(url)
-      if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) tempImageUrlSet.delete(url)
+    const tempImageUrlSet = new Set(tempList.map(data => data.src))
+    for (const data of tempList) {
+      const rawUrl = getRawUrl(data.src)
+      if (data.src !== rawUrl && tempImageUrlSet.has(rawUrl)) tempImageUrlSet.delete(data.src)
     }
 
-    for (let i = 0; i < newList.length; i++) {
-      const url = newList[i]
-      if (typeof url !== 'string') continue
+    for (const data of newList) {
+      const url = data.src
       const rawUrl = getRawUrl(url)
       if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) {
-        newList[i] = rawUrl
+        data.src = rawUrl
       }
     }
 
-    for (let i = 0; i < oldList.length; i++) {
-      const url = oldList[i]
-      if (typeof url !== 'string') continue
+    for (const data of oldList) {
+      const url = data.src
       const rawUrl = getRawUrl(url)
       if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) {
-        oldList[i] = rawUrl
+        data.src = rawUrl
       }
     }
   }
@@ -1414,11 +1409,11 @@ window.ImageViewerUtils = (function () {
     searchImageInfoIndex: function (input, imageList) {
       if (typeof input === 'object') {
         const currentUrl = getDomUrl(input)
-        const currIndex = imageList.indexOf(currentUrl)
+        const currIndex = imageList.findIndex(data => data.src === currentUrl)
         if (currIndex !== -1) return currIndex
 
         const filename = currentUrl.split('?')[0].split('/').at(-1).split('.')[0]
-        const filenameIndex = imageList.findIndex(url => typeof url === 'string' && url.split('?')[0].split('/').at(-1).split('.')[0] === filename)
+        const filenameIndex = imageList.findIndex(data => data.src.split('?')[0].split('/').at(-1).split('.')[0] === filename)
         if (filenameIndex !== -1) return filenameIndex
 
         return -1
@@ -1428,10 +1423,7 @@ window.ImageViewerUtils = (function () {
     },
 
     combineImageList: function (newList, oldList) {
-      oldList = oldList.filter(data => {
-        const src = typeof data === 'string' ? data : data[0]
-        return !badImageList.has(src)
-      })
+      oldList = oldList.filter(data => !badImageList.has(data.src))
       if (newList.length === 0 || oldList.length === 0) return newList.concat(oldList)
 
       removeRepeatNonRaw(newList, oldList)
@@ -1493,7 +1485,7 @@ window.ImageViewerUtils = (function () {
       const imageUrlSet = new Set()
       const uniqueFinalList = []
       for (const data of finalList) {
-        const url = typeof data === 'string' ? data : data[0]
+        const url = data.src
         if (!imageUrlSet.has(url)) {
           imageUrlSet.add(url)
           uniqueFinalList.push(data)
@@ -1503,15 +1495,8 @@ window.ImageViewerUtils = (function () {
     },
 
     isStrLengthEqual: function (newList, oldList) {
-      const newListStringLength = newList
-        .flat()
-        .map(str => str.length)
-        .reduce((a, b) => a + b, 0)
-      const oldListStringLength = oldList
-        .flat()
-        .map(str => str.length)
-        .reduce((a, b) => a + b, 0)
-
+      const newListStringLength = newList.map(data => data.src.length).reduce((a, b) => a + b, 0)
+      const oldListStringLength = oldList.map(data => data.src.length).reduce((a, b) => a + b, 0)
       return newListStringLength === oldListStringLength
     },
 
