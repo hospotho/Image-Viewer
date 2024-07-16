@@ -966,8 +966,8 @@ window.ImageViewer = (function () {
         document.body.appendChild(border)
 
         let endFlag = false
-        let lastTop = 0
-        let lastLeft = 0
+        let lastTop = NaN
+        let lastLeft = NaN
         const drawBorder = () => {
           if (endFlag) return
           const {top, left, width, height} = imgNode.getBoundingClientRect()
