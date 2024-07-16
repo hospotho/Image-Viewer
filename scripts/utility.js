@@ -1159,13 +1159,14 @@ window.ImageViewerUtils = (function () {
   function getImageFromShadowRoot(shadowRoot) {
     const result = []
     for (const node of shadowRoot.querySelectorAll('img, *:not([no-shadow])')) {
+      if (node.shadowRoot) {
+        result.push(...getImageFromShadowRoot(node.shadowRoot))
+        continue
+      }
       if (node.tagName === 'IMG') {
         result.push(node)
-      } else if (node.shadowRoot) {
-        result.push(...getImageFromShadowRoot(node.shadowRoot))
-      } else {
-        node.setAttribute('no-shadow', '')
       }
+      node.setAttribute('no-shadow', '')
     }
     return result
   }
