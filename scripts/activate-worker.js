@@ -164,8 +164,16 @@
         return childList.length < 5 ? searchImageFromTree(root.parentElement, viewportPos) : null
       }
       if (imageInfoList.length === 1) return imageInfoList[0]
+      const filteredImageInfoList = imageInfoList.filter(info => info[2].tagName === 'IMG')
+      if (filteredImageInfoList.length === 1) return filteredImageInfoList[0]
 
-      imageInfoList.sort((a, b) => getTopElement(a[2], b[2], dom))
+      imageInfoList.sort((a, b) => {
+        if (a[2].tagName === 'IMG' && b[2].tagName === 'IMG') return a[2].compareDocumentPosition(b[2]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+        if (a[2].tagName !== 'IMG' && b[2].tagName !== 'IMG') return getTopElement(a[2], b[2], dom)
+        if (a[2].tagName === 'IMG') return -1
+        if (b[2].tagName === 'IMG') return 1
+        return 0
+      })
       const first = imageInfoList[0]
       const second = imageInfoList[1]
       const check = await isNewImageInfoBetter(first, second)
