@@ -1085,8 +1085,16 @@ window.ImageViewer = (function () {
         const closestAnchor = imgNode.closest('a')
         if (closestAnchor) return closestAnchor
 
-        const treeAnchorList = imgNode.parentElement.getElementsByTagName('a')
-        if (treeAnchorList.length === 1) return treeAnchorList[0]
+        const siblingAnchor = [...imgNode.parentElement.children].find(node => node?.tagName === 'A')
+        if (siblingAnchor) return siblingAnchor
+
+        if (imgNode.parentElement.tagName !== 'DIV') {
+          const treeAnchorList = imgNode.parentElement.getElementsByTagName('a')
+          if (treeAnchorList.length === 1) return treeAnchorList[0]
+        }
+
+        const containerAnchorList = imgNode.closest('div').getElementsByTagName('a')
+        if (containerAnchorList.length === 1) return containerAnchorList[0]
 
         const {width: rootWidth, height: rootHeight, top: rootTop, left: rootLeft} = imgNode.getBoundingClientRect()
         let el = imgNode
@@ -1099,9 +1107,6 @@ window.ImageViewer = (function () {
             if (include) return anchor
           }
         }
-
-        const siblingAnchor = [...imgNode.parentElement.children].find(node => node?.tagName === 'A')
-        if (siblingAnchor) return siblingAnchor
 
         return null
       }
