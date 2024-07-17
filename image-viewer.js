@@ -1085,6 +1085,9 @@ window.ImageViewer = (function () {
         const closestAnchor = imgNode.closest('a')
         if (closestAnchor) return closestAnchor
 
+        const treeAnchorList = imgNode.parentElement.getElementsByTagName('a')
+        if (treeAnchorList.length === 1) return treeAnchorList[0]
+
         const {width: rootWidth, height: rootHeight, top: rootTop, left: rootLeft} = imgNode.getBoundingClientRect()
         let el = imgNode
         while (el.parentElement) {
