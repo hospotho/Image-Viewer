@@ -1581,7 +1581,10 @@ window.ImageViewer = (function () {
       shadowRoot.querySelector('#iv-index').style.display = 'inline'
       shadowRoot.querySelector('#iv-counter-total').textContent = currentImageList.length
     }
-    if (updated) console.log('Image viewer updated')
+    if (updated) {
+      console.log('Image viewer updated')
+      tryClear()
+    }
   }
 
   function restoreIndex(options) {
