@@ -433,9 +433,10 @@ window.ImageViewerUtils = (function () {
   async function slowScrollThoughDocument(currentX, currentY) {
     if (!isImageViewerExist()) return
     const container = getMainContainer()
+    const totalHeight = container.scrollHeight
     let currTop = -1
     container.scrollTo(0, 0)
-    while (currTop !== container.scrollTop && isImageViewerExist()) {
+    while (currTop !== container.scrollTop && currTop < totalHeight * 3 && isImageViewerExist()) {
       currTop = container.scrollTop
       container.scrollBy({top: window.innerHeight * 2, behavior: 'smooth'})
       await new Promise(resolve => setTimeout(resolve, 500))
