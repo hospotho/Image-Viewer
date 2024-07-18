@@ -307,8 +307,7 @@ window.ImageViewerUtils = (function () {
     const bg = backgroundImage.split(', ')[0]
     return bg.substring(5, bg.length - 2)
   }
-  function getImageInfoIndex(imageDataList, src) {
-    const srcList = imageDataList.map(data => data.src)
+  function getImageInfoIndex(srcList, src) {
     const index = srcList.indexOf(src)
     if (index !== -1) return index
     const rawIndex = srcList.indexOf(getRawUrl(src))
@@ -1435,8 +1434,9 @@ window.ImageViewerUtils = (function () {
     },
 
     searchImageInfoIndex: function (input, imageList) {
+      const srcList = imageList.map(data => data.src)
       const src = typeof input === 'object' ? getDomUrl(input) : input
-      return getImageInfoIndex(imageList, src)
+      return getImageInfoIndex(srcList, src)
     },
 
     combineImageList: function (newList, oldList) {
@@ -1445,6 +1445,7 @@ window.ImageViewerUtils = (function () {
 
       removeRepeatNonRaw(newList, oldList)
 
+      const oldSrcList = oldList.map(data => data.src)
       const combinedImageList = new Array(newList.length + oldList.length)
 
       let leftIndex = 0
@@ -1458,8 +1459,9 @@ window.ImageViewerUtils = (function () {
       while (rightIndex < newList.length) {
         const right = newList[rightIndex]
 
-        indexAtOldArray = getImageInfoIndex(oldList, right.src)
-        indexAtCombinedArray = getImageInfoIndex(combinedImageList, right.src)
+        const combineSrcList = combinedImageList.filter(Boolean).map(data => data.src)
+        indexAtOldArray = getImageInfoIndex(oldSrcList, right.src)
+        indexAtCombinedArray = getImageInfoIndex(combineSrcList, right.src)
 
         // right is not a anchor
         if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
