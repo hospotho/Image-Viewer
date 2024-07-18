@@ -1511,6 +1511,14 @@ window.ImageViewerUtils = (function () {
         }
       }
 
+      const newSrcList = newList.map(data => data.src)
+      for (const data of uniqueFinalList) {
+        if (data.dom.getRootNode({composed: true}) !== document) {
+          const index = newSrcList.indexOf(data.src)
+          data.dom = index !== -1 ? newList[index].dom : data.dom
+        }
+      }
+
       const orderedFinalList = sortImageDataList(uniqueFinalList)
       return orderedFinalList
     },
