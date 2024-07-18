@@ -209,10 +209,8 @@ window.ImageViewer = (function () {
       return [...document.getElementsByTagName('iframe')].find(iframe => iframe.src === iframeSrc)
     }
 
-    const imgFilename = getFilename(img.src)
-    const possibleNodeList = []
-    let lastSize = 0
     let lastNode = null
+    let lastSize = 0
     const updateLargestNode = node => {
       const {width, height} = node.getBoundingClientRect()
       const currSize = Math.min(width, height)
@@ -221,32 +219,39 @@ window.ImageViewer = (function () {
         lastNode = node
       }
     }
-
-    // search image on dom document
-    if (dom.tagName === 'IMG') {
-      // img dom
+    const checkImage = () => {
+      const candidateList = []
+      const filename = getFilename(imgUrl)
       for (const img of document.getElementsByTagName('img')) {
-        if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.src)) updateLargestNode(img)
-        if (imgFilename === getFilename(img.src)) possibleNodeList.push(img)
+        if (imgUrl === img.currentSrc || imgUrl === getRawUrl(img.currentSrc)) updateLargestNode(img)
+        if (filename === getFilename(img.src)) candidateList.push(img)
       }
-      if (lastNode) return lastNode
-      if (possibleNodeList.length !== 0 && possibleNodeList.length <= 2) possibleNodeList.forEach(updateLargestNode)
-    } else if (dom.tagName === 'VIDEO') {
-      // video dom
+      if (!lastNode && candidateList.length !== 0 && candidateList.length <= 2) candidateList.forEach(updateLargestNode)
+      return lastNode
+    }
+    const checkVideo = () => {
       for (const video of document.getElementsByTagName('video')) {
         if (imgUrl === video.poster) updateLargestNode(video)
       }
-    } else if (!dom.tagName.includes('-')) {
-      // not custom element
-      const targetList = window.ImageViewerUtils ? document.querySelectorAll('*:not([no-bg])') : document.body.getElementsByTagName('*')
+      return lastNode
+    }
+    const checkBackground = () => {
+      const targetList = window.ImageViewerUtils ? document.body.querySelectorAll('*:not([no-bg])') : document.body.getElementsByTagName('*')
       for (const node of targetList) {
         const backgroundImage = window.getComputedStyle(node).backgroundImage
         if (backgroundImage === 'none') continue
         const bg = backgroundImage.split(', ')[0]
         if (bg !== 'none' && imgUrl === bg.substring(5, bg.length - 2)) updateLargestNode(node)
       }
+      return lastNode
     }
-    return lastNode
+
+    // search image on document
+    if (!dom) return checkImage() || checkVideo() || checkBackground()
+    else if (dom.tagName === 'IMG') return checkImage()
+    else if (dom.tagName === 'VIDEO') return checkVideo()
+    else if (!dom.tagName.includes('-')) return checkBackground()
+    return null
   }
   function searchNearestPageImgNode(img) {
     const imgList = [...shadowRoot.querySelectorAll('img')]
