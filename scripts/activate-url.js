@@ -138,8 +138,9 @@
     await safeSendMessage('load_script')
     const imageDate = {src: image.src, dom: image}
     ImageViewer([imageDate], options)
+    if (image.src.startsWith('data')) return
 
-    const attrList = getUnlazyAttrList(image.src)
+    const attrList = getUnlazyAttrList(image)
     for (const attr of attrList) {
       const rawImage = await getImage(attr.value)
       const rawSize = [rawImage.naturalWidth, rawImage.naturalHeight]
