@@ -801,11 +801,6 @@ window.ImageViewerUtils = (function () {
     }
     return null
   }
-  async function processAttribute(attr, currentSrc, bitSize, naturalSize) {
-    if (attr.value === currentSrc) return null
-    const newURL = attr.value.replace(/https?:/, protocol).replace(/^\/(?:[^\/])/, origin)
-    return await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
-  }
   async function checkImageAttr(img, attrList) {
     const successList = []
     let lastIndex = 0
@@ -820,7 +815,8 @@ window.ImageViewerUtils = (function () {
       while (lastIndex < attrList.length) {
         const attr = attrList[lastIndex++]
         complete = lastIndex === attrList.length
-        const betterUrl = await processAttribute(attr, currentSrc, bitSize, naturalSize)
+        const newURL = attr.value.replace(/https?:/, protocol).replace(/^\/(?:[^\/])/, origin)
+        const betterUrl = await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
         if (betterUrl !== null) {
           const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
           img.removeAttribute(realAttrName)
