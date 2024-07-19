@@ -870,6 +870,8 @@ window.ImageViewerUtils = (function () {
       const url = new URL(img.currentSrc, document.baseURI)
       const pathname = url.pathname
       const search = url.search
+      if (search === '') throw new Error()
+
       if (!pathname.includes('.')) {
         const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
         if (extMatch) {
