@@ -699,17 +699,22 @@ window.ImageViewerUtils = (function () {
   }
   function updateImageSource(img, src) {
     return new Promise(resolve => {
-      img.src = src
-      img.srcset = src
-
-      const picture = img.parentNode
-      if (picture?.tagName === 'PICTURE') {
-        for (const source of picture.querySelectorAll('source')) {
-          source.srcset = src
+      const temp = new Image()
+      temp.onload = () => {
+        img.src = src
+        img.srcset = src
+        const picture = img.parentNode
+        if (picture?.tagName === 'PICTURE') {
+          for (const source of picture.querySelectorAll('source')) {
+            source.srcset = src
+          }
         }
+        waitSrcUpdate(img, resolve)
       }
-
-      waitSrcUpdate(img, resolve)
+      temp.onerror = resolve
+      temp.loading = 'eager'
+      temp.referrerPolicy = img.referrerPolicy
+      temp.src = src
     })
   }
   async function localFetchBitSize(url) {
