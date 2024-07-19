@@ -840,13 +840,14 @@ window.ImageViewerUtils = (function () {
 
   // unlazy main function
   function getUnlazyAttrList(img) {
-    const rawUrl = getRawUrl(img.currentSrc)
+    const src = img.currentSrc
+    const rawUrl = getRawUrl(src)
     const attrList = []
     for (const attr of img.attributes) {
       if (passList.has(attr.name) || !attr.value.match(urlRegex)) continue
 
       const attrUrl = new URL(attr.value, document.baseURI).href
-      if (attrUrl !== img.currentSrc) {
+      if (attrUrl !== src) {
         attrList.push({name: attr.name, value: attrUrl})
       }
       const rawAttrUrl = getRawUrl(attrUrl)
@@ -854,7 +855,7 @@ window.ImageViewerUtils = (function () {
         attrList.push({name: 'raw ' + attr.name, value: rawAttrUrl})
       }
     }
-    if (img.srcset && img.srcset !== img.currentSrc) {
+    if (img.srcset && img.srcset !== src) {
       const srcsetList = img.srcset
         .split(',')
         .map(str => str.trim().split(/ +/))
@@ -862,40 +863,39 @@ window.ImageViewerUtils = (function () {
         .sort((a, b) => b[1] - a[1])
       attrList.push({name: 'srcset', value: srcsetList[0][0]})
     }
-    if (rawUrl !== img.currentSrc) {
+    if (rawUrl !== src) {
       attrList.push({name: 'raw url', value: rawUrl})
     }
     try {
-      if (img.currentSrc === '') throw new Error()
-      const url = new URL(img.currentSrc, document.baseURI)
+      if (!src.includes('?')) throw new Error()
+      const url = new URL(src, document.baseURI)
       const pathname = url.pathname
       const search = url.search
-      if (search === '') throw new Error()
 
       if (!pathname.includes('.')) {
         const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
         if (extMatch) {
           const filenameWithExt = pathname + '.' + extMatch[0]
-          const rawExtension = img.currentSrc.replace(pathname + search, filenameWithExt)
+          const rawExtension = src.replace(pathname + search, filenameWithExt)
           attrList.push({name: 'raw extension', value: rawExtension})
         }
       }
       if (search.includes('width=') || search.includes('height=')) {
         const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
-        const rawQuery = img.currentSrc.replace(search, noSizeQuery)
+        const rawQuery = src.replace(search, noSizeQuery)
         attrList.push({name: 'no size query', value: rawQuery})
       }
-      const noQuery = img.currentSrc.replace(pathname + search, pathname)
+      const noQuery = src.replace(pathname + search, pathname)
       attrList.push({name: 'no query', value: noQuery})
     } catch (error) {}
     const anchor = img.closest('a')
-    if (anchor && anchor.href !== img.currentSrc && anchor.href.match(urlRegex)) {
+    if (anchor && anchor.href !== src && anchor.href.match(urlRegex)) {
       const anchorHaveExt = cachedExtensionMatch(anchor.href) !== null
       const rawHaveExt = cachedExtensionMatch(rawUrl) !== null
       const maybeLarger = anchorHaveExt || anchorHaveExt === rawHaveExt || rawUrl.slice(0, 12).includes('cdn.')
       if (maybeLarger) attrList.push({name: 'parent anchor', value: anchor.href})
     }
-    return attrList
+    return attrList.filter(attr => attr.value !== src)
   }
   function getUnlazyImageList(minWidth, minHeight) {
     const imgWithAttrList = []

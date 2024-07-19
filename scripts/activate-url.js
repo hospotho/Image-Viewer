@@ -97,16 +97,17 @@
       img.src = rawUrl
     })
   }
-  function getUnlazyAttrList(src) {
-    if (src.startsWith('data')) return []
-
-    const attrList = []
+  function getUnlazyAttrList(img) {
+    const src = img.currentSrc
     const rawUrl = getRawUrl(src)
+    const attrList = []
     attrList.push({name: 'raw url', value: rawUrl})
     try {
+      if (!src.includes('?')) throw new Error()
       const url = new URL(src, document.baseURI)
       const pathname = url.pathname
       const search = url.search
+
       if (!pathname.includes('.')) {
         const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
         if (extMatch) {
@@ -116,7 +117,7 @@
         }
       }
       if (search.includes('width=') || search.includes('height=')) {
-        const noSizeQuery = search.replace(/&width=\d+|&height=\d+/g, '')
+        const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
         const rawQuery = src.replace(search, noSizeQuery)
         attrList.push({name: 'no size query', value: rawQuery})
       }
