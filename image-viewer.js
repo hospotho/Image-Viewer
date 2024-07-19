@@ -398,8 +398,8 @@ window.ImageViewer = (function () {
           <li><button id="iv-control-moveto"></button></li>
         </ul>
         <ul id="iv-info">
-          <li><span data-i18n="width">Width</span><span>:</span><input id="iv-info-width" readonly /></li>
-          <li><span data-i18n="height">Height</span><span>:</span><input id="iv-info-height" readonly /></li>
+          <li><span data-i18n="width">Width</span><span>:</span><span id="iv-info-width"></span></li>
+          <li><span data-i18n="height">Height</span><span>:</span><span id="iv-info-height"></span></li>
         </ul>
       </nav>
       <button id="iv-control-close"></button>`
@@ -512,6 +512,9 @@ window.ImageViewer = (function () {
       }
 
       /* index */
+      #iv-index li {
+        height: 50px;
+      }
       #iv-index li button:after {
         content: '';
         position: absolute;
@@ -519,36 +522,37 @@ window.ImageViewer = (function () {
         display: block;
         border-style: solid;
       }
-      #iv-counter,
+      #iv-counter {
+        align-content: center;
+      }
       #iv-counter span {
         font-size: 20px;
         text-shadow: -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
         visibility: visible;
-      }
-      #iv-counter {
         opacity: 0.5;
       }
-      #iv-control:hover #iv-counter,
-      #iv-counter span {
+      #iv-control:hover #iv-counter span {
         opacity: 1;
       }
 
       /* image info */
+      #iv-info li {
+        height: 22px;
+        display: flex;
+        align-items: center;
+      }
       #iv-info span {
         font-size: 16px;
-        line-height: 22px;
-        }
-      #iv-info span:last-of-type {
-        margin-right: 10px;
+        margin: 0 2px;
       }
-      #iv-info input {
+      #iv-info span:last-child {
+        display: inline-block;
         width: 80px;
-        font-size: 16px;
         text-align: center;
         border: 1px transparent dashed;
         border-radius: 5px;
       }
-      #iv-info input:hover {
+      #iv-info span:last-child:hover {
         border-color: #aaa;
       }
 
@@ -754,8 +758,8 @@ window.ImageViewer = (function () {
         options.sizeCheck = false
         fitImage(options)
       }
-      shadowRoot.querySelector('#iv-info-width').value = base.firstChild.naturalWidth
-      shadowRoot.querySelector('#iv-info-height').value = base.firstChild.naturalHeight
+      shadowRoot.querySelector('#iv-info-width').textContent = base.firstChild.naturalWidth
+      shadowRoot.querySelector('#iv-info-height').textContent = base.firstChild.naturalHeight
       if (!completeFlag) removeFailedImg()
       completeFlag = true
     })
@@ -1310,8 +1314,8 @@ window.ImageViewer = (function () {
       relateListItem.classList.add('current')
 
       const relateImage = relateListItem.querySelector('img')
-      infoWidth.value = relateImage.naturalWidth
-      infoHeight.value = relateImage.naturalHeight
+      infoWidth.textContent = relateImage.naturalWidth
+      infoHeight.textContent = relateImage.naturalHeight
     }
 
     function prevItem(repeat = false) {
@@ -1597,8 +1601,8 @@ window.ImageViewer = (function () {
     relateListItem.classList.add('current')
 
     const relateImage = relateListItem.querySelector('img')
-    shadowRoot.querySelector('#iv-info-width').value = relateImage.naturalWidth
-    shadowRoot.querySelector('#iv-info-height').value = relateImage.naturalHeight
+    shadowRoot.querySelector('#iv-info-width').textContent = relateImage.naturalWidth
+    shadowRoot.querySelector('#iv-info-height').textContent = relateImage.naturalHeight
 
     clearSrc = ''
     clearIndex = -1
