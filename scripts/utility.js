@@ -1060,6 +1060,8 @@ window.ImageViewerUtils = (function () {
       const allImageOnPage = new Set(getImageListWithoutFilter(options).map(data => data.src))
       const unchangedCount = new Set(window.backupImageUrlList).intersection(allImageOnPage).size
       if (unchangedCount < 5) {
+        unlazyCount = 0
+        raceCount = 0
         window.backupImageUrlList = []
         ImageViewer('reset_image_list')
       }
