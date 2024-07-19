@@ -1448,8 +1448,7 @@ window.ImageViewer = (function () {
     }
     function tryClear() {
       const invalidImageList = currentImageList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > currentImageList.length
-      const newSrcSet = invalidImageList || new Set(newList.map(data => data.src))
-      const isCurrentListBad = invalidImageList || currentImageList.some(data => !newSrcSet.has(data.src))
+      const isCurrentListBad = invalidImageList || currentImageList.some((data, i) => data.src !== newList[i].src)
       if (clearFlag && isCurrentListBad) {
         console.log('Clear image list')
         const current = shadowRoot.querySelector('li.current img')
