@@ -1460,7 +1460,6 @@ window.ImageViewer = (function () {
       const invalidImageList = currentImageList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > currentImageList.length
       const isCurrentListBad = invalidImageList || currentImageList.some((data, i) => data.src !== newList[i].src)
       if (clearFlag && isCurrentListBad) {
-        console.log('Clear image list')
         const current = shadowRoot.querySelector('li.current img')
         const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
         clearFlag = false
