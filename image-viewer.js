@@ -5,7 +5,6 @@ window.ImageViewer = (function () {
   let lastUpdateTime = 0
   let currentImageList = []
 
-  let clearFlag = false
   let clearSrc = ''
   let clearIndex = -1
   let lastUrl = location.href
@@ -45,7 +44,6 @@ window.ImageViewer = (function () {
 
   function closeImageViewer() {
     document.documentElement.classList.remove('has-image-viewer')
-    clearFlag = false
     clearSrc = ''
     clearIndex = -1
     const current = shadowRoot.querySelector('li.current img')
@@ -1459,10 +1457,9 @@ window.ImageViewer = (function () {
     function tryClear() {
       const invalidImageList = currentImageList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > currentImageList.length
       const isCurrentListBad = invalidImageList || currentImageList.some((data, i) => data.src !== newList[i].src)
-      if (clearFlag && isCurrentListBad) {
+      if (isCurrentListBad) {
         const current = shadowRoot.querySelector('li.current img')
         const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
-        clearFlag = false
         clearSrc = current.src
         clearIndex = counterCurrent.textContent - 1
         lastTransform = current.style.transform
@@ -1622,11 +1619,6 @@ window.ImageViewer = (function () {
     switch (command) {
       case 'get_image_list': {
         return Array.from(currentImageList)
-      }
-      case 'clear_image_list': {
-        // will try to clean when calling updateImageList
-        clearFlag = true
-        return
       }
       case 'reset_image_list': {
         currentImageList = []

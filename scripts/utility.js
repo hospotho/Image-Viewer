@@ -1001,10 +1001,6 @@ window.ImageViewerUtils = (function () {
     if (unlazyCount++ === 0) {
       console.log('First unlazy complete')
       clearWindowBackup(options)
-      ImageViewer('clear_image_list')
-    }
-    if (autoScrollFlag) {
-      ImageViewer('clear_image_list')
     }
 
     isEnabledAutoScroll(options) ? autoScroll() : scrollUnlazy()
