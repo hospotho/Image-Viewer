@@ -8,8 +8,12 @@ window.ImageViewer = (function () {
   let clearFlag = false
   let clearSrc = ''
   let clearIndex = -1
-  let lastSrc = ''
   let lastUrl = location.href
+  let lastSrc = ''
+  let lastTransform = ''
+
+  let zoomCount = 0
+  let rotateCount = 0
 
   const failedImageSet = new Set()
   const keydownHandlerList = []
@@ -44,7 +48,9 @@ window.ImageViewer = (function () {
     clearFlag = false
     clearSrc = ''
     clearIndex = -1
-    lastSrc = shadowRoot.querySelector('li.current img')?.src || ''
+    const current = shadowRoot.querySelector('li.current img')
+    lastSrc = current?.src || ''
+    lastTransform = current?.style?.transform || ''
     keydownHandlerList.length = 0
 
     const root = document.querySelector('#image-viewer-root')
@@ -741,6 +747,11 @@ window.ImageViewer = (function () {
     const baseIndex = current ? liList.indexOf(current) : clearIndex !== -1 ? clearIndex : options.index || 0
     const base = current || liList[baseIndex] || liList[0]
     base.classList.add('current')
+    if (lastTransform) {
+      base.firstChild.style.transition = 'none'
+      base.firstChild.style.transform = lastTransform 
+      lastTransform = ''
+    }
 
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     imageListNode.style.translate = `0 ${-baseIndex * 100}%`
@@ -751,6 +762,7 @@ window.ImageViewer = (function () {
 
     let completeFlag = false
     base.firstChild.addEventListener('load', () => {
+      base.firstChild.style.transition = ''
       if (options.sizeCheck) {
         const minSize = Math.min(base.firstChild.naturalWidth, base.firstChild.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
@@ -1191,8 +1203,6 @@ window.ImageViewer = (function () {
       const img = li.firstChild
 
       // zoom & rotate
-      let zoomCount = 0
-      let rotateCount = 0
       li.addEventListener('wheel', e => {
         e.preventDefault()
         // transition cause flash when high zoom rate
@@ -1456,6 +1466,7 @@ window.ImageViewer = (function () {
         clearFlag = false
         clearSrc = current.src
         clearIndex = counterCurrent.textContent - 1
+        lastTransform = current.style.transform
 
         currentImageList.length = 0
         const imageListNode = shadowRoot.querySelector('#iv-image-list')
@@ -1620,6 +1631,7 @@ window.ImageViewer = (function () {
       }
       case 'reset_image_list': {
         currentImageList = []
+        lastUrl = location.href
         return
       }
       case 'close_image_viewer': {
