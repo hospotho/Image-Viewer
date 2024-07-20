@@ -277,6 +277,21 @@ window.ImageViewerUtils = (function () {
   function isImageViewerExist() {
     return document.documentElement.classList.contains('has-image-viewer')
   }
+
+  function deepQuerySelectorAll(target, tagName, selector) {
+    const result = []
+    for (const node of target.querySelectorAll(`${tagName}${selector}, *:not([no-shadow])`)) {
+      if (node.shadowRoot) {
+        result.push(...deepQuerySelectorAll(node.shadowRoot, tagName, selector))
+        continue
+      }
+      if (node.tagName.toUpperCase() === `${tagName}`) {
+        result.push(node)
+      }
+      node.setAttribute('no-shadow', '')
+    }
+    return result
+  }
   function getMainContainer() {
     const windowWidth = document.documentElement.clientWidth
     const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
@@ -902,8 +917,7 @@ window.ImageViewerUtils = (function () {
     const imgWithAttrList = []
     let allComplete = true
 
-    const targetImageList = [...document.querySelectorAll('img:not(.simpleUnlazy)')]
-    targetImageList.push(...getImageFromShadowRoot(document.body).filter(img => !img.classList.contains('simpleUnlazy')))
+    const targetImageList = deepQuerySelectorAll(document.body, 'img', ':not(.simpleUnlazy)')
     for (const img of targetImageList) {
       img.loading = 'eager'
       if (img.getAttribute('decoding')) img.decoding = 'sync'
@@ -1002,7 +1016,7 @@ window.ImageViewerUtils = (function () {
     if (raceCount + unlazyCount === 0) {
       setTimeout(() => {
         if (unlazyCount !== 0) return
-        const unlazyList = document.querySelectorAll('img:not(.simpleUnlazy)')
+        const unlazyList = deepQuerySelectorAll(document.body, 'img', ':not(.simpleUnlazy)')
         const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
         if (stillLoading) {
           console.log('Slow connection, images still loading')
@@ -1152,48 +1166,13 @@ window.ImageViewerUtils = (function () {
 
     return uniqueDataList
   }
-  function getShadowRootHolderList() {
-    const shadowRootHolderList = []
-    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-shadow])')
-    for (const node of uncheckedNodeList) {
-      if (node.shadowRoot) {
-        shadowRootHolderList.push(node)
-      } else {
-        node.setAttribute('no-shadow', '')
-      }
-    }
-    return shadowRootHolderList
-  }
-  function getImageFromShadowRoot(shadowRoot) {
-    const result = []
-    for (const node of shadowRoot.querySelectorAll('img, *:not([no-shadow])')) {
-      if (node.shadowRoot) {
-        result.push(...getImageFromShadowRoot(node.shadowRoot))
-        continue
-      }
-      if (node.tagName === 'IMG') {
-        result.push(node)
-      }
-      node.setAttribute('no-shadow', '')
-    }
-    return result
-  }
   function getImageListWithoutFilter(options) {
     const imageDataList = []
 
-    const rawImageList = document.querySelectorAll('img.simpleUnlazy')
+    const rawImageList = deepQuerySelectorAll(document.body, 'img', '.simpleUnlazy')
     for (const img of rawImageList) {
       const imgSrc = img.currentSrc || img.src
       imageDataList.push({src: imgSrc, dom: img})
-    }
-
-    const shadowRootHolderList = getShadowRootHolderList()
-    for (const node of shadowRootHolderList) {
-      const imageList = getImageFromShadowRoot(node.shadowRoot)
-      for (const img of imageList) {
-        const imgSrc = img.currentSrc || img.src
-        imageDataList.push({src: imgSrc, dom: img})
-      }
     }
 
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
@@ -1255,7 +1234,7 @@ window.ImageViewerUtils = (function () {
 
     const imageDataList = []
 
-    const rawImageList = document.querySelectorAll('img.simpleUnlazy')
+    const rawImageList = deepQuerySelectorAll(document.body, 'img', '.simpleUnlazy')
     for (const img of rawImageList) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
@@ -1263,20 +1242,6 @@ window.ImageViewerUtils = (function () {
         // currentSrc might be empty during unlazy or update
         const imgSrc = img.currentSrc || img.src
         imageDataList.push({src: imgSrc, dom: img})
-      }
-    }
-
-    const shadowRootHolderList = getShadowRootHolderList()
-    for (const node of shadowRootHolderList) {
-      const imageList = getImageFromShadowRoot(node.shadowRoot)
-      for (const img of imageList) {
-        // only client size should be checked in order to bypass large icon or hidden image
-        const {width, height} = img.getBoundingClientRect()
-        if ((width >= minWidth && height >= minHeight) || img === window.ImageViewerLastDom) {
-          // currentSrc might be empty during unlazy or update
-          const imgSrc = img.currentSrc || img.src
-          imageDataList.push({src: imgSrc, dom: img})
-        }
       }
     }
 
