@@ -281,12 +281,12 @@ window.ImageViewerUtils = (function () {
   function deepQuerySelectorAll(target, tagName, selector) {
     const result = []
     for (const node of target.querySelectorAll(`${selector}, *:not([no-shadow])`)) {
+      if (node.tagName.toUpperCase() === `${tagName}`) {
+        result.push(node)
+      }
       if (node.shadowRoot) {
         result.push(...deepQuerySelectorAll(node.shadowRoot, tagName, selector))
         continue
-      }
-      if (node.tagName.toUpperCase() === `${tagName}`) {
-        result.push(node)
       }
       node.setAttribute('no-shadow', '')
     }
@@ -344,7 +344,8 @@ window.ImageViewerUtils = (function () {
     }
     return flag
   }
-  function processWrapperList(wrapperDivList) {
+  function processWrapperList(wrapperList) {
+    wrapperList = wrapperList[0].shadowRoot ? wrapperList.map(node => node.shadowRoot) : wrapperList
     // treat long size as width
     const divWidth = []
     const divHeight = []
@@ -354,7 +355,7 @@ window.ImageViewerUtils = (function () {
     const imageCountPerDiv = []
     let imageCount = 0
     let maxImageCount = 0
-    for (const div of wrapperDivList) {
+    for (const div of wrapperList) {
       // ad may use same wrapper and adblock set it to display: none
       if (div.offsetParent === null && div.style.position !== 'fixed') continue
 
@@ -385,12 +386,12 @@ window.ImageViewerUtils = (function () {
     }
     return {maxImageCount, imageCount, imageCountPerDiv, rawWidth, rawHeight, divWidth, divHeight}
   }
-  function updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options) {
-    const {maxImageCount, imageCount, imageCountPerDiv, rawWidth, rawHeight, divWidth, divHeight} = processWrapperList(wrapperDivList)
+  function updateSizeByWrapper(wrapperList, domWidth, domHeight, options) {
+    const {maxImageCount, imageCount, imageCountPerDiv, rawWidth, rawHeight, divWidth, divHeight} = processWrapperList(wrapperList)
 
     const largeContainerCount = imageCountPerDiv.filter(num => num === maxImageCount).length
-    const isLargeContainer = maxImageCount >= 5 && wrapperDivList.length - largeContainerCount < 3
-    const isOneToOne = !isLargeContainer && imageCount === wrapperDivList.length
+    const isLargeContainer = maxImageCount >= 5 && wrapperList.length - largeContainerCount < 3
+    const isOneToOne = !isLargeContainer && imageCount === wrapperList.length
     const isMatchSize = isOneToOne && checkMatchSize(rawWidth, rawHeight)
     const useMinSize = isLargeContainer || isMatchSize
 
@@ -409,6 +410,14 @@ window.ImageViewerUtils = (function () {
     options.minHeight = Math.min(finalSize, options.minHeight)
   }
 
+  function getWrapperList(wrapper) {
+    if (!wrapper) return []
+    const rootNode = wrapper.getRootNode()
+    if (rootNode !== document) return deepQuerySelectorAll(document.body, rootNode.host.tagName.toUpperCase(), rootNode.host.tagName)
+    const classList = wrapper ? '.' + [...wrapper?.classList].map(CSS.escape).join(', .') : ''
+    const wrapperList = wrapper ? document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`) : []
+    return wrapperList
+  }
   function getDomSelector(dom) {
     let curr = dom.parentElement
     let selector = dom.tagName.toLowerCase()
@@ -424,11 +433,10 @@ window.ImageViewerUtils = (function () {
     }
     return selector
   }
-  function updateSizeBySelector(domWidth, domHeight, container, selector, options) {
-    const elementTag = selector.slice(-3)
-    const domList = deepQuerySelectorAll(container, elementTag, selector, options)
+  function updateSizeBySelector(domWidth, domHeight, container, tagName, selector, options) {
     // skip img with data URL
-    const targetDom = elementTag === 'img' ? domList.filter(img => !img.src.startsWith('data')) : domList
+    const domList = deepQuerySelectorAll(container, tagName, selector, options)
+    const targetDom = tagName === 'img' ? domList.filter(img => !img.src.startsWith('data')) : domList
 
     let minWidth = domWidth
     let minHeight = domHeight
@@ -1346,36 +1354,44 @@ window.ImageViewerUtils = (function () {
 
   return {
     updateWrapperSize: function (dom, domSize, options) {
-      const tagName = dom?.tagName
+      if (!dom || dom.getRootNode({composed: true}) !== document) return
+
+      const tagName = dom.tagName
       if (tagName !== 'IMG' && tagName !== 'DIV') {
         options.sizeCheck = true
         return
       }
       const [domWidth, domHeight] = domSize
-      if (!dom || !document.contains(dom) || domWidth === 0) return
+      if (domWidth === 0) return
 
       // div
       if (tagName === 'DIV') {
         const selector = getDomSelector(dom)
-        updateSizeBySelector(domWidth, domHeight, document.body, selector, options)
+        updateSizeBySelector(domWidth, domHeight, document.body, 'DIV', selector, options)
         return
       }
 
       // image
       const wrapper = dom.closest('div')
-      const classList = wrapper ? '.' + [...wrapper?.classList].map(CSS.escape).join(', .') : ''
-      const wrapperDivList = wrapper ? document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div img))`) : []
-
-      if (!wrapper || wrapperDivList.length <= 1) {
+      const wrapperList = getWrapperList(wrapper)
+      // no or single wrapper
+      if (wrapperList.length <= 1) {
         const selector = getDomSelector(dom)
-        updateSizeBySelector(domWidth, domHeight, document.body, selector, options)
+        updateSizeBySelector(domWidth, domHeight, document.body, 'IMG', selector, options)
         return
       }
+      // wrapper is custom element, check all image in wrapper list
+      if (wrapperList[0].tagName.includes('-')) {
+        updateSizeByWrapper(wrapperList, domWidth, domHeight, options)
+        return
+      }
+      // wrapper is normal div
       if (wrapper.classList.length === 0) {
-        updateSizeBySelector(domWidth, domHeight, wrapper, 'img', options)
+        updateSizeBySelector(domWidth, domHeight, wrapper, 'IMG', 'img', options)
         return
       }
-      updateSizeByWrapper(wrapperDivList, domWidth, domHeight, options)
+      // check all image in wrapper list
+      updateSizeByWrapper(wrapperList, domWidth, domHeight, options)
     },
 
     getOrderedImageUrls: async function (options, retryCount = 0) {
