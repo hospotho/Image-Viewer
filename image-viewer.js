@@ -1455,6 +1455,9 @@ window.ImageViewer = (function () {
         if (currIndex === newIndex) break
         originalMoveToNode(newIndex)
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
+        while (document.visibilityState !== 'visible') {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
       }
       autoNavigateFlag = false
       moveToNode = originalMoveToNode
