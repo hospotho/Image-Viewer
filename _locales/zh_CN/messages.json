@@ -80,6 +80,9 @@
   "min_width": {
     "message": "最小阔度"
   },
+  "new_option": {
+    "message": "有新选项可用"
+  },
   "not_factor_of_360": {
     "message": "不是360的因数"
   },

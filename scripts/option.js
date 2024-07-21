@@ -225,9 +225,29 @@
     })
   }
 
+  function checkUpdate(options) {
+    const newOptionList = Object.keys(defaultOptions).filter(key => key in options === false)
+    if (newOptionList.length === 0) return
+    const message = newOptionList
+      .map(key => key.replace(/([A-Z])/g, '_$1').toLowerCase())
+      .map(tag => chrome.i18n.getMessage(tag) || tag)
+      .join('\n')
+    alert(chrome.i18n.getMessage('new_option') + ':\n' + message)
+
+    // sync with default options
+    for (const key of newOptionList) {
+      options[key] = defaultOptions[key]
+    }
+    chrome.storage.sync.set({options: options}, () => {
+      if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
+      console.log(options)
+    })
+  }
+
   async function init() {
     i18n()
     const {options} = await chrome.storage.sync.get('options')
+    checkUpdate(options)
     setValue(options)
     initFormEvent()
     initFormButton()
