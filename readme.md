@@ -62,6 +62,10 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
     <td><kbd>Ctrl</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></td>
   </tr>
   <tr>
+    <td>Auto navigation (until end or user interrupt)</td>
+    <td><kbd>Shift</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></td>
+  </tr>
+  <tr>
     <td rowspan="2">Go to original image on page</td>
     <td><kbd>Enter</kbd></td>
   </tr>
