@@ -61,7 +61,7 @@
       const tag = el.getAttribute('data-i18n')
       const message = chrome.i18n.getMessage(tag)
       if (!message) continue
-      el.textContent = message
+      el.innerHTML = message
       if (el.value !== '') el.value = message
     }
   }
