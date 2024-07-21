@@ -175,9 +175,8 @@ function resetLocalStorage() {
       console.log('Loaded options from storage')
       console.log(res.options)
 
-      const defaultKeyLength = Object.keys(defaultOptions).length
-      const currKeyLength = Object.keys(currOptions).length
-      if (defaultKeyLength !== currKeyLength) {
+      const existNewOptions = Object.keys(defaultOptions).some(key => key in currOptions === false)
+      if (existNewOptions) {
         console.log('New options available')
         chrome.runtime.openOptionsPage()
       }
