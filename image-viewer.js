@@ -1312,7 +1312,7 @@ window.ImageViewer = (function () {
     let debounceTimeout = 0
     let debounceFlag = false
     let throttleTimestamp = Date.now()
-    let autoNavigateFlag = false
+    let autoNavigateFlag = 0
 
     function moveToNode(index) {
       current.textContent = index + 1
@@ -1432,17 +1432,19 @@ window.ImageViewer = (function () {
     }
     const autoNavigation = async e => {
       if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || !e.shiftKey) {
-        autoNavigateFlag = false
+        autoNavigateFlag = 0
         return
       }
       const action = keyMap[e.key]
       if (action === undefined || e.key.length == 1) {
-        autoNavigateFlag = false
+        autoNavigateFlag = 0
         return
       }
-      if (autoNavigateFlag) return
+      // [0,1] => [0,2] => [-1,1]
+      const newFlag = action * 2 - 1
+      if (autoNavigateFlag === newFlag) return
 
-      autoNavigateFlag = true
+      autoNavigateFlag = newFlag
       e.preventDefault()
       const originalMoveToNode = moveToNode
       moveToNode = newIndex => {
@@ -1459,7 +1461,7 @@ window.ImageViewer = (function () {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
       }
-      autoNavigateFlag = false
+      autoNavigateFlag = 0
       moveToNode = originalMoveToNode
     }
     keydownHandlerList.push(normalNavigation)
