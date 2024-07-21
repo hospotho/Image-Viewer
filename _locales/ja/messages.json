@@ -2,10 +2,10 @@
   "add_new_custom": {
     "message": "カスタムを追加"
   },
-  "appDesc": {
+  "app_desc": {
     "message": "画像観覧をもっと使いやすいように機能を強化します"
   },
-  "appName": {
+  "app_name": {
     "message": "Image Viewer"
   },
   "auto_scroll_desc": {

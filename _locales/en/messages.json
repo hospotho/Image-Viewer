@@ -2,10 +2,10 @@
   "add_new_custom": {
     "message": "add new custom"
   },
-  "appDesc": {
+  "app_desc": {
     "message": "More than the default image viewer"
   },
-  "appName": {
+  "app_name": {
     "message": "Image Viewer"
   },
   "auto_scroll_desc": {

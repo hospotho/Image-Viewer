@@ -2,10 +2,10 @@
   "add_new_custom": {
     "message": "新增自定"
   },
-  "appDesc": {
+  "app_desc": {
     "message": "更多功能、更易使用的圖像瀏覽"
   },
-  "appName": {
+  "app_name": {
     "message": "Image Viewer"
   },
   "auto_scroll_desc": {

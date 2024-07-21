@@ -1,6 +1,6 @@
 {
-  "name": "__MSG_appName__",
-  "description": "__MSG_appDesc__",
+  "name": "__MSG_app_name__",
+  "description": "__MSG_app_desc__",
   "version": "1.35",
   "default_locale": "en",
   "manifest_version": 3,
