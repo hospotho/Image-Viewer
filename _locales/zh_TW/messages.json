@@ -36,7 +36,7 @@
     "message": "網域特定設定"
   },
   "download_hotkey": {
-    "message": "下載已收集的圖片:"
+    "message": "下載已收集的圖片"
   },
   "fit_with_original_size": {
     "message": "圖像原本的大小"
@@ -105,7 +105,7 @@
     "message": "保存"
   },
   "scroll_hotkey": {
-    "message": "啟用自動捲動:"
+    "message": "啟用自動捲動"
   },
   "search_hotkey": {
     "message": "圖像搜索快捷鍵"

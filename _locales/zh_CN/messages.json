@@ -36,7 +36,7 @@
     "message": "网域特定设置"
   },
   "download_hotkey": {
-    "message": "下载已收集的图片:"
+    "message": "下载已收集的图片"
   },
   "fit_with_original_size": {
     "message": "图像原本的大小"
@@ -105,7 +105,7 @@
     "message": "保存"
   },
   "scroll_hotkey": {
-    "message": "启用自动卷动:"
+    "message": "启用自动卷动"
   },
   "search_hotkey": {
     "message": "图像搜索热键"

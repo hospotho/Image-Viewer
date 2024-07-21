@@ -36,7 +36,7 @@
     "message": "Domain specific settings"
   },
   "download_hotkey": {
-    "message": "Download collected images:"
+    "message": "Download collected images"
   },
   "fit_with_original_size": {
     "message": "Original size"
@@ -105,7 +105,7 @@
     "message": "Save"
   },
   "scroll_hotkey": {
-    "message": "Enable auto scroll:"
+    "message": "Enable auto scroll"
   },
   "search_hotkey": {
     "message": "Image search hotkey"

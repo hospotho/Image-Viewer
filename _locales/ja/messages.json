@@ -36,7 +36,7 @@
     "message": "ドメイン固有の設定"
   },
   "download_hotkey": {
-    "message": "集めた写真をダウンロード:"
+    "message": "集めた写真をダウンロード"
   },
   "fit_with_original_size": {
     "message": "画像の元のサイズ"
@@ -105,7 +105,7 @@
     "message": "保存"
   },
   "scroll_hotkey": {
-    "message": "自動スクロール有効:"
+    "message": "自動スクロール有効"
   },
   "search_hotkey": {
     "message": "画像検索ホットキー"
