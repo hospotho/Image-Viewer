@@ -925,7 +925,7 @@ window.ImageViewerUtils = (function () {
     const imgWithAttrList = []
     let allComplete = true
 
-    const targetImageList = deepQuerySelectorAll(document.body, 'img', 'img:not(.simpleUnlazy)')
+    const targetImageList = deepQuerySelectorAll(document.body, 'IMG', 'img:not(.simpleUnlazy)')
     for (const img of targetImageList) {
       img.loading = 'eager'
       if (img.getAttribute('decoding')) img.decoding = 'sync'
@@ -1020,7 +1020,7 @@ window.ImageViewerUtils = (function () {
     if (raceCount + unlazyCount === 0) {
       setTimeout(() => {
         if (unlazyCount !== 0) return
-        const unlazyList = deepQuerySelectorAll(document.body, 'img', 'img:not(.simpleUnlazy)')
+        const unlazyList = deepQuerySelectorAll(document.body, 'IMG', 'img:not(.simpleUnlazy)')
         const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
         if (stillLoading) {
           console.log('Slow connection, images still loading')
@@ -1173,7 +1173,7 @@ window.ImageViewerUtils = (function () {
   function getImageListWithoutFilter(options) {
     const imageDataList = []
 
-    const rawImageList = deepQuerySelectorAll(document.body, 'img', 'img.simpleUnlazy')
+    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img.simpleUnlazy')
     for (const img of rawImageList) {
       const imgSrc = img.currentSrc || img.src
       imageDataList.push({src: imgSrc, dom: img})
@@ -1238,7 +1238,7 @@ window.ImageViewerUtils = (function () {
 
     const imageDataList = []
 
-    const rawImageList = deepQuerySelectorAll(document.body, 'img', 'img.simpleUnlazy')
+    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img.simpleUnlazy')
     for (const img of rawImageList) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
