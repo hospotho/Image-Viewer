@@ -49,6 +49,7 @@ input.customSearchUrl {
 
 span#notFactor,
 li#debounceDesc,
-li#throttleDesc {
+li#throttleDesc,
+li#autoDesc {
   display: none;
 }
