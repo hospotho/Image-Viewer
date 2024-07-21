@@ -21,7 +21,7 @@
     "message": "Custom URL"
   },
   "debounce_desc": {
-    "message": "When you 'long press arrow key', Image Viewer will stay at the first/last image before goto other end.<br>A timer of this period will start counting and continue your action when it stop and not interrupted.<br>Set debounce period to 0 if you don't want this behavior."
+    "message": "When you 'long press arrow key', Image Viewer will stay at the first/last image before goto other end.<br>A timer for this period will start counting and continue your action when it stops and is not interrupted.<br>Set debounce period to 0 if you don't want this behavior."
   },
   "debounce_period": {
     "message": "Debounce period"
