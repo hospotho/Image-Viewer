@@ -1310,8 +1310,9 @@ window.ImageViewer = (function () {
     const throttlePeriod = options.throttlePeriod ?? 80
 
     let debounceTimeout = 0
-    let throttleTimestamp = Date.now()
     let debounceFlag = false
+    let throttleTimestamp = Date.now()
+    let autoNavigateFlag = false
 
     function moveToNode(index) {
       current.textContent = index + 1
@@ -1429,8 +1430,38 @@ window.ImageViewer = (function () {
         moveToNode(newIndex)
       }
     }
+    const autoNavigation = async e => {
+      if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || !e.shiftKey) {
+        autoNavigateFlag = false
+        return
+      }
+      const action = keyMap[e.key]
+      if (action === undefined || e.key.length == 1) {
+        autoNavigateFlag = false
+        return
+      }
+      if (autoNavigateFlag) return
+
+      autoNavigateFlag = true
+      e.preventDefault()
+      const originalMoveToNode = moveToNode
+      moveToNode = newIndex => {
+        originalMoveToNode(newIndex)
+        moveToNode = originalMoveToNode
+      }
+      while (autoNavigateFlag) {
+        const currIndex = Number(current.textContent) - 1
+        const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
+        if (currIndex === newIndex) break
+        originalMoveToNode(newIndex)
+        await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
+      }
+      autoNavigateFlag = false
+      moveToNode = originalMoveToNode
+    }
     keydownHandlerList.push(normalNavigation)
     keydownHandlerList.push(fastNavigation)
+    keydownHandlerList.push(autoNavigation)
     // arrow button
     shadowRoot.querySelector('#iv-control-prev').addEventListener('click', prevItem)
     shadowRoot.querySelector('#iv-control-next').addEventListener('click', nextItem)

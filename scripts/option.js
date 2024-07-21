@@ -10,6 +10,7 @@
 
   const debounce = document.querySelector('input#debouncePeriod')
   const throttle = document.querySelector('input#throttlePeriod')
+  const auto = document.querySelector('input#autoPeriod')
 
   const google = document.querySelector('input#googleSearch')
   const yandex = document.querySelector('input#yandexSearch')
@@ -32,6 +33,7 @@
     svgFilter: true,
     debouncePeriod: 1500,
     throttlePeriod: 80,
+    autoPeriod: 2000,
     searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + A', 'Shift + S', 'Ctrl + Shift + Q', ''],
     customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
     functionHotkey: ['Shift + R', 'Shift + D'],
@@ -117,6 +119,7 @@
 
       debounce.value = options.debouncePeriod
       throttle.value = options.throttlePeriod
+      auto.value = options.autoPeriod
 
       google.value = options.searchHotkey[0]
       yandex.value = options.searchHotkey[1]
@@ -171,6 +174,10 @@
     throttle.addEventListener('focus', () => (throttleDesc.style = 'display: block; padding: 0px 0px 10px 10px;'))
     throttle.addEventListener('focusout', () => (throttleDesc.style = ''))
 
+    const autoDesc = document.querySelector('li#autoDesc')
+    auto.addEventListener('focus', () => (autoDesc.style = 'display: block; padding: 0px 0px 10px 10px;'))
+    auto.addEventListener('focusout', () => (autoDesc.style = ''))
+
     for (const input of document.querySelectorAll('input.hotkey')) {
       input.addEventListener('keydown', e => {
         e.preventDefault()
@@ -192,6 +199,7 @@
       options.svgFilter = svgFilter.checked
       options.debouncePeriod = Number(debounce.value)
       options.throttlePeriod = Number(throttle.value)
+      options.autoPeriod = Number(auto.value)
 
       const hotkeyList = [google.value, yandex.value, sauceNAO.value, ascii2d.value, useAll.value]
       const customUrlList = []
