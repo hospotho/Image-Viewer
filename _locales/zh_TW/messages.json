@@ -21,7 +21,7 @@
     "message": "自定URL"
   },
   "debounce_desc": {
-    "message": "長按箭頭鍵時，Image viewer會在越過最前/最後的圖像前停留<br>當延時結束且未被其他操作中斷，剛才的操作將會繼續<br>設置延時時間為0以停止此行為"
+    "message": "長按箭頭鍵時，Image Viewer會在越過最前/最後的圖像前停留<br>當延時結束且未被其他操作中斷，剛才的操作將會繼續<br>設置延時時間為0以停止此行為"
   },
   "debounce_period": {
     "message": "延時時間"
@@ -120,7 +120,7 @@
     "message": "過濾svg"
   },
   "throttle_desc": {
-    "message": "長按箭頭鍵時，Image viewer會在切換每張圖像前至少停留此時間<br>默認設定的 80ms = 12.5fps (每秒12.5張圖片)<br>當節流時間被設置至接近0, fps上限僅取決於電腦性能"
+    "message": "長按箭頭鍵時，Image Viewer會在切換每張圖像前至少停留此時間<br>默認設定的 80ms = 12.5fps (每秒12.5張圖片)<br>當節流時間被設置至接近0，實際翻頁速度將取決於電腦性能"
   },
   "throttle_period": {
     "message": "節流時間"

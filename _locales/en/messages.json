@@ -21,7 +21,7 @@
     "message": "Custom URL"
   },
   "debounce_desc": {
-    "message": "When you 'long press arrow key', Image viewer will stay at the first/last image before goto other end.<br>A timer of this period will start counting and continue your action when it stop and not interrupted.<br>Set debounce period to 0 if you don't want this behavior."
+    "message": "When you 'long press arrow key', Image Viewer will stay at the first/last image before goto other end.<br>A timer of this period will start counting and continue your action when it stop and not interrupted.<br>Set debounce period to 0 if you don't want this behavior."
   },
   "debounce_period": {
     "message": "Debounce period"
@@ -120,7 +120,7 @@
     "message": "Filter svg"
   },
   "throttle_desc": {
-    "message": "When you 'long press arrow key', Image viewer will display each image approximate this period of time.<br>The default setting 80ms = 12.5fps (12.5 image per 1 second).<br>When throttle period was set to be close to 0, fps limit will only depending on you computer performance."
+    "message": "When you 'long press arrow key', Image Viewer will display each image approximate this period of time.<br>The default setting 80ms = 12.5fps (12.5 image per 1 second).<br>When throttle period was set to be close to 0, fps limit will only depending on you computer performance."
   },
   "throttle_period": {
     "message": "Throttle period"

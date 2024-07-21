@@ -21,7 +21,7 @@
     "message": "自定URL"
   },
   "debounce_desc": {
-    "message": "长按箭头键时，Image viewer会在越过最前/最后的图像前停留<br>当延时结束且未被其他操作中断，刚才的操作将会继续<br>设置延时时间为0以停止此行为"
+    "message": "长按箭头键时，Image Viewer会在越过最前/最后的图像前停留<br>当延时结束且未被其他操作中断，刚才的操作将会继续<br>设置延时时间为0以停止此行为"
   },
   "debounce_period": {
     "message": "延时时间"
