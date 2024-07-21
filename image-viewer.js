@@ -747,7 +747,7 @@ window.ImageViewer = (function () {
     base.classList.add('current')
     if (lastTransform) {
       base.firstChild.style.transition = 'none'
-      base.firstChild.style.transform = lastTransform 
+      base.firstChild.style.transform = lastTransform
       lastTransform = ''
     }
 
