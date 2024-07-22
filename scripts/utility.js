@@ -991,7 +991,7 @@ window.ImageViewerUtils = (function () {
   }
   function clearWindowBackup(options) {
     const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data.src))
-    const backup = window.backupImageUrlList
+    const backup = window.backupImageList
     for (let i = backup.length - 1; i >= 0; i--) {
       if (!allImageUrlSet.has(backup[i].src)) backup.splice(i, 1)
     }
@@ -1079,11 +1079,11 @@ window.ImageViewerUtils = (function () {
     }
     if (lastHref !== '' && lastHref !== location.href) {
       const allImageOnPage = new Set(getImageListWithoutFilter(options).map(data => data.src))
-      const unchangedCount = new Set(window.backupImageUrlList).intersection(allImageOnPage).size
+      const unchangedCount = new Set(window.backupImageList).intersection(allImageOnPage).size
       if (unchangedCount < 5) {
         unlazyCount = 0
         raceCount = 0
-        window.backupImageUrlList = []
+        window.backupImageList = []
         ImageViewer('reset_image_list')
       }
     }
@@ -1394,25 +1394,25 @@ window.ImageViewerUtils = (function () {
       updateSizeByWrapper(wrapperList, domWidth, domHeight, options)
     },
 
-    getOrderedImageUrls: async function (options, retryCount = 0) {
+    getOrderedImageList: async function (options, retryCount = 0) {
       const release = await mutex.acquire()
 
       await startUnlazy(options)
-      const uniqueImageUrls = (await Promise.all([getImageList(options), getIframeImage(options)])).flat()
+      const uniqueImageList = (await Promise.all([getImageList(options), getIframeImage(options)])).flat()
 
       release()
-      if (uniqueImageUrls.length === 0) {
+      if (uniqueImageList.length === 0) {
         if (retryCount < 3) {
           await new Promise(resolve => setTimeout(resolve, 1000))
-          const retryResult = await this.getOrderedImageUrls(options, retryCount + 1)
+          const retryResult = await this.getOrderedImageList(options, retryCount + 1)
           return retryResult
         }
         console.log('Found no image')
         return []
       }
 
-      const orderedImageUrls = sortImageDataList(uniqueImageUrls)
-      return orderedImageUrls
+      const orderedImageList = sortImageDataList(uniqueImageList)
+      return orderedImageList
     },
 
     searchImageInfoIndex: function (input, imageList) {

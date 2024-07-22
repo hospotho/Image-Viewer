@@ -22,13 +22,13 @@
   options.referrerPolicy = !!document.querySelector('img[referrerPolicy="no-referrer"]')
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
   window.ImageViewerLastDom = null
-  window.backupImageUrlList ??= []
+  window.backupImageList ??= []
 
-  const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
-  const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-  window.backupImageUrlList = Array.from(combinedImageList)
+  const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
+  const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
+  window.backupImageList = Array.from(combinedImageList)
 
-  ImageViewer(window.backupImageUrlList, options)
+  ImageViewer(window.backupImageList, options)
 
   // auto update
   let initComplete = true
@@ -68,14 +68,14 @@
     if (!document.documentElement.classList.contains('has-image-viewer')) return
 
     // update image viewer
-    const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
-    const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
+    const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
+    const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
     const currentImageList = ImageViewer('get_image_list')
 
     if (!document.documentElement.classList.contains('has-image-viewer')) return
     if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
       updatePeriod = Math.min(1000, updatePeriod)
-      window.backupImageUrlList = Array.from(combinedImageList)
+      window.backupImageList = Array.from(combinedImageList)
       ImageViewer(combinedImageList, options)
     }
 

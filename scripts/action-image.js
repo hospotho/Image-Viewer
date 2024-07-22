@@ -18,7 +18,7 @@
   options.closeButton = true
   options.referrerPolicy = !!document.querySelector('img[referrerPolicy="no-referrer"]')
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
-  window.backupImageUrlList ??= []
+  window.backupImageList ??= []
 
   // update image size filter
   const nodeInfo = (await safeSendMessage('get_info')) || []
@@ -33,19 +33,19 @@
   const domSize = domRect ? [domRect.width, domRect.height] : [0, 0]
   ImageViewerUtils.updateWrapperSize(dom, domSize, options)
 
-  const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
-  const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
-  window.backupImageUrlList = Array.from(combinedImageList)
+  const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
+  const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
+  window.backupImageList = Array.from(combinedImageList)
 
   // find image index
-  options.index = ImageViewerUtils.searchImageInfoIndex(dom || srcUrl, window.backupImageUrlList)
+  options.index = ImageViewerUtils.searchImageInfoIndex(dom || srcUrl, window.backupImageList)
   if (dom && options.index === -1) {
     options.index = 0
-    window.backupImageUrlList.unshift({src: srcUrl, dom: dom})
+    window.backupImageList.unshift({src: srcUrl, dom: dom})
     console.log('Unshift image to list')
   }
 
-  ImageViewer(window.backupImageUrlList, options)
+  ImageViewer(window.backupImageList, options)
 
   // auto update
   let initComplete = true
@@ -88,14 +88,14 @@
     if (dom?.tagName === 'IMG') {
       ImageViewerUtils.updateWrapperSize(dom, domSize, options)
     }
-    const orderedImageUrls = await ImageViewerUtils.getOrderedImageUrls(options)
-    const combinedImageList = ImageViewerUtils.combineImageList(orderedImageUrls, window.backupImageUrlList)
+    const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
+    const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
     const currentImageList = ImageViewer('get_image_list')
 
     if (!document.documentElement.classList.contains('has-image-viewer')) return
     if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
       updatePeriod = Math.min(1000, updatePeriod)
-      window.backupImageUrlList = Array.from(combinedImageList)
+      window.backupImageList = Array.from(combinedImageList)
       ImageViewer(combinedImageList, options)
     }
 
