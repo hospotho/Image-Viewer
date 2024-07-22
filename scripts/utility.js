@@ -1137,37 +1137,27 @@ window.ImageViewerUtils = (function () {
 
     const filteredDataList = imageDataList.filter(data => !isBadImage(data.src))
 
-    let imageUrlSet = new Set(filteredDataList.map(data => data.src))
-    const imageUrlOrderedList = [...imageUrlSet]
+    const imageUrlMap = new Map()
     for (const data of filteredDataList) {
       const url = data.src
       const rawUrl = getRawUrl(url)
-      if (url !== rawUrl && imageUrlSet.has(rawUrl)) {
-        const urlIndex = imageUrlOrderedList.indexOf(url)
-        const rawUrlIndex = imageUrlOrderedList.indexOf(rawUrl)
-        if (urlIndex === -1) continue
-        // ensure the order unchanged
-        if (urlIndex > rawUrlIndex) {
-          imageUrlSet.delete(url)
-          imageUrlOrderedList.splice(urlIndex, 1)
-        } else {
-          data.src = rawUrl
-          imageUrlOrderedList[urlIndex] = imageUrlOrderedList[rawUrlIndex]
-          imageUrlOrderedList.splice(rawUrlIndex, 1)
-          imageUrlSet = new Set(imageUrlOrderedList)
+      if (url !== rawUrl) {
+        const cache = imageUrlMap.get(rawUrl)
+        if (cache === undefined) imageUrlMap.set(rawUrl, [url])
+        else if (cache instanceof Array) cache.push(url)
+      }
+      const cache = imageUrlMap.get(url)
+      if (cache === undefined) imageUrlMap.set(url, data)
+      else if (cache.src && data.dom.tagName === 'IMG') imageUrlMap.set(url, data)
+      else if (cache instanceof Array) {
+        for (const url of cache) {
+          imageUrlMap.delete(url)
         }
+        imageUrlMap.set(url, data)
       }
     }
 
-    const uniqueDataList = []
-    for (const data of filteredDataList) {
-      const url = data.src
-      if (imageUrlSet.has(url)) {
-        imageUrlSet.delete(url)
-        uniqueDataList.push(data)
-      }
-    }
-
+    const uniqueDataList = Array.from(imageUrlMap, ([k, v]) => v).filter(data => data.src)
     return uniqueDataList
   }
   function getImageListWithoutFilter(options) {
