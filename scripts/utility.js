@@ -1148,13 +1148,10 @@ window.ImageViewerUtils = (function () {
       }
       const cache = imageUrlMap.get(url)
       if (cache === undefined) imageUrlMap.set(url, data)
-      else if (cache.src && data.dom.tagName === 'IMG') imageUrlMap.set(url, data)
       else if (cache instanceof Array) {
-        for (const url of cache) {
-          imageUrlMap.delete(url)
-        }
+        cache.forEach(url => imageUrlMap.delete(url))
         imageUrlMap.set(url, data)
-      }
+      } else if (cache.dom.tagName !== 'IMG' && data.dom.tagName === 'IMG') imageUrlMap.set(url, data)
     }
 
     const uniqueDataList = Array.from(imageUrlMap, ([k, v]) => v).filter(data => data.src)
