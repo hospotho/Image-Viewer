@@ -359,7 +359,7 @@ window.ImageViewerUtils = (function () {
       // ad may use same wrapper and adblock set it to display: none
       if (div.offsetParent === null && div.style.position !== 'fixed') continue
 
-      const imgList = div.querySelectorAll('img')
+      const imgList = div.getElementsByTagName('img')
       imageCount += imgList.length
       maxImageCount = Math.max(maxImageCount, imgList.length)
       imageCountPerDiv.push(imgList.length)
@@ -368,7 +368,9 @@ window.ImageViewerUtils = (function () {
       const widthList = []
       const heightList = []
       for (const img of imgList) {
-        const {width, height} = img.getBoundingClientRect()
+        const rect = img.getBoundingClientRect()
+        const width = Math.min(rect.width, img.naturalWidth)
+        const height = Math.min(rect.height, img.naturalHeight)
         rawWidth.push(width)
         rawHeight.push(height)
         if (width > height) {
