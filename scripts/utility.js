@@ -1102,11 +1102,13 @@ window.ImageViewerUtils = (function () {
     const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
     if (filteredList.length === 0) return []
 
+    const minSize = Math.min(options.minWidth, options.minHeight)
+    const iframeImage = (await safeSendMessage({msg: 'extract_frames', minSize: minSize})) || []
+    if (iframeImage.length === 0) return []
+
     // src + iframe url
     const uniqueIframeImage = []
     const uniqueIframeImageUrls = new Set()
-    const minSize = Math.min(options.minWidth, options.minHeight)
-    const iframeImage = (await safeSendMessage({msg: 'extract_frames', minSize: minSize})) || []
     for (const image of iframeImage) {
       if (!uniqueIframeImageUrls.has(image[0])) {
         uniqueIframeImageUrls.add(image[0])
