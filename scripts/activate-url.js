@@ -103,10 +103,16 @@
     const attrList = []
     attrList.push({name: 'raw url', value: rawUrl})
     try {
-      if (!src.includes('?')) throw new Error()
       const url = new URL(src, document.baseURI)
       const pathname = url.pathname
       const search = url.search
+      if (pathname.match(/[-_]thumbnail/)) {
+        const nonThumbnailPath = pathname.replace(/[-_]thumbnail/, '')
+        const nonThumbnail = src.replace(pathname, nonThumbnailPath)
+        attrList.push({name: 'non thumbnail path', value: nonThumbnail})
+      }
+
+      if (!src.includes('?')) throw new Error()
 
       if (!pathname.includes('.')) {
         const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
