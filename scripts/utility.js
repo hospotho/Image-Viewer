@@ -819,15 +819,10 @@ window.ImageViewerUtils = (function () {
     const getSizeFunction = bitSize > 0 ? getImageBitSize : getImageRealSize
     const lazySize = await getSizeFunction(newURL)
     if (lazySize === 0 || lazySize < baseSize) return null
-    if (lazySize > baseSize) {
-      badImageList.add(currentSrc)
-      return newURL
-    }
+    if (lazySize > baseSize) return newURL
+    // when same size
     const isSameImage = getRawUrl(currentSrc) === getRawUrl(newURL) || currentSrc.split('?')[0].split('/').at(-1) === newURL.split('?')[0].split('/').at(-1)
-    if (!isSameImage) {
-      badImageList.add(currentSrc)
-      return newURL
-    }
+    if (!isSameImage) return newURL
     return null
   }
   async function checkImageAttr(img, attrList) {
@@ -851,6 +846,7 @@ window.ImageViewerUtils = (function () {
           img.removeAttribute(realAttrName)
           successList.push(attr.name)
           await updateImageSource(img, betterUrl)
+          badImageList.add(currentSrc)
           break
         }
       }
