@@ -106,8 +106,8 @@
       const url = new URL(src, document.baseURI)
       const pathname = url.pathname
       const search = url.search
-      if (pathname.match(/[-_]thumbnail/)) {
-        const nonThumbnailPath = pathname.replace(/[-_]thumbnail/, '')
+      if (pathname.match(/[-_]thumb(?=nail)?\./)) {
+        const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
         const nonThumbnail = src.replace(pathname, nonThumbnailPath)
         attrList.push({name: 'non thumbnail path', value: nonThumbnail})
       }
