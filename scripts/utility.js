@@ -1147,6 +1147,7 @@ window.ImageViewerUtils = (function () {
         const cache = imageUrlMap.get(rawUrl)
         if (cache === undefined) imageUrlMap.set(rawUrl, [url])
         else if (cache instanceof Array) cache.push(url)
+        else continue
       }
       const cache = imageUrlMap.get(url)
       if (cache === undefined) imageUrlMap.set(url, data)
