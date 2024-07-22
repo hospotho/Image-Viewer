@@ -1435,6 +1435,7 @@ window.ImageViewer = (function () {
         autoNavigateFlag = 0
         return
       }
+      if (e.key === 'Shift') return
       const action = keyMap[e.key]
       if (action === undefined || e.key.length == 1) {
         autoNavigateFlag = 0
@@ -1451,7 +1452,7 @@ window.ImageViewer = (function () {
         originalMoveToNode(newIndex)
         moveToNode = originalMoveToNode
       }
-      while (autoNavigateFlag) {
+      while (autoNavigateFlag === newFlag && moveToNode !== originalMoveToNode) {
         const currIndex = Number(current.textContent) - 1
         const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
         if (currIndex === newIndex) break
