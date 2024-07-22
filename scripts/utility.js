@@ -347,19 +347,18 @@ window.ImageViewerUtils = (function () {
   function processWrapperList(wrapperList) {
     wrapperList = wrapperList[0].shadowRoot ? wrapperList.map(node => node.shadowRoot) : wrapperList
     // treat long size as width
-    const divWidth = []
-    const divHeight = []
+    const wrapperWidth = []
+    const wrapperHeight = []
     // store raw value of each img
     const rawWidth = []
     const rawHeight = []
-    const imageCountPerDiv = []
-    let imageCount = 0
-    let maxImageCount = 0
-    for (const div of wrapperList) {
+    const imageCountList = []
+    for (const wrapper of wrapperList) {
       // ad may use same wrapper and adblock set it to display: none
-      if (div.offsetParent === null && div.style.position !== 'fixed') continue
+      if (wrapper.offsetParent === null && wrapper.style.position !== 'fixed') continue
 
       const imgList = wrapper.querySelectorAll('img')
+      imageCountList.push(imgList.length)
       if (imgList.length === 0) continue
 
       const widthList = []
@@ -380,15 +379,18 @@ window.ImageViewerUtils = (function () {
       }
       const maxWidth = Math.max(...widthList)
       const maxHeight = Math.max(...heightList)
-      divWidth.push(maxWidth)
-      divHeight.push(maxHeight)
+      wrapperWidth.push(maxWidth)
+      wrapperHeight.push(maxHeight)
     }
-    return {maxImageCount, imageCount, imageCountPerDiv, rawWidth, rawHeight, divWidth, divHeight}
+
+    return {imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight}
   }
   function updateSizeByWrapper(wrapperList, domWidth, domHeight, options) {
-    const {maxImageCount, imageCount, imageCountPerDiv, rawWidth, rawHeight, divWidth, divHeight} = processWrapperList(wrapperList)
+    const {imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight} = processWrapperList(wrapperList)
+    const maxImageCount = Math.max(...imageCountList)
+    const imageCount = imageCountList.reduce((a, b) => a + b, 0)
 
-    const largeContainerCount = imageCountPerDiv.filter(num => num === maxImageCount).length
+    const largeContainerCount = imageCountList.filter(num => num === maxImageCount).length
     const isLargeContainer = maxImageCount >= 5 && wrapperList.length - largeContainerCount < 3
     const isOneToOne = !isLargeContainer && imageCount === wrapperList.length
     const isMatchSize = isOneToOne && checkMatchSize(rawWidth, rawHeight)
@@ -400,8 +402,8 @@ window.ImageViewerUtils = (function () {
     // treat long size as width
     const [large, small] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
     const [optionLarge, optionSmall] = options.minWidth > options.minHeight ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
-    const finalWidth = useMinSize ? getMinSize(rawWidth) : getRefSize(divWidth, large, optionLarge)
-    const finalHeight = useMinSize ? getMinSize(rawHeight) : getRefSize(divHeight, small, optionSmall)
+    const finalWidth = useMinSize ? getMinSize(rawWidth) : getRefSize(wrapperWidth, large, optionLarge)
+    const finalHeight = useMinSize ? getMinSize(rawHeight) : getRefSize(wrapperHeight, small, optionSmall)
 
     // not allow size below 50 to prevent icon
     const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight)) - 3
