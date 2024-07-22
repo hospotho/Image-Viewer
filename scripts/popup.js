@@ -2,6 +2,16 @@
   'use strict'
 
   const rawText = `
+1.36 [2024-07-22]:
+Major Update
+1. Added a hotkey for auto navigation (shift + arrow keys)
+2. Added ton of code to support of custom element
+3. Add sub-image check to improve image unlazy in url mode
+4. Improve and refactor iframe image extraction logic 
+5. Improve CSS and layout of the image viewer
+6. Refactor data structure for image info
+7. Other bug fixes and improvements
+
 1.35 [2024-07-03]:
 1. Reduced zoom & rotate transition flash
 2. Improved auto update logic

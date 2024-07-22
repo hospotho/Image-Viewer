@@ -153,7 +153,6 @@ You can also use `image-viewer.js` with your own script by Tampermonkey or other
 
 1. `image-viewer.min.js`
 2. Demo page
-3. Improve data structure to support custom elements in V2
 
 ## History
 
