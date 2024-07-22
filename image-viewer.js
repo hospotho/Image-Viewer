@@ -1493,7 +1493,7 @@ window.ImageViewer = (function () {
     }
     function tryClear() {
       const invalidImageList = currentImageList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > currentImageList.length
-      const isCurrentListBad = invalidImageList || currentImageList.some((data, i) => data.src !== newList[i].src)
+      const isCurrentListBad = invalidImageList || currentImageList.some((data, i) => data.src !== newList[i].src && getRawUrl(data.src) !== newList[i].src)
       if (isCurrentListBad) {
         const current = shadowRoot.querySelector('li.current img')
         const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
@@ -1516,13 +1516,12 @@ window.ImageViewer = (function () {
       const imgList = shadowRoot.querySelectorAll('#iv-image-list li img')
       for (let i = 0; i < currentImageList.length; i++) {
         const data = currentImageList[i]
-        if (typeof data !== 'string' || newUrlList.includes(data)) continue
-
-        const rawUrl = getRawUrl(data)
-        if (data !== rawUrl && newUrlList.includes(rawUrl)) {
-          currentImageList[i] = rawUrl
+        const rawUrl = getRawUrl(data.src)
+        if (data.src !== rawUrl && newUrlSet.has(rawUrl)) {
           currentUrlList[i] = rawUrl
           imgList[i].src = rawUrl
+          currentImageList[i].src = rawUrl
+          currentImageList[i].dom = data.dom
           updated = true
         }
       }
@@ -1557,7 +1556,7 @@ window.ImageViewer = (function () {
     //   const current = shadowRoot.querySelector('li.current img')
     //   const currentSrc = current.src
     //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
-    //     if (!newUrlList.includes(imgNode.src)) {
+    //     if (!newUrlSet.has(imgNode.src)) {
     //       imgNode.parentElement.remove()
     //       updated = true
     //     }
@@ -1578,7 +1577,7 @@ window.ImageViewer = (function () {
     if (cleared) return
 
     const currentUrlList = currentImageList.map(data => data.src)
-    const newUrlList = newList.map(data => data.src)
+    const newUrlSet = new Set(newList.map(data => data.src))
 
     let updated = false
     tryUpdate()
