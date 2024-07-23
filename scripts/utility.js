@@ -608,6 +608,8 @@ window.ImageViewerUtils = (function () {
         while (raceCount >= unlazyCount || lastUnlazyCount === unlazyCount) {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
+        await mutex.waitUnlock()
+
         // wait for image collection
         await mutex.waitUnlock()
 
