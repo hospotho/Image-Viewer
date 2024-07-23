@@ -11,9 +11,6 @@ window.ImageViewer = (function () {
   let lastSrc = ''
   let lastTransform = ''
 
-  let zoomCount = 0
-  let rotateCount = 0
-
   const failedImageSet = new Set()
   const keydownHandlerList = []
 
@@ -748,9 +745,6 @@ window.ImageViewer = (function () {
     if (lastTransform && lastSrc === base.firstChild.src) {
       base.firstChild.style.transition = 'none'
       base.firstChild.style.transform = lastTransform
-    } else {
-      zoomCount = 0
-      rotateCount = 0
     }
     lastTransform = ''
 
@@ -1202,6 +1196,13 @@ window.ImageViewer = (function () {
 
     function addTransformHandler(li) {
       const img = li.firstChild
+      let zoomCount = 0
+      let rotateCount = 0
+      if (li.classList.contains('current')) {
+        const [scaleX, _, rotate, __, ___] = MtoV(img.style.transform)
+        zoomCount = Math.round(Math.log(scaleX) / Math.log(options.zoomRatio))
+        rotateCount = rotate / options.rotateDeg
+      }
 
       // zoom & rotate
       li.addEventListener('wheel', e => {
