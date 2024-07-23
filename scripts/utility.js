@@ -604,7 +604,7 @@ window.ImageViewerUtils = (function () {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
 
-        // unlazy incomplete
+        // wait unlazyCount update and current task complete
         while (raceCount >= unlazyCount || lastUnlazyCount === unlazyCount) {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
