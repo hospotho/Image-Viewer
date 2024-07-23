@@ -26,7 +26,7 @@ window.ImageViewerUtils = (function () {
     return {
       acquire: async function () {
         await promise
-        let lockRelease = null
+        let lockRelease = () => {}
         promise = new Promise(resolve => {
           lockRelease = () => {
             busy = false
@@ -39,7 +39,7 @@ window.ImageViewerUtils = (function () {
       waitUnlock: async function () {
         if (busy) return promise
 
-        let waitRelease = null
+        let waitRelease = () => {}
         const wait = new Promise(resolve => (waitRelease = resolve))
         const originalAcquire = mutex.acquire
         mutex.acquire = async () => {
