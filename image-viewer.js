@@ -748,6 +748,9 @@ window.ImageViewer = (function () {
     if (lastTransform && lastSrc === base.firstChild.src) {
       base.firstChild.style.transition = 'none'
       base.firstChild.style.transform = lastTransform
+    } else {
+      zoomCount = 0
+      rotateCount = 0
     }
     lastTransform = ''
 
