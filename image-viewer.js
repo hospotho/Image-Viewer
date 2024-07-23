@@ -745,11 +745,11 @@ window.ImageViewer = (function () {
     const baseIndex = current ? liList.indexOf(current) : clearIndex !== -1 ? clearIndex : options.index || 0
     const base = current || liList[baseIndex] || liList[0]
     base.classList.add('current')
-    if (lastTransform) {
+    if (lastTransform && lastSrc === base.firstChild.src) {
       base.firstChild.style.transition = 'none'
       base.firstChild.style.transform = lastTransform
-      lastTransform = ''
     }
+    lastTransform = ''
 
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     imageListNode.style.translate = `0 ${-baseIndex * 100}%`
