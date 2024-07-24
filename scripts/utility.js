@@ -281,7 +281,7 @@ window.ImageViewerUtils = (function () {
   function deepQuerySelectorAll(target, tagName, selector) {
     const result = []
     for (const node of target.querySelectorAll(`${selector}, *:not([no-shadow])`)) {
-      if (node.tagName.toUpperCase() === `${tagName}`) {
+      if (node.tagName.toUpperCase() === tagName) {
         result.push(node)
       }
       if (node.shadowRoot) {
