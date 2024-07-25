@@ -835,7 +835,8 @@ window.ImageViewerUtils = (function () {
       // init var for current url and size
       const currentSrc = img.currentSrc
       const realSrc = currentSrc.replace(/https?:/, protocol)
-      const [bitSize, naturalSize] = await Promise.all([getImageBitSize(realSrc), Math.min(img.naturalWidth, img.naturalHeight) || getImageRealSize(realSrc)])
+      const currentSize = Math.min(img.naturalWidth, img.naturalHeight)
+      const [bitSize, naturalSize] = await Promise.all([getImageBitSize(realSrc), currentSize || getImageRealSize(realSrc)])
 
       // loop thought remaining attr
       while (lastIndex < attrList.length) {
