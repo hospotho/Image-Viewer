@@ -800,19 +800,22 @@ window.ImageViewerUtils = (function () {
       localFetchBitSize(url).then(updateSize)
     })
   }
-  function getImageRealSize(src) {
+  async function getImageRealSize(src) {
     const cache = srcRealSizeMap.get(src)
     if (cache !== undefined) return cache
 
+    const release = await mutex.waitSlot()
     return new Promise(_resolve => {
       const resolve = size => {
         srcRealSizeMap.set(src, size)
+        release()
         _resolve(size)
       }
 
       const img = new Image()
       img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
       img.onerror = () => resolve(0)
+      setTimeout(() => resolve(0), 10000)
       img.src = src
     })
   }
