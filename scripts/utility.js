@@ -322,15 +322,42 @@ window.ImageViewerUtils = (function () {
     const bg = backgroundImage.split(', ')[0]
     return bg.substring(5, bg.length - 2)
   }
-  function getImageInfoIndex(srcList, src) {
-    const index = srcList.indexOf(src)
-    if (index !== -1) return index
-    const rawIndex = srcList.indexOf(getRawUrl(src))
-    if (rawIndex !== -1) return rawIndex
-    const filename = getFilename(src)
-    const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(item => item[0] === filename)
-    if (filenameIndexList.length === 1) return filenameIndexList[0][1]
-    return -1
+  function getImageIndexSearcher(srcList) {
+    function searchIndex(src) {
+      const index = srcIndexMap.get(src)
+      if (index !== undefined) return index
+      const rawIndex = srcIndexMap.get(getRawUrl(src))
+      if (index !== undefined) return rawIndex
+      const filename = getFilename(src)
+      const filenameIndex = srcIndexMap.get(filename)
+      if (filenameIndex !== undefined) return filenameIndex
+      return -1
+    }
+    function updateCache(srcList) {
+      for (let i = lastLength; i < srcList.length; i++) {
+        srcIndexMap.set(srcList[i], i)
+        // skip same filename
+        const filename = getFilename(srcList[i])
+        if (repeatFilename.has(filename) || srcIndexMap.has(filename)) {
+          repeatFilename.add(filename)
+          srcIndexMap.delete(filename)
+        } else {
+          srcIndexMap.set(filename, i)
+        }
+      }
+      lastLength = srcList.length
+    }
+
+    // assumes previous src unchange
+    let lastLength = 0
+    const srcIndexMap = new Map()
+    const repeatFilename = new Set()
+    updateCache(srcList)
+
+    return {
+      searchIndex: searchIndex,
+      updateCache: updateCache
+    }
   }
 
   // wrapper size
@@ -1421,8 +1448,10 @@ window.ImageViewerUtils = (function () {
 
     searchImageInfoIndex: function (input, imageList) {
       const srcList = imageList.map(data => data.src)
-      const src = typeof input === 'object' ? getDomUrl(input) : input
-      return getImageInfoIndex(srcList, src)
+      const src = input instanceof Element ? getDomUrl(input) : input
+      const searcher = getImageIndexSearcher(srcList)
+      const index = searcher.searchIndex(src)
+      return index
     },
 
     combineImageList: function (newList, oldList) {
@@ -1431,8 +1460,10 @@ window.ImageViewerUtils = (function () {
 
       removeRepeatNonRaw(newList, oldList)
 
-      const oldSrcList = oldList.map(data => data.src)
       const combinedImageList = new Array(newList.length + oldList.length)
+
+      const oldSearcher = getImageIndexSearcher(oldList.map(data => data.src))
+      const combinedSearcher = getImageIndexSearcher([])
 
       let leftIndex = 0
       let rightIndex = 0
@@ -1445,9 +1476,10 @@ window.ImageViewerUtils = (function () {
       while (rightIndex < newList.length) {
         const right = newList[rightIndex]
 
-        const combineSrcList = combinedImageList.filter(Boolean).map(data => data.src)
-        indexAtOldArray = getImageInfoIndex(oldSrcList, right.src)
-        indexAtCombinedArray = getImageInfoIndex(combineSrcList, right.src)
+        const combinedSrcList = combinedImageList.filter(Boolean).map(data => data.src)
+        combinedSearcher.updateCache(combinedSrcList)
+        indexAtOldArray = oldSearcher.searchIndex(right.src)
+        indexAtCombinedArray = combinedSearcher.searchIndex(right.src)
 
         // right is not a anchor
         if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
