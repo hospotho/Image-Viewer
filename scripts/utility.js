@@ -292,27 +292,34 @@ window.ImageViewerUtils = (function () {
     }
     return result
   }
-  function getMainContainer() {
-    const windowWidth = document.documentElement.clientWidth
-    const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-    const targetList = document
-      .elementsFromPoint(windowWidth / 2, windowHeight / 2)
-      .slice(0, -2)
-      .filter(n => n.scrollHeight > n.clientHeight)
-    let container = null
-    let currHeight = 0
-    for (const node of targetList) {
-      const overflowY = window.getComputedStyle(node).overflowY
-      if (overflowY !== 'auto' && overflowY !== 'scroll') continue
-      if (node.scrollHeight > currHeight) {
-        container = node
-        currHeight = node.scrollHeight
+  const getMainContainer = (function () {
+    // calculate document size is very slow
+    let windowWidth = document.documentElement.clientWidth
+    let windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
+    window.addEventListener('resize', () => {
+      windowWidth = document.documentElement.clientWidth
+      windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
+    })
+    return () => {
+      const targetList = document
+        .elementsFromPoint(windowWidth / 2, windowHeight / 2)
+        .slice(0, -2)
+        .filter(n => n.scrollHeight > n.clientHeight)
+      let container = null
+      let currHeight = 0
+      for (const node of targetList) {
+        const overflowY = window.getComputedStyle(node).overflowY
+        if (overflowY !== 'auto' && overflowY !== 'scroll') continue
+        if (node.scrollHeight > currHeight) {
+          container = node
+          currHeight = node.scrollHeight
+        }
+        // only want topmost element
+        if (currHeight >= window.innerHeight) break
       }
-      // only want topmost element
-      if (currHeight >= window.innerHeight) break
+      return container || document.documentElement
     }
-    return container || document.documentElement
-  }
+  })()
 
   function getDomUrl(dom) {
     const tag = dom.tagName
