@@ -464,8 +464,8 @@ window.ImageViewer = (function () {
       #iv-control * {
         visibility: hidden;
       }
-      #iv-control:hover,
-      #iv-control:hover * {
+      #iv-control.show,
+      #iv-control.show * {
         background: rgba(0, 0, 0, 0.8);
         visibility: visible;
       }
@@ -532,7 +532,7 @@ window.ImageViewer = (function () {
         visibility: visible;
         opacity: 0.5;
       }
-      #iv-control:hover #iv-counter span {
+      #iv-control.show #iv-counter span {
         opacity: 1;
       }
 
@@ -919,6 +919,24 @@ window.ImageViewer = (function () {
         current.dispatchEvent(event)
       })
     }
+    function addControlPanelEvent() {
+      const controlPanel = shadowRoot.querySelector('#iv-control')
+      let displayTimeout = 0
+      controlPanel.addEventListener('mouseenter', () => {
+        controlPanel.classList.add('show')
+        clearTimeout(displayTimeout)
+        displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), 1500)
+      })
+      controlPanel.addEventListener('mousemove', () => {
+        controlPanel.classList.add('show')
+        clearTimeout(displayTimeout)
+        displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), 1500)
+      })
+      controlPanel.addEventListener('mouseleave', () => {
+        controlPanel.classList.remove('show')
+        clearTimeout(displayTimeout)
+      })
+    }
     function addFitButtonEvent() {
       const currFitBtn = shadowRoot.querySelector(`#iv-control-${options.fitMode}`)
       currFitBtn?.classList.add('on')
@@ -1152,6 +1170,7 @@ window.ImageViewer = (function () {
     addImageReverseSearchHotkey()
     addChangeBackgroundHotkey()
     addTransformationHotkey()
+    addControlPanelEvent()
     addFitButtonEvent()
     if (options.closeButton) {
       addMoveToButtonEvent()

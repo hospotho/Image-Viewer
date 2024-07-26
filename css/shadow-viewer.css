@@ -56,8 +56,8 @@
 #iv-control * {
   visibility: hidden;
 }
-#iv-control:hover,
-#iv-control:hover * {
+#iv-control.show,
+#iv-control.show * {
   background: rgba(0, 0, 0, 0.8);
   visibility: visible;
 }
@@ -124,7 +124,7 @@
   visibility: visible;
   opacity: 0.5;
 }
-#iv-control:hover #iv-counter span {
+#iv-control.show #iv-counter span {
   opacity: 1;
 }
 
