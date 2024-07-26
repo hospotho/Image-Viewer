@@ -1422,28 +1422,23 @@ window.ImageViewerUtils = (function () {
 
     getOrderedImageList: async function (options, retryCount = 0) {
       const release = await mutex.acquire()
-      try {
-        await startUnlazy(options)
-        const uniqueImageList = (await Promise.all([getImageList(options), getIframeImage(options)])).flat()
 
-        release()
-        if (uniqueImageList.length === 0) {
-          if (retryCount < 3) {
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            const retryResult = await this.getOrderedImageList(options, retryCount + 1)
-            return retryResult
-          }
-          console.log('Found no image')
-          return []
+      await startUnlazy(options)
+      const uniqueImageList = (await Promise.all([getImageList(options), getIframeImage(options)])).flat()
+
+      release()
+      if (uniqueImageList.length === 0) {
+        if (retryCount < 3) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          const retryResult = await this.getOrderedImageList(options, retryCount + 1)
+          return retryResult
         }
-
-        const orderedImageList = sortImageDataList(uniqueImageList)
-        return orderedImageList
-      } catch (error) {
-        console.log(error)
-        release()
+        console.log('Found no image')
         return []
       }
+
+      const orderedImageList = sortImageDataList(uniqueImageList)
+      return orderedImageList
     },
 
     searchImageInfoIndex: function (input, imageList) {
