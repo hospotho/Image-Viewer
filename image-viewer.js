@@ -474,6 +474,8 @@ window.ImageViewer = (function () {
         margin: 5px 0;
         list-style: none;
       }
+
+      /* control panel buttons */
       #iv-control button {
         cursor: pointer;
         position: relative;
@@ -483,6 +485,11 @@ window.ImageViewer = (function () {
         border: 0;
         border-radius: 5px;
         box-shadow: inset 0 0 2px #fff;
+        visibility: visible;
+        opacity: 0;
+      }
+      #iv-control.show button {
+        opacity: 1;
       }
       #iv-control button:hover {
         box-shadow: inset 0 0 10px #fff;
@@ -492,7 +499,7 @@ window.ImageViewer = (function () {
         box-shadow: inset 0 0 20px #fff;
       }
 
-      /* layout */
+      /* control panel layout */
       #iv-index {
         position: absolute;
         left: 10px;
@@ -516,13 +523,6 @@ window.ImageViewer = (function () {
       #iv-index li {
         height: 50px;
       }
-      #iv-index button {
-        visibility: visible;
-        opacity: 0;
-      }
-      #iv-control.show #iv-index button {
-        opacity: 1;
-      }
       #iv-counter {
         align-content: center;
       }
@@ -533,15 +533,6 @@ window.ImageViewer = (function () {
         opacity: 0.5;
       }
       #iv-control.show #iv-counter span {
-        opacity: 1;
-      }
-
-      /* control buttons */
-      #iv-control-buttons * {
-        visibility: visible;
-        opacity: 0;
-      }
-      #iv-control.show #iv-control-buttons * {
         opacity: 1;
       }
 
