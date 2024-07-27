@@ -854,8 +854,8 @@ window.ImageViewerUtils = (function () {
     })
   }
   async function getBetterUrl(currentSrc, bitSize, naturalSize, newURL) {
-    const baseSize = bitSize > 0 ? bitSize : naturalSize
-    const getSizeFunction = bitSize > 0 ? getImageBitSize : getImageRealSize
+    const baseSize = bitSize ? bitSize : naturalSize
+    const getSizeFunction = bitSize ? getImageBitSize : getImageRealSize
     const lazySize = await getSizeFunction(newURL)
     if (lazySize === 0 || lazySize < baseSize) return null
     if (lazySize > baseSize) return newURL
@@ -1099,8 +1099,8 @@ window.ImageViewerUtils = (function () {
     for (const src in countMap) {
       if (countMap[src] >= 5) {
         console.log(`Found lazy src appear ${countMap[src]} times ${src}`)
-        srcBitSizeMap.set(src, 0)
-        srcRealSizeMap.set(src, 0)
+        srcBitSizeMap.set(src, -1)
+        srcRealSizeMap.set(src, -1)
         badImageList.add(src)
       }
     }
