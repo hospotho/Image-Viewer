@@ -1212,6 +1212,11 @@ window.ImageViewerUtils = (function () {
       imageDataList.push({src: imgSrc, dom: img})
     }
 
+    const videoList = document.querySelectorAll('video[poster]')
+    for (const video of videoList) {
+      imageDataList.push({src: video.poster, dom: video})
+    }
+    
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
     for (const node of uncheckedNodeList) {
       const attrUrl = node.getAttribute('data-bg')
@@ -1235,11 +1240,6 @@ window.ImageViewerUtils = (function () {
         node.setAttribute('data-bg', url)
         imageDataList.push({src: url, dom: node})
       }
-    }
-
-    const videoList = document.querySelectorAll('video[poster]')
-    for (const video of videoList) {
-      imageDataList.push({src: video.poster, dom: video})
     }
 
     const uniqueDataList = processImageDataList(options, imageDataList)
@@ -1282,6 +1282,14 @@ window.ImageViewerUtils = (function () {
       }
     }
 
+    const videoList = document.querySelectorAll('video[poster]')
+    for (const video of videoList) {
+      const {width, height} = video.getBoundingClientRect()
+      if (width >= minWidth && height >= minHeight) {
+        imageDataList.push({src: video.poster, dom: video})
+      }
+    }
+
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
     for (const node of uncheckedNodeList) {
       if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
@@ -1308,14 +1316,6 @@ window.ImageViewerUtils = (function () {
         } else {
           imageDataList.push({src: url, dom: node})
         }
-      }
-    }
-
-    const videoList = document.querySelectorAll('video[poster]')
-    for (const video of videoList) {
-      const {width, height} = video.getBoundingClientRect()
-      if (width >= minWidth && height >= minHeight) {
-        imageDataList.push({src: video.poster, dom: video})
       }
     }
 
