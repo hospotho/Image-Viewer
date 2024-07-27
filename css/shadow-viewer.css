@@ -108,12 +108,12 @@
 #iv-index li {
   height: 50px;
 }
-#iv-index li button:after {
-  content: '';
-  position: absolute;
-  margin-top: -12px;
-  display: block;
-  border-style: solid;
+#iv-index button {
+  visibility: visible;
+  opacity: 0;
+}
+#iv-control.show #iv-index button {
+  opacity: 1;
 }
 #iv-counter {
   align-content: center;
@@ -125,6 +125,15 @@
   opacity: 0.5;
 }
 #iv-control.show #iv-counter span {
+  opacity: 1;
+}
+
+/* control buttons */
+#iv-control-buttons * {
+  visibility: visible;
+  opacity: 0;
+}
+#iv-control.show #iv-control-buttons * {
   opacity: 1;
 }
 
@@ -186,6 +195,13 @@
 }
 
 /* navigation button */
+#iv-index button:after {
+  content: '';
+  position: absolute;
+  margin-top: -12px;
+  display: block;
+  border-style: solid;
+}
 #iv-control-prev:after {
   left: 50%;
   margin-left: -10px;

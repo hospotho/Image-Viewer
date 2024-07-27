@@ -516,12 +516,12 @@ window.ImageViewer = (function () {
       #iv-index li {
         height: 50px;
       }
-      #iv-index li button:after {
-        content: '';
-        position: absolute;
-        margin-top: -12px;
-        display: block;
-        border-style: solid;
+      #iv-index button {
+        visibility: visible;
+        opacity: 0;
+      }
+      #iv-control.show #iv-index button {
+        opacity: 1;
       }
       #iv-counter {
         align-content: center;
@@ -533,6 +533,15 @@ window.ImageViewer = (function () {
         opacity: 0.5;
       }
       #iv-control.show #iv-counter span {
+        opacity: 1;
+      }
+
+      /* control buttons */
+      #iv-control-buttons * {
+        visibility: visible;
+        opacity: 0;
+      }
+      #iv-control.show #iv-control-buttons * {
         opacity: 1;
       }
 
@@ -594,6 +603,13 @@ window.ImageViewer = (function () {
       }
 
       /* navigation button */
+      #iv-index button:after {
+        content: '';
+        position: absolute;
+        margin-top: -12px;
+        display: block;
+        border-style: solid;
+      }
       #iv-control-prev:after {
         left: 50%;
         margin-left: -10px;
@@ -919,17 +935,29 @@ window.ImageViewer = (function () {
         current.dispatchEvent(event)
       })
     }
-    function addControlPanelEvent() {
+    function addControlPanelHideEvent() {
       const controlPanel = shadowRoot.querySelector('#iv-control')
+      const navigationButtonList = shadowRoot.querySelectorAll('#iv-index button')
+      const controlButtonList = shadowRoot.querySelectorAll('#iv-control-buttons button')
+      const buttonList = [...navigationButtonList, ...controlButtonList]
+
       let displayTimeout = 0
       controlPanel.addEventListener('mouseenter', () => {
         controlPanel.classList.add('show')
+        clearTimeout(displayTimeout)
         displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), 1500)
       })
       controlPanel.addEventListener('mouseleave', () => {
         controlPanel.classList.remove('show')
         clearTimeout(displayTimeout)
       })
+      for (const button of buttonList) {
+        button.addEventListener('mouseenter', () => {
+          controlPanel.classList.add('show')
+          clearTimeout(displayTimeout)
+          displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), 1500)
+        })
+      }
     }
     function addFitButtonEvent() {
       const currFitBtn = shadowRoot.querySelector(`#iv-control-${options.fitMode}`)
@@ -1164,7 +1192,7 @@ window.ImageViewer = (function () {
     addImageReverseSearchHotkey()
     addChangeBackgroundHotkey()
     addTransformationHotkey()
-    addControlPanelEvent()
+    addControlPanelHideEvent()
     addFitButtonEvent()
     if (options.closeButton) {
       addMoveToButtonEvent()
