@@ -924,12 +924,6 @@ window.ImageViewer = (function () {
       let displayTimeout = 0
       controlPanel.addEventListener('mouseenter', () => {
         controlPanel.classList.add('show')
-        clearTimeout(displayTimeout)
-        displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), 1500)
-      })
-      controlPanel.addEventListener('mousemove', () => {
-        controlPanel.classList.add('show')
-        clearTimeout(displayTimeout)
         displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), 1500)
       })
       controlPanel.addEventListener('mouseleave', () => {
