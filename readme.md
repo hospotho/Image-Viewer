@@ -3,13 +3,12 @@
 <p align="center"><img src="icon/icon128.png"></p>
 <p align="center">Image Viewer is a manifest V3 Chrome extension that improves your image viewing experience.</p>
 
-If you like this extension, you can buy me a coffee at:
-https://ko-fi.com/tonymilktea
+If you like this extension, you can [buy me a coffee](https://ko-fi.com/tonymilktea)
 
 ## Features
 
 1. Collect and view all images on the page.
-2. Support video poster and images in iframes.
+2. Support video posters and images in iframes.
 3. Auto replace lazy loaded or resized images with original image.
 4. Redirect middle click to original image to open link you want.
 5. Go to original image on the page.
@@ -21,22 +20,24 @@ https://ko-fi.com/tonymilktea
 
 ## Installation
 
-You can install this extension from [Chrome Web Store](https://chrome.google.com/webstore/detail/image-viewer/ghdcoodfcolpdebbdhbgkbodbjololfl) or follow steps below:
+You can install release version from [Chrome Web Store](https://chrome.google.com/webstore/detail/image-viewer/ghdcoodfcolpdebbdhbgkbodbjololfl) or development version follow steps below:
 
 1. Download the source code and place it anywhere you want.
 2. Open your browser and go to `chrome://extensions`.
 3. Enable Developer Mode.
 4. Click the "Load Unpacked" button and select the folder with the source code.
 
-Any tabs opened before the installation require a reload.
+Note: Any tabs opened before the installation require a reload.
 
 ## How to use
 
 After adding this extension to your browser, it is recommended to pin it to the toolbar.
 
-To activate the Image Viewer, click on the extension icon or right-click and choose this extension.
+For image tabs, Image Viewer will be activate automatically.
 
-Right-clicking the icon will show a menu that lets you start the Image Viewer disabled size filter or start with the last picked image (use it when the right-click menu is disabled).
+For normal websites, you can activate Image Viewer by choose this extension from the right-click menu, click its icon on the toolbar or use keyboard hotkey (default <kbd>Alt</kbd>+<kbd>1</kbd>).
+
+For additional options, right-click the extension icon on the toolbar. You can start the Image Viewer with disabled size filter or start with the last picked image (use it when the right-click menu is disabled by the website).
 
 <table>
   <tr>
@@ -58,11 +59,11 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
     <td>Scroll on the close button</td>
   </tr>
   <tr>
-    <td>Fast navigation (10 images, no throttle)</td>
+    <td>Fast navigation<br>(10 images, no throttle)</td>
     <td><kbd>Ctrl</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></td>
   </tr>
   <tr>
-    <td>Auto navigation (until end or user interrupt)</td>
+    <td>Auto navigation / Slideshow<br>(until end or user interrupt)</td>
     <td><kbd>Shift</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></td>
   </tr>
   <tr>
@@ -143,11 +144,11 @@ Right-clicking the icon will show a menu that lets you start the Image Viewer di
 
 ## Browser support
 
-The entire project was written in Vanilla JavaScript with extension API support for Chromium-based browsers. It should work on Firefox, but it has not been tested yet.
+The entire project was written in Vanilla JavaScript with extension API supported by Chromium-based browsers. It should also work on Firefox, but it has not been tested yet.
 
-The standalone `image-viewer.js` should work on all modern browsers, and you can use it on your own website.
+The standalone `image-viewer.js` should work on all modern browsers, and you can integrated into your own website with own collect image script.
 
-You can also use `image-viewer.js` with your own script by Tampermonkey or other alternatives.
+You may also use `image-viewer.js` with your own script with Tampermonkey or other alternatives.
 
 ## ToDo
 
@@ -156,19 +157,13 @@ You can also use `image-viewer.js` with your own script by Tampermonkey or other
 
 ## History
 
-The prototype of this project was created by Eky Kwan under the MIT License. However, the license file was either lost or not included in the Chrome Web Store version.
+The prototype of this project was created by Eky Kwan under the MIT License, and the author of the translations in `_locales` is unknown. The first release v0.1 was launched on 2012-07-05, and the last release v0.1.6 was on 2012-08-12. However, the license file was either lost or not included in the Chrome Web Store version.
 
-The first release v0.1 was launched on 2012-07-05, and the last release v0.1.6 was on 2012-08-12.
+Since I started using this extension, many new features have been added to the project. You can find the oldest version [here](https://github.com/hospotho/Image-Viewer-Legacy), some mirroring websites may still have the raw version of v0.1.6.
 
-The author of the translation in `_locales` is unknown.
+The old version was hard to extend, and I felt tired of it in June 2022. Therefore, I decided to clean up all the old-style, messy jQuery code and rewrite the project completely. The rewrite is now complete and has also been upgraded to manifest V3.
 
-Since I started using this extension, many new features have been added to the project. You can find the oldest version that at [here](https://github.com/hospotho/Image-Viewer-Legacy), some mirroring websites may still have the raw version of v0.1.6.
-
-The old version was hard to extend, and I felt tired of it in June 2022. Therefore, I decided to clean up all the old-style, messy jQuery code and rewrite the project completely.
-
-The rewrite is now complete and has also been upgraded to manifest V3.
-
-The project is currently developed and maintained by me.
+This project is currently developed and maintained by me.
 
 ## License
 
