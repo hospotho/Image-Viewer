@@ -1245,6 +1245,11 @@ window.ImageViewerUtils = (function () {
     const uniqueDataList = processImageDataList(options, imageDataList)
     return uniqueDataList
   }
+  async function checkRepeatBackground(url, node) {
+    const realSize = await getImageRealSize(url)
+    node.setAttribute('data-width', realSize)
+    node.setAttribute('data-height', realSize)
+  }
   function isNodeSizeEnough(node, minWidth, minHeight) {
     const widthAttr = node.getAttribute('data-width')
     const heightAttr = node.getAttribute('data-height')
@@ -1262,7 +1267,7 @@ window.ImageViewerUtils = (function () {
     node.setAttribute('data-height', height)
     return width >= minWidth && height >= minHeight
   }
-  async function getImageList(options) {
+  function getImageList(options) {
     const minWidth = options.minWidth
     const minHeight = options.minHeight
     if (minWidth === 0 && minHeight === 0) {
@@ -1309,10 +1314,9 @@ window.ImageViewerUtils = (function () {
         const url = bg.substring(5, bg.length - 2)
         node.setAttribute('data-bg', url)
         if (nodeStyle.backgroundRepeat === 'repeat') {
-          const realSize = await getImageRealSize(url)
-          node.setAttribute('data-width', realSize)
-          node.setAttribute('data-height', realSize)
-          if (realSize >= minWidth && realSize >= minHeight) imageDataList.push({src: url, dom: node})
+          node.setAttribute('data-width', 0)
+          node.setAttribute('data-height', 0)
+          checkRepeatBackground(url, node)
         } else {
           imageDataList.push({src: url, dom: node})
         }
@@ -1431,7 +1435,7 @@ window.ImageViewerUtils = (function () {
       const release = await mutex.acquire()
 
       await startUnlazy(options)
-      const uniqueImageList = (await Promise.all([getImageList(options), getIframeImage(options)])).flat()
+      const uniqueImageList = [getImageList(options), await getIframeImage(options)].flat()
 
       release()
       if (uniqueImageList.length === 0) {
