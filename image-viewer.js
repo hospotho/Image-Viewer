@@ -241,8 +241,8 @@ window.ImageViewer = (function () {
       for (const node of targetList) {
         const backgroundImage = window.getComputedStyle(node).backgroundImage
         if (backgroundImage === 'none') continue
-        const bg = backgroundImage.split(', ')[0]
-        if (bg !== 'none' && imgUrl === bg.substring(5, bg.length - 2)) updateLargestNode(node)
+        const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
+        if (bgList.length !== 0 && imgUrl === bgList[0].slice(5, -2)) updateLargestNode(node)
       }
       return lastNode
     }

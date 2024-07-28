@@ -51,9 +51,9 @@ window.ImageViewerExtractor = (function () {
       if (width < minWidth || height < minHeight) continue
       const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') continue
-      const bg = backgroundImage.split(', ')[0]
-      if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
-        imageUrls.push(bg.substring(5, bg.length - 2))
+      const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
+      if (bgList.length !== 0) {
+        imageUrls.push(bgList[0].slice(5, -2))
       }
     }
 

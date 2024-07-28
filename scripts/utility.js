@@ -326,8 +326,8 @@ window.ImageViewerUtils = (function () {
     if (tag === 'IMG') return dom.currentSrc || dom.src
     if (tag === 'VIDEO') return dom.poster
     const backgroundImage = window.getComputedStyle(dom).backgroundImage
-    const bg = backgroundImage.split(', ')[0]
-    return bg.substring(5, bg.length - 2)
+    const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
+    return bgList.length !== 0 ? bgList[0].slice(5, -2) : ''
   }
   function getImageIndexSearcher(srcList) {
     function searchIndex(src) {
@@ -1217,7 +1217,7 @@ window.ImageViewerUtils = (function () {
     for (const video of videoList) {
       imageDataList.push({src: video.poster, dom: video})
     }
-    
+
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
     for (const node of uncheckedNodeList) {
       const attrUrl = node.getAttribute('data-bg')
@@ -1235,9 +1235,9 @@ window.ImageViewerUtils = (function () {
         node.setAttribute('no-bg', '')
         continue
       }
-      const bg = backgroundImage.split(', ')[0]
-      if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
-        const url = bg.substring(5, bg.length - 2)
+      const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
+      if (bgList.length !== 0) {
+        const url = bgList[0].slice(5, -2)
         node.setAttribute('data-bg', url)
         imageDataList.push({src: url, dom: node})
       }
@@ -1310,9 +1310,9 @@ window.ImageViewerUtils = (function () {
         node.setAttribute('no-bg', '')
         continue
       }
-      const bg = backgroundImage.split(', ')[0]
-      if (bg.startsWith('url') && !bg.endsWith('.svg")')) {
-        const url = bg.substring(5, bg.length - 2)
+      const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
+      if (bgList.length !== 0) {
+        const url = bgList[0].slice(5, -2)
         node.setAttribute('data-bg', url)
         if (nodeStyle.backgroundRepeat === 'repeat') {
           node.setAttribute('data-width', 0)

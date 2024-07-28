@@ -175,10 +175,10 @@
       const nodeStyle = window.getComputedStyle(dom)
       const backgroundImage = nodeStyle.backgroundImage
       if (backgroundImage === 'none') return null
-      const bg = backgroundImage.split(', ')[0]
-      if (!bg.startsWith('url') || bg.endsWith('.svg")')) return null
+      const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
+      if (bgList.length === 0) return null
 
-      const bgUrl = bg.substring(5, bg.length - 2)
+      const bgUrl = bgList[0].slice(5, -2)
       const realMinSize = Math.min(minSize, await getImageRealSize(bgUrl))
       return [bgUrl, realMinSize, dom]
     }
