@@ -473,13 +473,14 @@ window.ImageViewerUtils = (function () {
     const domList = deepQuerySelectorAll(container, tagName, selector, options)
     const targetDom = tagName === 'img' ? domList.filter(img => !img.src.startsWith('data')) : domList
 
-    let minWidth = domWidth
-    let minHeight = domHeight
+    let [minWidth, minHeight] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
     for (const dom of targetDom) {
       const {width, height} = dom.getBoundingClientRect()
-      if (width !== 0 && height !== 0) {
-        minWidth = Math.min(minWidth, width)
-        minHeight = Math.min(minHeight, height)
+      if (width === 0 || height === 0) continue
+      const [large, small] = width > height ? [width, height] : [height, width]
+      if (large * 1.5 >= minWidth && small * 1.5 > minHeight) {
+        minWidth = Math.min(domWidth, large)
+        minHeight = Math.min(domWidth, small)
       }
     }
     options.minWidth = Math.min(minWidth - 3, options.minWidth)
