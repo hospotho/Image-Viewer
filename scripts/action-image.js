@@ -55,7 +55,7 @@
   const multiplier = 1.2
 
   const initObserver = new MutationObserver(mutationList => {
-    initComplete = !mutationList.some(mutation => mutation.addedNodes.length)
+    initComplete = mutationList.every(mutation => mutation.addedNodes.length === 0)
   })
   initObserver.observe(document.documentElement, {childList: true, subtree: true})
 
