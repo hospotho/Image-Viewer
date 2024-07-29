@@ -752,32 +752,37 @@ window.ImageViewerUtils = (function () {
   }
 
   // attr unlazy
-  async function waitSrcUpdate(img, _resolve) {
+  async function waitSrcUpdate(img) {
     const srcUrl = new URL(img.src, document.baseURI)
     while (srcUrl.href !== img.currentSrc) {
       await new Promise(resolve => setTimeout(resolve, 20))
     }
-    _resolve()
   }
-  function updateImageSource(img, src) {
-    return new Promise(resolve => {
+  async function updateImageSource(img, src) {
+    const release = await mutex.waitSlot()
+    // get cache to disk
+    const success = await new Promise(resolve => {
       const temp = new Image()
-      temp.onload = () => {
-        img.src = src
-        img.srcset = src
-        const picture = img.parentNode
-        if (picture?.tagName === 'PICTURE') {
-          for (const source of picture.querySelectorAll('source')) {
-            source.srcset = src
-          }
-        }
-        waitSrcUpdate(img, resolve)
-      }
-      temp.onerror = resolve
+      temp.onload = () => resolve(true)
+      temp.onerror = () => resolve(false)
+      setTimeout(() => resolve(false), 5000)
       temp.loading = 'eager'
       temp.referrerPolicy = img.referrerPolicy
       temp.src = src
     })
+    release()
+    if (!success) return false
+
+    img.src = src
+    img.srcset = src
+    const picture = img.parentNode
+    if (picture?.tagName === 'PICTURE') {
+      for (const source of picture.querySelectorAll('source')) {
+        source.srcset = src
+      }
+    }
+    await waitSrcUpdate(img)
+    return true
   }
   async function localFetchBitSize(url) {
     const release = await mutex.waitSlot()
@@ -884,11 +889,12 @@ window.ImageViewerUtils = (function () {
         complete = lastIndex === attrList.length
         const newURL = attr.value.replace(/https?:/, protocol).replace(/^\/(?:[^\/])/, origin)
         const betterUrl = await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
-        if (betterUrl !== null) {
+        if (betterUrl === null) continue
+        const success = await updateImageSource(img, betterUrl)
+        if (success) {
           const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
           img.removeAttribute(realAttrName)
           successList.push(attr.name)
-          await updateImageSource(img, betterUrl)
           badImageList.add(currentSrc)
           break
         }
