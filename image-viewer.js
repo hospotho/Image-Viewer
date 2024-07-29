@@ -101,7 +101,7 @@ window.ImageViewer = (function () {
   }
 
   const getRawUrl =
-    window?.ImageViewerUtils?.getRawUrl ||
+    window.ImageViewerUtils?.getRawUrl ||
     (function () {
       const cachedExtensionMatch = (function () {
         const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
