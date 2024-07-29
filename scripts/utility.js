@@ -68,6 +68,7 @@ window.ImageViewerUtils = (function () {
 
   let unlazyCount = 0
   let raceCount = 0
+  let lastUnlazyTask = Promise.resolve()
   let lastHref = ''
   let scrollUnlazyFlag = false
   let autoScrollFlag = false
@@ -1034,8 +1035,10 @@ window.ImageViewerUtils = (function () {
     const asyncList = []
     while (!allComplete) {
       const [complete, taskList] = unlazyImage(minWidth, minHeight)
-      allComplete = complete
       asyncList.push(...taskList)
+      if (complete) {
+        allComplete = await Promise.race([Promise.all(asyncList), new Promise(resolve => resolve(false))])
+      }
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
@@ -1084,8 +1087,14 @@ window.ImageViewerUtils = (function () {
         raceCount++
       }, 1000)
     )
+    if (raceCount > unlazyCount) {
+      raceCount--
+      const race = Promise.race([lastUnlazyTask, timeout])
+      return race
+    }
     const clone = structuredClone(options)
-    const race = Promise.race([simpleUnlazyImage(clone), timeout])
+    lastUnlazyTask = simpleUnlazyImage(clone)
+    const race = Promise.race([lastUnlazyTask, timeout])
     return race
   }
   function preprocessLazyPlaceholder() {
@@ -1136,9 +1145,6 @@ window.ImageViewerUtils = (function () {
       }
     }
     lastHref = location.href
-    if (raceCount > unlazyCount) {
-      return Promise.resolve()
-    }
     const race = createUnlazyRace(options)
     return race
   }
