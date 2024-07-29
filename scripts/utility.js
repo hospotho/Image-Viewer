@@ -1037,7 +1037,8 @@ window.ImageViewerUtils = (function () {
       const [complete, taskList] = unlazyImage(minWidth, minHeight)
       asyncList.push(...taskList)
       if (complete) {
-        allComplete = await Promise.race([Promise.all(asyncList), new Promise(resolve => resolve(false))])
+        const reject = new Promise(resolve => setTimeout(() => resolve(false), 0))
+        allComplete = await Promise.race([Promise.all(asyncList), reject])
       }
       await new Promise(resolve => setTimeout(resolve, 100))
     }
