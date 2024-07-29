@@ -281,15 +281,17 @@ window.ImageViewerUtils = (function () {
 
   function deepQuerySelectorAll(target, tagName, selector) {
     const result = []
-    for (const node of target.querySelectorAll(`${selector}, *:not([no-shadow])`)) {
-      if (node.tagName.toUpperCase() === tagName) {
-        result.push(node)
+    const stack = [target]
+    while (stack.length) {
+      const current = stack.pop()
+      for (const node of current.querySelectorAll(`${selector}, *:not([no-shadow])`)) {
+        if (node.tagName === tagName) result.push(node)
+        if (node.shadowRoot) {
+          stack.push(node.shadowRoot)
+        } else {
+          node.setAttribute('no-shadow', '')
+        }
       }
-      if (node.shadowRoot) {
-        result.push(...deepQuerySelectorAll(node.shadowRoot, tagName, selector))
-        continue
-      }
-      node.setAttribute('no-shadow', '')
     }
     return result
   }
