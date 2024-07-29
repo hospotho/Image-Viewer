@@ -1133,6 +1133,9 @@ window.ImageViewerUtils = (function () {
       }
     }
     lastHref = location.href
+    if (raceCount > unlazyCount) {
+      return Promise.resolve()
+    }
     const race = createUnlazyRace(options)
     return race
   }
