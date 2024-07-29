@@ -4,7 +4,7 @@ const srcLocalRealSizeMap = new Map()
 const redirectUrlMap = new Map()
 const mutex = (function () {
   // parallel fetch
-  const maxParallel = 8
+  const maxParallel = 32
   let fetchCount = 0
   const isAvailable = () => fetchCount < maxParallel
   return {
