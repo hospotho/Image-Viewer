@@ -866,6 +866,7 @@ window.ImageViewerUtils = (function () {
     return null
   }
   async function checkImageAttr(img, attrList) {
+    img.classList.add('unlazyNotComplete')
     const successList = []
     let lastIndex = 0
     let complete = false
@@ -897,6 +898,7 @@ window.ImageViewerUtils = (function () {
         if (isLazyClass(className)) img.classList.remove(className)
       }
     }
+    img.classList.remove('unlazyNotComplete')
     return successList
   }
 
@@ -984,6 +986,7 @@ window.ImageViewerUtils = (function () {
         allComplete = false
         continue
       }
+      img.classList.add('simpleUnlazy')
 
       // check url and size
       const lazy = img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0
@@ -1012,10 +1015,8 @@ window.ImageViewerUtils = (function () {
     if (listSize === 0) return allComplete
 
     console.log(`Try to unlazy ${listSize} image`)
-    imgWithAttrList.forEach(item => item[0].classList.add('simpleUnlazy', 'unlazyNotComplete'))
 
     const asyncList = await Promise.all(imgWithAttrList.map(([img, attrList]) => checkImageAttr(img, attrList)))
-    imgWithAttrList.forEach(item => item[0].classList.remove('unlazyNotComplete'))
     const lazyList = asyncList.flat()
 
     if (lazyList.length > listSize) console.log('Multiple unlazy attributes found')
