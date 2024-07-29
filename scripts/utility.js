@@ -1009,30 +1009,15 @@ window.ImageViewerUtils = (function () {
     }
     return {imgWithAttrList, allComplete}
   }
-  async function unlazyImage(minWidth, minHeight) {
+  function unlazyImage(minWidth, minHeight) {
     const {imgWithAttrList, allComplete} = getUnlazyImageList(minWidth, minHeight)
     const listSize = imgWithAttrList.length
-    if (listSize === 0) return allComplete
+    if (listSize === 0) return [allComplete, []]
 
     console.log(`Try to unlazy ${listSize} image`)
+    const asyncList = imgWithAttrList.map(([img, attrList]) => checkImageAttr(img, attrList))
 
-    const asyncList = await Promise.all(imgWithAttrList.map(([img, attrList]) => checkImageAttr(img, attrList)))
-    const lazyList = asyncList.flat()
-
-    if (lazyList.length > listSize) console.log('Multiple unlazy attributes found')
-    const attrCount = {}
-    for (const name of lazyList) {
-      if (attrCount[name]) {
-        attrCount[name]++
-      } else {
-        attrCount[name] = 1
-      }
-    }
-    for (const name in attrCount) {
-      console.log(`Unlazy ${attrCount[name]} img with ${name}`)
-    }
-
-    return false
+    return [false, asyncList]
   }
   function clearWindowBackup(options) {
     const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data.src))
@@ -1045,10 +1030,28 @@ window.ImageViewerUtils = (function () {
     const minWidth = Math.min(options.minWidth, 100)
     const minHeight = Math.min(options.minHeight, 100)
 
-    let allComplete = await unlazyImage(minWidth, minHeight)
+    let allComplete = false
+    const asyncList = []
     while (!allComplete) {
+      const [complete, taskList] = unlazyImage(minWidth, minHeight)
+      allComplete = complete
+      asyncList.push(...taskList)
       await new Promise(resolve => setTimeout(resolve, 100))
-      allComplete = await unlazyImage(minWidth, minHeight)
+    }
+
+    const resultList = await Promise.all(asyncList)
+    const lazyList = resultList.flat()
+    if (lazyList.length > resultList.listSize) console.log('Multiple unlazy attributes found')
+    const attrCount = {}
+    for (const name of lazyList) {
+      if (attrCount[name]) {
+        attrCount[name]++
+      } else {
+        attrCount[name] = 1
+      }
+    }
+    for (const name in attrCount) {
+      console.log(`Unlazy ${attrCount[name]} img with ${name}`)
     }
 
     if (unlazyCount++ === 0) {
