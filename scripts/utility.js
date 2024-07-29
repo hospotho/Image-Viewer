@@ -633,7 +633,7 @@ window.ImageViewerUtils = (function () {
       stopFlag = false
       const container = getMainContainer()
       let lastY = container.scrollTop
-      let lastUnlazyCount = unlazyCount
+      let lastImageCount = 0
       let count = 0
       while (lastY < container.scrollHeight) {
         if (count > 5 || !isImageViewerExist()) break
@@ -642,17 +642,20 @@ window.ImageViewerUtils = (function () {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
 
-        // wait unlazyCount update and current task complete
-        while (raceCount >= unlazyCount || lastUnlazyCount === unlazyCount) {
-          await new Promise(resolve => setTimeout(resolve, 100))
+        // wait image collection settle
+        let notStarted = true
+        let notComplete = true
+        let currentImageCount = ImageViewer('get_image_list').length
+        while (notStarted || notComplete) {
+          await mutex.waitUnlock()
+          const newImageCount = ImageViewer('get_image_list').length
+          notStarted = lastImageCount === currentImageCount
+          notComplete = currentImageCount !== newImageCount
+          currentImageCount = newImageCount
         }
-        await mutex.waitUnlock()
-
-        // wait for image collection
-        await mutex.waitUnlock()
 
         action()
-        lastUnlazyCount = unlazyCount
+        lastImageCount = currentImageCount
 
         // check scroll complete
         await new Promise(resolve => setTimeout(resolve, 500))

@@ -94,7 +94,7 @@
 
     if (!document.documentElement.classList.contains('has-image-viewer')) return
     if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
-      updatePeriod = Math.min(1000, updatePeriod)
+      updatePeriod = 100
       window.backupImageList = Array.from(combinedImageList)
       ImageViewer(combinedImageList, options)
     }
