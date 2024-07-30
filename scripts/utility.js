@@ -1087,7 +1087,7 @@ window.ImageViewerUtils = (function () {
   }
 
   // before unlazy
-  function createUnlazyRace(options) {
+  async function createUnlazyRace(options) {
     // slow connection alert
     if (lastUnlazyTask === null) {
       setTimeout(() => {
@@ -1102,19 +1102,12 @@ window.ImageViewerUtils = (function () {
     }
 
     // set timeout for unlazy
-    const timeout = new Promise(resolve =>
-      setTimeout(() => {
-        resolve()
-        raceCount++
-      }, 1000)
-    )
-    if (raceCount > unlazyCount) {
-      raceCount--
-      const race = Promise.race([lastUnlazyTask, timeout])
-      return race
+    const unlazyComplete = await isPromiseComplete(lastUnlazyTask)
+    if (unlazyComplete) {
+      const clone = structuredClone(options)
+      lastUnlazyTask = simpleUnlazyImage(clone)
     }
-    const clone = structuredClone(options)
-    lastUnlazyTask = simpleUnlazyImage(clone)
+    const timeout = new Promise(resolve => setTimeout(resolve, 500))
     const race = Promise.race([lastUnlazyTask, timeout])
     return race
   }
