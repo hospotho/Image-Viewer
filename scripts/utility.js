@@ -653,6 +653,11 @@ window.ImageViewerUtils = (function () {
           notComplete = currentImageCount !== newImageCount
           currentImageCount = newImageCount
         }
+        let loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img.unlazyNotComplete').length
+        while (loadingImageCount > 0) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+          loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img.unlazyNotComplete').length
+        }
 
         action()
         lastImageCount = currentImageCount
