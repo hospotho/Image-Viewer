@@ -278,6 +278,11 @@ window.ImageViewerUtils = (function () {
   function isImageViewerExist() {
     return document.documentElement.classList.contains('has-image-viewer')
   }
+  function isPromiseComplete(promise) {
+    const symbol = Symbol()
+    const signal = new Promise(resolve => setTimeout(resolve, 0, symbol))
+    return Promise.race([promise, signal]).then(result => result !== symbol)
+  }
 
   function deepQuerySelectorAll(target, tagName, selector) {
     const result = []
@@ -1053,8 +1058,7 @@ window.ImageViewerUtils = (function () {
       const [complete, taskList] = unlazyImage(minWidth, minHeight)
       asyncList.push(...taskList)
       if (complete) {
-        const reject = new Promise(resolve => setTimeout(() => resolve(false), 0))
-        allComplete = await Promise.race([Promise.all(asyncList), reject])
+        allComplete = await isPromiseComplete(Promise.all(asyncList))
       }
       await new Promise(resolve => setTimeout(resolve, 100))
     }
