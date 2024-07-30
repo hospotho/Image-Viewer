@@ -66,8 +66,7 @@ window.ImageViewerUtils = (function () {
     }
   })()
 
-  let unlazyCount = 0
-  let raceCount = 0
+  let unlazyFlag = false
   let lastUnlazyTask = null
   let lastHref = ''
   let scrollUnlazyFlag = false
@@ -90,7 +89,7 @@ window.ImageViewerUtils = (function () {
           document.documentElement.classList.add('disableAutoScroll')
           document.documentElement.classList.remove('enableAutoScroll')
         }
-        if (unlazyCount > 0) autoScroll()
+        if (unlazyFlag) autoScroll()
       }
       // download images
       if (checkKey(e, window.ImageViewerOption.functionHotkey[1])) {
@@ -1078,7 +1077,8 @@ window.ImageViewerUtils = (function () {
       console.log(`Unlazy ${attrCount[name]} img with ${name}`)
     }
 
-    if (unlazyCount++ === 0) {
+    if (!unlazyFlag) {
+      unlazyFlag = true
       console.log('First unlazy complete')
       clearWindowBackup(options)
     }
@@ -1091,7 +1091,7 @@ window.ImageViewerUtils = (function () {
     // slow connection alert
     if (lastUnlazyTask === null) {
       setTimeout(() => {
-        if (unlazyCount !== 0) return
+        if (unlazyFlag) return
         const unlazyList = deepQuerySelectorAll(document.body, 'IMG', 'img:not(.simpleUnlazy)')
         const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
         if (stillLoading) {
@@ -1152,8 +1152,7 @@ window.ImageViewerUtils = (function () {
       const allImageOnPage = new Set(getImageListWithoutFilter(options).map(data => data.src))
       const unchangedCount = new Set(window.backupImageList).intersection(allImageOnPage).size
       if (unchangedCount < 5) {
-        unlazyCount = 0
-        raceCount = 0
+        unlazyFlag = false
         lastUnlazyTask = null
         window.backupImageList = []
         ImageViewer('reset_image_list')
