@@ -68,7 +68,7 @@ window.ImageViewerUtils = (function () {
 
   let unlazyCount = 0
   let raceCount = 0
-  let lastUnlazyTask = Promise.resolve()
+  let lastUnlazyTask = null
   let lastHref = ''
   let scrollUnlazyFlag = false
   let autoScrollFlag = false
@@ -1089,7 +1089,7 @@ window.ImageViewerUtils = (function () {
   // before unlazy
   function createUnlazyRace(options) {
     // slow connection alert
-    if (raceCount + unlazyCount === 0) {
+    if (lastUnlazyTask === null) {
       setTimeout(() => {
         if (unlazyCount !== 0) return
         const unlazyList = deepQuerySelectorAll(document.body, 'IMG', 'img:not(.simpleUnlazy)')
@@ -1151,7 +1151,7 @@ window.ImageViewerUtils = (function () {
     }
   }
   function startUnlazy(options) {
-    if (unlazyCount + raceCount === 0) {
+    if (lastUnlazyTask === null) {
       preprocessLazyPlaceholder()
       fakeUserHover()
     }
@@ -1161,6 +1161,7 @@ window.ImageViewerUtils = (function () {
       if (unchangedCount < 5) {
         unlazyCount = 0
         raceCount = 0
+        lastUnlazyTask = null
         window.backupImageList = []
         ImageViewer('reset_image_list')
       }
