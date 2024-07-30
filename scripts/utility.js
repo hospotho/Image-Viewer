@@ -639,8 +639,8 @@ window.ImageViewerUtils = (function () {
       let lastY = container.scrollTop
       let lastImageCount = 0
       let count = 0
-      while (lastY < container.scrollHeight) {
-        if (count > 5 || !isImageViewerExist()) break
+      while (lastY < container.scrollHeight && count < 5) {
+        if (!isImageViewerExist()) break
 
         while (document.visibilityState !== 'visible' || !document.documentElement.classList.contains('enableAutoScroll')) {
           await new Promise(resolve => setTimeout(resolve, 100))
