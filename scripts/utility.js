@@ -773,32 +773,30 @@ window.ImageViewerUtils = (function () {
     await waitSrcUpdate(img)
     return true
   }
-  async function localFetchBitSize(url) {
+  async function fetchBitSize(url) {
+    if (corsHostList.has(url.hostname)) return 0
+
     const release = await mutex.waitSlot()
-    if (corsHostList.has(url.hostname)) {
-      release()
-      return 0
-    }
 
     const controller = new AbortController()
     setTimeout(() => controller.abort(), 5000)
     try {
       const res = await fetch(url.href, {method: 'HEAD', signal: controller.signal})
-      release()
-      if (res.ok) {
-        if (res.redirected) return -1
-        const type = res.headers.get('Content-Type')
-        const length = res.headers.get('Content-Length')
-        if (type?.startsWith('image') || (type === 'application/octet-stream' && cachedExtensionMatch(href))) {
-          const size = Number(length)
-          return size
-        }
+      if (!res.ok) return 0
+      if (res.redirected) return -1
+      const type = res.headers.get('Content-Type')
+      const length = res.headers.get('Content-Length')
+      if (type?.startsWith('image') || (type === 'application/octet-stream' && cachedExtensionMatch(href))) {
+        const size = Number(length)
+        return size
       }
+      return 0
     } catch (error) {
       if (!controller.signal.aborted) corsHostList.add(url.hostname)
+      return 0
+    } finally {
+      release()
     }
-    release()
-    return 0
   }
   function getImageBitSize(src) {
     if (!src || src === 'about:blank' || src.startsWith('data')) return 0
@@ -827,7 +825,7 @@ window.ImageViewerUtils = (function () {
         waiting = true
         safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
       }
-      localFetchBitSize(url).then(updateSize)
+      fetchBitSize(url).then(updateSize)
     })
   }
   async function getImageRealSize(src) {

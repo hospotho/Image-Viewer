@@ -43,41 +43,40 @@ function passOptionToTab(id, option) {
   })
 }
 
-async function getImageBitSize(src, useGetMethod = false) {
-  if (cache !== undefined) return cache
-
+async function fetchBitSize(src, useGetMethod = false) {
   const release = await mutex.waitSlot()
 
+  const method = useGetMethod ? 'GET' : 'HEAD'
   const controller = new AbortController()
   setTimeout(() => controller.abort(), 5000)
   try {
-    const method = useGetMethod ? 'GET' : 'HEAD'
     const res = await fetch(src, {method: method, signal: controller.signal})
-    release()
-    if (!res.ok || res.redirected) {
-      srcBitSizeMap.set(src, 0)
-      return 0
-    }
+    if (!res.ok || res.redirected) return 0
 
     const type = res.headers.get('Content-Type')
-    if (!type?.startsWith('image')) {
-      srcBitSizeMap.set(src, 0)
-      return 0
-    }
+    if (!type?.startsWith('image')) return 0
 
     const length = res.headers.get('Content-Length')
     const size = Number(length)
     // some server return strange content length for HEAD method
     if (size < 100 && !useGetMethod) {
-      return getImageBitSize(src, true)
+      return fetchBitSize(src, true)
     }
-    srcBitSizeMap.set(src, size)
     return size
-  } catch (error) {}
+  } catch (error) {
+    return 0
+  } finally {
+    release()
+  }
+}
+async function getImageBitSize(src) {
+  const cache = srcBitSizeMap.get(src)
+  if (cache !== undefined) return cache
 
-  release()
-  srcBitSizeMap.set(src, 0)
-  return 0
+  const size = await fetchBitSize(src)
+  srcBitSizeMap.set(src, size)
+
+  return size
 }
 function getImageLocalRealSize(id, src) {
   const cache = srcLocalRealSizeMap.get(src)
