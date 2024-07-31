@@ -1345,6 +1345,7 @@ window.ImageViewer = (function () {
     let debounceFlag = false
     let throttleTimestamp = Date.now()
     let autoNavigateFlag = 0
+    let moveCount = 0
 
     function moveToNode(index) {
       current.textContent = index + 1
@@ -1357,6 +1358,7 @@ window.ImageViewer = (function () {
       const relateImage = relateListItem.querySelector('img')
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
+      moveCount++
     }
 
     function prevItem(repeat = false) {
@@ -1479,23 +1481,20 @@ window.ImageViewer = (function () {
 
       autoNavigateFlag = newFlag
       e.preventDefault()
-      const originalMoveToNode = moveToNode
-      moveToNode = newIndex => {
-        originalMoveToNode(newIndex)
-        moveToNode = originalMoveToNode
-      }
-      while (autoNavigateFlag === newFlag && moveToNode !== originalMoveToNode) {
+
+      let lastMoveCount = moveCount
+      while (true) {
         const currIndex = Number(current.textContent) - 1
         const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
-        if (currIndex === newIndex) break
-        originalMoveToNode(newIndex)
+        if (currIndex === newIndex || autoNavigateFlag !== newFlag || lastMoveCount !== moveCount) break
+        moveToNode(newIndex)
+        lastMoveCount = moveCount
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
         while (document.visibilityState !== 'visible') {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
       }
       autoNavigateFlag = 0
-      moveToNode = originalMoveToNode
     }
     keydownHandlerList.push(normalNavigation)
     keydownHandlerList.push(fastNavigation)
