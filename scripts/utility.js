@@ -1188,28 +1188,28 @@ window.ImageViewerUtils = (function () {
 
     const filteredDataList = imageDataList.filter(data => !isBadImage(data.src))
 
-    const imageUrlMap = new Map()
+    const urlDataMap = new Map()
     for (const data of filteredDataList) {
       const url = data.src
       const rawUrl = getRawUrl(url)
       if (url !== rawUrl) {
         // build connection between url and raw url
-        const cache = imageUrlMap.get(rawUrl)
-        if (cache === undefined) imageUrlMap.set(rawUrl, [url])
+        const cache = urlDataMap.get(rawUrl)
+        if (cache === undefined) urlDataMap.set(rawUrl, [url])
         else if (cache instanceof Array) cache.push(url)
         else continue
       }
-      const cache = imageUrlMap.get(url)
-      if (cache === undefined) imageUrlMap.set(url, data)
+      const cache = urlDataMap.get(url)
+      if (cache === undefined) urlDataMap.set(url, data)
       // remove non raw url and pick img dom if available
       else if (cache instanceof Array) {
-        cache.forEach(url => imageUrlMap.delete(url))
-        imageUrlMap.set(url, data)
-      } else if (cache.dom.tagName !== 'IMG' && data.dom.tagName === 'IMG') imageUrlMap.set(url, data)
+        cache.forEach(url => urlDataMap.delete(url))
+        urlDataMap.set(url, data)
+      } else if (cache.dom.tagName !== 'IMG' && data.dom.tagName === 'IMG') urlDataMap.set(url, data)
     }
 
     // filter out connection array
-    const uniqueDataList = Array.from(imageUrlMap, ([k, v]) => v).filter(data => data.src)
+    const uniqueDataList = Array.from(urlDataMap, ([k, v]) => v).filter(data => data.src)
     return uniqueDataList
   }
   function getImageListWithoutFilter(options) {
