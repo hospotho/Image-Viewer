@@ -100,94 +100,95 @@ window.ImageViewer = (function () {
     return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
   }
 
-  const getRawUrl =
-    window.ImageViewerUtils?.getRawUrl ||
-    (function () {
-      const cachedExtensionMatch = (function () {
-        const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
-        const matchCache = new Map()
-        return str => {
-          if (str.startsWith('data')) return null
+  const getRawUrl = (function () {
+    const getRawUrl = window.ImageViewerUtils?.getRawUrl
+    if (typeof getRawUrl === 'function') return getRawUrl
 
-          const cache = matchCache.get(str)
-          if (cache !== undefined) return cache
+    const cachedExtensionMatch = (function () {
+      const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+      const matchCache = new Map()
+      return str => {
+        if (str.startsWith('data')) return null
 
-          const extensionMatch = str.match(extensionRegex)
-          matchCache.set(str, extensionMatch)
-          return extensionMatch
-        }
-      })()
-      const cachedUrlSearchMatch = (function () {
-        const urlSearchCache = new Map()
-        return src => {
-          try {
-            // protocol-relative URL
-            const url = new URL(src, document.baseURI)
-            if (!url.search) return null
-
-            const baseURI = url.origin + url.pathname
-            const searchList = url.search
-              .slice(1)
-              .split('&')
-              .filter(t => cachedExtensionMatch(t))
-              .join('&')
-            const imgSearch = searchList ? '?' + searchList : ''
-            const rawSearch = baseURI + imgSearch
-
-            const extensionMatch = cachedExtensionMatch(rawSearch)
-            urlSearchCache.set(src, extensionMatch)
-            return extensionMatch
-          } catch (error) {
-            urlSearchCache.set(src, null)
-            return null
-          }
-        }
-      })()
-      const cachedGetFilename = (function () {
-        const filenameCache = new Map()
-        return str => {
-          if (str.startsWith('data')) return null
-
-          const cache = filenameCache.get(str)
-          if (cache !== undefined) return cache
-
-          const rawFilename = str.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
-          filenameCache.set(str, rawFilename)
-          return rawFilename
-        }
-      })()
-
-      const rawUrlCache = new Map()
-      return src => {
-        if (src.startsWith('data')) return src
-
-        const cache = rawUrlCache.get(src)
+        const cache = matchCache.get(str)
         if (cache !== undefined) return cache
 
-        const rawFilenameUrl = cachedGetFilename(src)
-        if (rawFilenameUrl !== src) {
-          rawUrlCache.set(src, rawFilenameUrl)
-          return rawFilenameUrl
-        }
-
-        const searchMatch = cachedUrlSearchMatch(src)
-        const rawSearchUrl = searchMatch?.[1]
-        if (rawSearchUrl && rawSearchUrl !== src) {
-          rawUrlCache.set(src, rawSearchUrl)
-          return rawSearchUrl
-        }
-
-        const extensionMatch = cachedExtensionMatch(src)
-        const rawExtensionUrl = extensionMatch?.[1]
-        if (rawExtensionUrl && rawExtensionUrl !== src) {
-          rawUrlCache.set(src, rawExtensionUrl)
-          return rawExtensionUrl
-        }
-
-        rawUrlCache.set(src, src)
-        return src
+        const extensionMatch = str.match(extensionRegex)
+        matchCache.set(str, extensionMatch)
+        return extensionMatch
       }
     })()
+    const cachedUrlSearchMatch = (function () {
+      const urlSearchCache = new Map()
+      return src => {
+        try {
+          // protocol-relative URL
+          const url = new URL(src, document.baseURI)
+          if (!url.search) return null
+
+          const baseURI = url.origin + url.pathname
+          const searchList = url.search
+            .slice(1)
+            .split('&')
+            .filter(t => cachedExtensionMatch(t))
+            .join('&')
+          const imgSearch = searchList ? '?' + searchList : ''
+          const rawSearch = baseURI + imgSearch
+
+          const extensionMatch = cachedExtensionMatch(rawSearch)
+          urlSearchCache.set(src, extensionMatch)
+          return extensionMatch
+        } catch (error) {
+          urlSearchCache.set(src, null)
+          return null
+        }
+      }
+    })()
+    const cachedGetFilename = (function () {
+      const filenameCache = new Map()
+      return str => {
+        if (str.startsWith('data')) return null
+
+        const cache = filenameCache.get(str)
+        if (cache !== undefined) return cache
+
+        const rawFilename = str.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
+        filenameCache.set(str, rawFilename)
+        return rawFilename
+      }
+    })()
+
+    const rawUrlCache = new Map()
+    return src => {
+      if (src.startsWith('data')) return src
+
+      const cache = rawUrlCache.get(src)
+      if (cache !== undefined) return cache
+
+      const rawFilenameUrl = cachedGetFilename(src)
+      if (rawFilenameUrl !== src) {
+        rawUrlCache.set(src, rawFilenameUrl)
+        return rawFilenameUrl
+      }
+
+      const searchMatch = cachedUrlSearchMatch(src)
+      const rawSearchUrl = searchMatch?.[1]
+      if (rawSearchUrl && rawSearchUrl !== src) {
+        rawUrlCache.set(src, rawSearchUrl)
+        return rawSearchUrl
+      }
+
+      const extensionMatch = cachedExtensionMatch(src)
+      const rawExtensionUrl = extensionMatch?.[1]
+      if (rawExtensionUrl && rawExtensionUrl !== src) {
+        rawUrlCache.set(src, rawExtensionUrl)
+        return rawExtensionUrl
+      }
+
+      rawUrlCache.set(src, src)
+      return src
+    }
+  })()
   const getFilename = (function () {
     const rawFilenameCache = new Map()
     return src => {
