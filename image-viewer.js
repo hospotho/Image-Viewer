@@ -709,11 +709,11 @@ window.ImageViewer = (function () {
       imageListNode.style.translate = `0 ${-currIndex * 100}%`
     }
     function removeFailedImg() {
+      const isLandscape = options.minWidth > options.minHeight
       const action = e => {
         const img = e?.target ?? e
-        const ratio = options.minWidth / options.minHeight - 1
-        const sign = Math.sign(ratio)
-        const [adjustWidth, adjustHeight] = [img.naturalWidth, img.naturalHeight].sort((a, b) => sign * (b - a))
+        const {naturalWidth: width, naturalHeight: height} = img
+        const [adjustWidth, adjustHeight] = width > height && isLandscape ? [width, height] : [height, width]
         if (adjustWidth === 0 || adjustHeight === 0 || adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
           const src = img.src
           const index = currentImageList.findIndex(data => data.src === src)
