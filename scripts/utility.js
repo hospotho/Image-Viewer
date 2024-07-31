@@ -1447,7 +1447,11 @@ window.ImageViewerUtils = (function () {
 
     getOrderedImageList: async function (options) {
       await startUnlazy(options)
-      const uniqueImageList = [getImageList(options), await getIframeImageList(options)].flat()
+
+      const iframeImageList = await getIframeImageList(options)
+      const imageList = getImageList(options)
+
+      const uniqueImageList = iframeImageList.concat(imageList)
       if (uniqueImageList.length === 0) {
         console.log('Found no image')
       }
