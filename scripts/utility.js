@@ -1465,7 +1465,7 @@ window.ImageViewerUtils = (function () {
       updateSizeByWrapper(wrapperList, domWidth, domHeight, options)
     },
 
-    getOrderedImageList: async function (options, retryCount = 0) {
+    getOrderedImageList: async function (options) {
       const release = await mutex.acquire()
 
       await startUnlazy(options)
@@ -1473,13 +1473,7 @@ window.ImageViewerUtils = (function () {
 
       release()
       if (uniqueImageList.length === 0) {
-        if (retryCount < 3) {
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          const retryResult = await this.getOrderedImageList(options, retryCount + 1)
-          return retryResult
-        }
         console.log('Found no image')
-        return []
       }
 
       const orderedImageList = sortImageDataList(uniqueImageList)
