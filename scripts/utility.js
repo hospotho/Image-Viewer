@@ -16,13 +16,13 @@ window.ImageViewerUtils = (function () {
   const srcRealSizeMap = new Map()
   const badImageList = new Set(['', 'about:blank'])
   const corsHostList = new Set()
-  const mutex = (() => {
+  const semaphore = (() => {
     // parallel fetch
     const maxParallel = 32
     let fetchCount = 0
     const isAvailable = () => fetchCount < maxParallel
     return {
-      waitSlot: async function () {
+      acquire: async function () {
         let executed = false
         while (!isAvailable()) {
           await new Promise(resolve => setTimeout(resolve, 50))
@@ -748,7 +748,7 @@ window.ImageViewerUtils = (function () {
     }
   }
   async function updateImageSource(img, src) {
-    const release = await mutex.waitSlot()
+    const release = await semaphore.acquire()
     // get cache to disk
     const success = await new Promise(resolve => {
       const temp = new Image()
@@ -776,7 +776,7 @@ window.ImageViewerUtils = (function () {
   async function fetchBitSize(url) {
     if (corsHostList.has(url.hostname)) return 0
 
-    const release = await mutex.waitSlot()
+    const release = await semaphore.acquire()
 
     const controller = new AbortController()
     setTimeout(() => controller.abort(), 5000)
@@ -832,7 +832,7 @@ window.ImageViewerUtils = (function () {
     const cache = srcRealSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    const release = await mutex.waitSlot()
+    const release = await semaphore.acquire()
     return new Promise(_resolve => {
       const resolve = size => {
         srcRealSizeMap.set(src, size)

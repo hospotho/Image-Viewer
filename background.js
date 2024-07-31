@@ -2,13 +2,13 @@
 const srcBitSizeMap = new Map()
 const srcLocalRealSizeMap = new Map()
 const redirectUrlMap = new Map()
-const mutex = (function () {
+const semaphore = (() => {
   // parallel fetch
   const maxParallel = 32
   let fetchCount = 0
   const isAvailable = () => fetchCount < maxParallel
   return {
-    waitSlot: async function () {
+    acquire: async function () {
       let executed = false
       while (!isAvailable()) {
         await new Promise(resolve => setTimeout(resolve, 50))
@@ -44,7 +44,7 @@ function passOptionToTab(id, option) {
 }
 
 async function fetchBitSize(src, useGetMethod = false) {
-  const release = await mutex.waitSlot()
+  const release = await semaphore.acquire()
 
   const method = useGetMethod ? 'GET' : 'HEAD'
   const controller = new AbortController()
@@ -364,7 +364,7 @@ function addMessageHandler() {
       }
       case 'request_cors_image': {
         ;(async () => {
-          const release = await mutex.waitSlot()
+          const release = await semaphore.acquire()
           const res = await fetch(request.src)
           release()
           const arrayBuffer = await res.arrayBuffer()
