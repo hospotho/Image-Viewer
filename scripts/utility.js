@@ -1193,6 +1193,7 @@ window.ImageViewerUtils = (function () {
       const url = data.src
       const rawUrl = getRawUrl(url)
       if (url !== rawUrl) {
+        // build connection between url and raw url
         const cache = imageUrlMap.get(rawUrl)
         if (cache === undefined) imageUrlMap.set(rawUrl, [url])
         else if (cache instanceof Array) cache.push(url)
@@ -1200,12 +1201,14 @@ window.ImageViewerUtils = (function () {
       }
       const cache = imageUrlMap.get(url)
       if (cache === undefined) imageUrlMap.set(url, data)
+      // remove non raw url and pick img dom if available
       else if (cache instanceof Array) {
         cache.forEach(url => imageUrlMap.delete(url))
         imageUrlMap.set(url, data)
       } else if (cache.dom.tagName !== 'IMG' && data.dom.tagName === 'IMG') imageUrlMap.set(url, data)
     }
 
+    // filter out connection array
     const uniqueDataList = Array.from(imageUrlMap, ([k, v]) => v).filter(data => data.src)
     return uniqueDataList
   }
