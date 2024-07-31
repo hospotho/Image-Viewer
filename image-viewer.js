@@ -1575,8 +1575,8 @@ window.ImageViewer = (function () {
       const currentIndex = counterCurrent.textContent - 1
       for (let i = 0; i < newList.length; i++) {
         const data = newList[i]
-        const index = currentUrlList.indexOf(data.src)
-        if (index !== -1) continue
+        const index = currentUrlIndexMap.get(data.src)
+        if (index !== undefined) continue
 
         const node = buildImageNode(data, options)
         insertImageNode(node, i)
@@ -1612,6 +1612,7 @@ window.ImageViewer = (function () {
     if (cleared) return
 
     const currentUrlList = currentImageList.map(data => data.src)
+    const currentUrlIndexMap = new Map(currentUrlList.map((url, i) => [url, i]))
     const newUrlSet = new Set(newList.map(data => data.src))
 
     let updated = false
