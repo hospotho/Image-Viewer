@@ -1521,15 +1521,9 @@ window.ImageViewer = (function () {
       }
     }
     function tryClear() {
+      // failed update will became incorrect insertion
       const invalidImageList = currentImageList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > currentImageList.length
-      const isCurrentListBad =
-        invalidImageList ||
-        currentImageList.some((data, i) => {
-          const src = data.src
-          const newSrc = newList[i].src
-          return src !== newSrc && getFilename(src) !== getFilename(newSrc) && getRawUrl(src) !== newSrc
-        })
-      if (isCurrentListBad) {
+      if (invalidImageList) {
         const current = shadowRoot.querySelector('li.current img')
         const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
         clearSrc = current.src
