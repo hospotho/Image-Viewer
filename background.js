@@ -319,7 +319,7 @@ function addMessageHandler() {
           const results = await chrome.scripting.executeScript({
             args: [newOptions],
             target: {tabId: sender.tab.id, frameIds: iframeList.map(frame => frame.frameId)},
-            func: async option => await window.ImageViewerExtractor.extractImage(option)
+            func: async option => await window.ImageViewerExtractor?.extractImage(option)
           })
           if (results instanceof Error) {
             sendResponse([])
