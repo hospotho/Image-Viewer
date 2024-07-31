@@ -78,13 +78,13 @@ const getImageBitSize = async (src, useGetMethod = false) => {
   srcBitSizeMap.set(src, 0)
   return 0
 }
-const getImageLocalRealSize = (id, srcUrl) => {
-  const cache = srcLocalRealSizeMap.get(srcUrl)
+const getImageLocalRealSize = (id, src) => {
+  const cache = srcLocalRealSizeMap.get(src)
   if (cache !== undefined) return cache
 
   return new Promise(_resolve => {
     const resolve = size => {
-      srcLocalRealSizeMap.set(srcUrl, size)
+      srcLocalRealSizeMap.set(src, size)
       _resolve(size)
     }
 
@@ -99,13 +99,13 @@ const getImageLocalRealSize = (id, srcUrl) => {
     chrome.runtime.onMessage.addListener(listener)
 
     chrome.scripting.executeScript({
-      args: [srcUrl],
+      args: [src],
       target: {tabId: id},
-      func: srcUrl => {
+      func: src => {
         const img = new Image()
         img.onload = () => chrome.runtime.sendMessage({msg: 'reply', size: img.naturalWidth})
         img.onerror = () => chrome.runtime.sendMessage({msg: 'reply', size: 0})
-        img.src = srcUrl
+        img.src = src
       }
     })
   })
