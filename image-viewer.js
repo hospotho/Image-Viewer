@@ -675,8 +675,8 @@ window.ImageViewer = (function () {
   function buildImageList(imageList, options) {
     const _imageList = shadowRoot.querySelector('#iv-image-list')
     const fragment = document.createDocumentFragment()
-    for (let i = 0; i < imageList.length; i++) {
-      const li = buildImageNode(imageList[i], options)
+    for (const data of imageList) {
+      const li = buildImageNode(data, options)
       fragment.appendChild(li)
     }
     _imageList.appendChild(fragment)
