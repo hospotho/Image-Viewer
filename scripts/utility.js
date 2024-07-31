@@ -55,6 +55,7 @@ window.ImageViewerUtils = (function () {
   let lastHref = ''
 
   // scroll state
+  let enableAutoScroll = false
   let scrollUnlazyFlag = false
   let autoScrollFlag = false
   let scrollRelease = () => {}
@@ -67,14 +68,12 @@ window.ImageViewerUtils = (function () {
       // enable auto scroll
       if (checkKey(e, window.ImageViewerOption.functionHotkey[0])) {
         e.preventDefault()
-        if (!document.documentElement.classList.contains('enableAutoScroll')) {
+        if (!enableAutoScroll) {
           console.log('Enable auto scroll')
-          document.documentElement.classList.add('enableAutoScroll')
-          document.documentElement.classList.remove('disableAutoScroll')
+          enableAutoScroll = true
         } else {
           console.log('Disable auto scroll')
-          document.documentElement.classList.add('disableAutoScroll')
-          document.documentElement.classList.remove('enableAutoScroll')
+          enableAutoScroll = false
         }
         if (unlazyFlag) autoScroll()
       }
@@ -236,26 +235,6 @@ window.ImageViewerUtils = (function () {
     }
   })()
 
-  function isEnabledAutoScroll(options) {
-    if (document.documentElement.classList.contains('enableAutoScroll')) {
-      return true
-    }
-    if (document.documentElement.classList.contains('disableAutoScroll')) {
-      return false
-    }
-    const domainList = []
-    const regexList = []
-    for (const str of options.autoScrollEnableList) {
-      if (str[0] === '/' && str[str.length - 1] === '/') {
-        regexList.push(new RegExp(str.slice(1, -1)))
-      } else {
-        domainList.push(str)
-      }
-    }
-    const enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length > 0
-    if (enableAutoScroll) document.documentElement.classList.add('enableAutoScroll')
-    return enableAutoScroll
-  }
   function isLazyClass(className) {
     if (className === '') return false
     const lower = className.toLowerCase()
@@ -628,7 +607,7 @@ window.ImageViewerUtils = (function () {
       while (lastY < container.scrollHeight && count < 5) {
         if (!isImageViewerExist()) break
 
-        while (document.visibilityState !== 'visible' || !document.documentElement.classList.contains('enableAutoScroll')) {
+        while (document.visibilityState !== 'visible' || !enableAutoScroll) {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
 
@@ -1069,7 +1048,7 @@ window.ImageViewerUtils = (function () {
       clearWindowBackup(options)
     }
 
-    isEnabledAutoScroll(options) ? autoScroll() : scrollUnlazy()
+    enableAutoScroll ? autoScroll() : scrollUnlazy()
   }
 
   // before unlazy
@@ -1129,10 +1108,23 @@ window.ImageViewerUtils = (function () {
       image.dispatchEvent(leaveEvent)
     }
   }
+  function setAutoScrollSetting(options) {
+    const domainList = []
+    const regexList = []
+    for (const str of options.autoScrollEnableList) {
+      if (str[0] === '/' && str[str.length - 1] === '/') {
+        regexList.push(new RegExp(str.slice(1, -1)))
+      } else {
+        domainList.push(str)
+      }
+    }
+    enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length > 0
+  }
   function startUnlazy(options) {
     if (lastUnlazyTask === null) {
       preprocessLazyPlaceholder()
       fakeUserHover()
+      setAutoScrollSetting(options)
     }
     if (lastHref !== '' && lastHref !== location.href) {
       const allImageOnPage = new Set(getImageListWithoutFilter(options).map(data => data.src))
