@@ -333,53 +333,41 @@ window.ImageViewer = (function () {
   }
 
   const fitFuncDict = (function () {
-    function both() {
-      const windowWidth = document.documentElement.clientWidth
-      const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-      const windowRatio = windowWidth / windowHeight
-      return (imageWidth, imageHeight) => {
-        const imgRatio = imageWidth / imageHeight
-        const maxWidth = Math.min(imageWidth * 3, windowWidth)
-        const maxHeight = Math.min(imageHeight * 3, windowHeight)
-        return imgRatio >= windowRatio ? [maxWidth, maxWidth / imgRatio] : [maxHeight * imgRatio, maxHeight]
-      }
+    // calculate document size is very slow
+    let windowWidth = document.documentElement.clientWidth
+    let windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
+    let windowRatio = windowWidth / windowHeight
+    window.addEventListener('resize', () => {
+      windowWidth = document.documentElement.clientWidth
+      windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
+      windowRatio = windowWidth / windowHeight
+    })
+    function both(imageWidth, imageHeight) {
+      const imgRatio = imageWidth / imageHeight
+      const maxWidth = Math.min(imageWidth * 3, windowWidth)
+      const maxHeight = Math.min(imageHeight * 3, windowHeight)
+      return imgRatio >= windowRatio ? [maxWidth, maxWidth / imgRatio] : [maxHeight * imgRatio, maxHeight]
     }
-    function width() {
-      const windowWidth = document.documentElement.clientWidth
-      return (imageWidth, imageHeight) => {
-        const imgRatio = imageWidth / imageHeight
-        const maxWidth = Math.min(imageWidth * 3, windowWidth)
-        return [maxWidth, maxWidth / imgRatio]
-      }
+    function width(imageWidth, imageHeight) {
+      const imgRatio = imageWidth / imageHeight
+      const maxWidth = Math.min(imageWidth * 3, windowWidth)
+      return [maxWidth, maxWidth / imgRatio]
     }
-    function height() {
-      const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-      return (imageWidth, imageHeight) => {
-        const imgRatio = imageWidth / imageHeight
-        const maxHeight = Math.min(imageWidth * 3, windowHeight)
-        return [maxHeight * imgRatio, maxHeight]
-      }
+    function height(imageWidth, imageHeight) {
+      const imgRatio = imageWidth / imageHeight
+      const maxHeight = Math.min(imageWidth * 3, windowHeight)
+      return [maxHeight * imgRatio, maxHeight]
     }
-    function keep() {
-      const windowWidth = document.documentElement.clientWidth
-      const windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-      const windowRatio = windowWidth / windowHeight
-      return (imageWidth, imageHeight) => {
-        if (windowWidth >= imageWidth && windowHeight >= imageHeight) return [imageWidth, imageHeight]
-        const imgRatio = imageWidth / imageHeight
-        return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
-      }
+    function keep(imageWidth, imageHeight) {
+      if (windowWidth >= imageWidth && windowHeight >= imageHeight) return [imageWidth, imageHeight]
+      const imgRatio = imageWidth / imageHeight
+      return imgRatio >= windowRatio ? [windowWidth, windowWidth / imgRatio] : [windowHeight * imgRatio, windowHeight]
     }
-    function none() {
-      return (imageWidth, imageHeight) => [imageWidth, imageHeight]
+    function none(imageWidth, imageHeight) {
+      return [imageWidth, imageHeight]
     }
-    const dict = {both: both, width: width, height: height, keep: keep, none: none}
-    return {
-      get: function (funcName) {
-        const fitFuncFactory = dict[funcName]
-        return fitFuncFactory ? fitFuncFactory() : null
-      }
-    }
+    const dict = {both, width, height, keep, none}
+    return dict
   })()
 
   //==========html&style==========
@@ -790,7 +778,7 @@ window.ImageViewer = (function () {
   function fitImage(options, update = false) {
     if (options.sizeCheck) return
 
-    const fitFunc = fitFuncDict.get(options.fitMode) || fitFuncDict.get('both')
+    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict['both']
     const action = img => {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
