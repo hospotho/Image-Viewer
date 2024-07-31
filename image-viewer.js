@@ -782,7 +782,7 @@ window.ImageViewer = (function () {
   function fitImage(options, update = false) {
     if (options.sizeCheck) return
 
-    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict['both']
+    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
     const action = img => {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
@@ -1227,7 +1227,7 @@ window.ImageViewer = (function () {
       let zoomCount = 0
       let rotateCount = 0
       if (li.classList.contains('current')) {
-        const [scaleX, _, rotate, __, ___] = MtoV(img.style.transform)
+        const [scaleX, , rotate, ,] = MtoV(img.style.transform)
         zoomCount = Math.round(Math.log(scaleX) / Math.log(options.zoomRatio))
         rotateCount = rotate / options.rotateDeg
       }
@@ -1265,8 +1265,8 @@ window.ImageViewer = (function () {
 
       // dragging
       let dragFlag = false
-      let lastPos = {x: 0, y: 0}
       let finalDragTimeout = 0
+      const lastPos = {x: 0, y: 0}
       li.addEventListener('mousedown', e => {
         dragFlag = true
         lastPos.x = e.clientX
@@ -1469,7 +1469,7 @@ window.ImageViewer = (function () {
       }
       if (e.key === 'Shift') return
       const action = keyMap[e.key]
-      if (action === undefined || e.key.length == 1) {
+      if (action === undefined || e.key.length === 1) {
         autoNavigateFlag = 0
         return
       }
@@ -1698,8 +1698,9 @@ window.ImageViewer = (function () {
         closeImageViewer()
         return
       }
-      default:
-        return
+      default: {
+        console.log(`Invalid command: ${command}`)
+      }
     }
   }
 

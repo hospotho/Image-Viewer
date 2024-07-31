@@ -244,7 +244,7 @@ window.ImageViewerUtils = (function () {
     return document.documentElement.classList.contains('has-image-viewer')
   }
   function isPromiseComplete(promise) {
-    const symbol = Symbol()
+    const symbol = Symbol('check')
     const signal = new Promise(resolve => setTimeout(resolve, 0, symbol))
     return Promise.race([promise, signal]).then(result => result !== symbol)
   }
@@ -607,7 +607,7 @@ window.ImageViewerUtils = (function () {
       while (lastY < container.scrollHeight && count < 5) {
         if (!isImageViewerExist()) break
 
-        while (document.visibilityState !== 'visible' || !enableAutoScroll) {
+        while (document.visibilityState !== 'visible') {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
 
@@ -631,6 +631,7 @@ window.ImageViewerUtils = (function () {
           loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img.iv-checking').length
         }
 
+        if (!enableAutoScroll) break
         action()
 
         // check scroll complete
@@ -778,7 +779,7 @@ window.ImageViewerUtils = (function () {
       if (res.redirected) return -1
       const type = res.headers.get('Content-Type')
       const length = res.headers.get('Content-Length')
-      if (type?.startsWith('image') || (type === 'application/octet-stream' && cachedExtensionMatch(href))) {
+      if (type?.startsWith('image') || (type === 'application/octet-stream' && cachedExtensionMatch(url.href))) {
         const size = Number(length)
         return size
       }
@@ -840,7 +841,7 @@ window.ImageViewerUtils = (function () {
     })
   }
   async function getBetterUrl(currentSrc, bitSize, naturalSize, newURL) {
-    const baseSize = bitSize ? bitSize : naturalSize
+    const baseSize = bitSize || naturalSize
     const getSizeFunction = bitSize ? getImageBitSize : getImageRealSize
     const lazySize = await getSizeFunction(newURL)
     if (lazySize === 0 || lazySize < baseSize) return null
@@ -866,7 +867,7 @@ window.ImageViewerUtils = (function () {
       while (lastIndex < attrList.length) {
         const attr = attrList[lastIndex++]
         complete = lastIndex === attrList.length
-        const newURL = attr.value.replace(/https?:/, protocol).replace(/^\/(?:[^\/])/, origin)
+        const newURL = attr.value.replace(/https?:/, protocol).replace(/^\/(?:[^/])/, origin)
         const betterUrl = await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
         if (betterUrl === null) continue
         const success = await updateImageSource(img, betterUrl)
