@@ -58,12 +58,9 @@ function passOptionToTab(id, option) {
 
 async function fetchBitSize(src, useGetMethod = false) {
   const release = await semaphore.acquire()
-
   const method = useGetMethod ? 'GET' : 'HEAD'
-  const controller = new AbortController()
-  setTimeout(() => controller.abort(), 5000)
   try {
-    const res = await fetch(src, {method: method, signal: controller.signal})
+    const res = await fetch(src, {method: method, signal: AbortSignal.timeout(5000)})
     if (!res.ok || res.redirected) return 0
 
     const type = res.headers.get('Content-Type')

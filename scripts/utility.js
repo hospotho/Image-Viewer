@@ -770,11 +770,8 @@ window.ImageViewerUtils = (function () {
     if (corsHostSet.has(url.hostname)) return 0
 
     const release = await semaphore.acquire()
-
-    const controller = new AbortController()
-    setTimeout(() => controller.abort(), 5000)
     try {
-      const res = await fetch(url.href, {method: 'HEAD', signal: controller.signal})
+      const res = await fetch(url.href, {method: 'HEAD', signal: AbortSignal.timeout(5000)})
       if (!res.ok) return 0
       if (res.redirected) return -1
       const type = res.headers.get('Content-Type')
@@ -785,7 +782,7 @@ window.ImageViewerUtils = (function () {
       }
       return 0
     } catch (error) {
-      if (!controller.signal.aborted) corsHostSet.add(url.hostname)
+      if (error.name !== 'TimeoutError') corsHostSet.add(url.hostname)
       return 0
     } finally {
       release()
