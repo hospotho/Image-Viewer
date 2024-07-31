@@ -14,8 +14,8 @@ window.ImageViewerUtils = (function () {
   const origin = location.origin + '/'
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
-  const badImageList = new Set(['', 'about:blank'])
-  const corsHostList = new Set()
+  const badImageSet = new Set(['', 'about:blank'])
+  const corsHostSet = new Set()
   const semaphore = (() => {
     // parallel fetch
     let activeCount = 0
@@ -787,7 +787,7 @@ window.ImageViewerUtils = (function () {
     return true
   }
   async function fetchBitSize(url) {
-    if (corsHostList.has(url.hostname)) return 0
+    if (corsHostSet.has(url.hostname)) return 0
 
     const release = await semaphore.acquire()
 
@@ -805,7 +805,7 @@ window.ImageViewerUtils = (function () {
       }
       return 0
     } catch (error) {
-      if (!controller.signal.aborted) corsHostList.add(url.hostname)
+      if (!controller.signal.aborted) corsHostSet.add(url.hostname)
       return 0
     } finally {
       release()
@@ -895,7 +895,7 @@ window.ImageViewerUtils = (function () {
           const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
           img.removeAttribute(realAttrName)
           successList.push(attr.name)
-          badImageList.add(currentSrc)
+          badImageSet.add(currentSrc)
           break
         }
       }
@@ -1115,7 +1115,7 @@ window.ImageViewerUtils = (function () {
         console.log(`Found lazy src appear ${countMap[src]} times ${src}`)
         srcBitSizeMap.set(src, -1)
         srcRealSizeMap.set(src, -1)
-        badImageList.add(src)
+        badImageSet.add(src)
       }
     }
   }
@@ -1192,7 +1192,7 @@ window.ImageViewerUtils = (function () {
     return imageDataList
   }
   function processImageDataList(options, imageDataList) {
-    const isBadImage = options.svgFilter ? url => badImageList.has(url) || url.startsWith('data:image/svg') || url.includes('.svg') : url => badImageList.has(url)
+    const isBadImage = options.svgFilter ? url => badImageSet.has(url) || url.startsWith('data:image/svg') || url.includes('.svg') : url => badImageSet.has(url)
 
     const filteredDataList = imageDataList.filter(data => !isBadImage(data.src))
 
@@ -1466,7 +1466,7 @@ window.ImageViewerUtils = (function () {
     },
 
     combineImageList: function (newList, oldList) {
-      oldList = oldList.filter(data => !badImageList.has(data.src))
+      oldList = oldList.filter(data => !badImageSet.has(data.src))
       if (newList.length === 0 || oldList.length === 0) return newList.concat(oldList)
 
       removeRepeatNonRaw(newList, oldList)
