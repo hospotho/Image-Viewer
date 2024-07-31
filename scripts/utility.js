@@ -17,42 +17,11 @@ window.ImageViewerUtils = (function () {
   const badImageList = new Set(['', 'about:blank'])
   const corsHostList = new Set()
   const mutex = (() => {
-    // update image
-    let promise = Promise.resolve()
-    let busy = false
     // parallel fetch
     const maxParallel = 32
     let fetchCount = 0
     const isAvailable = () => fetchCount < maxParallel
     return {
-      acquire: async function () {
-        await promise
-        let lockRelease = () => {}
-        promise = new Promise(resolve => {
-          lockRelease = () => {
-            busy = false
-            resolve()
-          }
-        })
-        busy = true
-        return lockRelease
-      },
-      waitUnlock: async function () {
-        if (busy) return promise
-
-        let waitRelease = () => {}
-        const wait = new Promise(resolve => (waitRelease = resolve))
-        const originalAcquire = mutex.acquire
-        mutex.acquire = async () => {
-          const lockRelease = await originalAcquire()
-          waitRelease()
-          mutex.acquire = originalAcquire
-          return lockRelease
-        }
-
-        await wait
-        await promise
-      },
       waitSlot: async function () {
         let executed = false
         while (!isAvailable()) {
@@ -75,6 +44,7 @@ window.ImageViewerUtils = (function () {
   // scroll state
   let scrollUnlazyFlag = false
   let autoScrollFlag = false
+  let autoScrollRelease = () => {}
 
   // init function hotkey
   window.addEventListener(
@@ -655,7 +625,7 @@ window.ImageViewerUtils = (function () {
         let notComplete = true
         let currentImageCount = ImageViewer('get_image_list').length
         while (notStarted || notComplete) {
-          await mutex.waitUnlock()
+          await new Promise(resolve => (autoScrollRelease = resolve))
           const newImageCount = ImageViewer('get_image_list').length
           notStarted = lastImageCount === currentImageCount
           notComplete = currentImageCount !== newImageCount
@@ -1466,16 +1436,13 @@ window.ImageViewerUtils = (function () {
     },
 
     getOrderedImageList: async function (options) {
-      const release = await mutex.acquire()
-
       await startUnlazy(options)
       const uniqueImageList = [getImageList(options), await getIframeImage(options)].flat()
-
-      release()
       if (uniqueImageList.length === 0) {
         console.log('Found no image')
       }
 
+      autoScrollRelease()
       const orderedImageList = sortImageDataList(uniqueImageList)
       return orderedImageList
     },
