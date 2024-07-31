@@ -685,18 +685,19 @@ window.ImageViewer = (function () {
 
   function buildImageList(imageList, options) {
     const _imageList = shadowRoot.querySelector('#iv-image-list')
-    const first = buildImageNode(imageList[0], options)
-    _imageList.appendChild(first)
+    const fragment = document.createDocumentFragment()
+    for (let i = 0; i < imageList.length; i++) {
+      const li = buildImageNode(imageList[i], options)
+      fragment.appendChild(li)
+    }
+    _imageList.appendChild(fragment)
+
     currentImageList = Array.from(imageList)
     lastUpdateTime = Date.now()
 
     if (imageList.length === 1) return
     shadowRoot.querySelector('#iv-index').style.display = 'flex'
     shadowRoot.querySelector('#iv-counter-total').textContent = imageList.length
-    for (let i = 1; i < imageList.length; i++) {
-      const li = buildImageNode(imageList[i], options)
-      _imageList.appendChild(li)
-    }
   }
 
   function initImageList(options) {
