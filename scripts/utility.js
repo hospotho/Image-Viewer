@@ -1560,6 +1560,8 @@ window.ImageViewerUtils = (function () {
 
     getMainContainer: getMainContainer,
 
-    getRawUrl: getRawUrl
+    getRawUrl: getRawUrl,
+
+    getFilename: getFilename
   }
 })()

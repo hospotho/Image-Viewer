@@ -190,6 +190,9 @@ window.ImageViewer = (function () {
     }
   })()
   const getFilename = (function () {
+    const getFilename = window.ImageViewerUtils?.getFilename
+    if (typeof getFilename === 'function') return getFilename
+
     const rawFilenameCache = new Map()
     return src => {
       const cache = rawFilenameCache.get(src)
