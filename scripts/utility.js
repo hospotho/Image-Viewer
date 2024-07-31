@@ -1150,7 +1150,7 @@ window.ImageViewerUtils = (function () {
   }
 
   // get image
-  async function getIframeImage(options) {
+  async function getIframeImageList(options) {
     const iframeList = [...document.getElementsByTagName('iframe')]
     const iframeSrcList = iframeList.map(iframe => iframe.src)
     const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
@@ -1447,7 +1447,7 @@ window.ImageViewerUtils = (function () {
 
     getOrderedImageList: async function (options) {
       await startUnlazy(options)
-      const uniqueImageList = [getImageList(options), await getIframeImage(options)].flat()
+      const uniqueImageList = [getImageList(options), await getIframeImageList(options)].flat()
       if (uniqueImageList.length === 0) {
         console.log('Found no image')
       }
