@@ -7,6 +7,7 @@ window.ImageViewerUtils = (function () {
     }
   }
 
+  // attr unlazy
   const passList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
   const urlRegex = /(?:https?:\/)?\/\S+/g
   const protocol = location.protocol
@@ -66,9 +67,12 @@ window.ImageViewerUtils = (function () {
     }
   })()
 
+  // unlazy state
   let unlazyFlag = false
   let lastUnlazyTask = null
   let lastHref = ''
+
+  // scroll state
   let scrollUnlazyFlag = false
   let autoScrollFlag = false
 
@@ -657,6 +661,9 @@ window.ImageViewerUtils = (function () {
           notComplete = currentImageCount !== newImageCount
           currentImageCount = newImageCount
         }
+        lastImageCount = currentImageCount
+
+        // wait image load complete
         let loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img.unlazyNotComplete').length
         while (loadingImageCount > 0) {
           await new Promise(resolve => setTimeout(resolve, 100))
@@ -664,7 +671,6 @@ window.ImageViewerUtils = (function () {
         }
 
         action()
-        lastImageCount = currentImageCount
 
         // check scroll complete
         await new Promise(resolve => setTimeout(resolve, 500))
