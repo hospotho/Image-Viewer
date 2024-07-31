@@ -4,20 +4,33 @@ const srcLocalRealSizeMap = new Map()
 const redirectUrlMap = new Map()
 const semaphore = (() => {
   // parallel fetch
-  const maxParallel = 32
-  let fetchCount = 0
-  const isAvailable = () => fetchCount < maxParallel
+  let activeCount = 0
+  const maxConcurrent = 32
+  const queue = []
   return {
-    acquire: async function () {
+    acquire: function () {
       let executed = false
-      while (!isAvailable()) {
-        await new Promise(resolve => setTimeout(resolve, 50))
-      }
-      fetchCount++
-      return () => {
-        if (!executed) fetchCount--
+      const release = () => {
+        if (executed) return
         executed = true
+        activeCount--
+        if (queue.length > 0) {
+          const grantAccess = queue.shift()
+          grantAccess()
+        }
       }
+
+      if (activeCount < maxConcurrent) {
+        activeCount++
+        return release
+      }
+      return new Promise(resolve => {
+        const grantAccess = () => {
+          activeCount++
+          resolve(release)
+        }
+        queue.push(grantAccess)
+      })
     }
   }
 })()
