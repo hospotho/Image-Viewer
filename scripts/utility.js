@@ -44,7 +44,7 @@ window.ImageViewerUtils = (function () {
   // scroll state
   let scrollUnlazyFlag = false
   let autoScrollFlag = false
-  let autoScrollRelease = () => {}
+  let scrollRelease = () => {}
 
   // init function hotkey
   window.addEventListener(
@@ -530,8 +530,7 @@ window.ImageViewerUtils = (function () {
       return
     }
 
-    const release = await mutex.acquire()
-    release()
+    await new Promise(resolve => (scrollRelease = resolve))
 
     const container = getMainContainer()
     const currentX = container.scrollLeft
@@ -625,7 +624,7 @@ window.ImageViewerUtils = (function () {
         let notComplete = true
         let currentImageCount = ImageViewer('get_image_list').length
         while (notStarted || notComplete) {
-          await new Promise(resolve => (autoScrollRelease = resolve))
+          await new Promise(resolve => (scrollRelease = resolve))
           const newImageCount = ImageViewer('get_image_list').length
           notStarted = lastImageCount === currentImageCount
           notComplete = currentImageCount !== newImageCount
@@ -1442,7 +1441,7 @@ window.ImageViewerUtils = (function () {
         console.log('Found no image')
       }
 
-      autoScrollRelease()
+      scrollRelease()
       const orderedImageList = sortImageDataList(uniqueImageList)
       return orderedImageList
     },
