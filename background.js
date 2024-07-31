@@ -32,7 +32,8 @@ chrome.scripting.executeScript = async function () {
     return error
   }
 }
-const passOptionToTab = (id, option) => {
+
+function passOptionToTab(id, option) {
   return chrome.scripting.executeScript({
     args: [option],
     target: {tabId: id},
@@ -41,8 +42,8 @@ const passOptionToTab = (id, option) => {
     }
   })
 }
-const getImageBitSize = async (src, useGetMethod = false) => {
-  const cache = srcBitSizeMap.get(src)
+
+async function getImageBitSize(src, useGetMethod = false) {
   if (cache !== undefined) return cache
 
   const release = await mutex.waitSlot()
@@ -78,7 +79,7 @@ const getImageBitSize = async (src, useGetMethod = false) => {
   srcBitSizeMap.set(src, 0)
   return 0
 }
-const getImageLocalRealSize = (id, src) => {
+function getImageLocalRealSize(id, src) {
   const cache = srcLocalRealSizeMap.get(src)
   if (cache !== undefined) return cache
 
@@ -110,7 +111,7 @@ const getImageLocalRealSize = (id, src) => {
     })
   })
 }
-const getRedirectUrl = async urlList => {
+async function getRedirectUrl(urlList) {
   const asyncList = urlList.map(async url => {
     if (url === '' || url === 'about:blank') return url
 
