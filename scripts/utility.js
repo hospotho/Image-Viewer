@@ -794,7 +794,7 @@ window.ImageViewerUtils = (function () {
     const cache = srcBitSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    return new Promise(_resolve => {
+    const promise = new Promise(_resolve => {
       const resolve = size => {
         srcBitSizeMap.set(src, size)
         _resolve(size)
@@ -817,13 +817,16 @@ window.ImageViewerUtils = (function () {
       }
       fetchBitSize(url).then(updateSize)
     })
+
+    srcBitSizeMap.set(src, promise)
+    return promise
   }
   async function getImageRealSize(src) {
     const cache = srcRealSizeMap.get(src)
     if (cache !== undefined) return cache
 
     const release = await semaphore.acquire()
-    return new Promise(_resolve => {
+    const promise = new Promise(_resolve => {
       const resolve = size => {
         srcRealSizeMap.set(src, size)
         release()
@@ -836,6 +839,9 @@ window.ImageViewerUtils = (function () {
       setTimeout(() => resolve(0), 10000)
       img.src = src
     })
+
+    srcRealSizeMap.set(src, promise)
+    return promise
   }
   async function getBetterUrl(currentSrc, bitSize, naturalSize, newURL) {
     const baseSize = bitSize || naturalSize
