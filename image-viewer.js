@@ -1547,12 +1547,31 @@ window.ImageViewer = (function () {
       const imgList = shadowRoot.querySelectorAll('#iv-image-list li img')
       for (let i = 0; i < currentImageList.length; i++) {
         const data = currentImageList[i]
+        const domData = newDomDataMap.get(data.dom)
+        if (domData !== undefined && data.src !== domData.src) {
+          currentUrlList[i] = domData.src
+          imgList[i].src = domData.src
+          currentImageList[i].src = domData.src
+          updated = true
+          continue
+        }
         const rawUrl = getRawUrl(data.src)
-        if (data.src !== rawUrl && newUrlSet.has(rawUrl)) {
-          currentUrlList[i] = rawUrl
-          imgList[i].src = rawUrl
-          currentImageList[i].src = rawUrl
-          currentImageList[i].dom = data.dom
+        const urlData = newUrlDataMap.get(rawUrl)
+        if (data.src !== rawUrl && urlData !== undefined) {
+          currentUrlList[i] = urlData.src
+          imgList[i].src = urlData.src
+          currentImageList[i].src = urlData.src
+          currentImageList[i].dom = urlData.dom
+          updated = true
+          continue
+        }
+        const filename = getFilename(data.src)
+        const filenameData = newFilenameDataMap.get(filename)
+        if (filenameData !== undefined && data.src !== filenameData.src) {
+          currentUrlList[i] = filenameData.src
+          imgList[i].src = filenameData.src
+          currentImageList[i].src = filenameData.src
+          currentImageList[i].dom = filenameData.dom
           updated = true
         }
       }
@@ -1569,6 +1588,8 @@ window.ImageViewer = (function () {
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
       const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
       const currentIndex = counterCurrent.textContent - 1
+      const currentUrlIndexMap = new Map(currentUrlList.map((url, i) => [url, i]))
+
       for (let i = 0; i < newList.length; i++) {
         const data = newList[i]
         const index = currentUrlIndexMap.get(data.src)
@@ -1586,8 +1607,9 @@ window.ImageViewer = (function () {
     // function tryRemove() {
     //   const current = shadowRoot.querySelector('li.current img')
     //   const currentSrc = current.src
+
     //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
-    //     if (!newUrlSet.has(imgNode.src)) {
+    //     if (!newUrlDataMap.has(imgNode.src)) {
     //       imgNode.parentElement.remove()
     //       updated = true
     //     }
@@ -1607,9 +1629,25 @@ window.ImageViewer = (function () {
     const cleared = tryClear()
     if (cleared) return
 
+    // init update check cache
     const currentUrlList = currentImageList.map(data => data.src)
-    const currentUrlIndexMap = new Map(currentUrlList.map((url, i) => [url, i]))
-    const newUrlSet = new Set(newList.map(data => data.src))
+    const newDomDataMap = new Map()
+    const newUrlDataMap = new Map()
+    const newFilenameDataMap = new Map()
+    const repeatFilename = new Set()
+    for (const data of newList) {
+      const {src, dom} = data
+      newDomDataMap.set(dom, data)
+      newUrlDataMap.set(src, data)
+
+      const filename = getFilename(src)
+      if (repeatFilename.has(filename) || newFilenameDataMap.has(filename)) {
+        repeatFilename.add(filename)
+        newFilenameDataMap.delete(filename)
+      } else {
+        newFilenameDataMap.set(filename, data)
+      }
+    }
 
     let updated = false
     tryUpdate()
@@ -1626,8 +1664,8 @@ window.ImageViewer = (function () {
       shadowRoot.querySelector('#iv-counter-total').textContent = currentImageList.length
     }
     if (updated) {
-      console.log('Image viewer updated')
       tryClear()
+      console.log('Image viewer updated')
     }
   }
 
