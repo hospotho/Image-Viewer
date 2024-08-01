@@ -375,7 +375,7 @@ window.ImageViewer = (function () {
   })()
 
   //==========html&style==========
-  const frame = () => {
+  const frame = (widthText, heightText) => {
     return `<ul id="iv-image-list"></ul>
       <nav id="iv-control">
         <ul id="iv-index">
@@ -391,8 +391,8 @@ window.ImageViewer = (function () {
           <li><button id="iv-control-moveto"></button></li>
         </ul>
         <ul id="iv-info">
-          <li><span data-i18n="width">Width</span><span>:</span><span id="iv-info-width"></span></li>
-          <li><span data-i18n="height">Height</span><span>:</span><span id="iv-info-height"></span></li>
+          <li><span>${widthText}</span><span>:</span><span id="iv-info-width"></span></li>
+          <li><span>${heightText}</span><span>:</span><span id="iv-info-height"></span></li>
         </ul>
       </nav>
       <button id="iv-control-close"></button>`
@@ -645,7 +645,15 @@ window.ImageViewer = (function () {
     const viewer = document.createElement('div')
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
-    viewer.innerHTML = frame()
+
+    if (chrome.i18n?.getMessage) {
+      const widthText = chrome.i18n.getMessage('width') || 'Width'
+      const heightText = chrome.i18n.getMessage('height') || 'Height'
+      viewer.innerHTML = frame(widthText, heightText)
+    } else {
+      viewer.innerHTML = frame('Width', 'Height')
+    }
+
     if (!options.closeButton) {
       viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
       // prevent image loading flash
@@ -663,16 +671,6 @@ window.ImageViewer = (function () {
     shadowRoot.append(stylesheet)
     shadowRoot.append(viewer)
     viewer.focus()
-
-    try {
-      for (const node of shadowRoot.querySelectorAll('[data-i18n]')) {
-        const msg = chrome.i18n.getMessage(node.getAttribute('data-i18n'))
-        if (msg) {
-          node.textContent = msg
-          if (node.value !== '') node.value = msg
-        }
-      }
-    } catch (e) {}
   }
 
   function buildImageList(imageList, options) {
