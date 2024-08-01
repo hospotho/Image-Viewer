@@ -223,6 +223,23 @@ window.ImageViewerUtils = (function () {
       return src
     }
   })()
+  const getPathname = (function () {
+    const pathnameCache = new Map()
+    return src => {
+      const cache = pathnameCache.get(src)
+      if (cache !== undefined) return cache
+
+      try {
+        const url = new URL(src, document.baseURI)
+        const pathname = url.pathname.split('.')[0]
+        pathnameCache.set(src, pathname)
+        return pathname
+      } catch (error) {
+        pathnameCache.set(src, null)
+        return null
+      }
+    }
+  })()
   const getFilename = (function () {
     const rawFilenameCache = new Map()
     return src => {
@@ -1193,27 +1210,52 @@ window.ImageViewerUtils = (function () {
     const filteredDataList = imageDataList.filter(data => !isBadImage(data.src))
 
     const urlDataMap = new Map()
+    const rawUrlConnection = new Map()
+    const pathnameConnection = new Map()
     for (const data of filteredDataList) {
       const url = data.src
+
       const rawUrl = getRawUrl(url)
-      if (url !== rawUrl) {
-        // build connection between url and raw url
+      if (url === rawUrl) {
+        // remove non raw url
+        const connection = rawUrlConnection.get(url)
+        if (connection instanceof Array) connection.forEach(url => urlDataMap.delete(url))
+      } else {
         const cache = urlDataMap.get(rawUrl)
-        if (cache === undefined) urlDataMap.set(rawUrl, [url])
-        else if (cache instanceof Array) cache.push(url)
-        else continue
+        if (cache !== undefined) continue
+
+        // build connection between url and raw url
+        const connection = rawUrlConnection.get(rawUrl)
+        if (connection === undefined) rawUrlConnection.set(rawUrl, [url])
+        else if (connection instanceof Array) connection.push(url)
       }
+
+      // build connection between url and pathname
+      const pathname = getPathname(rawUrl)
+      if (pathname !== null && url !== pathname) {
+        const connection = pathnameConnection.get(pathname)
+        if (connection === undefined) pathnameConnection.set(pathname, [url])
+        else if (connection instanceof Array) connection.push(url)
+      }
+
       const cache = urlDataMap.get(url)
       if (cache === undefined) urlDataMap.set(url, data)
-      // remove non raw url and pick img dom if available
-      else if (cache instanceof Array) {
-        cache.forEach(url => urlDataMap.delete(url))
-        urlDataMap.set(url, data)
-      } else if (cache.dom.tagName !== 'IMG' && data.dom.tagName === 'IMG') urlDataMap.set(url, data)
+      else if (cache.dom.tagName !== 'IMG' && data.dom.tagName === 'IMG') urlDataMap.set(url, data)
     }
 
-    // filter out connection array
-    const uniqueDataList = Array.from(urlDataMap, ([k, v]) => v).filter(data => data.src)
+    // remove same pathname
+    for (const connectionList of pathnameConnection.values()) {
+      const connection = [...new Set(connectionList)]
+      const length = connection.length
+      // likely be get/resize image endpoint if more than 3
+      if (length === 2 || length === 3) {
+        const cacheIndexList = connection.map((url, index) => [urlDataMap.get(url), index]).filter(([cache, index]) => cache !== undefined)
+        const firstIndex = cacheIndexList.findIndex(([cache, index]) => cache.dom.tagName === 'IMG') || cacheIndexList[0][1]
+        connection.filter((url, index) => index !== firstIndex).forEach(url => urlDataMap.delete(url))
+      }
+    }
+
+    const uniqueDataList = Array.from(urlDataMap, ([k, v]) => v)
     return uniqueDataList
   }
   function getImageListWithoutFilter(options) {
