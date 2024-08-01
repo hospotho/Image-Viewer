@@ -92,19 +92,19 @@ window.ImageViewerUtils = (function () {
     const modifiedSet = new Set()
     for (const mutation of mutationsList) {
       const element = mutation.target
-      if (element.classList.contains('iv-observing')) {
+      if (element.hasAttribute('iv-observing')) {
         updatedSet.add(element)
         continue
       }
-      if (element.classList.contains('iv-image') && !element.classList.contains('iv-checking')) {
+      if (element.hasAttribute('iv-image') && !element.hasAttribute('iv-checking')) {
         modifiedSet.add(element)
       }
     }
     for (const img of updatedSet) {
-      img.classList.remove('iv-observing')
+      img.removeAttribute('iv-observing')
     }
     for (const img of modifiedSet) {
-      img.classList.add('iv-observing')
+      img.setAttribute('iv-observing', '')
       setTimeout(async () => {
         while (!img.complete) {
           await new Promise(resolve => setTimeout(resolve, 50))
@@ -555,7 +555,7 @@ window.ImageViewerUtils = (function () {
         // image updated to real url
         const element = mutation.target
         if (element.tagName === 'IMG') {
-          found = !element.classList.contains('iv-observing') && !element.classList.contains('iv-image')
+          found = !element.hasAttribute('iv-observing') && !element.hasAttribute('iv-image')
           if (found) break
         }
         // new image added to the page
@@ -642,10 +642,10 @@ window.ImageViewerUtils = (function () {
         lastImageCount = currentImageCount
 
         // wait image load complete
-        let loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img.iv-checking').length
+        let loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img[iv-checking]').length
         while (loadingImageCount > 0) {
           await new Promise(resolve => setTimeout(resolve, 100))
-          loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img.iv-checking').length
+          loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img[iv-checking]').length
         }
 
         if (!enableAutoScroll) break
@@ -872,7 +872,7 @@ window.ImageViewerUtils = (function () {
     return null
   }
   async function checkImageAttr(img, attrList) {
-    img.classList.add('iv-checking')
+    img.setAttribute('iv-checking', '')
     const successList = []
     let lastIndex = 0
     let complete = false
@@ -905,7 +905,7 @@ window.ImageViewerUtils = (function () {
         if (isLazyClass(className)) img.classList.remove(className)
       }
     }
-    img.classList.remove('iv-checking')
+    img.removeAttribute('iv-checking')
     return successList
   }
 
@@ -978,14 +978,14 @@ window.ImageViewerUtils = (function () {
     const imgWithAttrList = []
     let allComplete = true
 
-    const targetImageList = deepQuerySelectorAll(document.body, 'IMG', 'img:not(.iv-image)')
+    const targetImageList = deepQuerySelectorAll(document.body, 'IMG', 'img:not([iv-image])')
     for (const img of targetImageList) {
       img.loading = 'eager'
       if (img.getAttribute('decoding')) img.decoding = 'sync'
 
       const attrList = getUnlazyAttrList(img)
       if (attrList.length === 0) {
-        img.classList.add('iv-image')
+        img.setAttribute('iv-image', '')
         continue
       }
       // checkImageAttr() will fail if image is still loading
@@ -993,7 +993,7 @@ window.ImageViewerUtils = (function () {
         allComplete = false
         continue
       }
-      img.classList.add('iv-image')
+      img.setAttribute('iv-image', '')
 
       // check url and size
       const lazy = img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0
@@ -1078,7 +1078,7 @@ window.ImageViewerUtils = (function () {
     if (lastUnlazyTask === null) {
       setTimeout(() => {
         if (unlazyFlag) return
-        const unlazyList = deepQuerySelectorAll(document.body, 'IMG', 'img:not(.iv-image)')
+        const unlazyList = deepQuerySelectorAll(document.body, 'IMG', 'img:not([iv-image])')
         const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
         if (stillLoading) {
           console.log('Slow connection, images still loading')
@@ -1261,7 +1261,7 @@ window.ImageViewerUtils = (function () {
   function getImageListWithoutFilter(options) {
     const imageDataList = []
 
-    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img.iv-image')
+    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img[iv-image]')
     for (const img of rawImageList) {
       const imgSrc = img.currentSrc || img.src
       imageDataList.push({src: imgSrc, dom: img})
@@ -1331,7 +1331,7 @@ window.ImageViewerUtils = (function () {
 
     const imageDataList = []
 
-    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img.iv-image')
+    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img[iv-image]')
     for (const img of rawImageList) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
