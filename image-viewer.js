@@ -631,14 +631,10 @@ window.ImageViewer = (function () {
 
   //==========function define==========
   function buildApp(options) {
-    document.documentElement.classList.add('has-image-viewer')
-
     const shadowHolder = document.createElement('div')
     shadowHolder.id = 'image-viewer-root'
     shadowHolder.style.all = 'revert'
     shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
-    // shadowRoot = shadowHolder.attachShadow({mode: 'open'})
-    document.body.appendChild(shadowHolder)
 
     const stylesheet = document.createElement('style')
     stylesheet.textContent = style()
@@ -670,7 +666,8 @@ window.ImageViewer = (function () {
 
     shadowRoot.append(stylesheet)
     shadowRoot.append(viewer)
-    viewer.focus()
+    document.body.appendChild(shadowHolder)
+    document.documentElement.classList.add('has-image-viewer')
   }
 
   function buildImageList(imageList, options) {
