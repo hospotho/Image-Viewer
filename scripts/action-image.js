@@ -60,8 +60,8 @@
   })
   initObserver.observe(document.documentElement, {childList: true, subtree: true})
 
+  const container = ImageViewerUtils.getMainContainer()
   const updateObserver = new MutationObserver(async () => {
-    const container = ImageViewerUtils.getMainContainer()
     let currentScrollX = container.scrollLeft
     let currentScrollY = container.scrollTop
     await new Promise(resolve => setTimeout(resolve, 50))
