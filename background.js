@@ -1,6 +1,7 @@
 // utility function
 const srcBitSizeMap = new Map()
 const srcLocalRealSizeMap = new Map()
+const srcLocalRealSizeResolveMap = new Map()
 const srcDataUrlMap = new Map()
 const redirectUrlMap = new Map()
 const semaphore = (() => {
@@ -60,8 +61,9 @@ function passOptionToTab(id, option) {
 async function fetchBitSize(src, useGetMethod = false) {
   const release = await semaphore.acquire()
   const method = useGetMethod ? 'GET' : 'HEAD'
+  const time = useGetMethod ? 10000 : 5000
   try {
-    const res = await fetch(src, {method: method, signal: AbortSignal.timeout(5000)})
+    const res = await fetch(src, {method: method, signal: AbortSignal.timeout(time)})
     if (!res.ok || res.redirected) return 0
 
     const type = res.headers.get('Content-Type')
@@ -93,25 +95,22 @@ async function getImageLocalRealSize(id, src) {
   if (cache !== undefined) return cache
 
   const release = await semaphore.acquire()
-  const promise = new Promise(resolve => {
-    const listener = (request, sender, sendResponse) => {
-      if (request.msg === 'reply' && sender.tab.id === id) {
-        sendResponse()
-        chrome.runtime.onMessage.removeListener(listener)
-        srcLocalRealSizeMap.set(src, request.size)
-        resolve(request.size)
-        release()
-      }
+  const promise = new Promise(_resolve => {
+    const resolve = size => {
+      srcLocalRealSizeMap.set(src, size)
+      _resolve(size)
+      release()
     }
-    chrome.runtime.onMessage.addListener(listener)
+    srcLocalRealSizeResolveMap.set(src, resolve)
 
     chrome.scripting.executeScript({
       args: [src],
       target: {tabId: id},
       func: src => {
         const img = new Image()
-        img.onload = () => chrome.runtime.sendMessage({msg: 'reply', size: img.naturalWidth})
-        img.onerror = () => chrome.runtime.sendMessage({msg: 'reply', size: 0})
+        img.onload = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: img.naturalWidth})
+        img.onerror = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: 0})
+        setTimeout(() => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: 0}), 10000)
         img.src = src
       }
     })
@@ -123,13 +122,9 @@ async function getImageLocalRealSize(id, src) {
 async function fetchImage(src) {
   const release = await semaphore.acquire()
   try {
-    const res = await fetch(src, {signal: AbortSignal.timeout(5000)})
+    const res = await fetch(src, {signal: AbortSignal.timeout(10000)})
     const blob = await res.blob()
-    return new Promise(_resolve => {
-      const resolve = url => {
-        srcDataUrlMap.set(src, url)
-        _resolve(url)
-      }
+    return new Promise(resolve => {
       const reader = new FileReader()
       reader.onload = e => resolve(e.target.result)
       reader.onerror = () => resolve('')
@@ -137,7 +132,6 @@ async function fetchImage(src) {
     })
   } catch (error) {
     console.log(`Failed to load ${src}`)
-    srcDataUrlMap.set(src, '')
     return ''
   } finally {
     release()
@@ -329,6 +323,15 @@ function addMessageHandler() {
           const dataUrl = await getDataUrl(request.url)
           sendResponse(dataUrl, false)
         })()
+        return true
+      }
+      case 'reply_local_size': {
+        const resolve = srcLocalRealSizeResolveMap.get(request.src)
+        if (resolve) {
+          resolve(request.size)
+          srcLocalRealSizeResolveMap.delete(request.src)
+        }
+        sendResponse()
         return true
       }
       // utility
