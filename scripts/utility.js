@@ -1366,16 +1366,18 @@ window.ImageViewerUtils = (function () {
         continue
       }
       const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
-      if (bgList.length !== 0) {
-        const url = bgList[0].slice(5, -2)
-        node.setAttribute('data-bg', url)
-        if (nodeStyle.backgroundRepeat === 'repeat') {
-          node.setAttribute('data-width', 0)
-          node.setAttribute('data-height', 0)
-          checkRepeatBackground(url, node)
-        } else {
-          imageDataList.push({src: url, dom: node})
-        }
+      if (bgList.length === 0) {
+        node.setAttribute('no-bg', '')
+        continue
+      }
+      const url = bgList[0].slice(5, -2)
+      node.setAttribute('data-bg', url)
+      if (nodeStyle.backgroundRepeat === 'repeat') {
+        node.setAttribute('data-width', 0)
+        node.setAttribute('data-height', 0)
+        checkRepeatBackground(url, node)
+      } else {
+        imageDataList.push({src: url, dom: node})
       }
     }
 
