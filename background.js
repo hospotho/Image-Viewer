@@ -156,7 +156,7 @@ const defaultOptions = {
   customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
   functionHotkey: ['Shift + R', 'Shift + D'],
   hoverCheckDisableList: [],
-  autoScrollEnableList: ['twitter.com', 'instagram.com', 'facebook.com']
+  autoScrollEnableList: ['x.com', 'instagram.com', 'facebook.com']
 }
 
 let currOptions = defaultOptions
