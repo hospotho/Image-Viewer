@@ -11,6 +11,7 @@
 
   document.documentElement.classList.add('has-image-viewer-worker')
 
+  // init
   const options = window.ImageViewerOption
   const domainList = []
   const regexList = []
@@ -32,10 +33,12 @@
     document.documentElement.classList.add('iv-worker-idle')
   }
 
+  // image size
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
   const corsHostSet = new Set()
   const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+
   async function fetchBitSize(url) {
     if (corsHostSet.has(url.hostname)) return 0
     try {
@@ -108,6 +111,7 @@
     return promise
   }
 
+  // image info
   const domSearcher = (function () {
     // searchImageFromTree
     function checkZIndex(e1, e2) {
@@ -487,7 +491,10 @@
       const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements, viewportPosition)
       if (!imageNodeInfo) return
 
+      // display image dom
       console.log(imageNodeInfo.pop())
+
+      // get data url if CORS
       if (window.top !== window.self) {
         imageNodeInfo[0] = await safeSendMessage({msg: 'get_local_url', url: imageNodeInfo[0]})
       }
