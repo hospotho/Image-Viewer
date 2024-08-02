@@ -84,27 +84,23 @@ async function getImageBitSize(src) {
   const cache = srcBitSizeMap.get(src)
   if (cache !== undefined) return cache
 
-  const size = await fetchBitSize(src)
-  srcBitSizeMap.set(src, size)
-
-  return size
+  const promise = fetchBitSize(src)
+  srcBitSizeMap.set(src, promise)
+  return promise
 }
-function getImageLocalRealSize(id, src) {
+async function getImageLocalRealSize(id, src) {
   const cache = srcLocalRealSizeMap.get(src)
   if (cache !== undefined) return cache
 
-  return new Promise(_resolve => {
-    const resolve = size => {
-      srcLocalRealSizeMap.set(src, size)
-      _resolve(size)
-    }
-
+  const release = await semaphore.acquire()
+  const promise = new Promise(resolve => {
     const listener = (request, sender, sendResponse) => {
       if (request.msg === 'reply' && sender.tab.id === id) {
         sendResponse()
         chrome.runtime.onMessage.removeListener(listener)
+        srcLocalRealSizeMap.set(src, request.size)
         resolve(request.size)
-        return true
+        release()
       }
     }
     chrome.runtime.onMessage.addListener(listener)
@@ -120,11 +116,11 @@ function getImageLocalRealSize(id, src) {
       }
     })
   })
-}
-async function getDataUrl(src) {
-  const cache = srcDataUrlMap.get(src)
-  if (cache !== undefined) return cache
 
+  srcLocalRealSizeMap.set(src, promise)
+  return promise
+}
+async function fetchImage(src) {
   const release = await semaphore.acquire()
   try {
     const res = await fetch(src, {signal: AbortSignal.timeout(5000)})
@@ -146,6 +142,14 @@ async function getDataUrl(src) {
   } finally {
     release()
   }
+}
+async function getDataUrl(src) {
+  const cache = srcDataUrlMap.get(src)
+  if (cache !== undefined) return cache
+
+  const promise = fetchImage(src)
+  srcDataUrlMap.set(src, promise)
+  return promise
 }
 async function getRedirectUrl(urlList) {
   const asyncList = urlList.map(async url => {
