@@ -476,30 +476,6 @@
         }
   })()
 
-  async function createDataUrl(srcUrl) {
-    const localSize = await safeSendMessage({msg: 'get_local_size', url: srcUrl})
-    if (localSize) return srcUrl
-
-    return new Promise(resolve => {
-      const img = new Image()
-      img.onload = () => {
-        const c = document.createElement('canvas')
-        const ctx = c.getContext('2d')
-        c.width = img.naturalWidth
-        c.height = img.naturalHeight
-        ctx.drawImage(img, 0, 0)
-        const url = img.src.match('png') ? c.toDataURL() : img.src.match('webp') ? c.toDataURL('image/webp') : c.toDataURL('image/jpeg')
-        resolve(url)
-      }
-      img.onerror = () => {
-        console.log(new URL(srcUrl).hostname + ' block your access outside iframe')
-        resolve('')
-      }
-      img.crossOrigin = 'anonymous'
-      img.src = srcUrl
-    })
-  }
-
   document.addEventListener(
     'contextmenu',
     async e => {
@@ -513,7 +489,7 @@
 
       console.log(imageNodeInfo.pop())
       if (window.top !== window.self) {
-        imageNodeInfo[0] = await createDataUrl(imageNodeInfo[0])
+        imageNodeInfo[0] = await safeSendMessage({msg: 'get_local_url', url: imageNodeInfo[0]})
       }
       // image size maybe decreased in dataURL
       imageNodeInfo[1] -= 3

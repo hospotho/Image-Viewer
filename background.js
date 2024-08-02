@@ -1,6 +1,7 @@
 // utility function
 const srcBitSizeMap = new Map()
 const srcLocalRealSizeMap = new Map()
+const srcDataUrlMap = new Map()
 const redirectUrlMap = new Map()
 const semaphore = (() => {
   // parallel fetch
@@ -119,6 +120,32 @@ function getImageLocalRealSize(id, src) {
       }
     })
   })
+}
+async function getDataUrl(src) {
+  const cache = srcDataUrlMap.get(src)
+  if (cache !== undefined) return cache
+
+  const release = await semaphore.acquire()
+  try {
+    const res = await fetch(src, {signal: AbortSignal.timeout(5000)})
+    const blob = await res.blob()
+    return new Promise(_resolve => {
+      const resolve = url => {
+        srcDataUrlMap.set(src, url)
+        _resolve(url)
+      }
+      const reader = new FileReader()
+      reader.onload = e => resolve(e.target.result)
+      reader.onerror = () => resolve('')
+      reader.readAsDataURL(blob)
+    })
+  } catch (error) {
+    console.log(`Failed to load ${src}`)
+    srcDataUrlMap.set(src, '')
+    return ''
+  } finally {
+    release()
+  }
 }
 async function getRedirectUrl(urlList) {
   const asyncList = urlList.map(async url => {
@@ -288,18 +315,22 @@ function addMessageHandler() {
         }
         return true
       }
+      case 'get_local_url': {
+        ;(async () => {
+          const size = await getImageLocalRealSize(sender.tab.id, request.url)
+          if (size) {
+            sendResponse(request.url, false)
+            return
+          }
+          const dataUrl = await getDataUrl(request.url)
+          sendResponse(dataUrl, false)
+        })()
+        return true
+      }
       // utility
       case 'get_size': {
         ;(async () => {
           const size = await getImageBitSize(request.url)
-          sendResponse(size, false)
-          console.log(request.url, size)
-        })()
-        return true
-      }
-      case 'get_local_size': {
-        ;(async () => {
-          const size = await getImageLocalRealSize(sender.tab.id, request.url)
           sendResponse(size, false)
           console.log(request.url, size)
         })()

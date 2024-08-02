@@ -7,34 +7,6 @@ window.ImageViewerExtractor = (function () {
     }
   }
 
-  const badImageUrlList = new Set()
-
-  async function createDataUrl(srcUrl) {
-    if (badImageUrlList.has(srcUrl)) return ''
-
-    const localSize = await safeSendMessage({msg: 'get_local_size', url: srcUrl})
-    if (localSize) return srcUrl
-
-    return new Promise(resolve => {
-      const img = new Image()
-      img.onload = () => {
-        const c = document.createElement('canvas')
-        const ctx = c.getContext('2d')
-        c.width = img.naturalWidth
-        c.height = img.naturalHeight
-        ctx.drawImage(img, 0, 0)
-        const url = img.src.match('png') ? c.toDataURL() : img.src.match('webp') ? c.toDataURL('image/webp') : c.toDataURL('image/jpeg')
-        resolve(url)
-      }
-      img.onerror = () => {
-        badImageUrlList.add(srcUrl)
-        console.log(new URL(srcUrl).hostname + ' block your access outside iframe')
-        resolve('')
-      }
-      img.crossOrigin = 'anonymous'
-      img.src = srcUrl
-    })
-  }
   function getImageList(options) {
     const minWidth = options.minWidth || 0
     const minHeight = options.minHeight || 0
@@ -78,7 +50,7 @@ window.ImageViewerExtractor = (function () {
       const imageList = getImageList(options)
       if (imageList.length === 0) return [location.href, subFrameRedirectedHref, []]
 
-      const asyncList = await Promise.all(imageList.map(createDataUrl))
+      const asyncList = await Promise.all(imageList.map(src => safeSendMessage({msg: 'get_local_url', url: src})))
       const imageDataUrls = asyncList.filter(url => url !== '')
       return [location.href, subFrameRedirectedHref, imageDataUrls]
     }
