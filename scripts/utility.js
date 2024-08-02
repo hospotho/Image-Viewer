@@ -1139,7 +1139,8 @@ window.ImageViewerUtils = (function () {
         domainList.push(str)
       }
     }
-    enableAutoScroll = domainList.includes(location.hostname.replace('www.', '')) || regexList.map(regex => regex.test(location.href)).filter(Boolean).length > 0
+    enableAutoScroll = domainList.includes(location.hostname)
+    enableAutoScroll ||= regexList.some(regex => regex.test(location.href))
   }
   function startUnlazy(options) {
     if (lastUnlazyTask === null) {

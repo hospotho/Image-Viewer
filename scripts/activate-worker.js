@@ -21,8 +21,8 @@
       domainList.push(str)
     }
   }
-  let disableHoverCheck = domainList.includes(location.hostname.replace('www.', ''))
-  disableHoverCheck ||= regexList.map(regex => regex.test(location.href)).filter(Boolean).length
+  let disableHoverCheck = domainList.includes(location.hostname)
+  disableHoverCheck ||= regexList.some(regex => regex.test(location.href))
 
   if (window.top === window.self && !disableHoverCheck) {
     const styles = 'html.iv-worker-idle img {pointer-events: auto !important;} .disable-hover {pointer-events: none !important;}'
