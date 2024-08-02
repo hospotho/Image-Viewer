@@ -846,8 +846,8 @@ window.ImageViewerUtils = (function () {
     const promise = new Promise(_resolve => {
       const resolve = size => {
         srcRealSizeMap.set(src, size)
-        release()
         _resolve(size)
+        release()
       }
 
       const img = new Image()
