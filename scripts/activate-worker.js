@@ -32,6 +32,82 @@
     document.documentElement.classList.add('iv-worker-idle')
   }
 
+  const srcBitSizeMap = new Map()
+  const srcRealSizeMap = new Map()
+  const corsHostSet = new Set()
+  const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+  async function fetchBitSize(url) {
+    if (corsHostSet.has(url.hostname)) return 0
+    try {
+      const res = await fetch(url.href, {method: 'HEAD', signal: AbortSignal.timeout(5000)})
+      if (!res.ok) return 0
+      if (res.redirected) return -1
+      const type = res.headers.get('Content-Type')
+      const length = res.headers.get('Content-Length')
+      if (type?.startsWith('image') || (type === 'application/octet-stream' && url.href.match(argsRegex))) {
+        const size = Number(length)
+        return size
+      }
+      return 0
+    } catch (error) {
+      if (error.name !== 'TimeoutError') corsHostSet.add(url.hostname)
+      return 0
+    }
+  }
+  function getImageBitSize(src) {
+    if (!src || src === 'about:blank' || src.startsWith('data')) return 0
+
+    const cache = srcBitSizeMap.get(src)
+    if (cache !== undefined) return cache
+
+    const promise = new Promise(_resolve => {
+      const resolve = size => {
+        srcBitSizeMap.set(src, size)
+        _resolve(size)
+      }
+
+      let waiting = false
+      const updateSize = size => {
+        if (size) resolve(size)
+        else if (waiting) waiting = false
+        else if (src.startsWith('blob')) return resolve(Number.MAX_SAFE_INTEGER)
+        else resolve(0)
+      }
+
+      // protocol-relative URL
+      const url = new URL(src, document.baseURI)
+      const href = url.href
+      if (url.hostname !== location.hostname) {
+        waiting = true
+        safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
+      }
+      fetchBitSize(url).then(updateSize)
+    })
+
+    srcBitSizeMap.set(src, promise)
+    return promise
+  }
+  async function getImageRealSize(src) {
+    const cache = srcRealSizeMap.get(src)
+    if (cache !== undefined) return cache
+
+    const promise = new Promise(_resolve => {
+      const resolve = size => {
+        srcRealSizeMap.set(src, size)
+        _resolve(size)
+      }
+
+      const img = new Image()
+      img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
+      img.onerror = () => resolve(0)
+      setTimeout(() => resolve(0), 10000)
+      img.src = src
+    })
+
+    srcRealSizeMap.set(src, promise)
+    return promise
+  }
+
   const domSearcher = (function () {
     // searchImageFromTree
     function checkZIndex(e1, e2) {
@@ -241,33 +317,6 @@
         return newBitSize / newRealSize > oldBitSize / oldRealSize
       }
       return newRealSize > oldRealSize
-    }
-    const getImageBitSize = async src => {
-      // protocol-relative URL
-      const url = new URL(src, document.baseURI)
-      const href = url.href
-      const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
-      try {
-        const res = await fetch(href, {method: 'HEAD'})
-        if (!res.ok) {
-          return 0
-        }
-        const type = res.headers.get('Content-Type')
-        const length = res.headers.get('Content-Length')
-        if (type?.startsWith('image') || (type === 'application/octet-stream' && href.match(argsRegex))) {
-          const size = Number(length)
-          return size
-        }
-      } catch (error) {}
-      return 0
-    }
-    const getImageRealSize = url => {
-      return new Promise(resolve => {
-        const img = new Image()
-        img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
-        img.onerror = () => resolve(0)
-        img.src = url
-      })
     }
     const markingDom = (function () {
       return window.top === window.self
