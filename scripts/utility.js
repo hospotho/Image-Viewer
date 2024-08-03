@@ -1214,12 +1214,12 @@ window.ImageViewerUtils = (function () {
     const rawUrlConnection = new Map()
     const pathnameConnection = new Map()
     for (const data of filteredDataList) {
-      const url = data.src
+      const src = data.src
 
-      const rawUrl = getRawUrl(url)
-      if (url === rawUrl) {
+      const rawUrl = getRawUrl(src)
+      if (src === rawUrl) {
         // remove non raw url
-        const connection = rawUrlConnection.get(url)
+        const connection = rawUrlConnection.get(src)
         if (connection instanceof Array) connection.forEach(url => urlDataMap.delete(url))
       } else {
         const cache = urlDataMap.get(rawUrl)
@@ -1227,21 +1227,21 @@ window.ImageViewerUtils = (function () {
 
         // build connection between url and raw url
         const connection = rawUrlConnection.get(rawUrl)
-        if (connection === undefined) rawUrlConnection.set(rawUrl, [url])
-        else if (connection instanceof Array) connection.push(url)
+        if (connection === undefined) rawUrlConnection.set(rawUrl, [src])
+        else if (connection instanceof Array) connection.push(src)
       }
 
       // build connection between url and pathname
       const pathname = getPathname(rawUrl)
-      if (pathname !== null && url !== pathname) {
+      if (pathname !== null && src !== pathname) {
         const connection = pathnameConnection.get(pathname)
-        if (connection === undefined) pathnameConnection.set(pathname, [url])
-        else if (connection instanceof Array) connection.push(url)
+        if (connection === undefined) pathnameConnection.set(pathname, [src])
+        else if (connection instanceof Array) connection.push(src)
       }
 
-      const cache = urlDataMap.get(url)
-      if (cache === undefined) urlDataMap.set(url, data)
-      else if (cache.dom.tagName !== 'IMG' && data.dom.tagName === 'IMG') urlDataMap.set(url, data)
+      const cache = urlDataMap.get(src)
+      if (cache === undefined) urlDataMap.set(src, data)
+      else if (cache.dom.tagName !== 'IMG' && data.dom.tagName === 'IMG') urlDataMap.set(src, data)
     }
 
     // remove same pathname
