@@ -1139,7 +1139,7 @@ window.ImageViewerUtils = (function () {
         domainList.push(str)
       }
     }
-    enableAutoScroll = domainList.includes(location.hostname)
+    enableAutoScroll = domainList.some(domain => domain === location.hostname || domain === location.hostname.replace('www.', ''))
     enableAutoScroll ||= regexList.some(regex => regex.test(location.href))
   }
   function startUnlazy(options) {

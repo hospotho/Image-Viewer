@@ -38,7 +38,7 @@
     customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
     functionHotkey: ['Shift + R', 'Shift + D'],
     hoverCheckDisableList: [],
-    autoScrollEnableList: ['x.com', 'instagram.com', 'facebook.com']
+    autoScrollEnableList: ['x.com', 'www.instagram.com', 'www.facebook.com']
   }
 
   //==========utility==========
