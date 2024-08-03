@@ -265,6 +265,9 @@ window.ImageViewerUtils = (function () {
     const signal = new Promise(resolve => setTimeout(resolve, 0, symbol))
     return Promise.race([promise, signal]).then(result => result !== symbol)
   }
+  function waitPromise(promise, maxWait) {
+    return Promise.race([promise, new Promise(resolve => setTimeout(resolve, maxWait))])
+  }
 
   function deepQuerySelectorAll(target, tagName, selector) {
     const result = []
@@ -757,20 +760,70 @@ window.ImageViewerUtils = (function () {
       await new Promise(resolve => setTimeout(resolve, 20))
     }
   }
-  async function updateImageSource(img, src) {
+  async function preloadImage(img, src) {
     const release = await semaphore.acquire()
+    let success = true
     // get cache to disk
-    const success = await new Promise(resolve => {
-      const temp = new Image()
-      temp.onload = () => resolve(true)
-      temp.onerror = () => resolve(false)
-      setTimeout(() => resolve(false), 5000)
-      temp.loading = 'eager'
-      temp.referrerPolicy = img.referrerPolicy
-      temp.src = src
-    })
+    try {
+      let controller = new AbortController()
+      let res = await fetch(src, {signal: controller.signal})
+      let reader = res.body.getReader()
+      let reading = reader.read()
+      let retryCount = 0
+      let delayCount = 0
+      // read chunk
+      while (success) {
+        // wait read
+        await waitPromise(reading, 1000)
+        let complete = await isPromiseComplete(reading)
+        while (!complete) {
+          // max try 3 times
+          if (++delayCount >= 5) {
+            if (++retryCount >= 3) {
+              success = false
+              controller.abort()
+              reading = Promise.resolve({done: true})
+              break
+            } else {
+              console.log(`Chunk delay >${delayCount}s, retry count ${retryCount}: ${src}`)
+              controller.abort()
+              controller = new AbortController()
+              res = await fetch(src, {signal: controller.signal})
+              reader = res.body.getReader()
+              reading = reader.read()
+              delayCount = 0
+            }
+          }
+          await waitPromise(reading, 1000)
+          complete = await isPromiseComplete(reading)
+        }
+        const {done} = await reading
+        if (done) break
+        reading = reader.read()
+        delayCount = 0
+      }
+    } catch (error) {
+      // CORS error
+      console.log(`Fallback to hard timeout: ${src}`)
+      success = await new Promise(resolve => {
+        const temp = new Image()
+        temp.onload = () => resolve(true)
+        temp.onerror = () => resolve(false)
+        setTimeout(() => resolve(false), 5000)
+        temp.loading = 'eager'
+        temp.referrerPolicy = img.referrerPolicy
+        temp.src = src
+      })
+    }
     release()
-    if (!success) return false
+    return success
+  }
+  async function updateImageSource(img, src) {
+    const success = await preloadImage(img, src)
+    if (!success) {
+      console.log(`Failed to load ${src}`)
+      return false
+    }
 
     img.src = src
     img.srcset = src
