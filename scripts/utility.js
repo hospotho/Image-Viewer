@@ -1420,7 +1420,7 @@ window.ImageViewerUtils = (function () {
       }
       const url = bgList[0].slice(5, -2)
       node.setAttribute('data-bg', url)
-      if (nodeStyle.backgroundRepeat === 'repeat') {
+      if (nodeStyle.backgroundRepeat.startsWith('repeat')) {
         node.setAttribute('data-width', 0)
         node.setAttribute('data-height', 0)
         checkRepeatBackground(url, node)
