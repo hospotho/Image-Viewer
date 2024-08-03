@@ -1273,7 +1273,7 @@ window.ImageViewerUtils = (function () {
       imageDataList.push({src: video.poster, dom: video})
     }
 
-    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
+    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg]):not([iv-image]):not(video[poster])')
     for (const node of uncheckedNodeList) {
       const attrUrl = node.getAttribute('data-bg')
       if (attrUrl !== null) {
@@ -1351,7 +1351,7 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg])')
+    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg]):not([iv-image]):not(video[poster])')
     for (const node of uncheckedNodeList) {
       if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
       const attrUrl = node.getAttribute('data-bg')
