@@ -102,8 +102,8 @@ window.ImageViewerExtractor = (function () {
       const imageList = getImageList(options)
       if (imageList.length === 0) return [location.href, subFrameRedirectedHref, []]
 
-      const asyncList = await Promise.all(imageList.map(src => safeSendMessage({msg: 'get_local_url', url: src})))
-      const imageDataUrls = asyncList.filter(url => url !== '')
+      const asyncList = imageList.map(src => safeSendMessage({msg: 'get_local_url', url: src}))
+      const imageDataUrls = (await Promise.all(asyncList)).filter(url => url !== '')
       return [location.href, subFrameRedirectedHref, imageDataUrls]
     }
   }
