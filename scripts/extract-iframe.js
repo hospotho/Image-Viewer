@@ -7,38 +7,90 @@ window.ImageViewerExtractor = (function () {
     }
   }
 
+  function isNodeSizeEnough(node, minWidth, minHeight) {
+    const widthAttr = node.getAttribute('data-width')
+    const heightAttr = node.getAttribute('data-height')
+    if (widthAttr && heightAttr) {
+      const width = Number(widthAttr)
+      const height = Number(heightAttr)
+      return width >= minWidth && height >= minHeight
+    }
+    const {width, height} = node.getBoundingClientRect()
+    if (width === 0 || height === 0) {
+      node.setAttribute('no-bg', '')
+      return false
+    }
+    node.setAttribute('data-width', width)
+    node.setAttribute('data-height', height)
+    return width >= minWidth && height >= minHeight
+  }
+  function deepQuerySelectorAll(target, tagName, selector) {
+    const result = []
+    const stack = [target]
+    while (stack.length) {
+      const current = stack.pop()
+      for (const node of current.querySelectorAll(`${selector}, *:not([no-shadow])`)) {
+        if (node.tagName === tagName) result.push(node)
+        if (node.shadowRoot) {
+          stack.push(node.shadowRoot)
+        } else {
+          node.setAttribute('no-shadow', '')
+        }
+      }
+    }
+    return result
+  }
   function getImageList(options) {
     const minWidth = options.minWidth || 0
     const minHeight = options.minHeight || 0
-    const imageUrls = []
-    for (const img of document.getElementsByTagName('img')) {
+    const imageList = []
+
+    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img')
+    for (const img of rawImageList) {
+      // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
-      if ((width >= minWidth && height >= minHeight) || window.getComputedStyle(img).display === 'none' || !img.complete) {
-        imageUrls.push(img.currentSrc)
+      if ((width >= minWidth && height >= minHeight) || img === window.ImageViewerLastDom) {
+        // currentSrc might be empty during unlazy or update
+        const imgSrc = img.currentSrc || img.src
+        imageList.push(imgSrc)
       }
     }
 
-    for (const node of document.body.getElementsByTagName('*')) {
-      const {width, height} = node.getBoundingClientRect()
-      if (width < minWidth || height < minHeight) continue
-      const backgroundImage = window.getComputedStyle(node).backgroundImage
-      if (backgroundImage === 'none') continue
-      const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
-      if (bgList.length !== 0) {
-        imageUrls.push(bgList[0].slice(5, -2))
-      }
-    }
-
-    for (const video of document.querySelectorAll('video[poster]')) {
+    const videoList = document.querySelectorAll('video[poster]')
+    for (const video of videoList) {
       const {width, height} = video.getBoundingClientRect()
       if (width >= minWidth && height >= minHeight) {
-        imageUrls.push(video.poster)
+        imageList.push(video.poster)
       }
+    }
+
+    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg]):not(img):not(video[poster])')
+    for (const node of uncheckedNodeList) {
+      if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
+      const attrUrl = node.getAttribute('data-bg')
+      if (attrUrl !== null) {
+        imageList.push(attrUrl)
+        continue
+      }
+      const nodeStyle = window.getComputedStyle(node)
+      const backgroundImage = nodeStyle.backgroundImage
+      if (backgroundImage === 'none') {
+        node.setAttribute('no-bg', '')
+        continue
+      }
+      const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
+      if (bgList.length === 0) {
+        node.setAttribute('no-bg', '')
+        continue
+      }
+      const url = bgList[0].slice(5, -2)
+      node.setAttribute('data-bg', url)
+      imageList.push(url)
     }
 
     return options.svgFilter
-      ? [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank' && !url.includes('.svg'))
-      : [...new Set(imageUrls)].filter(url => url !== '' && url !== 'about:blank')
+      ? [...new Set(imageList)].filter(url => url !== '' && url !== 'about:blank' && !url.includes('.svg'))
+      : [...new Set(imageList)].filter(url => url !== '' && url !== 'about:blank')
   }
 
   return {
