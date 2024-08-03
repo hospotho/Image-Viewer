@@ -763,19 +763,19 @@ window.ImageViewerUtils = (function () {
   async function preloadImage(img, src) {
     const release = await semaphore.acquire()
     let success = true
-    // get cache to disk
     try {
+      // progressive fetch
       let controller = new AbortController()
       let res = await fetch(src, {signal: controller.signal})
       let reader = res.body.getReader()
       let reading = reader.read()
       let retryCount = 0
       let delayCount = 0
-      // read chunk
+      // read image loop
       while (success) {
-        // wait read
         await waitPromise(reading, 1000)
         let complete = await isPromiseComplete(reading)
+        // read chunk loop
         while (!complete) {
           // max try 3 times
           if (++delayCount >= 5) {
@@ -797,14 +797,15 @@ window.ImageViewerUtils = (function () {
           await waitPromise(reading, 1000)
           complete = await isPromiseComplete(reading)
         }
+        // check preload complete
         const {done} = await reading
         if (done) break
         reading = reader.read()
         delayCount = 0
       }
     } catch (error) {
-      // CORS error
-      console.log(`Fallback to hard timeout: ${src}`)
+      // CORS issues, use Image instead
+      console.log(`Fallback to hardcode timeout: ${src}`)
       success = await new Promise(resolve => {
         const temp = new Image()
         temp.onload = () => resolve(true)
