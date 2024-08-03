@@ -760,48 +760,42 @@ window.ImageViewerUtils = (function () {
       await new Promise(resolve => setTimeout(resolve, 20))
     }
   }
+  async function preloadImageFetch(src) {
+    // progressive fetch
+    const controller = new AbortController()
+    const res = await fetch(src, {signal: controller.signal})
+    const reader = res.body.getReader()
+    let reading = reader.read()
+    let delayCount = 0
+    // read image loop
+    while (true) {
+      await waitPromise(reading, 1000)
+      let complete = await isPromiseComplete(reading)
+      // read chunk loop
+      while (!complete) {
+        if (++delayCount >= 5) {
+          controller.abort()
+          return false
+        }
+        await waitPromise(reading, 1000)
+        complete = await isPromiseComplete(reading)
+      }
+      // check preload complete
+      const {done} = await reading
+      if (done) break
+      reading = reader.read()
+      delayCount = 0
+    }
+    return true
+  }
   async function preloadImage(img, src) {
     const release = await semaphore.acquire()
-    let success = true
+    let success = false
     try {
-      // progressive fetch
-      let controller = new AbortController()
-      let res = await fetch(src, {signal: controller.signal})
-      let reader = res.body.getReader()
-      let reading = reader.read()
       let retryCount = 0
-      let delayCount = 0
-      // read image loop
-      while (success) {
-        await waitPromise(reading, 1000)
-        let complete = await isPromiseComplete(reading)
-        // read chunk loop
-        while (!complete) {
-          // max try 3 times
-          if (++delayCount >= 5) {
-            if (++retryCount >= 3) {
-              success = false
-              controller.abort()
-              reading = Promise.resolve({done: true})
-              break
-            } else {
-              console.log(`Chunk delay >${delayCount}s, retry count ${retryCount}: ${src}`)
-              controller.abort()
-              controller = new AbortController()
-              res = await fetch(src, {signal: controller.signal})
-              reader = res.body.getReader()
-              reading = reader.read()
-              delayCount = 0
-            }
-          }
-          await waitPromise(reading, 1000)
-          complete = await isPromiseComplete(reading)
-        }
-        // check preload complete
-        const {done} = await reading
-        if (done) break
-        reading = reader.read()
-        delayCount = 0
+      while (!success && retryCount++ < 3) {
+        success = await preloadImageFetch(src)
+        if (!success) console.log(`Retry count ${retryCount}: ${src}`)
       }
     } catch (error) {
       // CORS issues, use Image instead
