@@ -873,6 +873,7 @@ window.ImageViewerUtils = (function () {
   }
   async function checkImageAttr(img, attrList) {
     img.setAttribute('iv-checking', '')
+    img.setAttribute('iv-image', '')
     const successList = []
     let lastIndex = 0
     let complete = false
@@ -993,7 +994,6 @@ window.ImageViewerUtils = (function () {
         allComplete = false
         continue
       }
-      img.setAttribute('iv-image', '')
 
       // check url and size
       const lazy = img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0
