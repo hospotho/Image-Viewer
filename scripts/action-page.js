@@ -59,6 +59,15 @@
   })
   updateObserver.observe(document.documentElement, {childList: true, subtree: true})
 
+  const unlazyObserver = new MutationObserver(mutationList => {
+    const unlazyUpdate = mutationList.some(mutation => mutation.attributeName === 'iv-checking' && !mutation.target.hasAttribute('iv-checking'))
+    if (unlazyUpdate) {
+      updatePeriod = 500
+      updateRelease()
+    }
+  })
+  unlazyObserver.observe(document.documentElement, {childList: true, subtree: true, attributeFilter: ['iv-checking']})
+
   while (document.documentElement.classList.contains('has-image-viewer')) {
     // wait website init
     while (!initComplete) {
