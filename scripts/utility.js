@@ -754,7 +754,7 @@ window.ImageViewerUtils = (function () {
     stopAutoScrollOnExit(newNodeObserver, startX, startY)
   }
 
-  // attr unlazy
+  // image preload
   async function waitSrcUpdate(img) {
     const srcUrl = new URL(img.src, document.baseURI)
     while (srcUrl.href !== img.currentSrc) {
@@ -838,6 +838,8 @@ window.ImageViewerUtils = (function () {
     await waitSrcUpdate(img)
     return true
   }
+
+  // attr unlazy
   async function fetchBitSize(url) {
     if (corsHostSet.has(url.hostname)) return 0
 
