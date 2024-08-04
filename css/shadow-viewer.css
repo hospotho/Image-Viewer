@@ -1,5 +1,8 @@
 /* Just file version of style() in image-viewer.js */
 /* global */
+:host {
+  all: revert;
+}
 * {
   margin: 0;
   padding: 0;

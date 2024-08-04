@@ -400,6 +400,9 @@ window.ImageViewer = (function () {
 
   const style = () => {
     return `/* global */
+      :host {
+        all: revert;
+      }
       * {
         margin: 0;
         padding: 0;
@@ -633,7 +636,6 @@ window.ImageViewer = (function () {
   function buildApp(options) {
     const shadowHolder = document.createElement('div')
     shadowHolder.id = 'image-viewer-root'
-    shadowHolder.style.all = 'revert'
     shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
 
     const stylesheet = document.createElement('style')
