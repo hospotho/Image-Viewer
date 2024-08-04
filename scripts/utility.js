@@ -265,8 +265,9 @@ window.ImageViewerUtils = (function () {
     const signal = new Promise(resolve => setTimeout(resolve, 0, symbol))
     return Promise.race([promise, signal]).then(result => result !== symbol)
   }
-  function waitPromise(promise, maxWait) {
-    return Promise.race([promise, new Promise(resolve => setTimeout(resolve, maxWait))])
+  async function waitPromiseComplete(promise, maxWait) {
+    await Promise.race([promise, new Promise(resolve => setTimeout(resolve, maxWait))])
+    return isPromiseComplete(promise)
   }
 
   function deepQuerySelectorAll(target, tagName, selector) {
@@ -769,16 +770,14 @@ window.ImageViewerUtils = (function () {
     let delayCount = 0
     // read image loop
     while (true) {
-      await waitPromise(reading, 1000)
-      let complete = await isPromiseComplete(reading)
+      let complete = await waitPromiseComplete(reading, 1000)
       // read chunk loop
       while (!complete) {
         if (++delayCount >= 5) {
           controller.abort()
           return false
         }
-        await waitPromise(reading, 1000)
-        complete = await isPromiseComplete(reading)
+        complete = await waitPromiseComplete(reading, 1000)
       }
       // check preload complete
       const {done} = await reading
