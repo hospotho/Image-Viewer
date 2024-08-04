@@ -751,6 +751,10 @@ window.ImageViewer = (function () {
     updateCounter()
 
     let completeFlag = false
+    if (base.firstChild.complete) {
+      shadowRoot.querySelector('#iv-info-width').textContent = base.firstChild.naturalWidth
+      shadowRoot.querySelector('#iv-info-height').textContent = base.firstChild.naturalHeight
+    }
     base.firstChild.addEventListener('load', () => {
       base.firstChild.style.transition = ''
       if (options.sizeCheck) {
