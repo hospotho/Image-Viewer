@@ -767,13 +767,14 @@ window.ImageViewerUtils = (function () {
     const res = await fetch(src, {signal: controller.signal})
     const reader = res.body.getReader()
     let reading = reader.read()
+    let totalDelay = 0
     let delayCount = 0
     // read image loop
     while (true) {
       let complete = await waitPromiseComplete(reading, 1000)
       // read chunk loop
       while (!complete) {
-        if (++delayCount >= 5) {
+        if (++delayCount >= 5 || ++totalDelay >= 10) {
           controller.abort()
           return false
         }
