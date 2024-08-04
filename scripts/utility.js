@@ -761,11 +761,11 @@ window.ImageViewerUtils = (function () {
       await new Promise(resolve => setTimeout(resolve, 20))
     }
   }
-  async function preloadImageFetch(src) {
+  async function preloadImageFetch(src, disableTimeout = false) {
     // wait server response
     const controller = new AbortController()
     const fetching = fetch(src, {signal: controller.signal})
-    let complete = await waitPromiseComplete(fetching, 5000)
+    let complete = disableTimeout || (await waitPromiseComplete(fetching, 5000))
     if (!complete) {
       controller.abort()
       return false
@@ -778,7 +778,7 @@ window.ImageViewerUtils = (function () {
     let delayCount = 0
     // read image loop
     while (true) {
-      complete = await waitPromiseComplete(reading, 1000)
+      complete = disableTimeout || (await waitPromiseComplete(reading, 1000))
       // read chunk loop
       while (!complete) {
         if (++delayCount >= 5 || ++totalDelay >= 10) {
@@ -800,9 +800,13 @@ window.ImageViewerUtils = (function () {
     let success = false
     try {
       let retryCount = 0
-      while (!success && retryCount++ < 5) {
+      while (!success && retryCount++ < 3) {
         success = await preloadImageFetch(src)
         if (!success) console.log(`Retry count ${retryCount}: ${src}`)
+      }
+      if (!success) {
+        // last try without timeout
+        success = await preloadImageFetch(src, true)
       }
     } catch (error) {
       // CORS issues, use Image instead
