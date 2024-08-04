@@ -695,10 +695,7 @@ window.ImageViewer = (function () {
         return
       }
 
-      const translate = shadowRoot.querySelector('#iv-image-list').style.translate
-      const translateY = translate.slice(4, -1)
-      const lastIndex = translateY ? Number(translateY) / -100 : 0
-      const current = shadowRoot.querySelector('li.current') || list[Math.min(length - 1, lastIndex)]
+      const current = shadowRoot.querySelector('li.current')
       const currIndex = list.indexOf(current)
 
       counterTotal.textContent = length
@@ -714,9 +711,18 @@ window.ImageViewer = (function () {
         if (adjustWidth === 0 || adjustHeight === 0 || adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
           const src = img.src
           const index = currentImageList.findIndex(data => data.src === src)
+          const target = img.parentNode
           currentImageList.splice(index, 1)
           failedImageSet.add(src)
-          img.parentNode.remove()
+          target.remove()
+          // set new current
+          if (target.classList.contains('current')) {
+            const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
+            if (liList.length) {
+              const newIndex = Math.min(index, liList.length - 1)
+              liList[newIndex].classList.add('current')
+            }
+          }
           updateCounter()
         }
       }
