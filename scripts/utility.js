@@ -762,16 +762,23 @@ window.ImageViewerUtils = (function () {
     }
   }
   async function preloadImageFetch(src) {
-    // progressive fetch
+    // wait server response
     const controller = new AbortController()
-    const res = await fetch(src, {signal: controller.signal})
+    const fetching = fetch(src, {signal: controller.signal})
+    let complete = await waitPromiseComplete(fetching, 5000)
+    if (!complete) {
+      controller.abort()
+      return false
+    }
+    // progressive fetch
+    const res = await fetching
     const reader = res.body.getReader()
     let reading = reader.read()
     let totalDelay = 0
     let delayCount = 0
     // read image loop
     while (true) {
-      let complete = await waitPromiseComplete(reading, 1000)
+      complete = await waitPromiseComplete(reading, 1000)
       // read chunk loop
       while (!complete) {
         if (++delayCount >= 5 || ++totalDelay >= 10) {
@@ -793,7 +800,7 @@ window.ImageViewerUtils = (function () {
     let success = false
     try {
       let retryCount = 0
-      while (!success && retryCount++ < 3) {
+      while (!success && retryCount++ < 5) {
         success = await preloadImageFetch(src)
         if (!success) console.log(`Retry count ${retryCount}: ${src}`)
       }
