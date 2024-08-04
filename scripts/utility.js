@@ -825,7 +825,10 @@ window.ImageViewerUtils = (function () {
     return success
   }
   async function updateImageSource(img, src) {
-    const success = await preloadImage(img, src)
+    const preloading = preloadImage(img, src)
+    const complete = await waitPromiseComplete(preloading, 10000)
+    // count overtime as success
+    const success = complete ? await preloading : true
     if (!success) {
       console.log(`Failed to load ${src}`)
       return false
