@@ -1297,10 +1297,10 @@ window.ImageViewerUtils = (function () {
 
       // build connection between url and pathname
       const pathname = getPathname(rawUrl)
-      if (pathname !== null && src !== pathname) {
+      if (pathname !== null) {
         const connection = pathnameConnection.get(pathname)
-        if (connection === undefined) pathnameConnection.set(pathname, [src])
-        else if (connection instanceof Array) connection.push(src)
+        if (connection === undefined) pathnameConnection.set(pathname, new Set([src]))
+        else if (connection instanceof Set) connection.add(src)
       }
 
       const cache = urlDataMap.get(src)
@@ -1309,8 +1309,8 @@ window.ImageViewerUtils = (function () {
     }
 
     // remove same pathname
-    for (const connectionList of pathnameConnection.values()) {
-      const connection = [...new Set(connectionList)]
+    for (const connectionSet of pathnameConnection.values()) {
+      const connection = [...connectionSet]
       const length = connection.length
       // likely be get/resize image endpoint if more than 3
       if (length === 2 || length === 3) {
