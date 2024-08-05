@@ -194,7 +194,7 @@ window.ImageViewerUtils = (function () {
   const getRawUrl = (function () {
     const rawUrlCache = new Map()
     return src => {
-      if (src.startsWith('data')) return src
+      if (src.startsWith('data') || src.startsWith('blob')) return src
 
       const cache = rawUrlCache.get(src)
       if (cache !== undefined) return cache
@@ -226,6 +226,8 @@ window.ImageViewerUtils = (function () {
   const getPathname = (function () {
     const pathnameCache = new Map()
     return src => {
+      if (src.startsWith('data') || src.startsWith('blob')) return null
+
       const cache = pathnameCache.get(src)
       if (cache !== undefined) return cache
 

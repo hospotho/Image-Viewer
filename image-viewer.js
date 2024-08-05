@@ -108,7 +108,7 @@ window.ImageViewer = (function () {
       const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
       const matchCache = new Map()
       return str => {
-        if (str.startsWith('data')) return null
+        if (str.startsWith('data') || str.startsWith('blob')) return null
 
         const cache = matchCache.get(str)
         if (cache !== undefined) return cache
@@ -147,7 +147,7 @@ window.ImageViewer = (function () {
     const cachedGetFilename = (function () {
       const filenameCache = new Map()
       return str => {
-        if (str.startsWith('data')) return null
+        if (str.startsWith('data') || str.startsWith('blob')) return null
 
         const cache = filenameCache.get(str)
         if (cache !== undefined) return cache
@@ -160,7 +160,7 @@ window.ImageViewer = (function () {
 
     const rawUrlCache = new Map()
     return src => {
-      if (src.startsWith('data')) return src
+      if (src.startsWith('data') || src.startsWith('blob')) return src
 
       const cache = rawUrlCache.get(src)
       if (cache !== undefined) return cache

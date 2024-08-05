@@ -55,9 +55,9 @@
     return false
   }
 
+  const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
   function getRawUrl(src) {
-    const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
-    if (src.startsWith('data')) return src
+    if (src.startsWith('data') || src.startsWith('blob')) return src
 
     const filenameMatch = src.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
     if (filenameMatch !== src) return filenameMatch
