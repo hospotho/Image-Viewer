@@ -28,23 +28,21 @@ window.ImageViewerUtils = (function () {
           if (executed) return
           executed = true
           activeCount--
-          if (queue.length > 0) {
-            const grantAccess = queue.shift()
-            grantAccess()
-          }
+          const grantAccess = queue.shift()
+          if (grantAccess) grantAccess()
         }
 
         if (activeCount < maxConcurrent) {
           activeCount++
           return release
         }
-        return new Promise(resolve => {
-          const grantAccess = () => {
-            activeCount++
-            resolve(release)
-          }
-          queue.push(grantAccess)
-        })
+        const {promise, resolve} = Promise.withResolvers()
+        const grantAccess = () => {
+          activeCount++
+          resolve(release)
+        }
+        queue.push(grantAccess)
+        return promise
       }
     }
   })()
