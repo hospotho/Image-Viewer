@@ -1548,33 +1548,29 @@ window.ImageViewer = (function () {
       }
     }
     function tryUpdate() {
-      for (let i = 0; i < imageDataList.length; i++) {
+      for (let i = 0; i < currentUrlList.length; i++) {
+        const src = currentUrlList[i]
         const data = imageDataList[i]
         const domData = newDomDataMap.get(data.dom)
-        if (domData !== undefined && data.src !== domData.src) {
+        if (domData !== undefined && src !== domData.src) {
           currentUrlList[i] = domData.src
           imgList[i].src = domData.src
-          imageDataList[i].src = domData.src
           updated = true
           continue
         }
         const rawUrl = getRawUrl(data.src)
         const urlData = newUrlDataMap.get(rawUrl)
-        if (data.src !== rawUrl && urlData !== undefined) {
+        if (src !== rawUrl && urlData !== undefined) {
           currentUrlList[i] = urlData.src
           imgList[i].src = urlData.src
-          imageDataList[i].src = urlData.src
-          imageDataList[i].dom = urlData.dom
           updated = true
           continue
         }
         const filename = getFilename(data.src)
         const filenameData = newFilenameDataMap.get(filename)
-        if (filenameData !== undefined && data.src !== filenameData.src) {
+        if (filenameData !== undefined && src !== filenameData.src) {
           currentUrlList[i] = filenameData.src
           imgList[i].src = filenameData.src
-          imageDataList[i].src = filenameData.src
-          imageDataList[i].dom = filenameData.dom
           updated = true
         }
       }
