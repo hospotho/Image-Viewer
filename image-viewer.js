@@ -1728,7 +1728,8 @@ window.ImageViewer = (function () {
   function executeCommand(command) {
     switch (command) {
       case 'get_image_list': {
-        return Array.from(imageDataList)
+        const currentImageList = shadowRoot.querySelectorAll('#iv-image-list li img')
+        return Array.from(currentImageList)
       }
       case 'reset_image_list': {
         imageDataList = []
