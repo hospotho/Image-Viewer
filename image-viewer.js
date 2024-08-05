@@ -261,7 +261,7 @@ window.ImageViewer = (function () {
   function searchNearestPageImgNode(img) {
     const imgList = [...shadowRoot.querySelectorAll('img')]
     const imgUrlList = imgList.map(img => img.src)
-    const imgFilenameList = imgList.map(img => getFilename(img.src))
+    const imgFilenameList = imgUrlList.map(src => getFilename(src))
 
     const pageImgList = [...document.getElementsByTagName('img')].filter(img => img.clientWidth > 0 && img.clientHeight > 0)
     const pageImgUrlList = pageImgList.map(img => getRawUrl(img.src))
