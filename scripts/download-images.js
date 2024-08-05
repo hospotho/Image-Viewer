@@ -193,7 +193,7 @@
     const imageList = ImageViewer('get_image_list')
     if (imageList.length === 0) return
 
-    const imageUrlList = imageList.map(i => (typeof i === 'string' ? i : i[0]))
+    const imageUrlList = imageList.map(img => img.src)
     const selectionRange = getUserSelection(imageUrlList.length)
     if (selectionRange === null) return
 

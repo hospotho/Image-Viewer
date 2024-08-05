@@ -27,15 +27,12 @@ window.ImageViewer = (function () {
     if (options.referrerPolicy) img.referrerPolicy = 'no-referrer'
     if (options.cors) img.crossOrigin = 'anonymous'
 
-    if (typeof data === 'string') {
-      img.src = data
-    } else {
-      if (data.dom.tagName === 'IFRAME') {
-        img.setAttribute('data-iframe-src', data.dom.src)
-        img.referrerPolicy = 'no-referrer'
-      }
-      img.src = data.src
+    img.src = data.src
+    if (data.dom.tagName === 'IFRAME') {
+      img.setAttribute('data-iframe-src', data.dom.src)
+      img.referrerPolicy = 'no-referrer'
     }
+
     return li
   }
 
