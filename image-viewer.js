@@ -3,7 +3,7 @@ window.ImageViewer = (function () {
 
   let shadowRoot = null
   let lastUpdateTime = 0
-  let currentImageList = []
+  let imageDataList = []
 
   let clearSrc = ''
   let clearIndex = -1
@@ -206,7 +206,7 @@ window.ImageViewer = (function () {
 
   function searchImgNode(img) {
     const imgUrl = img.src
-    const dom = currentImageList.find(data => data.src === imgUrl)?.dom
+    const dom = imageDataList.find(data => data.src === imgUrl)?.dom
     if (dom && dom.getRootNode({composed: true}) === document) return dom
 
     const iframeSrc = img.getAttribute('data-iframe-src')
@@ -678,7 +678,7 @@ window.ImageViewer = (function () {
     imageList.map(data => buildImageNode(data, options)).forEach(li => fragment.appendChild(li))
     _imageList.appendChild(fragment)
 
-    currentImageList = Array.from(imageList)
+    imageDataList = Array.from(imageList)
     lastUpdateTime = Date.now()
 
     if (imageList.length === 1) return
@@ -710,9 +710,9 @@ window.ImageViewer = (function () {
         const [adjustWidth, adjustHeight] = width > height && isLandscape ? [width, height] : [height, width]
         if (adjustWidth === 0 || adjustHeight === 0 || adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
           const src = img.src
-          const index = currentImageList.findIndex(data => data.src === src)
+          const index = imageDataList.findIndex(data => data.src === src)
           const target = img.parentNode
-          currentImageList.splice(index, 1)
+          imageDataList.splice(index, 1)
           failedImageSet.add(src)
           target.remove()
           // set new current
@@ -1528,7 +1528,7 @@ window.ImageViewer = (function () {
     }
     function tryClear() {
       // failed update will became incorrect insertion
-      const invalidImageList = currentImageList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > currentImageList.length
+      const invalidImageList = imageDataList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > imageDataList.length
       if (invalidImageList) {
         const current = shadowRoot.querySelector('li.current img')
         const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
@@ -1536,7 +1536,7 @@ window.ImageViewer = (function () {
         clearIndex = counterCurrent.textContent - 1
         lastTransform = current.style.transform
 
-        currentImageList.length = 0
+        imageDataList.length = 0
         const imageListNode = shadowRoot.querySelector('#iv-image-list')
         imageListNode.innerHTML = ''
         buildImageList(newList, options)
@@ -1549,13 +1549,13 @@ window.ImageViewer = (function () {
     }
     function tryUpdate() {
       const imgList = shadowRoot.querySelectorAll('#iv-image-list li img')
-      for (let i = 0; i < currentImageList.length; i++) {
-        const data = currentImageList[i]
+      for (let i = 0; i < imageDataList.length; i++) {
+        const data = imageDataList[i]
         const domData = newDomDataMap.get(data.dom)
         if (domData !== undefined && data.src !== domData.src) {
           currentUrlList[i] = domData.src
           imgList[i].src = domData.src
-          currentImageList[i].src = domData.src
+          imageDataList[i].src = domData.src
           updated = true
           continue
         }
@@ -1564,8 +1564,8 @@ window.ImageViewer = (function () {
         if (data.src !== rawUrl && urlData !== undefined) {
           currentUrlList[i] = urlData.src
           imgList[i].src = urlData.src
-          currentImageList[i].src = urlData.src
-          currentImageList[i].dom = urlData.dom
+          imageDataList[i].src = urlData.src
+          imageDataList[i].dom = urlData.dom
           updated = true
           continue
         }
@@ -1574,8 +1574,8 @@ window.ImageViewer = (function () {
         if (filenameData !== undefined && data.src !== filenameData.src) {
           currentUrlList[i] = filenameData.src
           imgList[i].src = filenameData.src
-          currentImageList[i].src = filenameData.src
-          currentImageList[i].dom = filenameData.dom
+          imageDataList[i].src = filenameData.src
+          imageDataList[i].dom = filenameData.dom
           updated = true
         }
       }
@@ -1660,12 +1660,12 @@ window.ImageViewer = (function () {
     // fork and uncomment if you need it
     // tryRemove()
 
-    currentImageList = Array.from(newList)
+    imageDataList = Array.from(newList)
     lastUpdateTime = Date.now()
 
     if (options.closeButton) {
       shadowRoot.querySelector('#iv-index').style.display = 'flex'
-      shadowRoot.querySelector('#iv-counter-total').textContent = currentImageList.length
+      shadowRoot.querySelector('#iv-counter-total').textContent = imageDataList.length
     }
     if (updated) {
       tryClear()
@@ -1684,7 +1684,7 @@ window.ImageViewer = (function () {
       }
 
       const rawUrl = getRawUrl(targetSrc)
-      const srcList = currentImageList.map(data => data.src)
+      const srcList = imageDataList.map(data => data.src)
       const srcIndex = srcList.findIndex(src => src === targetSrc || src === rawUrl)
       if (srcIndex !== -1) return srcIndex
 
@@ -1692,7 +1692,7 @@ window.ImageViewer = (function () {
       const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(item => item[0] === filename)
       if (filenameIndexList.length === 1) return filenameIndexList[0][1]
 
-      return Math.min(clearIndex, currentImageList.length - 1)
+      return Math.min(clearIndex, imageDataList.length - 1)
     }
 
     const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastSrc !== '')
@@ -1728,10 +1728,10 @@ window.ImageViewer = (function () {
   function executeCommand(command) {
     switch (command) {
       case 'get_image_list': {
-        return Array.from(currentImageList)
+        return Array.from(imageDataList)
       }
       case 'reset_image_list': {
-        currentImageList = []
+        imageDataList = []
         lastUrl = location.href
         return
       }
