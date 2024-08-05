@@ -1548,7 +1548,6 @@ window.ImageViewer = (function () {
       }
     }
     function tryUpdate() {
-      const imgList = shadowRoot.querySelectorAll('#iv-image-list li img')
       for (let i = 0; i < imageDataList.length; i++) {
         const data = imageDataList[i]
         const domData = newDomDataMap.get(data.dom)
@@ -1634,7 +1633,8 @@ window.ImageViewer = (function () {
     if (cleared) return
 
     // init update check cache
-    const currentUrlList = currentImageList.map(data => data.src)
+    const imgList = [...shadowRoot.querySelectorAll('#iv-image-list li img')]
+    const currentUrlList = imgList.map(data => data.src)
     const newDomDataMap = new Map()
     const newUrlDataMap = new Map()
     const newFilenameDataMap = new Map()
