@@ -398,7 +398,7 @@ window.ImageViewer = (function () {
   const style = () => {
     return `/* global */
       :host {
-        all: revert;
+        all: initial !important;
       }
       * {
         margin: 0;
@@ -465,6 +465,10 @@ window.ImageViewer = (function () {
         height: 50px;
         margin: 5px 0;
         list-style: none;
+      }
+      #iv-control span {
+        font-weight: normal;
+        line-height: normal;
       }
 
       /* control panel buttons */
