@@ -221,21 +221,30 @@ window.ImageViewerUtils = (function () {
       return src
     }
   })()
-  const getPathname = (function () {
-    const pathnameCache = new Map()
+  const getPathIdentifier = (function () {
+    const pathIdCache = new Map()
     return src => {
       if (src.startsWith('data') || src.startsWith('blob')) return null
 
-      const cache = pathnameCache.get(src)
+      const cache = pathIdCache.get(src)
       if (cache !== undefined) return cache
 
       try {
         const url = new URL(src, document.baseURI)
         const pathname = url.pathname.split('.')[0]
-        pathnameCache.set(src, pathname)
-        return pathname
+        if (url.search === '?') {
+          pathIdCache.set(src, pathname)
+          return pathname
+        }
+        const query = url.search
+          .split('&')
+          .filter(attr => attr.split('=').at(-1).length > 6)
+          .reduce((last, curr) => (curr.length > last.length ? curr : last), '')
+        const pathId = pathname + query
+        pathIdCache.set(src, pathId)
+        return pathId
       } catch (error) {
-        pathnameCache.set(src, null)
+        pathIdCache.set(src, null)
         return null
       }
     }
@@ -1276,7 +1285,7 @@ window.ImageViewerUtils = (function () {
 
     const urlDataMap = new Map()
     const rawUrlConnection = new Map()
-    const pathnameConnection = new Map()
+    const pathIdConnection = new Map()
     for (const data of filteredDataList) {
       const src = data.src
 
@@ -1295,11 +1304,11 @@ window.ImageViewerUtils = (function () {
         else if (connection instanceof Array) connection.push(src)
       }
 
-      // build connection between url and pathname
-      const pathname = getPathname(rawUrl)
-      if (pathname !== null) {
-        const connection = pathnameConnection.get(pathname)
-        if (connection === undefined) pathnameConnection.set(pathname, new Set([src]))
+      // build connection between url and path id
+      const pathId = getPathIdentifier(rawUrl)
+      if (pathId !== null) {
+        const connection = pathIdConnection.get(pathId)
+        if (connection === undefined) pathIdConnection.set(pathId, new Set([src]))
         else if (connection instanceof Set) connection.add(src)
       }
 
@@ -1308,15 +1317,21 @@ window.ImageViewerUtils = (function () {
       else if (cache.dom.tagName !== 'IMG' && data.dom.tagName === 'IMG') urlDataMap.set(src, data)
     }
 
-    // remove same pathname
-    for (const connectionSet of pathnameConnection.values()) {
-      const connection = [...connectionSet]
-      const length = connection.length
-      // likely be get/resize image endpoint if more than 3
-      if (length === 2 || length === 3) {
-        const cacheIndexList = connection.map((url, index) => [urlDataMap.get(url), index]).filter(([cache, index]) => cache !== undefined)
-        const firstIndex = cacheIndexList.findIndex(([cache, index]) => cache.dom.tagName === 'IMG') || cacheIndexList[0][1]
-        connection.filter((url, index) => index !== firstIndex).forEach(url => urlDataMap.delete(url))
+    // remove same path id, should be resize query or image endpoint
+    for (const connectionSet of pathIdConnection.values()) {
+      if (connectionSet.size === 1) continue
+      const urlList = Array.from(connectionSet)
+      const imageIndex = urlList.findIndex(url => urlDataMap.get(url).dom.tagName === 'IMG')
+      if (imageIndex !== -1) {
+        // only keep first image
+        imageIndex.splice(imageIndex, 1)
+        urlList.forEach(url => urlDataMap.delete(url))
+      } else {
+        // only keep the shortest src
+        urlList
+          .sort((a, b) => a.length - b.length)
+          .slice(1)
+          .forEach(url => urlDataMap.delete(url))
       }
     }
 
