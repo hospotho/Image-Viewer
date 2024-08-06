@@ -167,17 +167,15 @@
     }
 
     function getAllChildElements(node) {
-      if (!node) return []
-
-      const result = Array.from(node.children)
-      if (node.shadowRoot) {
-        result.push(...node.shadowRoot.children)
-      }
-
-      const childElements = Array.from(result)
-      for (const child of childElements) {
-        if (child.children || child.shadowRoot) {
-          result.push(...getAllChildElements(child))
+      const result = []
+      const stack = [node]
+      while (stack.length) {
+        const current = stack.pop()
+        for (const node of current.querySelectorAll('*')) {
+          result.push(node)
+          if (node.shadowRoot) {
+            stack.push(node.shadowRoot)
+          }
         }
       }
       return result
