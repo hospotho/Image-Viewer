@@ -37,6 +37,9 @@ window.ImageViewer = (function () {
   }
 
   function closeImageViewer() {
+    const root = shadowRoot.host
+    if (!root) return
+
     document.documentElement.classList.remove('has-image-viewer')
     clearSrc = ''
     clearIndex = -1
@@ -45,12 +48,10 @@ window.ImageViewer = (function () {
     lastTransform = current?.style?.transform || ''
     keydownHandlerList.length = 0
 
-    const root = document.querySelector('#image-viewer-root')
-    if (root) {
-      root.addEventListener('transitionend', root.remove)
-      root.style.transition = 'opacity 0.2s'
-      root.style.opacity = '0'
-    }
+    const viewer = shadowRoot.querySelector('#image-viewer')
+    viewer.addEventListener('transitionend', root.remove)
+    viewer.style.transition = 'opacity 0.2s'
+    viewer.style.opacity = '0'
   }
 
   function VtoM(scaleX, scaleY, rotate, moveX, moveY) {
