@@ -1324,7 +1324,7 @@ window.ImageViewerUtils = (function () {
       const imageIndex = urlList.findIndex(url => urlDataMap.get(url).dom.tagName === 'IMG')
       if (imageIndex !== -1) {
         // only keep first image
-        imageIndex.splice(imageIndex, 1)
+        urlList.splice(imageIndex, 1)
         urlList.forEach(url => urlDataMap.delete(url))
       } else {
         // only keep the shortest src
