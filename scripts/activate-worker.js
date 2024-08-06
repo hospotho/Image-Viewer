@@ -395,47 +395,36 @@
   })()
 
   function deepGetElementFromPoint(x, y) {
-    const queue = []
-    const visited = new Set()
-    const elementList = document.elementsFromPoint(x, y)
-
-    function travel(root) {
+    function createTravelTask(root) {
       // lazy evaluation
       return () => {
-        const result = []
+        const queue = []
         const elementList = root.elementsFromPoint(x, y)
         for (const element of elementList) {
           if (visited.has(element) || visited.has(element.shadowRoot)) continue
           if (element.shadowRoot) {
             visited.add(element.shadowRoot)
-            result.push(travel(element.shadowRoot))
+            queue.push(createTravelTask(element.shadowRoot))
           } else {
             visited.add(element)
-            result.push(element)
+            queue.push(element)
           }
         }
-        return result
+        return queue
       }
     }
 
-    for (const element of elementList) {
-      if (element.shadowRoot) {
-        visited.add(element.shadowRoot)
-        queue.push(travel(element.shadowRoot))
+    const result = []
+    const visited = new Set()
+    const queue = [createTravelTask(document)]
+    while (queue.length) {
+      const current = queue.shift()
+      if (typeof current === 'function') {
+        queue.unshift(...current())
       } else {
-        visited.add(element)
-        queue.push(element)
+        result.push(current)
       }
     }
-
-    function evaluate(queue) {
-      if (queue.some(i => typeof i === 'function')) {
-        queue = queue.map(i => (typeof i === 'function' ? i() : i)).flat()
-        return evaluate(queue)
-      }
-      return queue
-    }
-    const result = evaluate(queue)
     return result
   }
 
