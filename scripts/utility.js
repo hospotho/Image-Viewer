@@ -231,8 +231,9 @@ window.ImageViewerUtils = (function () {
 
       try {
         const url = new URL(src, document.baseURI)
-        const pathname = url.pathname.split('.')[0]
-        if (url.search === '?') {
+        const dotIndex = url.pathname.lastIndexOf('.')
+        const pathname = dotIndex === -1 ? url.pathname : url.pathname.slice(0, dotIndex)
+        if (url.search === '') {
           pathIdCache.set(src, pathname)
           return pathname
         }
