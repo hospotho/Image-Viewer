@@ -656,15 +656,7 @@ window.ImageViewer = (function () {
     if (!options.closeButton) {
       viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
       // prevent image loading flash
-      shadowHolder.style.all = ''
-      shadowHolder.style.opacity = '0'
-      const interval = setInterval(() => {
-        const image = shadowRoot.querySelector('img')
-        if (image?.complete) {
-          shadowHolder.style.opacity = '1'
-          clearInterval(interval)
-        }
-      }, 10)
+      viewer.style.setProperty('opacity', '0')
     }
 
     shadowRoot.append(stylesheet)
@@ -766,6 +758,11 @@ window.ImageViewer = (function () {
     }
     base.firstChild.addEventListener('load', () => {
       base.firstChild.style.transition = ''
+      // prevent image loading flash
+      if (!options.closeButton) {
+        const viewer = shadowRoot.querySelector('#image-viewer')
+        viewer.style.removeProperty('opacity')
+      }
       if (options.sizeCheck) {
         const minSize = Math.min(base.firstChild.naturalWidth, base.firstChild.naturalHeight)
         options.minWidth = Math.min(minSize, options.minWidth)
