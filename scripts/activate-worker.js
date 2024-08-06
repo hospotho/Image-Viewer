@@ -278,7 +278,7 @@
       const domInfo = await extractImageInfo(dom)
       if (domInfo) return domInfo
 
-      const allChildren = getAllChildElements(dom)
+      const allChildren = dom.querySelectorAll('*')
       if (allChildren.length < 5) {
         for (const children of allChildren) {
           const info = await extractImageInfo(children)
