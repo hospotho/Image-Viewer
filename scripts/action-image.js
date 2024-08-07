@@ -28,6 +28,10 @@
     options.minHeight = Math.min(nodeSize, options.minHeight)
   }
 
+  for (let i = 0; i < 10; i++) {
+    if (window.ImageViewerLastDom !== undefined) break
+    await new Promise(resolve => setTimeout(resolve, 20))
+  }
   const dom = window.ImageViewerLastDom
   const domRect = dom?.getBoundingClientRect()
   const domSize = domRect ? [domRect.width, domRect.height] : [0, 0]
