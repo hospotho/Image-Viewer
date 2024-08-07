@@ -1683,8 +1683,7 @@ window.ImageViewerUtils = (function () {
         if (dom) data.dom = dom
       }
 
-      const orderedFinalList = sortImageDataList(uniqueFinalList)
-      return orderedFinalList
+      return uniqueFinalList
     },
 
     isStrLengthEqual: function (newList, oldList) {
