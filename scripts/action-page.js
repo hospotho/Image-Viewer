@@ -28,10 +28,8 @@
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
   window.backupImageList = Array.from(combinedImageList)
 
-  ImageViewer(window.backupImageList, options)
-
   // auto update
-  let initComplete = true
+  let initComplete = false
   const initPeriod = 200
 
   let updateRelease = () => {}
@@ -67,6 +65,9 @@
     }
   })
   unlazyObserver.observe(document.documentElement, {childList: true, subtree: true, attributeFilter: ['iv-checking']})
+
+  // build image viewer
+  ImageViewer(window.backupImageList, options)
 
   while (document.documentElement.classList.contains('has-image-viewer')) {
     // wait website init
