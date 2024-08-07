@@ -1197,7 +1197,9 @@ window.ImageViewerUtils = (function () {
     const enterEvent = new CustomEvent('mouseenter')
     const overEvent = new CustomEvent('mouseover')
     const leaveEvent = new CustomEvent('mouseleave')
-    for (const image of document.getElementsByTagName('img')) {
+    const targetList = document.getElementsByTagName('img')
+    if (targetList.length > 300) return
+    for (const image of targetList) {
       image.dispatchEvent(enterEvent)
       image.dispatchEvent(overEvent)
       image.dispatchEvent(leaveEvent)
