@@ -667,12 +667,15 @@ window.ImageViewerUtils = (function () {
         let notStarted = true
         let notComplete = true
         let currentImageCount = ImageViewer('get_image_list').length
+        let completeCount = 0
         while (notStarted || notComplete) {
           await new Promise(resolve => (scrollRelease = resolve))
           const newImageCount = ImageViewer('get_image_list').length
           notStarted = lastImageCount === currentImageCount
           notComplete = currentImageCount !== newImageCount
           currentImageCount = newImageCount
+          if (notComplete === false) completeCount++
+          if (completeCount === 3) break
         }
         lastImageCount = currentImageCount
 
