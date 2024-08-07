@@ -1385,18 +1385,17 @@ window.ImageViewer = (function () {
       }
 
       if (prevIndex === imageListLength - 1) {
-        if (!debounceFlag) {
-          debounceTimeout = setTimeout(
-            () => {
-              const currentIndex = Number(current.textContent) - 1
-              const imageListLength = Number(total.textContent)
-              const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
-              moveToNode(prevIndex)
-              debounceFlag = false
-            },
-            Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
-          )
-        }
+        if (debounceFlag) return
+        debounceTimeout = setTimeout(
+          () => {
+            const currentIndex = Number(current.textContent) - 1
+            const imageListLength = Number(total.textContent)
+            const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
+            moveToNode(prevIndex)
+            debounceFlag = false
+          },
+          Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
+        )
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
         moveToNode(prevIndex)
@@ -1422,18 +1421,17 @@ window.ImageViewer = (function () {
       }
 
       if (nextIndex === 0) {
-        if (!debounceFlag) {
-          debounceTimeout = setTimeout(
-            () => {
-              const currentIndex = Number(current.textContent) - 1
-              const imageListLength = Number(total.textContent)
-              const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
-              moveToNode(nextIndex)
-              debounceFlag = false
-            },
-            Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
-          )
-        }
+        if (debounceFlag) return
+        debounceTimeout = setTimeout(
+          () => {
+            const currentIndex = Number(current.textContent) - 1
+            const imageListLength = Number(total.textContent)
+            const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
+            moveToNode(nextIndex)
+            debounceFlag = false
+          },
+          Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
+        )
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
         moveToNode(nextIndex)
