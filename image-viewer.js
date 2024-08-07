@@ -49,7 +49,7 @@ window.ImageViewer = (function () {
     keydownHandlerList.length = 0
 
     const viewer = shadowRoot.querySelector('#image-viewer')
-    viewer.addEventListener('transitionend', root.remove)
+    viewer.addEventListener('transitionend', () => root.remove())
     viewer.style.transition = 'opacity 0.2s'
     viewer.style.opacity = '0'
   }
