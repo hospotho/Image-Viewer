@@ -616,9 +616,10 @@ window.ImageViewerUtils = (function () {
       if (!isImageViewerExist()) return
       const container = getMainContainer()
       const scrollY = container.scrollTop
+      const imageList = document.getElementsByTagName('img')
       let currBottom = 0
       let bottomImg = null
-      for (const img of document.getElementsByTagName('img')) {
+      for (const img of imageList) {
         const scrollBottom = img.getAttribute('scroll-bottom')
         const bottom = scrollBottom ? Number(scrollBottom) : img.getBoundingClientRect().bottom + scrollY
         img.setAttribute('scroll-bottom', bottom)
@@ -628,6 +629,26 @@ window.ImageViewerUtils = (function () {
         }
       }
       bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
+      if (container.scrollTop !== scrollY) return
+
+      // bottom maybe invalid after scroll
+      let invalid = false
+      for (const img of imageList) {
+        const attr = img.getAttribute('scroll-bottom')
+        if (attr === null) continue
+        const scrollBottom = Number(attr)
+        const bottom = img.getBoundingClientRect().bottom + scrollY
+        if (scrollBottom !== bottom) {
+          invalid = true
+          break
+        }
+      }
+      // stop or recalculate bottom
+      if (!invalid) return
+      for (const img of imageList) {
+        const bottom = img.getBoundingClientRect().bottom + scrollY
+        img.setAttribute('scroll-bottom', bottom)
+      }
     }
     const timer = async () => {
       stopFlag = false
