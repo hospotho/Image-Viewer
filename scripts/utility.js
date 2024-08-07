@@ -1182,9 +1182,9 @@ window.ImageViewerUtils = (function () {
       setAutoScrollSetting(options)
     }
     if (lastHref !== '' && lastHref !== location.href) {
-      const allImageOnPage = new Set(getImageListWithoutFilter(options).map(data => data.src))
-      const unchangedCount = new Set(window.backupImageList).intersection(allImageOnPage).size
-      if (unchangedCount < 5) {
+      const allImageSrc = new Set(getImageListWithoutFilter(options).map(data => data.src))
+      const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
+      if (allImageSrc.intersection(backupImageSrc).size < 5) {
         unlazyFlag = false
         lastUnlazyTask = null
         window.backupImageList = []
