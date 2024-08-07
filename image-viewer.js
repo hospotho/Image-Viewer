@@ -782,7 +782,7 @@ window.ImageViewer = (function () {
     }, 3000)
   }
 
-  function fitImage(options, update = false) {
+  function fitImage(options, reset = true, update = false) {
     if (options.sizeCheck) return
 
     const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
@@ -792,12 +792,17 @@ window.ImageViewer = (function () {
       img.height = h
       img.classList.add('loaded')
     }
-    const event = new CustomEvent('resetTransform')
-    for (const li of shadowRoot.querySelectorAll(`#iv-image-list li${update ? ':not(.addedImageEvent)' : ''}`)) {
+    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${update ? ':not(.addedImageEvent)' : ''}`)
+    for (const li of liList) {
       const img = li.firstChild
       img.addEventListener('load', () => action(img))
       if (img.naturalWidth) action(img)
-      li.dispatchEvent(event)
+    }
+    if (reset) {
+      const event = new CustomEvent('resetTransform')
+      for (const li of liList) {
+        li.dispatchEvent(event)
+      }
     }
   }
 
@@ -1755,7 +1760,7 @@ window.ImageViewer = (function () {
       buildApp(options)
       buildImageList(imageList, options)
       initImageList(options)
-      fitImage(options)
+      fitImage(options, false)
       addFrameEvent(options)
       addImageEvent(options)
       addImageListEvent(options)
@@ -1763,7 +1768,7 @@ window.ImageViewer = (function () {
     } else {
       updateImageList(imageList, options)
       initImageList(options)
-      fitImage(options, true)
+      fitImage(options, false, true)
       addImageEvent(options)
     }
     restoreIndex(options)
