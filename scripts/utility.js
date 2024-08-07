@@ -765,85 +765,7 @@ window.ImageViewerUtils = (function () {
   }
 
   // image preload
-  async function waitSrcUpdate(img) {
-    const srcUrl = new URL(img.src, document.baseURI)
-    while (srcUrl.href !== img.currentSrc) {
-      await new Promise(resolve => setTimeout(resolve, 20))
-    }
-  }
-  async function preloadImageFetch(src, disableTimeout = false) {
-    // wait server response
-    const controller = new AbortController()
-    const fetching = fetch(src, {signal: controller.signal})
-    let complete = disableTimeout || (await waitPromiseComplete(fetching, 5000))
-    if (!complete) {
-      controller.abort()
-      return false
-    }
-    // progressive fetch
-    const res = await fetching
-    const reader = res.body.getReader()
-    let reading = reader.read()
-    let totalDelay = 0
-    let delayCount = 0
-    // read image loop
-    while (true) {
-      complete = disableTimeout || (await waitPromiseComplete(reading, 1000))
-      // read chunk loop
-      while (!complete) {
-        if (++delayCount >= 5 || ++totalDelay >= 10) {
-          controller.abort()
-          return false
-        }
-        complete = await waitPromiseComplete(reading, 1000)
-      }
-      // check preload complete
-      const {done} = await reading
-      if (done) break
-      reading = reader.read()
-      delayCount = 0
-    }
-    return true
-  }
-  async function preloadImage(img, src) {
-    const release = await semaphore.acquire()
-    let success = false
-    try {
-      let retryCount = 0
-      while (!success && retryCount++ < 3) {
-        success = await preloadImageFetch(src)
-        if (!success) console.log(`Retry count ${retryCount}: ${src}`)
-      }
-      if (!success) {
-        // last try without timeout
-        success = await preloadImageFetch(src, true)
-      }
-    } catch (error) {
-      // CORS issues, use Image instead
-      console.log(`Fallback to hardcode timeout: ${src}`)
-      success = await new Promise(resolve => {
-        const temp = new Image()
-        temp.onload = () => resolve(true)
-        temp.onerror = () => resolve(false)
-        setTimeout(() => resolve(false), 5000)
-        temp.loading = 'eager'
-        temp.referrerPolicy = img.referrerPolicy
-        temp.src = src
-      })
-    }
-    release()
-    return success
-  }
-  async function updateImageSource(img, src) {
-    const preloading = preloadImage(img, src)
-    const complete = await waitPromiseComplete(preloading, 10000)
-    // count overtime as success
-    const success = complete ? await preloading : true
-    if (!success) {
-      console.log(`Failed to load ${src}`)
-      return false
-    }
-
+  async function updateImageSrc(img, src) {
     img.src = src
     img.srcset = src
     const picture = img.parentNode
@@ -852,8 +774,23 @@ window.ImageViewerUtils = (function () {
         source.srcset = src
       }
     }
-    await waitSrcUpdate(img)
-    return true
+    const srcUrl = new URL(img.src, document.baseURI)
+    while (srcUrl.href !== img.currentSrc) {
+      await new Promise(resolve => setTimeout(resolve, 20))
+    }
+  }
+  async function preloadImage(img, src) {
+    const release = await semaphore.acquire()
+    const success = await new Promise(resolve => {
+      const temp = new Image()
+      temp.onload = () => resolve(true)
+      temp.onerror = () => resolve(false)
+      temp.loading = 'eager'
+      temp.referrerPolicy = img.referrerPolicy
+      temp.src = src
+    })
+    release()
+    return success
   }
 
   // attr unlazy
@@ -965,14 +902,34 @@ window.ImageViewerUtils = (function () {
         const newURL = attr.value.replace(/https?:/, protocol).replace(/^\/(?:[^/])/, origin)
         const betterUrl = await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
         if (betterUrl === null) continue
-        const success = await updateImageSource(img, betterUrl)
-        if (success) {
-          const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
+
+        // preload image
+        const preloading = preloadImage(img, betterUrl)
+        const done = await waitPromiseComplete(preloading, 5000)
+        // count overtime as success
+        const success = done ? await preloading : true
+        if (!success) {
+          console.log(`Failed to load ${betterUrl}`)
+          continue
+        }
+
+        // update attr
+        successList.push(attr.name)
+        const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
+        if (done) {
+          await updateImageSrc(img, betterUrl)
           img.removeAttribute(realAttrName)
-          successList.push(attr.name)
           badImageSet.add(currentSrc)
           break
         }
+        // place action to callback
+        preloading
+          .then(() => updateImageSrc(img, betterUrl))
+          .then(() => {
+            img.removeAttribute(realAttrName)
+            badImageSet.add(currentSrc)
+          })
+        break
       }
     }
     if (successList.length) {
