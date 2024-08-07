@@ -1599,6 +1599,7 @@ window.ImageViewerUtils = (function () {
 
       removeRepeatNonRaw(newList, oldList)
 
+      const combinedSrcList = new Array(newList.length + oldList.length)
       const combinedImageList = new Array(newList.length + oldList.length)
 
       const oldSearcher = getImageIndexSearcher(oldList.map(data => data.src))
@@ -1615,8 +1616,7 @@ window.ImageViewerUtils = (function () {
       while (rightIndex < newList.length) {
         const right = newList[rightIndex]
 
-        const combinedSrcList = combinedImageList.filter(Boolean).map(data => data.src)
-        combinedSearcher.updateCache(combinedSrcList)
+        combinedSearcher.updateCache(combinedSrcList.slice(0, vacancyIndex))
         indexAtOldArray = oldSearcher.searchIndex(right.src)
         indexAtCombinedArray = combinedSearcher.searchIndex(right.src)
 
@@ -1629,12 +1629,14 @@ window.ImageViewerUtils = (function () {
         // fill list with oldList (exclude right)
         distance = indexAtOldArray - oldArrayLastIndex
         for (let i = 0; i < distance; i++) {
+          combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
           combinedImageList[vacancyIndex++] = oldList[oldArrayLastIndex++]
         }
 
         // fill list with newList from left index to right index
         distance = rightIndex - leftIndex + 1
         for (let i = 0; i < distance; i++) {
+          combinedSrcList[vacancyIndex] = newList[leftIndex].src
           combinedImageList[vacancyIndex++] = newList[leftIndex++]
         }
         rightIndex = leftIndex
@@ -1644,6 +1646,7 @@ window.ImageViewerUtils = (function () {
       // fill list with remained oldList
       distance = oldList.length - oldArrayLastIndex
       for (let i = 0; i < distance; i++) {
+        combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
         combinedImageList[vacancyIndex++] = oldList[oldArrayLastIndex++]
       }
 
@@ -1652,6 +1655,7 @@ window.ImageViewerUtils = (function () {
         // fill list with remained newList
         distance = newList.length - leftIndex
         for (let i = 0; i < distance; i++) {
+          combinedSrcList[vacancyIndex] = newList[leftIndex].src
           combinedImageList[vacancyIndex++] = newList[leftIndex++]
         }
       }
