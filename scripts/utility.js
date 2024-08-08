@@ -617,6 +617,7 @@ window.ImageViewerUtils = (function () {
       const container = getMainContainer()
       const scrollY = container.scrollTop
       const imageList = document.getElementsByTagName('img')
+
       let currBottom = 0
       let bottomImg = null
       for (const img of imageList) {
@@ -629,6 +630,10 @@ window.ImageViewerUtils = (function () {
         }
       }
       bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
+      // allow scroll to document end on edge case
+      if (container.scrollHeight - container.scrollTop < window.innerHeight * 2) {
+        container.scrollBy({top: window.innerHeight * 2})
+      }
       if (container.scrollTop !== scrollY) return
 
       // bottom maybe invalid after scroll
@@ -643,7 +648,7 @@ window.ImageViewerUtils = (function () {
           break
         }
       }
-      // stop or recalculate bottom
+      // return or recalculate bottom
       if (!invalid) return
       for (const img of imageList) {
         const bottom = img.getBoundingClientRect().bottom + scrollY
