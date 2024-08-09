@@ -952,6 +952,7 @@ window.ImageViewerUtils = (function () {
           break
         }
         // place action to callback
+        console.log(`Image preload overtime: ${betterUrl}`)
         preloading
           .then(() => updateImageSrc(img, betterUrl))
           .then(() => {
