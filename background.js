@@ -352,7 +352,11 @@ function addMessageHandler() {
           newOptions.minHeight = request.minSize
 
           // must use frameIds, allFrames: true wont works in most cases
-          const iframeList = (await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})).slice(1)
+          const frameList = await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})
+          if (frameList === null || frameList.length < 2) {
+            sendResponse([])
+          }
+          const iframeList = frameList.slice(1)
           const results = await chrome.scripting.executeScript({
             args: [newOptions],
             target: {tabId: sender.tab.id, frameIds: iframeList.map(frame => frame.frameId)},
