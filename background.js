@@ -142,6 +142,12 @@ async function getDataUrl(src) {
   srcDataUrlMap.set(src, promise)
   return promise
 }
+async function getLocalUrl(tabId, src) {
+  const size = await getImageLocalRealSize(tabId, src)
+  if (size) return src
+  const dataUrl = await getDataUrl(src)
+  return dataUrl
+}
 async function getRedirectUrl(urlList) {
   const asyncList = urlList.map(async url => {
     if (url === '' || url === 'about:blank') return url
@@ -301,10 +307,18 @@ function addMessageHandler() {
         return true
       }
       case 'update_info': {
-        lastImageNodeInfo = request.data
-        lastImageNodeInfoID = sender.tab.id
-        console.log(...lastImageNodeInfo)
-        sendResponse()
+        ;(async () => {
+          lastImageNodeInfo = request.data
+          lastImageNodeInfoID = sender.tab.id
+          // get data url if CORS
+          if (sender.tab.url !== sender.url) {
+            lastImageNodeInfo[0] = await getLocalUrl(sender.tab.id, lastImageNodeInfo[0])
+          }
+          // image size maybe decreased in dataURL
+          lastImageNodeInfo[1] -= 3
+          console.table(lastImageNodeInfo)
+          sendResponse()
+        })()
         return true
       }
       case 'get_info': {
@@ -313,18 +327,6 @@ function addMessageHandler() {
         } else {
           sendResponse()
         }
-        return true
-      }
-      case 'get_local_url': {
-        ;(async () => {
-          const size = await getImageLocalRealSize(sender.tab.id, request.url)
-          if (size) {
-            sendResponse(request.url, false)
-            return
-          }
-          const dataUrl = await getDataUrl(request.url)
-          sendResponse(dataUrl, false)
-        })()
         return true
       }
       case 'reply_local_size': {
@@ -368,25 +370,26 @@ function addMessageHandler() {
           }
 
           const relation = new Map()
-          const imageDataList = []
+          const pageDataList = []
           for (const result of results) {
             if (!result.result) continue
             const [href, subHrefList, imageList] = result.result
+            const localImageList = Promise.all(imageList.map(src => getLocalUrl(sender.tab.id, src)))
             for (const subHref of subHrefList) {
               if (subHref !== href) relation.set(subHref, href)
             }
-            imageDataList.push([imageList, href])
+            pageDataList.push([localImageList, href])
           }
 
-          const args = []
-          for (const [imageList, href] of imageDataList) {
+          const result = []
+          for (const [imageList, href] of pageDataList) {
             let top = href
             while (relation.has(top)) top = relation.get(top)
-            for (const image of imageList) {
-              args.push([image, top])
+            for (const image of await imageList) {
+              result.push([image, top])
             }
           }
-          sendResponse(args)
+          sendResponse(result)
         })()
         return true
       }

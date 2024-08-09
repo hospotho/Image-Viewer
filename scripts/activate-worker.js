@@ -483,12 +483,6 @@
       // display image dom
       console.log(imageNodeInfo.pop())
 
-      // get data url if CORS
-      if (window.top !== window.self) {
-        imageNodeInfo[0] = await safeSendMessage({msg: 'get_local_url', url: imageNodeInfo[0]})
-      }
-      // image size maybe decreased in dataURL
-      imageNodeInfo[1] -= 3
       safeSendMessage({msg: 'update_info', data: imageNodeInfo})
     },
     true

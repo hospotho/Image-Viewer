@@ -98,13 +98,8 @@ window.ImageViewerExtractor = (function () {
       const subFrame = document.getElementsByTagName('iframe')
       const subFrameHref = [...subFrame].map(iframe => iframe.src)
       const subFrameRedirectedHref = subFrameHref.length ? await safeSendMessage({msg: 'get_redirect', data: subFrameHref}) : []
-
       const imageList = getImageList(options)
-      if (imageList.length === 0) return [location.href, subFrameRedirectedHref, []]
-
-      const asyncList = imageList.map(src => safeSendMessage({msg: 'get_local_url', url: src}))
-      const imageDataUrls = (await Promise.all(asyncList)).filter(url => url !== '')
-      return [location.href, subFrameRedirectedHref, imageDataUrls]
+      return [location.href, subFrameRedirectedHref, imageList]
     }
   }
 })()
