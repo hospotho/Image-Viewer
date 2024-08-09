@@ -455,12 +455,12 @@ window.ImageViewer = (function () {
         background: rgba(0, 0, 0, 0);
       }
       #iv-control * {
-        visibility: hidden;
+        opacity: 0;
       }
       #iv-control.show,
       #iv-control.show * {
         background: rgba(0, 0, 0, 0.8);
-        visibility: visible;
+        opacity: 1;
       }
       #iv-control ul {
         height: 50px;
@@ -482,11 +482,6 @@ window.ImageViewer = (function () {
         border: 0;
         border-radius: 5px;
         box-shadow: inset 0 0 2px #fff;
-        visibility: visible;
-        opacity: 0;
-      }
-      #iv-control.show button {
-        opacity: 1;
       }
       #iv-control button:hover {
         box-shadow: inset 0 0 10px #fff;
@@ -503,6 +498,7 @@ window.ImageViewer = (function () {
         top: 0;
         display: none;
         align-items: center;
+        opacity: 1;
       }
       #iv-control-buttons {
         display: flex;
@@ -522,15 +518,12 @@ window.ImageViewer = (function () {
       }
       #iv-counter {
         align-content: center;
+        opacity: 1;
       }
       #iv-counter span {
         font-size: 20px;
         text-shadow: -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
-        visibility: visible;
         opacity: 0.5;
-      }
-      #iv-control.show #iv-counter span {
-        opacity: 1;
       }
 
       /* image info */
