@@ -250,24 +250,28 @@ function addMessageHandler() {
       }
       // init
       case 'get_options': {
-        chrome.scripting.executeScript(
-          {
+        ;(async () => {
+          await chrome.scripting.executeScript({
             args: [currOptions],
             target: {tabId: sender.tab.id, frameIds: [sender.frameId]},
-            func: option => {
-              window.ImageViewerOption = option
-            }
-          },
-          () => sendResponse()
-        )
+            func: option => (window.ImageViewerOption = option)
+          })
+          sendResponse()
+        })()
         return true
       }
       case 'load_worker': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js']}, () => sendResponse())
+        ;(async () => {
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js']})
+          sendResponse()
+        })()
         return true
       }
       case 'load_extractor': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/extract-iframe.js']}, () => sendResponse())
+        ;(async () => {
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/extract-iframe.js']})
+          sendResponse()
+        })()
         return true
       }
       case 'load_utility': {
@@ -279,20 +283,21 @@ function addMessageHandler() {
         return true
       }
       case 'load_script': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']}, () => sendResponse())
+        ;(async () => {
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']})
+          sendResponse()
+        })()
         return true
       }
       // worker
       case 'reset_dom': {
-        chrome.scripting.executeScript(
-          {
+        ;(async () => {
+          await chrome.scripting.executeScript({
             target: {tabId: sender.tab.id},
-            func: () => {
-              window.ImageViewerLastDom = null
-            }
-          },
-          () => sendResponse()
-        )
+            func: () => (window.ImageViewerLastDom = null)
+          })
+          sendResponse()
+        })()
         return true
       }
       case 'update_info': {
@@ -404,7 +409,10 @@ function addMessageHandler() {
       }
       // download
       case 'download_images': {
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/download-images.js']}, () => sendResponse())
+        ;(async () => {
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/download-images.js']})
+          sendResponse()
+        })()
         return true
       }
       case 'request_cors_image': {
