@@ -1347,6 +1347,10 @@ window.ImageViewer = (function () {
     let autoNavigateFlag = 0
     let moveCount = 0
 
+    // filter navigation call during long paint
+    let moveLock = false
+    let moveLockPromise = Promise.resolve()
+
     function moveToNode(index) {
       current.textContent = index + 1
       imageListNode.style.translate = `0 ${-index * 100}%`
@@ -1359,6 +1363,14 @@ window.ImageViewer = (function () {
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
       moveCount++
+
+      const {promise, resolve} = Promise.withResolvers()
+      requestAnimationFrame(() => {
+        moveLock = false
+        resolve()
+      })
+      moveLock = true
+      moveLockPromise = promise
     }
 
     function resetTimeout() {
@@ -1423,6 +1435,7 @@ window.ImageViewer = (function () {
       const action = keyMap[e.key]
       if (action !== undefined) {
         e.preventDefault()
+        if (moveLock) return
         action === 1 ? nextItem(e.repeat) : prevItem(e.repeat)
       }
     }
@@ -1431,6 +1444,7 @@ window.ImageViewer = (function () {
       const action = keyMap[e.key]
       if (action !== undefined && e.key.length !== 1) {
         e.preventDefault()
+        if (moveLock) return
         const currIndex = Number(current.textContent) - 1
         const newIndex = action === 1 ? Math.min(currIndex + 10, Number(total.textContent) - 1) : Math.max(currIndex - 10, 0)
         moveToNode(newIndex)
@@ -1459,6 +1473,7 @@ window.ImageViewer = (function () {
         const currIndex = Number(current.textContent) - 1
         const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
         if (currIndex === newIndex || autoNavigateFlag !== newFlag || lastMoveCount !== moveCount) break
+        await moveLockPromise
         moveToNode(newIndex)
         lastMoveCount = moveCount
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
