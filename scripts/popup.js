@@ -2,6 +2,17 @@
   'use strict'
 
   const rawText = `
+1.37 [2024-08-11]:
+Performance and Stability update
+1. The control panel will now auto hide after 1.5 seconds of mouse hover
+  // move cursor over buttons will toggle the panel again
+  // provides clearer view when using scroll to view image
+2. Improved image viewer's logic for build/update image list
+3. Refactored image collection logic to enhance stability of the image list
+4. Rewritten auto scroll logic to ensure no images are skipped
+5. Enhanced code quality
+6. Other bug fixes and improvements
+
 1.36 [2024-07-22]:
 Major Update
 1. Added a hotkey for auto navigation (shift + arrow keys)
