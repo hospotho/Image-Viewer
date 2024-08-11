@@ -11,7 +11,6 @@ window.ImageViewer = (function () {
   let lastSrc = ''
   let lastTransform = ''
 
-  const failedImageSet = new Set()
   const keydownHandlerList = []
 
   window.addEventListener('popstate', closeImageViewer)
@@ -700,7 +699,6 @@ window.ImageViewer = (function () {
           const index = imageDataList.findIndex(data => data.src === src)
           const target = img.parentNode
           imageDataList.splice(index, 1)
-          failedImageSet.add(src)
           target.remove()
           // set new current
           if (target.classList.contains('current')) {
@@ -1514,13 +1512,6 @@ window.ImageViewer = (function () {
   }
 
   function updateImageList(newList, options) {
-    function preprocess() {
-      for (let i = newList.length - 1; i >= 0; i--) {
-        if (failedImageSet.has(newList[i].src)) {
-          newList.splice(i, 1)
-        }
-      }
-    }
     function tryClear() {
       // failed update will became incorrect insertion
       const invalidImageList = imageDataList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > imageDataList.length
@@ -1619,7 +1610,6 @@ window.ImageViewer = (function () {
     //   }
     // }
 
-    preprocess()
     const cleared = tryClear()
     if (cleared) return
 
