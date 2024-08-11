@@ -954,7 +954,7 @@ window.ImageViewerUtils = (function () {
         // place action to callback
         console.log(`Image preload overtime: ${betterUrl}`)
         preloading
-          .then(() => updateImageSrc(img, betterUrl))
+          .then(success => success && updateImageSrc(img, betterUrl))
           .then(() => {
             img.removeAttribute(realAttrName)
             badImageSet.add(currentSrc)
