@@ -1370,27 +1370,27 @@ window.ImageViewerUtils = (function () {
     const uniqueDataList = processImageDataList(options, imageDataList)
     return uniqueDataList
   }
-  async function checkRepeatBackground(url, node) {
+  async function checkBackgroundSize(node, url, width, height) {
     const realSize = await getImageRealSize(url)
-    node.setAttribute('data-width', realSize)
-    node.setAttribute('data-height', realSize)
+    node.setAttribute('data-bg', url)
+    node.setAttribute('data-width', Math.min(realSize, width))
+    node.setAttribute('data-height', Math.min(realSize, height))
   }
-  function isNodeSizeEnough(node, minWidth, minHeight) {
+  function getNodeSize(node) {
     const widthAttr = node.getAttribute('data-width')
     const heightAttr = node.getAttribute('data-height')
     if (widthAttr && heightAttr) {
       const width = Number(widthAttr)
       const height = Number(heightAttr)
-      return width >= minWidth && height >= minHeight
+      return [width, height]
     }
     const {width, height} = node.getBoundingClientRect()
     if (width === 0 || height === 0) {
       node.setAttribute('no-bg', '')
-      return false
     }
     node.setAttribute('data-width', width)
     node.setAttribute('data-height', height)
-    return width >= minWidth && height >= minHeight
+    return [width, height]
   }
   function getImageList(options) {
     const minWidth = options.minWidth
@@ -1422,7 +1422,8 @@ window.ImageViewerUtils = (function () {
 
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg]):not([iv-image]):not(video[poster])')
     for (const node of uncheckedNodeList) {
-      if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
+      const [width, height] = getNodeSize(node)
+      if (width < minWidth || height < minHeight) continue
       const attrUrl = node.getAttribute('data-bg')
       if (attrUrl !== null) {
         imageDataList.push({src: attrUrl, dom: node})
@@ -1440,14 +1441,8 @@ window.ImageViewerUtils = (function () {
         continue
       }
       const url = bgList[0].slice(5, -2)
-      node.setAttribute('data-bg', url)
-      if (nodeStyle.backgroundRepeat.startsWith('repeat')) {
-        node.setAttribute('data-width', 0)
-        node.setAttribute('data-height', 0)
-        checkRepeatBackground(url, node)
-      } else {
-        imageDataList.push({src: url, dom: node})
-      }
+      node.setAttribute('no-bg', '')
+      checkBackgroundSize(node, url, width, height)
     }
 
     const uniqueDataList = processImageDataList(options, imageDataList)
