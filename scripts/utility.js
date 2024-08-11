@@ -1311,7 +1311,7 @@ window.ImageViewerUtils = (function () {
     for (const connectionSet of pathIdConnection.values()) {
       if (connectionSet.size === 1) continue
       const urlList = Array.from(connectionSet)
-      const imageIndex = urlList.findIndex(url => urlDataMap.get(url).dom.tagName === 'IMG')
+      const imageIndex = urlList.map(url => urlDataMap.get(url)).findIndex(data => data && data.dom.tagName === 'IMG')
       if (imageIndex !== -1) {
         // only keep first image
         urlList.splice(imageIndex, 1)
