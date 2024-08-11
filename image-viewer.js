@@ -697,6 +697,7 @@ window.ImageViewer = (function () {
         if (adjustWidth === 0 || adjustHeight === 0 || adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
           const src = img.src
           const index = imageDataList.findIndex(data => data.src === src)
+          if (index === -1) return
           const target = img.parentNode
           imageDataList.splice(index, 1)
           target.remove()
