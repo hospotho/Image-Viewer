@@ -1361,12 +1361,13 @@ window.ImageViewer = (function () {
       moveCount++
     }
 
+    function resetTimeout() {
+      clearTimeout(debounceTimeout)
+      debounceFlag = false
+      throttleTimestamp = Date.now()
+    }
     function prevItem(repeat = false) {
-      if (!repeat) {
-        clearTimeout(debounceTimeout)
-        debounceFlag = false
-        throttleTimestamp = Date.now()
-      }
+      if (!repeat) resetTimeout()
       const currentIndex = Number(current.textContent) - 1
       const imageListLength = Number(total.textContent)
       const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
@@ -1398,11 +1399,7 @@ window.ImageViewer = (function () {
     }
 
     function nextItem(repeat = false) {
-      if (!repeat) {
-        clearTimeout(debounceTimeout)
-        debounceFlag = false
-        throttleTimestamp = Date.now()
-      }
+      if (!repeat) resetTimeout()
       const currentIndex = Number(current.textContent) - 1
       const imageListLength = Number(total.textContent)
       const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
@@ -1427,9 +1424,7 @@ window.ImageViewer = (function () {
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
         moveToNode(nextIndex)
-        clearTimeout(debounceTimeout)
-        debounceFlag = false
-        throttleTimestamp = Date.now()
+        resetTimeout()
       }
     }
 
