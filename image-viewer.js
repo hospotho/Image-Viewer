@@ -1470,12 +1470,17 @@ window.ImageViewer = (function () {
 
       let lastMoveCount = moveCount
       while (true) {
+        // interrupt by user
+        if (autoNavigateFlag !== newFlag || lastMoveCount !== moveCount) break
+
         const currIndex = Number(current.textContent) - 1
         const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
-        if (currIndex === newIndex || autoNavigateFlag !== newFlag || lastMoveCount !== moveCount) break
+        if (currIndex === newIndex) break
+
         await moveLockPromise
         moveToNode(newIndex)
         lastMoveCount = moveCount
+
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
         while (document.visibilityState !== 'visible') {
           await new Promise(resolve => setTimeout(resolve, 100))
