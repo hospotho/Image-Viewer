@@ -1367,64 +1367,43 @@ window.ImageViewer = (function () {
       throttleTimestamp = Date.now()
     }
     function prevItem(repeat = false) {
-      if (!repeat) resetTimeout()
       const currentIndex = Number(current.textContent) - 1
       const imageListLength = Number(total.textContent)
       const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
-
       if (!repeat) {
+        resetTimeout()
         moveToNode(prevIndex)
         return
       }
 
       if (prevIndex === imageListLength - 1) {
         if (debounceFlag) return
-        debounceTimeout = setTimeout(
-          () => {
-            const currentIndex = Number(current.textContent) - 1
-            const imageListLength = Number(total.textContent)
-            const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
-            moveToNode(prevIndex)
-            debounceFlag = false
-          },
-          Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
-        )
+        const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
+        debounceTimeout = setTimeout(prevItem, delay)
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
+        resetTimeout()
         moveToNode(prevIndex)
-        clearTimeout(debounceTimeout)
-        debounceFlag = false
-        throttleTimestamp = Date.now()
       }
     }
-
     function nextItem(repeat = false) {
-      if (!repeat) resetTimeout()
       const currentIndex = Number(current.textContent) - 1
       const imageListLength = Number(total.textContent)
       const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
-
       if (!repeat) {
+        resetTimeout()
         moveToNode(nextIndex)
         return
       }
 
       if (nextIndex === 0) {
         if (debounceFlag) return
-        debounceTimeout = setTimeout(
-          () => {
-            const currentIndex = Number(current.textContent) - 1
-            const imageListLength = Number(total.textContent)
-            const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
-            moveToNode(nextIndex)
-            debounceFlag = false
-          },
-          Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
-        )
+        const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
+        debounceTimeout = setTimeout(nextItem, delay)
         debounceFlag = true
       } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
-        moveToNode(nextIndex)
         resetTimeout()
+        moveToNode(nextIndex)
       }
     }
 
