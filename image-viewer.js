@@ -689,28 +689,26 @@ window.ImageViewer = (function () {
       imageListNode.style.translate = `0 ${-currIndex * 100}%`
     }
     function removeFailedImg() {
-      const isLandscape = options.minWidth > options.minHeight
       const action = e => {
         const img = e?.target ?? e
-        const {naturalWidth: width, naturalHeight: height} = img
-        const [adjustWidth, adjustHeight] = width > height && isLandscape ? [width, height] : [height, width]
-        if (adjustWidth === 0 || adjustHeight === 0 || adjustWidth < options.minWidth || adjustHeight < options.minHeight) {
-          const src = img.src
-          const index = imageDataList.findIndex(data => data.src === src)
-          if (index === -1) return
-          const target = img.parentNode
-          imageDataList.splice(index, 1)
-          target.remove()
-          // set new current
-          if (target.classList.contains('current')) {
-            const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
-            if (liList.length) {
-              const newIndex = Math.min(index, liList.length - 1)
-              liList[newIndex].classList.add('current')
-            }
+        if (img.naturalWidth !== 0 && img.naturalHeight !== 0) return
+        // remove img container
+        const target = img.parentNode
+        target.remove()
+        // update data list
+        const src = img.src
+        const index = imageDataList.findIndex(data => data.src === src)
+        if (index === -1) return
+        imageDataList.splice(index, 1)
+        // set new current
+        if (target.classList.contains('current')) {
+          const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
+          if (liList.length) {
+            const newIndex = Math.min(index, liList.length - 1)
+            liList[newIndex].classList.add('current')
           }
-          updateCounter()
         }
+        updateCounter()
       }
 
       for (const img of shadowRoot.querySelectorAll('#iv-image-list li img')) {
