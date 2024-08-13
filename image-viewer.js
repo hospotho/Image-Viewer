@@ -756,13 +756,6 @@ window.ImageViewer = (function () {
         const viewer = shadowRoot.querySelector('#image-viewer')
         viewer.style.removeProperty('opacity')
       }
-      if (options.sizeCheck) {
-        const minSize = Math.min(base.firstChild.naturalWidth, base.firstChild.naturalHeight)
-        options.minWidth = Math.min(minSize, options.minWidth)
-        options.minHeight = Math.min(minSize, options.minHeight)
-        options.sizeCheck = false
-        fitImage(options)
-      }
       shadowRoot.querySelector('#iv-info-width').textContent = base.firstChild.naturalWidth
       shadowRoot.querySelector('#iv-info-height').textContent = base.firstChild.naturalHeight
       if (!completeFlag) removeFailedImg()
@@ -775,8 +768,6 @@ window.ImageViewer = (function () {
   }
 
   function fitImage(options, reset = true, update = false) {
-    if (options.sizeCheck) return
-
     const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
     const action = img => {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)

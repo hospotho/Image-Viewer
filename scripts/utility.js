@@ -1516,17 +1516,13 @@ window.ImageViewerUtils = (function () {
       if (!dom || dom.getRootNode({composed: true}) !== document) return
 
       const tagName = dom.tagName
-      if (tagName !== 'IMG' && tagName !== 'DIV') {
-        options.sizeCheck = true
-        return
-      }
       const [domWidth, domHeight] = domSize
       if (domWidth === 0) return
 
-      // div
-      if (tagName === 'DIV') {
+      // non image
+      if (tagName !== 'IMG') {
         const selector = getDomSelector(dom)
-        updateSizeBySelector(domWidth, domHeight, document.body, 'DIV', selector, options)
+        updateSizeBySelector(domWidth, domHeight, document.body, tagName, selector, options)
         return
       }
 
