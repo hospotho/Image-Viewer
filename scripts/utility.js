@@ -1269,7 +1269,10 @@ window.ImageViewerUtils = (function () {
     return imageDataList
   }
   function processImageDataList(options, imageDataList) {
-    const isBadImage = options.svgFilter ? url => badImageSet.has(url) || url.startsWith('data:image/svg') || url.includes('.svg') : url => badImageSet.has(url)
+    const imageFailureCountMap = ImageViewer('get_image_failure_count')
+    const isBadImage = options.svgFilter
+      ? url => badImageSet.has(url) || imageFailureCountMap.get(url) >= 3 || url.startsWith('data:image/svg') || url.includes('.svg')
+      : url => badImageSet.has(url) || imageFailureCountMap.get(url) >= 3
 
     const filteredDataList = imageDataList.filter(data => !isBadImage(data.src))
 
@@ -1574,7 +1577,8 @@ window.ImageViewerUtils = (function () {
     },
 
     combineImageList: function (newList, oldList) {
-      oldList = oldList.filter(data => !badImageSet.has(data.src))
+      const imageFailureCountMap = ImageViewer('get_image_failure_count')
+      oldList = oldList.filter(data => !badImageSet.has(data.src) && imageFailureCountMap.get(data.src) < 3)
       if (newList.length === 0 || oldList.length === 0) return newList.concat(oldList)
 
       removeRepeatNonRaw(newList, oldList)

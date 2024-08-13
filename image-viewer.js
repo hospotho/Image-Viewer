@@ -4,6 +4,7 @@ window.ImageViewer = (function () {
   let shadowRoot = null
   let lastUpdateTime = 0
   let imageDataList = []
+  const imageFailureCountMap = new Map()
 
   let clearSrc = ''
   let clearIndex = -1
@@ -700,6 +701,9 @@ window.ImageViewer = (function () {
         const index = imageDataList.findIndex(data => data.src === src)
         if (index === -1) return
         imageDataList.splice(index, 1)
+        // update counter
+        const lastCount = imageFailureCountMap.get(src)
+        imageFailureCountMap.set(src, lastCount ? lastCount + 1 : 1)
         // set new current
         if (target.classList.contains('current')) {
           const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
@@ -1693,6 +1697,9 @@ window.ImageViewer = (function () {
       case 'get_image_list': {
         const currentImageList = shadowRoot.querySelectorAll('#iv-image-list li img')
         return Array.from(currentImageList)
+      }
+      case 'get_image_failure_count': {
+        return imageFailureCountMap
       }
       case 'reset_image_list': {
         imageDataList = []
