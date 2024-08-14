@@ -113,7 +113,7 @@ window.ImageViewerUtils = (function () {
       }, 100)
     }
   })
-  unlazyObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
+  unlazyObserver.observe(document.body, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
 
   // init observer for node background being modify
   const styleObserver = new MutationObserver(mutationsList => {
@@ -124,7 +124,7 @@ window.ImageViewerUtils = (function () {
       mutation.target.removeAttribute('data-height')
     }
   })
-  styleObserver.observe(document.documentElement, {attributes: true, subtree: true, attributeFilter: ['style']})
+  styleObserver.observe(document.body, {attributes: true, subtree: true, attributeFilter: ['style']})
 
   //==========utility==========
   function checkKey(e, hotkey) {
@@ -584,7 +584,7 @@ window.ImageViewerUtils = (function () {
       }
       scrollThoughDocument(currentX, currentY)
     })
-    scrollObserver.observe(document.documentElement, {
+    scrollObserver.observe(document.body, {
       attributes: true,
       subtree: true,
       childList: true,
@@ -751,7 +751,7 @@ window.ImageViewerUtils = (function () {
         Element.prototype.scrollTo = originalScrollTo
       }, 500)
     })
-    imageViewerObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']})
+    imageViewerObserver.observe(document.body, {attributes: true, attributeFilter: ['class']})
   }
   async function autoScroll() {
     if (autoScrollFlag) return
@@ -781,7 +781,7 @@ window.ImageViewerUtils = (function () {
       existNewDom = true
       if (isStopped()) timer()
     })
-    newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+    newNodeObserver.observe(document.body, {childList: true, subtree: true})
     setTimeout(() => {
       if (!existNewDom || imageListLength === ImageViewer('get_image_list').length) {
         const container = getMainContainer()

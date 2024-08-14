@@ -309,10 +309,10 @@ window.ImageViewer = (function () {
         newNodeObserver.disconnect()
         await new Promise(resolve => setTimeout(resolve, 100))
         release()
-        newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+        newNodeObserver.observe(document.body, {childList: true, subtree: true})
       }
     })
-    newNodeObserver.observe(document.documentElement, {childList: true, subtree: true})
+    newNodeObserver.observe(document.body, {childList: true, subtree: true})
 
     let release = null
     let repeatCount = 0

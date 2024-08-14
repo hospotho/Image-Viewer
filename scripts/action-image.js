@@ -60,7 +60,7 @@
   const initObserver = new MutationObserver(mutationList => {
     initComplete = mutationList.every(mutation => mutation.addedNodes.length === 0)
   })
-  initObserver.observe(document.documentElement, {childList: true, subtree: true})
+  initObserver.observe(document.body, {childList: true, subtree: true})
 
   const container = ImageViewerUtils.getMainContainer()
   const updateObserver = new MutationObserver(async () => {
@@ -76,7 +76,7 @@
     updatePeriod = 500
     updateRelease()
   })
-  updateObserver.observe(document.documentElement, {childList: true, subtree: true})
+  updateObserver.observe(document.body, {childList: true, subtree: true})
 
   const unlazyObserver = new MutationObserver(mutationList => {
     const unlazyUpdate = mutationList.some(mutation => mutation.attributeName === 'iv-checking' && !mutation.target.hasAttribute('iv-checking'))
@@ -85,7 +85,7 @@
       updateRelease()
     }
   })
-  unlazyObserver.observe(document.documentElement, {childList: true, subtree: true, attributeFilter: ['iv-checking']})
+  unlazyObserver.observe(document.body, {childList: true, subtree: true, attributeFilter: ['iv-checking']})
 
   // build image viewer
   ImageViewer(window.backupImageList, options)
