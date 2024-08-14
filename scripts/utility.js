@@ -372,7 +372,7 @@ window.ImageViewerUtils = (function () {
   }
 
   // wrapper size
-  function checkMatchSize(rawWidth, rawHeight) {
+  function isSizeMatch(rawWidth, rawHeight) {
     // below value should close to real img container size
     const rawWidthMax = Math.max(...rawWidth) - 5
     const rawHeightMax = Math.max(...rawHeight) - 5
@@ -381,6 +381,16 @@ window.ImageViewerUtils = (function () {
       flag &&= rawWidth[i] >= rawWidthMax || rawHeight[i] >= rawHeightMax
     }
     return flag
+  }
+  function shouldUseMinSize(wrapperList, imageCountList, rawWidth, rawHeight) {
+    const maxImageCount = Math.max(...imageCountList)
+    const imageCount = imageCountList.reduce((a, b) => a + b, 0)
+    const largeContainerCount = imageCountList.filter(num => num === maxImageCount).length
+    const isLargeContainer = maxImageCount >= 5 && wrapperList.length - largeContainerCount < 3
+    if (isLargeContainer) return true
+    const isOneToOne = imageCount === wrapperList.length
+    if (isOneToOne && isSizeMatch(rawWidth, rawHeight)) return true
+    return false
   }
   function processWrapperList(wrapperList) {
     wrapperList = wrapperList[0].shadowRoot ? wrapperList.map(node => node.shadowRoot) : wrapperList
@@ -425,14 +435,8 @@ window.ImageViewerUtils = (function () {
   }
   function updateSizeByWrapper(wrapperList, domWidth, domHeight, options) {
     const {imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight} = processWrapperList(wrapperList)
-    const maxImageCount = Math.max(...imageCountList)
-    const imageCount = imageCountList.reduce((a, b) => a + b, 0)
-
-    const largeContainerCount = imageCountList.filter(num => num === maxImageCount).length
-    const isLargeContainer = maxImageCount >= 5 && wrapperList.length - largeContainerCount < 3
-    const isOneToOne = !isLargeContainer && imageCount === wrapperList.length
-    const isMatchSize = isOneToOne && checkMatchSize(rawWidth, rawHeight)
-    const useMinSize = isLargeContainer || isMatchSize
+    const isCustomElement = wrapperList[0].tagName.includes('-')
+    const useMinSize = isCustomElement || shouldUseMinSize(wrapperList, imageCountList, rawWidth, rawHeight)
 
     const getMinSize = rawSizeList => Math.min(...rawSizeList.filter(Boolean))
     const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
