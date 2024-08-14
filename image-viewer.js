@@ -1316,8 +1316,8 @@ window.ImageViewer = (function () {
       })
     }
 
-    for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not(.addedImageEvent)')) {
-      li.classList.add('addedImageEvent')
+    for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not(.ready)')) {
+      li.classList.add('ready')
       addTransformHandler(li)
     }
   }
