@@ -1608,7 +1608,7 @@ window.ImageViewer = (function () {
     const repeatFilename = new Set()
     for (const data of newList) {
       const {src, dom} = data
-      newDomDataMap.set(dom, data)
+      if (dom.tagName !== 'IFRAME') newDomDataMap.set(dom, data)
       newUrlDataMap.set(src, data)
 
       const filename = getFilename(src)

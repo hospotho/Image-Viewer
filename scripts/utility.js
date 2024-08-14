@@ -1657,8 +1657,10 @@ window.ImageViewerUtils = (function () {
       }
 
       const newSrcDomMap = new Map()
-      for (const data of newList) {
-        newSrcDomMap.set(data.src, data.dom)
+      for (const {src, dom} of newList) {
+        if (dom.tagName !== 'IFRAME') {
+          newSrcDomMap.set(src, dom)
+        }
       }
       for (const data of uniqueFinalList) {
         const dom = newSrcDomMap.get(data.src)
