@@ -40,7 +40,7 @@ window.ImageViewer = (function () {
     const root = shadowRoot.host
     if (!root) return
 
-    document.documentElement.classList.remove('has-image-viewer')
+    document.body.classList.remove('iv-attached')
     clearSrc = ''
     clearIndex = -1
     const current = shadowRoot.querySelector('li.current img')
@@ -656,7 +656,7 @@ window.ImageViewer = (function () {
     shadowRoot.append(stylesheet)
     shadowRoot.append(viewer)
     document.body.appendChild(shadowHolder)
-    document.documentElement.classList.add('has-image-viewer')
+    document.body.classList.add('iv-attached')
   }
 
   function buildImageList(imageList, options) {
@@ -794,13 +794,13 @@ window.ImageViewer = (function () {
   function addFrameEvent(options) {
     const viewer = shadowRoot.querySelector('#image-viewer')
     function initKeydownHandler() {
-      if (document.documentElement.classList.contains('has-image-viewer-listener')) return
-      document.documentElement.classList.add('has-image-viewer-listener')
+      if (document.body.classList.contains('iv-ready')) return
+      document.body.classList.add('iv-ready')
       let ctrlWithAltGraph = false
       window.addEventListener(
         'keydown',
         e => {
-          if (!document.documentElement.classList.contains('has-image-viewer')) return
+          if (!document.body.classList.contains('iv-attached')) return
           ctrlWithAltGraph = e.getModifierState('AltGraph') && e.key === 'Control' ? true : ctrlWithAltGraph
           e.ctrlWithAltGraph = ctrlWithAltGraph
           keydownHandlerList.forEach(func => func(e))
@@ -1726,7 +1726,7 @@ window.ImageViewer = (function () {
 
     if (imageList.length === 0) return
 
-    if (!document.documentElement.classList.contains('has-image-viewer')) {
+    if (!document.body.classList.contains('iv-attached')) {
       buildApp(options)
       buildImageList(imageList, options)
       initImageList(options)

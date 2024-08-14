@@ -466,7 +466,7 @@
   document.addEventListener(
     'contextmenu',
     async e => {
-      if (document.documentElement.classList.contains('has-image-viewer')) return
+      if (document.body.classList.contains('iv-attached')) return
       window.ImageViewerLastDom = undefined
 
       // release priority and allow contextmenu work properly

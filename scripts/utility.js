@@ -268,7 +268,7 @@ window.ImageViewerUtils = (function () {
     return lower.includes('lazy') || lower.includes('loading')
   }
   function isImageViewerExist() {
-    return document.documentElement.classList.contains('has-image-viewer')
+    return document.body.classList.contains('iv-attached')
   }
   function isPromiseComplete(promise) {
     const symbol = Symbol('check')

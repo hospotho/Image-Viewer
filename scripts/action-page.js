@@ -11,7 +11,7 @@
     await safeSendMessage('load_utility')
   }
 
-  if (document.documentElement.classList.contains('has-image-viewer')) {
+  if (document.body.classList.contains('iv-attached')) {
     ImageViewer('close_image_viewer')
     return
   }
@@ -69,20 +69,20 @@
   // build image viewer
   ImageViewer(window.backupImageList, options)
 
-  while (document.documentElement.classList.contains('has-image-viewer')) {
+  while (document.body.classList.contains('iv-attached')) {
     // wait website init
     while (!initComplete) {
       initComplete = true
       await new Promise(resolve => setTimeout(resolve, initPeriod))
     }
-    if (!document.documentElement.classList.contains('has-image-viewer')) return
+    if (!document.body.classList.contains('iv-attached')) return
 
     // update image viewer
     const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
     const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
     const currentImageList = ImageViewer('get_image_list')
 
-    if (!document.documentElement.classList.contains('has-image-viewer')) return
+    if (!document.body.classList.contains('iv-attached')) return
     if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
       updatePeriod = 100
       window.backupImageList = Array.from(combinedImageList)
