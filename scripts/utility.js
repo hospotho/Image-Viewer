@@ -1578,7 +1578,7 @@ window.ImageViewerUtils = (function () {
 
     combineImageList: function (newList, oldList) {
       const imageFailureCountMap = ImageViewer('get_image_failure_count')
-      oldList = oldList.filter(data => !badImageSet.has(data.src) && imageFailureCountMap.get(data.src) < 3)
+      oldList = oldList.filter(data => !badImageSet.has(data.src) && (imageFailureCountMap.get(data.src) === undefined || imageFailureCountMap.get(data.src) < 3))
       if (newList.length === 0 || oldList.length === 0) return newList.concat(oldList)
 
       removeRepeatNonRaw(newList, oldList)
