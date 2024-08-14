@@ -1266,7 +1266,10 @@ window.ImageViewerUtils = (function () {
       // not found, pass first iframe as fallback
       imageDataList.push({src: imageSrc, dom: iframeList[0]})
     }
-    return imageDataList
+
+    const imageFailureCountMap = ImageViewer('get_image_failure_count')
+    const filteredDataList = imageDataList.filter(data => imageFailureCountMap.get(data.src) === undefined || imageFailureCountMap.get(data.src) < 3)
+    return filteredDataList
   }
   function processImageDataList(options, imageDataList) {
     const imageFailureCountMap = ImageViewer('get_image_failure_count')
