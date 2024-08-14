@@ -1535,15 +1535,15 @@ window.ImageViewerUtils = (function () {
       // image
       const wrapper = dom.closest('div')
       const wrapperList = getWrapperList(wrapper)
+      // wrapper is custom element, check all image in wrapper list
+      if (wrapperList.length !== 0 && wrapperList[0].tagName.includes('-')) {
+        updateSizeByWrapper(wrapperList, domWidth, domHeight, options)
+        return
+      }
       // no or single wrapper
       if (wrapperList.length <= 1) {
         const selector = getDomSelector(dom)
         updateSizeBySelector(domWidth, domHeight, document.body, 'IMG', selector, options)
-        return
-      }
-      // wrapper is custom element, check all image in wrapper list
-      if (wrapperList[0].tagName.includes('-')) {
-        updateSizeByWrapper(wrapperList, domWidth, domHeight, options)
         return
       }
       // wrapper is normal div
