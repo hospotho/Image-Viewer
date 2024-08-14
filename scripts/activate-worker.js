@@ -7,10 +7,6 @@
     }
   }
 
-  if (document.documentElement.classList.contains('has-image-viewer-worker')) return
-
-  document.documentElement.classList.add('has-image-viewer-worker')
-
   // init
   const options = window.ImageViewerOption
   const domainList = []
