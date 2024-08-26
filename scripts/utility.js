@@ -372,25 +372,21 @@ window.ImageViewerUtils = (function () {
   }
 
   // wrapper size
-  function isSizeMatch(rawWidth, rawHeight) {
-    // below value should close to real img container size
-    const rawWidthMax = Math.max(...rawWidth) - 5
-    const rawHeightMax = Math.max(...rawHeight) - 5
+  function isOneToOne(wrapperList, imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight) {
+    const imageCount = imageCountList.reduce((a, b) => a + b, 0)
+    if (imageCount !== wrapperList.length) return false
     let flag = true
     for (let i = 0; i < rawWidth.length; i++) {
-      flag &&= rawWidth[i] >= rawWidthMax || rawHeight[i] >= rawHeightMax
+      // image size should close to container size
+      flag &&= rawWidth[i] + 5 >= wrapperWidth[i] || rawHeight[i] + 5 >= wrapperHeight[i]
     }
     return flag
   }
-  function shouldUseMinSize(wrapperList, imageCountList, rawWidth, rawHeight) {
+  function isLargeContainer(wrapperList, imageCountList) {
     const maxImageCount = Math.max(...imageCountList)
-    const imageCount = imageCountList.reduce((a, b) => a + b, 0)
     const largeContainerCount = imageCountList.filter(num => num === maxImageCount).length
     const isLargeContainer = maxImageCount >= 5 && wrapperList.length - largeContainerCount < 3
-    if (isLargeContainer) return true
-    const isOneToOne = imageCount === wrapperList.length
-    if (isOneToOne && isSizeMatch(rawWidth, rawHeight)) return true
-    return false
+    return isLargeContainer
   }
   function processWrapperList(wrapperList) {
     wrapperList = wrapperList[0].shadowRoot ? wrapperList.map(node => node.shadowRoot) : wrapperList
@@ -436,16 +432,18 @@ window.ImageViewerUtils = (function () {
   function updateSizeByWrapper(wrapperList, domWidth, domHeight, options) {
     const {imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight} = processWrapperList(wrapperList)
     const isCustomElement = wrapperList[0].tagName.includes('-')
-    const useMinSize = isCustomElement || shouldUseMinSize(wrapperList, imageCountList, rawWidth, rawHeight)
+    const useMinSize = isCustomElement || isLargeContainer(wrapperList, imageCountList)
+    const useHalfSize = !useMinSize && isOneToOne(wrapperList, imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight)
 
     const getMinSize = rawSizeList => Math.min(...rawSizeList.filter(Boolean))
+    const getHalfSize = (domSize, rawSizeList) => Math.min(...rawSizeList.filter(size => size * 2 >= domSize))
     const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
 
     // treat long size as width
     const [large, small] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
     const [optionLarge, optionSmall] = options.minWidth > options.minHeight ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
-    const finalWidth = useMinSize ? getMinSize(rawWidth) : getRefSize(wrapperWidth, large, optionLarge)
-    const finalHeight = useMinSize ? getMinSize(rawHeight) : getRefSize(wrapperHeight, small, optionSmall)
+    const finalWidth = useMinSize ? getMinSize(rawWidth) : useHalfSize ? getHalfSize(domWidth, rawWidth) : getRefSize(wrapperWidth, large, optionLarge)
+    const finalHeight = useMinSize ? getMinSize(rawHeight) : useHalfSize ? getHalfSize(domWidth, rawHeight) : getRefSize(wrapperHeight, small, optionSmall)
 
     // not allow size below 50 to prevent icon
     const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight)) - 3
