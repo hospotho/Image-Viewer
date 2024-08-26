@@ -402,7 +402,8 @@ window.ImageViewerUtils = (function () {
       if (wrapper.offsetParent === null && wrapper.style.position !== 'fixed') continue
 
       const imgList = wrapper.querySelectorAll('img')
-      imageCountList.push(imgList.length)
+      const imageSet = new Set([...imgList].map(img => getFilename(img.src)))
+      imageCountList.push(imageSet.size)
       if (imgList.length === 0) continue
 
       const widthList = []
@@ -420,6 +421,7 @@ window.ImageViewerUtils = (function () {
           widthList.push(height)
           heightList.push(width)
         }
+        if (imgList.length !== imageSet.size) break
       }
       const maxWidth = Math.max(...widthList)
       const maxHeight = Math.max(...heightList)
