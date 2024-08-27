@@ -438,14 +438,14 @@ window.ImageViewerUtils = (function () {
     const useHalfSize = !useMinSize && isOneToOne(wrapperList, imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight)
 
     const getMinSize = rawSizeList => Math.min(...rawSizeList.filter(Boolean))
-    const getHalfSize = (domSize, rawSizeList) => Math.min(...rawSizeList.filter(size => size * 2 >= domSize))
+    const getHalfSize = (rawSizeList, optionSize) => Math.min(...rawSizeList.filter(size => size >= optionSize)) / 2
     const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
 
     // treat long size as width
     const [large, small] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
     const [optionLarge, optionSmall] = options.minWidth > options.minHeight ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
-    const finalWidth = useMinSize ? getMinSize(rawWidth) : useHalfSize ? getHalfSize(domWidth, rawWidth) : getRefSize(wrapperWidth, large, optionLarge)
-    const finalHeight = useMinSize ? getMinSize(rawHeight) : useHalfSize ? getHalfSize(domWidth, rawHeight) : getRefSize(wrapperHeight, small, optionSmall)
+    const finalWidth = useMinSize ? getMinSize(rawWidth) : useHalfSize ? getHalfSize(rawWidth, optionLarge) : getRefSize(wrapperWidth, large, optionLarge)
+    const finalHeight = useMinSize ? getMinSize(rawHeight) : useHalfSize ? getHalfSize(rawHeight, optionSmall) : getRefSize(wrapperHeight, small, optionSmall)
 
     // not allow size below 50 to prevent icon
     const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight)) - 3
