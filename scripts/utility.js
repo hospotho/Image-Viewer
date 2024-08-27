@@ -1382,6 +1382,7 @@ window.ImageViewerUtils = (function () {
   }
   async function checkBackgroundSize(node, url, width, height) {
     const realSize = await getImageRealSize(url)
+    node.removeAttribute('no-bg')
     node.setAttribute('data-bg', url)
     node.setAttribute('data-width', Math.min(realSize, width))
     node.setAttribute('data-height', Math.min(realSize, height))
