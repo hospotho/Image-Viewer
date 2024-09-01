@@ -99,7 +99,7 @@
       const img = new Image()
       img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
       img.onerror = () => resolve(0)
-      setTimeout(() => resolve(0), 10000)
+      setTimeout(() => img.complete || resolve(0), 10000)
       img.src = src
     })
 

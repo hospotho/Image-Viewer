@@ -107,7 +107,7 @@ async function getImageLocalRealSize(id, src) {
         const img = new Image()
         img.onload = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: img.naturalWidth})
         img.onerror = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: 0})
-        setTimeout(() => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: 0}), 10000)
+        setTimeout(() => img.complete || chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: 0}), 10000)
         img.src = src
       }
     })
