@@ -22,11 +22,10 @@
   disableHoverCheck ||= regexList.some(regex => regex.test(location.href))
 
   if (window.top === window.self && !disableHoverCheck) {
-    const styles = 'html.iv-worker-idle img {pointer-events: auto !important;} .disable-hover {pointer-events: none !important;}'
+    const styles = 'html.iv-worker-checking img {pointer-events: auto !important;} .disable-hover {pointer-events: none !important;}'
     const styleSheet = document.createElement('style')
     styleSheet.textContent = styles
     document.head.appendChild(styleSheet)
-    document.documentElement.classList.add('iv-worker-idle')
   }
 
   // image size
@@ -426,12 +425,23 @@
 
   const getOrderedElement = (function () {
     return disableHoverCheck
-      ? e => deepGetElementFromPoint(e.clientX, e.clientY)
-      : async e => {
+      ? e => {
+          // lock pointer event back to auto
+          document.documentElement.classList.add('iv-worker-checking')
           // get all elements include hover
           const elementsBeforeDisableHover = deepGetElementFromPoint(e.clientX, e.clientY)
           // reset pointer event as default
-          document.documentElement.classList.remove('iv-worker-idle')
+          document.documentElement.classList.remove('iv-worker-checking')
+          return elementsBeforeDisableHover
+        }
+      : async e => {
+          // lock pointer event back to auto
+          document.documentElement.classList.add('iv-worker-checking')
+          // get all elements include hover
+          const elementsBeforeDisableHover = deepGetElementFromPoint(e.clientX, e.clientY)
+          // reset pointer event as default
+          document.documentElement.classList.remove('iv-worker-checking')
+
           // disable hover
           const mouseLeaveEvent = new Event('mouseleave')
           for (const element of elementsBeforeDisableHover) {
@@ -446,8 +456,6 @@
           }
           // get all non hover elements
           const elementsAfterDisableHover = deepGetElementFromPoint(e.clientX, e.clientY)
-          // lock pointer event back to auto
-          document.documentElement.classList.add('iv-worker-idle')
 
           const stableElements = []
           const unstableElements = []
