@@ -1162,7 +1162,7 @@ window.ImageViewerUtils = (function () {
     const race = Promise.race([lastUnlazyTask, timeout])
     return race
   }
-  function preprocessLazyPlaceholder() {
+  function processLazyPlaceholder() {
     const lazySrcList = [...document.getElementsByTagName('img')].filter(image => isLazyClass(image.className) && image.src).map(image => image.currentSrc.replace(/https?:/, protocol))
     if (lazySrcList.length === 0) return
 
@@ -1211,7 +1211,7 @@ window.ImageViewerUtils = (function () {
   }
   function startUnlazy(options) {
     if (lastUnlazyTask === null) {
-      preprocessLazyPlaceholder()
+      processLazyPlaceholder()
       fakeUserHover()
       setAutoScrollSetting(options)
     }
