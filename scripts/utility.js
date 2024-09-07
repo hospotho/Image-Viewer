@@ -1163,7 +1163,9 @@ window.ImageViewerUtils = (function () {
     return race
   }
   function processLazyPlaceholder() {
-    const lazySrcList = [...document.getElementsByTagName('img')].filter(image => isLazyClass(image.className) && image.src).map(image => image.currentSrc.replace(/https?:/, protocol))
+    const lazySrcList = [...document.getElementsByTagName('img')]
+      .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || isLazyClass(image.className)))
+      .map(image => image.currentSrc.replace(/https?:/, protocol))
     if (lazySrcList.length === 0) return
 
     const countMap = {}
