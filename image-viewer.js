@@ -1162,6 +1162,7 @@ window.ImageViewer = (function () {
         viewer.addEventListener(event, e => e.stopPropagation())
       }
       keydownHandlerList.push(e => e.stopPropagation())
+      viewer.focus()
     }
 
     initKeydownHandler()
