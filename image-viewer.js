@@ -1139,6 +1139,7 @@ window.ImageViewer = (function () {
         'click',
         'contextmenu',
         'dblclick',
+        'keydown',
         'keypress',
         'keyup',
         'mousedown',
