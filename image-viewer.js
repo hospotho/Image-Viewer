@@ -824,16 +824,83 @@ window.ImageViewer = (function () {
         const shift = keyList.includes('Shift') === e.shiftKey
         return key && ctrl && alt && shift
       }
+
+      function getImageBinary(dataURL, outputFile = false) {
+        const [header, data] = dataURL.split(',')
+        const mime = header.split(':')[1].split(';')[0]
+        const decodedData = atob(data)
+        const buffer = new ArrayBuffer(decodedData.length)
+        const view = new Uint8Array(buffer)
+        for (let i = 0; i < decodedData.length; i++) {
+          view[i] = decodedData.charCodeAt(i)
+        }
+        if (outputFile) {
+          const file = new File([buffer], 'iv-image.jpg', {type: mime})
+          return file
+        }
+        const blob = new Blob([buffer], {type: mime})
+        return blob
+      }
+      function sendImageByForm(dataURL, endpoint, felidName) {
+        const form = document.createElement('form')
+        const fileInput = document.createElement('input')
+        const submitInput = document.createElement('input')
+
+        form.action = endpoint
+        form.method = 'POST'
+        form.target = '_blank'
+        form.enctype = 'multipart/form-data'
+        form.style.display = 'none'
+        form.appendChild(fileInput)
+        form.appendChild(submitInput)
+
+        fileInput.name = felidName
+        fileInput.type = 'file'
+        submitInput.type = 'submit'
+
+        const container = new DataTransfer()
+        const file = getImageBinary(dataURL, true)
+        container.items.add(file)
+        fileInput.files = container.files
+
+        document.body.appendChild(form)
+        submitInput.click()
+        document.body.removeChild(form)
+      }
+
+      function searchImageByGoogle(dataURL) {
+        sendImageByForm(dataURL, 'https://lens.google.com/v3/upload', 'encoded_image')
+      }
+      async function searchImageByYandex(dataURL) {
+        const endpoint = 'https://yandex.com/images-apphost/image-download?cbird=111&images_avatars_size=preview&images_avatars_namespace=images-cbir'
+        const blob = getImageBinary(dataURL)
+        const res = await fetch(endpoint, {method: 'POST', body: blob})
+        if (!res.ok) return
+
+        const json = await res.json()
+        const originalImageUrl = json.url.replace(/\/preview$/, '/orig')
+        const cbirID = json.image_shard + '/' + json.image_id
+        const url = `https://yandex.com/images/search?rpt=imageview&url=${encodeURIComponent(originalImageUrl)}&cbir_id=${encodeURIComponent(cbirID)}`
+        openNewTab(url)
+      }
+      function searchImageBySaucenao(dataURL) {
+        sendImageByForm(dataURL, 'https://saucenao.com/search.php', 'file')
+      }
+      function searchImageByAscii2d(dataURL) {
+        sendImageByForm(dataURL, 'https://ascii2d.net/search/file', 'file')
+      }
+
       const openNewTab = chrome.runtime?.id ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
-      const getCurrentUrl = () => encodeURIComponent(shadowRoot.querySelector('li.current img').src)
+      const getCurrentUrl = () => shadowRoot.querySelector('li.current img').src
 
       if (!options.searchHotkey || options.searchHotkey.length < 5) return
       const hotkey = options.searchHotkey
-      const googleUrl = String.raw`https://lens.google.com/uploadbyurl?url={imgSrc}`
-      const yandexUrl = String.raw`https://yandex.com/images/search?family=yes&rpt=imageview&url={imgSrc}`
-      const saucenaoUrl = String.raw`https://saucenao.com/search.php?db=999&url={imgSrc}`
-      const ascii2dUrl = String.raw`https://ascii2d.net/search/url/{imgSrc}`
+      const googleUrl = 'https://lens.google.com/uploadbyurl?url={imgSrc}'
+      const yandexUrl = 'https://yandex.com/images/search?family=yes&rpt=imageview&url={imgSrc}'
+      const saucenaoUrl = 'https://saucenao.com/search.php?db=999&url={imgSrc}'
+      const ascii2dUrl = 'https://ascii2d.net/search/url/{imgSrc}'
       const urlList = [googleUrl, yandexUrl, saucenaoUrl, ascii2dUrl]
+      const searchImageFunctionList = [searchImageByGoogle, searchImageByYandex, searchImageBySaucenao, searchImageByAscii2d]
 
       keydownHandlerList.push(e => {
         for (let i = urlList.length - 1; i >= 0; i--) {
@@ -841,7 +908,12 @@ window.ImageViewer = (function () {
 
           e.preventDefault()
           const imgUrl = getCurrentUrl()
-          const queryUrl = urlList[i].replace('{imgSrc}', imgUrl)
+          if (imgUrl.startsWith('data:')) {
+            const searchDataImage = searchImageFunctionList[i]
+            searchDataImage(imgUrl)
+            break
+          }
+          const queryUrl = urlList[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
           openNewTab(queryUrl)
           break
         }
@@ -852,7 +924,12 @@ window.ImageViewer = (function () {
         e.preventDefault()
         const imgUrl = getCurrentUrl()
         for (let i = urlList.length - 1; i >= 0; i--) {
-          const queryUrl = urlList[i].replace('{imgSrc}', imgUrl)
+          if (imgUrl.startsWith('data:')) {
+            const searchDataImage = searchImageFunctionList[i]
+            searchDataImage(imgUrl)
+            continue
+          }
+          const queryUrl = urlList[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
           openNewTab(queryUrl)
         }
       })
@@ -866,7 +943,7 @@ window.ImageViewer = (function () {
 
           e.preventDefault()
           const imgUrl = getCurrentUrl()
-          const queryUrl = customUrl[i].replace('{imgSrc}', imgUrl)
+          const queryUrl = customUrl[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
           openNewTab(queryUrl)
           break
         }
