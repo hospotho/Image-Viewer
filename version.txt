@@ -1,3 +1,10 @@
+1.38 [2024-09-09]:
+Stability update
+1. Added support for data URL images to mainstream reverse search
+2. Fixed a bug that could change the website's default layout 
+3. Fixed a bug that could toggle the website's default hotkeys (eg. page navigation)
+4. Other bug fixes and improvements
+
 1.37 [2024-08-11]:
 Performance and Stability update
 1. The control panel will now auto hide after 1.5 seconds of mouse hover
