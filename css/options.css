@@ -35,10 +35,7 @@ label {
   display: inline-block;
   width: 180px;
 }
-input#zoomRatio {
-  vertical-align: middle;
-  width: 120px;
-}
+input#zoomRatio,
 input#rotateDeg {
   vertical-align: middle;
   width: 180px;
