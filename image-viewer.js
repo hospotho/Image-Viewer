@@ -1531,7 +1531,7 @@ window.ImageViewer = (function () {
         autoNavigateFlag = 0
         return
       }
-      // [0,1] => [0,2] => [-1,1]
+      // {0,1} => {0,2} => {-1,1}
       const newFlag = action * 2 - 1
       if (autoNavigateFlag === newFlag) return
 
