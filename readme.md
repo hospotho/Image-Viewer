@@ -78,7 +78,7 @@ For additional options, right-click the extension icon on the toolbar. You can s
     <td><kbd>middle-click</kbd> on the image</td>
   </tr>
   <tr>
-    <td><kbd>0</kbd> both number row and numeric keypad</td>
+    <td><kbd>space</kbd> or <kbd>0</kbd> (both number row and numeric keypad)</td>
   </tr>
   <tr>
     <td>Fitting image</td>

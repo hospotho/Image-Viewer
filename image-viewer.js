@@ -1193,7 +1193,7 @@ window.ImageViewer = (function () {
 
       keydownHandlerList.push(e => {
         if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-        if (e.key === 'Insert' || e.key === '0') {
+        if (e.key === 'Insert' || e.key === '0' || e.key === ' ') {
           e.preventDefault()
           const anchor = searchImgAnchor()
           if (anchor) openNewTab(anchor)
