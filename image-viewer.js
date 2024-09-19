@@ -825,7 +825,7 @@ window.ImageViewer = (function () {
         return key && ctrl && alt && shift
       }
 
-      function getImageBinary(dataURL, outputFile = false) {
+      function getImageBinary(dataURL, outputAsFile = false) {
         const [header, data] = dataURL.split(',')
         const mime = header.split(':')[1].split(';')[0]
         const decodedData = atob(data)
@@ -834,7 +834,7 @@ window.ImageViewer = (function () {
         for (let i = 0; i < decodedData.length; i++) {
           view[i] = decodedData.charCodeAt(i)
         }
-        if (outputFile) {
+        if (outputAsFile) {
           const file = new File([buffer], 'iv-image.jpg', {type: mime})
           return file
         }
