@@ -890,7 +890,8 @@ window.ImageViewer = (function () {
         sendImageByForm(dataURL, 'https://ascii2d.net/search/file', 'file')
       }
 
-      const openNewTab = chrome.runtime?.id ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
+      const extensionMode = !!chrome.runtime?.id
+      const openNewTab = extensionMode ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
       const getCurrentUrl = () => shadowRoot.querySelector('li.current img').src
 
       if (!options.searchHotkey || options.searchHotkey.length < 5) return
