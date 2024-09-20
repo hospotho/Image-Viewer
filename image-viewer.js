@@ -498,6 +498,7 @@ window.ImageViewer = (function () {
         top: 0;
         display: none;
         opacity: 1;
+        z-index: 1;
       }
       #iv-control-buttons {
         display: flex;
