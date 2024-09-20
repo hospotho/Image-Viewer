@@ -429,7 +429,8 @@ function addMessageHandler() {
           release()
           const arrayBuffer = await res.arrayBuffer()
           const rawArray = Array.from(new Uint8Array(arrayBuffer))
-          sendResponse(rawArray)
+          const mime = res.headers.get('content-type').split(';').at(0) || 'image/jpeg'
+          sendResponse([rawArray, mime])
         })()
         return true
       }

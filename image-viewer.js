@@ -825,7 +825,7 @@ window.ImageViewer = (function () {
         return key && ctrl && alt && shift
       }
 
-      function getImageBinary(dataURL, outputAsFile = false) {
+      function readDateUrl(dataURL) {
         const [header, data] = dataURL.split(',')
         const mime = header.split(':')[1].split(';')[0]
         const decodedData = atob(data)
@@ -834,14 +834,36 @@ window.ImageViewer = (function () {
         for (let i = 0; i < decodedData.length; i++) {
           view[i] = decodedData.charCodeAt(i)
         }
-        if (outputAsFile) {
-          const file = new File([buffer], 'iv-image.jpg', {type: mime})
-          return file
-        }
-        const blob = new Blob([buffer], {type: mime})
-        return blob
+        return [buffer, mime]
       }
-      function sendImageByForm(dataURL, endpoint, felidName) {
+      async function getImageBuffer(imgUrl) {
+        if (imgUrl.startsWith('data')) {
+          return readDateUrl(imgUrl)
+        }
+        if (imgUrl.startsWith('blob')) {
+          const res = await fetch(imgUrl)
+          if (!res.ok) {
+            alert('failed to load this blob image')
+            throw new Error('failed to load this blob image')
+          }
+          const arrayBuffer = await res.arrayBuffer()
+          const buffer = new Uint8Array(arrayBuffer)
+          const mime = res.headers.get('content-type').split(';').at(0) || 'image/jpeg'
+          return [buffer, mime]
+        }
+        if (imgUrl.startsWith('file')) {
+          if (!extensionMode) {
+            alert('local image is not supported in non-extension mode')
+            throw new Error('local image is not supported in non-extension mode')
+          }
+          const [rawArray, mime] = await chrome.runtime.sendMessage({msg: 'request_cors_image', src: imgUrl})
+          const buffer = new Uint8Array(rawArray)
+          return [buffer, mime]
+        }
+        alert('unknown protocol')
+        throw new Error('unknown protocol')
+      }
+      async function sendImageByForm(buffer, mime, endpoint, felidName) {
         const form = document.createElement('form')
         const fileInput = document.createElement('input')
         const submitInput = document.createElement('input')
@@ -859,7 +881,7 @@ window.ImageViewer = (function () {
         submitInput.type = 'submit'
 
         const container = new DataTransfer()
-        const file = getImageBinary(dataURL, true)
+        const file = new File([buffer], 'iv-image.jpg', {type: mime})
         container.items.add(file)
         fileInput.files = container.files
 
@@ -868,12 +890,12 @@ window.ImageViewer = (function () {
         document.body.removeChild(form)
       }
 
-      function searchImageByGoogle(dataURL) {
-        sendImageByForm(dataURL, 'https://lens.google.com/v3/upload', 'encoded_image')
+      function searchImageByGoogle(buffer, mime) {
+        sendImageByForm(buffer, mime, 'https://lens.google.com/v3/upload', 'encoded_image')
       }
-      async function searchImageByYandex(dataURL) {
+      async function searchImageByYandex(buffer, mime) {
         const endpoint = 'https://yandex.com/images-apphost/image-download?cbird=111&images_avatars_size=preview&images_avatars_namespace=images-cbir'
-        const blob = getImageBinary(dataURL)
+        const blob = new Blob([buffer], {type: mime})
         const res = await fetch(endpoint, {method: 'POST', body: blob})
         if (!res.ok) return
 
@@ -883,11 +905,11 @@ window.ImageViewer = (function () {
         const url = `https://yandex.com/images/search?rpt=imageview&url=${encodeURIComponent(originalImageUrl)}&cbir_id=${encodeURIComponent(cbirID)}`
         openNewTab(url)
       }
-      function searchImageBySaucenao(dataURL) {
-        sendImageByForm(dataURL, 'https://saucenao.com/search.php', 'file')
+      function searchImageBySaucenao(buffer, mime) {
+        sendImageByForm(buffer, mime, 'https://saucenao.com/search.php', 'file')
       }
-      function searchImageByAscii2d(dataURL) {
-        sendImageByForm(dataURL, 'https://ascii2d.net/search/file', 'file')
+      function searchImageByAscii2d(buffer, mime) {
+        sendImageByForm(buffer, mime, 'https://ascii2d.net/search/file', 'file')
       }
 
       const extensionMode = !!chrome.runtime?.id
@@ -903,35 +925,40 @@ window.ImageViewer = (function () {
       const urlList = [googleUrl, yandexUrl, saucenaoUrl, ascii2dUrl]
       const searchImageFunctionList = [searchImageByGoogle, searchImageByYandex, searchImageBySaucenao, searchImageByAscii2d]
 
-      keydownHandlerList.push(e => {
+      keydownHandlerList.push(async e => {
         for (let i = urlList.length - 1; i >= 0; i--) {
           if (hotkey[i] === '' || !checkKey(e, hotkey[i])) continue
 
           e.preventDefault()
           const imgUrl = getCurrentUrl()
-          if (imgUrl.startsWith('data:')) {
-            const searchDataImage = searchImageFunctionList[i]
-            searchDataImage(imgUrl)
-            break
+          if (imgUrl.startsWith('http')) {
+            const queryUrl = urlList[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
+            openNewTab(queryUrl)
+            return
           }
-          const queryUrl = urlList[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
-          openNewTab(queryUrl)
-          break
+          const [buffer, mime] = await getImageBuffer(imgUrl)
+          const searchDataImage = searchImageFunctionList[i]
+          searchDataImage(buffer, mime)
+          return
         }
       })
 
-      keydownHandlerList.push(e => {
+      keydownHandlerList.push(async e => {
         if (!checkKey(e, hotkey[4])) return
         e.preventDefault()
         const imgUrl = getCurrentUrl()
-        for (let i = urlList.length - 1; i >= 0; i--) {
-          if (imgUrl.startsWith('data:')) {
-            const searchDataImage = searchImageFunctionList[i]
-            searchDataImage(imgUrl)
-            continue
+        const isNormalImage = imgUrl.startsWith('http')
+        if (isNormalImage) {
+          for (let i = urlList.length - 1; i >= 0; i--) {
+            const queryUrl = urlList[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
+            openNewTab(queryUrl)
           }
-          const queryUrl = urlList[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
-          openNewTab(queryUrl)
+          return
+        }
+        const [buffer, mime] = await getImageBuffer(imgUrl)
+        for (let i = urlList.length - 1; i >= 0; i--) {
+          const searchDataImage = searchImageFunctionList[i]
+          searchDataImage(buffer, mime)
         }
       })
 
