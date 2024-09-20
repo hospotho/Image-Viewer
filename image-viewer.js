@@ -943,6 +943,10 @@ window.ImageViewer = (function () {
 
           e.preventDefault()
           const imgUrl = getCurrentUrl()
+          if (!imgUrl.startsWith('http')) {
+            alert('Only support image with url for custom search service')
+            return
+          }
           const queryUrl = customUrl[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
           openNewTab(queryUrl)
           break
