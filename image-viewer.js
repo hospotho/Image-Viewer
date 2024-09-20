@@ -497,7 +497,6 @@ window.ImageViewer = (function () {
         left: 10px;
         top: 0;
         display: none;
-        align-items: center;
         opacity: 1;
       }
       #iv-control-buttons {
@@ -530,7 +529,6 @@ window.ImageViewer = (function () {
       #iv-info li {
         height: 22px;
         display: flex;
-        align-items: center;
       }
       #iv-info span {
         font-size: 16px;
