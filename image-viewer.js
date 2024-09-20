@@ -1570,7 +1570,7 @@ window.ImageViewer = (function () {
       e.preventDefault()
 
       let lastMoveCount = moveCount
-      while (true) {
+      while (document.visibilityState === 'visible') {
         // interrupt by user
         if (autoNavigateFlag !== newFlag || lastMoveCount !== moveCount) break
 
@@ -1583,9 +1583,6 @@ window.ImageViewer = (function () {
         lastMoveCount = moveCount
 
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
-        while (document.visibilityState !== 'visible') {
-          await new Promise(resolve => setTimeout(resolve, 100))
-        }
       }
       autoNavigateFlag = 0
     }
