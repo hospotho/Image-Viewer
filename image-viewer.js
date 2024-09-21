@@ -1467,6 +1467,7 @@ window.ImageViewer = (function () {
 
       const {promise, resolve} = Promise.withResolvers()
       requestAnimationFrame(() => {
+        throttleTimestamp = Date.now()
         moveLock = false
         resolve()
       })
@@ -1477,7 +1478,6 @@ window.ImageViewer = (function () {
     function resetTimeout() {
       clearTimeout(debounceTimeout)
       debounceFlag = false
-      throttleTimestamp = Date.now()
     }
     function prevItem(repeat = false) {
       const currentIndex = Number(current.textContent) - 1
