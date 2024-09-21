@@ -498,11 +498,18 @@ window.ImageViewerUtils = (function () {
   // scroll unlazy
   async function slowScrollThoughDocument(currentX, currentY) {
     if (!isImageViewerExist()) return
+    const imageCount = ImageViewer('get_image_list').length
+    const startTime = Date.now()
+    const haveNewImage = () => {
+      if (Date.now() - startTime < 5000) return true
+      return imageCount !== ImageViewer('get_image_list').length
+    }
+
     const container = getMainContainer()
     const totalHeight = container.scrollHeight
     let currTop = -1
     container.scrollTo(0, 0)
-    while (currTop !== container.scrollTop && currTop < totalHeight * 3 && isImageViewerExist()) {
+    while (currTop !== container.scrollTop && currTop < totalHeight * 3 && haveNewImage() && isImageViewerExist()) {
       currTop = container.scrollTop
       container.scrollBy({top: window.innerHeight * 2, behavior: 'smooth'})
       await new Promise(resolve => setTimeout(resolve, 500))
