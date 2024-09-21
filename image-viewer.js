@@ -1578,10 +1578,9 @@ window.ImageViewer = (function () {
         const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
         if (currIndex === newIndex) break
 
-        await moveLockPromise
         moveToNode(newIndex)
         lastMoveCount = moveCount
-
+        await moveLockPromise
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
       }
       autoNavigateFlag = 0
