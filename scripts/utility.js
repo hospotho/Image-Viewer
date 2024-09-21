@@ -1169,7 +1169,7 @@ window.ImageViewerUtils = (function () {
   }
   function processLazyPlaceholder() {
     const lazySrcList = [...document.getElementsByTagName('img')]
-      .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || isLazyClass(image.className)))
+      .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || image.src.endsWith('.gif') || isLazyClass(image.className)))
       .map(image => image.currentSrc.replace(/https?:/, protocol))
     if (lazySrcList.length === 0) return
 
