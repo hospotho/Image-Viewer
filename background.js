@@ -61,7 +61,13 @@ async function fetchBitSize(src, useGetMethod = false) {
   const method = useGetMethod ? 'GET' : 'HEAD'
   try {
     const res = await fetch(src, {method: method, signal: AbortSignal.timeout(5000)})
-    if (!res.ok || res.redirected) return 0
+    if (!res.ok) return 0
+
+    if (res.redirected) {
+      const originalPath = new URL(src).pathname
+      const newPath = new URL(res.url).pathname
+      if (originalPath !== newPath) return 0
+    }
 
     const type = res.headers.get('Content-Type')
     if (!type?.startsWith('image')) return 0
