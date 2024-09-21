@@ -847,9 +847,6 @@ window.ImageViewerUtils = (function () {
         return size
       }
       return 0
-    } catch (error) {
-      if (error.name !== 'TimeoutError') corsHostSet.add(url.hostname)
-      return 0
     } finally {
       release()
     }
@@ -881,7 +878,13 @@ window.ImageViewerUtils = (function () {
         waiting = true
         safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
       }
-      fetchBitSize(url).then(updateSize)
+      fetchBitSize(url)
+        .then(updateSize)
+        .catch(error => {
+          if (error.name !== 'TimeoutError') corsHostSet.add(url.hostname)
+          if (url.hostname !== location.hostname) return 0
+          safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
+        })
     })
 
     srcBitSizeMap.set(src, promise)
