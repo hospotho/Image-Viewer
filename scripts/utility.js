@@ -516,23 +516,21 @@ window.ImageViewerUtils = (function () {
     }
     if (isImageViewerExist()) container.scrollTo(currentX, currentY)
   }
-  function scrollThoughDocument(currentX, currentY) {
-    const wrapper = (func, ...args) => {
-      if (isImageViewerExist()) func(...args)
-    }
+  async function scrollThoughDocument(currentX, currentY) {
     const container = getMainContainer()
-    const scrollTo = container.scrollTo.bind(container)
     const totalHeight = container.scrollHeight
     const scrollDelta = window.innerHeight * 1.5
-    let scrollCount = 0
     let top = 0
-    while (top < totalHeight) {
-      const currTop = top
-      setTimeout(() => wrapper(scrollTo, currentX, currTop), ++scrollCount * 150)
+    while (top < totalHeight && isImageViewerExist()) {
+      container.scrollTo(currentX, top)
       top += scrollDelta
+      await new Promise(resolve => setTimeout(resolve, 150))
     }
-    setTimeout(() => wrapper(scrollTo, currentX, totalHeight), ++scrollCount * 150)
-    setTimeout(() => wrapper(scrollTo, currentX, currentY), ++scrollCount * 150)
+    if (isImageViewerExist()) {
+      container.scrollTo(currentX, totalHeight)
+      await new Promise(resolve => setTimeout(resolve, 150))
+    }
+    container.scrollTo(currentX, currentY)
   }
   async function tryActivateLazyImage(isDomChanged) {
     const container = getMainContainer()
