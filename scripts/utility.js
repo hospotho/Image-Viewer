@@ -938,9 +938,9 @@ window.ImageViewerUtils = (function () {
 
       // loop thought remaining attr
       while (lastIndex < attrList.length) {
-        const attr = attrList[lastIndex++]
+        const {name, url} = attrList[lastIndex++]
         complete = lastIndex === attrList.length
-        const newURL = attr.value.replace(/https?:/, protocol).replace(/^\/(?:[^/])/, origin)
+        const newURL = url.replace(/https?:/, protocol).replace(/^\/(?:[^/])/, origin)
         const betterUrl = await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
         if (betterUrl === null) continue
 
@@ -955,8 +955,8 @@ window.ImageViewerUtils = (function () {
         }
 
         // update attr
-        successList.push(attr.name)
-        const realAttrName = attr.name.startsWith('raw ') ? attr.name.slice(4) : attr.name
+        successList.push(name)
+        const realAttrName = name.startsWith('raw ') ? name.slice(4) : name
         if (done) {
           await updateImageSrc(img, betterUrl)
           img.removeAttribute(realAttrName)
@@ -993,11 +993,11 @@ window.ImageViewerUtils = (function () {
 
       const attrUrl = new URL(attr.value, document.baseURI).href
       if (attrUrl !== src) {
-        attrList.push({name: attr.name, value: attrUrl})
+        attrList.push({name: attr.name, url: attrUrl})
       }
       const rawAttrUrl = getRawUrl(attrUrl)
       if (rawAttrUrl !== attrUrl && rawAttrUrl !== rawUrl) {
-        attrList.push({name: 'raw ' + attr.name, value: rawAttrUrl})
+        attrList.push({name: 'raw ' + attr.name, url: rawAttrUrl})
       }
     }
     if (img.srcset && img.srcset !== src) {
@@ -1006,10 +1006,10 @@ window.ImageViewerUtils = (function () {
         .map(str => str.trim().split(/ +/))
         .map(([url, size]) => [url, size ? Number(size.slice(0, -1)) : 1])
         .sort((a, b) => b[1] - a[1])
-      attrList.push({name: 'srcset', value: srcsetList[0][0]})
+      attrList.push({name: 'srcset', url: srcsetList[0][0]})
     }
     if (rawUrl !== src) {
-      attrList.push({name: 'raw url', value: rawUrl})
+      attrList.push({name: 'raw url', url: rawUrl})
     }
     try {
       const url = new URL(src, document.baseURI)
@@ -1018,7 +1018,7 @@ window.ImageViewerUtils = (function () {
       if (pathname.match(/[-_]thumb(?=nail)?\./)) {
         const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
         const nonThumbnail = src.replace(pathname, nonThumbnailPath)
-        attrList.push({name: 'non thumbnail path', value: nonThumbnail})
+        attrList.push({name: 'non thumbnail path', url: nonThumbnail})
       }
 
       if (!src.includes('?')) throw new Error()
@@ -1028,25 +1028,25 @@ window.ImageViewerUtils = (function () {
         if (extMatch) {
           const filenameWithExt = pathname + '.' + extMatch[0]
           const rawExtension = src.replace(pathname + search, filenameWithExt)
-          attrList.push({name: 'raw extension', value: rawExtension})
+          attrList.push({name: 'raw extension', url: rawExtension})
         }
       }
       if (search.includes('width=') || search.includes('height=')) {
         const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
         const rawQuery = src.replace(search, noSizeQuery)
-        attrList.push({name: 'no size query', value: rawQuery})
+        attrList.push({name: 'no size query', url: rawQuery})
       }
       const noQuery = src.replace(pathname + search, pathname)
-      attrList.push({name: 'no query', value: noQuery})
+      attrList.push({name: 'no query', url: noQuery})
     } catch (error) {}
     const anchor = img.closest('a')
     if (anchor && anchor.href !== src && anchor.href.match(urlRegex)) {
       const anchorHaveExt = cachedExtensionMatch(anchor.href) !== null
       const rawHaveExt = cachedExtensionMatch(rawUrl) !== null
       const maybeLarger = anchorHaveExt || anchorHaveExt === rawHaveExt || rawUrl.slice(0, 12).includes('cdn.')
-      if (maybeLarger) attrList.push({name: 'parent anchor', value: anchor.href})
+      if (maybeLarger) attrList.push({name: 'parent anchor', url: anchor.href})
     }
-    return attrList.filter(attr => attr.value !== src)
+    return attrList.filter(attr => attr.url !== src)
   }
   function getUnlazyImageList(minWidth, minHeight) {
     const imgWithAttrList = []
