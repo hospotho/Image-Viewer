@@ -14,8 +14,6 @@ window.ImageViewer = (function () {
 
   const keydownHandlerList = []
 
-  window.addEventListener('popstate', closeImageViewer)
-
   //==========utility==========
   function buildImageNode(data, options) {
     const li = document.createElement('li')
