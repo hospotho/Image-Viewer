@@ -8,11 +8,11 @@
   "app_name": {
     "message": "Image Viewer"
   },
-  "auto_period": {
-    "message": "自動観覧間隔"
-  },
   "auto_desc": {
     "message": "自動観覧を使用すると、Image Viewerはこの時間間隔で次の画像に移動します。<br>自動観覧間隔が 0 に近い値に設定されている場合、実際の表示速度はコンピューターの性能に依存します"
+  },
+  "auto_period": {
+    "message": "自動観覧間隔"
   },
   "auto_scroll_desc": {
     "message": "一部のWebページでは、スクロールダウンするとコンテンツが追加で読み込まれます<br>Image Viewerに自動的にスクロールしてコンテンツを読み込んでもらいたい場合は、このオプションを有効にしてください"

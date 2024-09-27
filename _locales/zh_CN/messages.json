@@ -8,11 +8,11 @@
   "app_name": {
     "message": "Image Viewer"
   },
-  "auto_period": {
-    "message": "自动翻页间隔"
-  },
   "auto_desc": {
     "message": "当你使用自动翻页时，Image Viewer将会等待此时间再翻页到下一张图像<br>当翻页间隔被设置至接近0，实际翻页速度将取决于计算机性能"
+  },
+  "auto_period": {
+    "message": "自动翻页间隔"
   },
   "auto_scroll_desc": {
     "message": "一些网页在向下滚动时会加载更多内容<br>如果要让Image Viewer自动滚动以加载新内容，请启用此选项"

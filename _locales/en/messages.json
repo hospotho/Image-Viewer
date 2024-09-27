@@ -8,11 +8,11 @@
   "app_name": {
     "message": "Image Viewer"
   },
-  "auto_period": {
-    "message": "Auto navigate period"
-  },
   "auto_desc": {
     "message": "When you use auto navigation, Image Viewer will navigate to the next image approximately this period of time.<br>When this period is set close to 0, navigation speed will only depend on your computer's performance."
+  },
+  "auto_period": {
+    "message": "Auto navigate period"
   },
   "auto_scroll_desc": {
     "message": "Some web pages load more contents as you scroll down<br>Enable this option if you want Image Viewer to scroll and load content automatically"
