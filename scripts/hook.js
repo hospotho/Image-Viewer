@@ -1,6 +1,12 @@
 ;(function () {
   'use strict'
 
+  const safeSendMessage = function (...args) {
+    if (chrome.runtime?.id) {
+      return chrome.runtime.sendMessage(...args)
+    }
+  }
+
   // prevent image blob revoked
   const isImageUrlMap = new Map()
   const realCreate = URL.createObjectURL
@@ -36,5 +42,42 @@
   URL.revokeObjectURL = async function (url) {
     const isImage = await isImageUrlMap.get(url)
     if (!isImage) realRevoke(url)
+  }
+
+  // prevent canvas tainted
+  async function getImageBase64(image) {
+    try {
+      const res = await fetch(image.src)
+      if (res.ok) {
+        const blob = await res.blob()
+        const reader = new FileReader()
+        const dataUrl = await new Promise(resolve => {
+          reader.onload = () => resolve(reader.result)
+          reader.readAsDataURL(blob)
+        })
+        return dataUrl
+      }
+    } catch (error) {}
+    const [dataUrl] = await safeSendMessage({msg: 'request_cors_image', src: image.src})
+    return dataUrl
+  }
+  async function getBase64Image(image) {
+    const dataUrl = await getImageBase64(image)
+    const dataImage = new Image()
+    const result = await new Promise(resolve => {
+      dataImage.onload = resolve(true)
+      dataImage.onerror = resolve(false)
+      dataImage.src = dataUrl
+    })
+    // return empty image on failure
+    return result ? dataImage : new Image()
+  }
+
+  const realDrawImage = CanvasRenderingContext2D.prototype.drawImage
+  CanvasRenderingContext2D.prototype.drawImage = async function (...args) {
+    if (args[0] instanceof HTMLImageElement) {
+      args[0] = await getBase64Image(args[0])
+    }
+    return realDrawImage.apply(this, args)
   }
 })()
