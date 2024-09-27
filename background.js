@@ -433,10 +433,14 @@ function addMessageHandler() {
           const release = await semaphore.acquire()
           const res = await fetch(request.src)
           release()
-          const arrayBuffer = await res.arrayBuffer()
-          const rawArray = Array.from(new Uint8Array(arrayBuffer))
+          const blob = await res.blob()
+          const reader = new FileReader()
+          const dataUrl = await new Promise(resolve => {
+            reader.onload = () => resolve(reader.result)
+            reader.readAsDataURL(blob)
+          })
           const mime = res.headers.get('content-type').split(';').at(0) || 'image/jpeg'
-          sendResponse([rawArray, mime])
+          sendResponse([dataUrl, mime])
         })()
         return true
       }
