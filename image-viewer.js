@@ -1808,7 +1808,6 @@ window.ImageViewer = (function () {
       }
       case 'reset_image_list': {
         imageDataList = []
-        lastUrl = location.href
         return
       }
       case 'close_image_viewer': {
