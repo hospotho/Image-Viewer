@@ -465,6 +465,11 @@ function createContextMenu() {
       title: i18n('view_last_right_click_image_in_image_viewer'),
       contexts: ['action']
     })
+    chrome.contextMenus.create({
+      id: 'view_canvas_in_image_viewer',
+      title: i18n('view_canvas_in_image_viewer'),
+      contexts: ['action']
+    })
   })
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
@@ -486,6 +491,11 @@ function createContextMenu() {
       case 'view_last_right_click_image_in_image_viewer': {
         await passOptionToTab(tab.id, currOptions)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-image.js']})
+        break
+      }
+      case 'view_canvas_in_image_viewer': {
+        await passOptionToTab(tab.id, currOptions)
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-canvas.js']})
         break
       }
     }
