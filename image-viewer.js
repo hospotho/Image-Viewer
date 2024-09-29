@@ -1785,6 +1785,11 @@ window.ImageViewer = (function () {
       lastSrc = ''
       return
     }
+    // canvas mode
+    if (options.canvasMode) {
+      lastSrc = ''
+      return
+    }
 
     const newIndex = getRestoreIndex()
     shadowRoot.querySelector('#iv-counter-current').textContent = newIndex + 1
