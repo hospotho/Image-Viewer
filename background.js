@@ -149,6 +149,7 @@ async function getDataUrl(src) {
   return promise
 }
 async function getLocalUrl(tabId, src) {
+  if (src.startsWith('data:')) return src
   const size = await getImageLocalRealSize(tabId, src)
   if (size) return src
   const dataUrl = await getDataUrl(src)
