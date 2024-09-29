@@ -650,6 +650,10 @@ window.ImageViewer = (function () {
       viewer.style.setProperty('opacity', '0')
     }
 
+    if (options.canvasMode) {
+      viewer.style.setProperty('background', 'rgb(255, 255, 255)', 'important')
+    }
+
     shadowRoot.append(stylesheet)
     shadowRoot.append(viewer)
     document.body.appendChild(shadowHolder)
@@ -985,6 +989,7 @@ window.ImageViewer = (function () {
         ['rgb(255, 255, 255)', 'important']
       ]
       if (options.closeButton) backgroundList.unshift([''])
+      if (options.canvasMode) backgroundList.sort((a, b) => b[0].length - a[0].length)
       let index = 0
       keydownHandlerList.push(e => {
         if (!e.shiftKey || e.key.toUpperCase() !== 'B') return
