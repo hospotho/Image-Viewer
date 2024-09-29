@@ -8,7 +8,7 @@ If you like this extension, you can [buy me a coffee](https://ko-fi.com/tonymilk
 ## Features
 
 1. Collect and view all images on the page.
-2. Support video posters and images in iframes.
+2. Support video posters, canvas element and images in iframes.
 3. Auto replace lazy loaded or resized images with original image.
 4. Redirect middle click to original image to open link you want.
 5. Go to original image on the page.

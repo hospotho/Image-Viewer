@@ -2,6 +2,17 @@
   'use strict'
 
   const rawText = `
+1.39 [2024-09-29]:
+Major Update
+1. Added an action to the icon context menu allowing users to view canvas elements
+  // Note: This feature only supports snapshots, not GIF creation
+  // May also be useful for cases where an image is visible but not accessible in normal mode
+  // This could include an image drawn on a canvas element
+2. Added support for local and blob images to mainstream reverse search
+3. Fixed navigation, it will now correctly wait for images to be rendered on the screen
+4. The space bar can now be used to send a middle click to an image (previously only "0" could be used)
+5. Other bug fixes and improvements
+
 1.38 [2024-09-09]:
 Stability update
 1. Added support for data URL images to mainstream reverse search
