@@ -858,7 +858,8 @@ window.ImageViewer = (function () {
             throw new Error('local image is not supported in non-extension mode')
           }
           const [dataUrl, mime] = await chrome.runtime.sendMessage({msg: 'request_cors_image', src: imgUrl})
-          const rawArray = await new Response(dataUrl).arrayBuffer()
+          const res = await fetch(dataUrl)
+          const rawArray = await res.arrayBuffer()
           const buffer = new Uint8Array(rawArray)
           return [buffer, mime]
         }

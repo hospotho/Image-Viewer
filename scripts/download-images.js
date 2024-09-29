@@ -184,7 +184,8 @@
       .then(arrayBuffer => new Uint8Array(arrayBuffer))
       .catch(async () => {
         const [dataUrl] = await safeSendMessage({msg: 'request_cors_image', src: url})
-        const rawArray = await new Response(dataUrl).arrayBuffer()
+        const res = await fetch(dataUrl)
+        const rawArray = await res.arrayBuffer()
         return new Uint8Array(rawArray)
       })
   }
