@@ -1241,22 +1241,27 @@ window.ImageViewerUtils = (function () {
   }
 
   // get image
-  function getCanvasList(options) {
+  async function getCanvasList(options) {
     const minWidth = options.minWidth || 0
     const minHeight = options.minHeight || 0
-    const canvasDataList = []
+    const asyncList = []
 
     const canvasList = deepQuerySelectorAll(document.body, 'CANVAS', 'canvas')
     for (const canvas of canvasList) {
       const {width, height} = canvas.getBoundingClientRect()
-      if (width >= minWidth && height >= minHeight) {
-        const imgSrc = canvas.toDataURL()
-        if (imgSrc === 'data:,') continue
-        canvasDataList.push({src: imgSrc, dom: canvas})
-      }
+      if (width < minWidth && height < minHeight) continue
+      const promise = new Promise(resolve => {
+        canvas.toBlob(blob => {
+          if (blob.size === 0) resolve(null)
+          const url = URL.createObjectURL(blob)
+          resolve({src: url, dom: canvas})
+        })
+      })
+      asyncList.push(promise)
     }
 
-    return canvasDataList
+    const canvasDataList = await Promise.all(asyncList)
+    return canvasDataList.filter(data => data !== null)
   }
   async function getIframeImageList(options) {
     const iframeList = deepQuerySelectorAll(document.body, 'IFRAME', 'iframe')
@@ -1607,7 +1612,7 @@ window.ImageViewerUtils = (function () {
 
     getOrderedCanvasList: async function (options) {
       const iframeCanvasList = await getIframeImageList(options)
-      const canvasList = getCanvasList(options)
+      const canvasList = await getCanvasList(options)
 
       const uniqueCanvasList = iframeCanvasList.concat(canvasList)
       if (uniqueCanvasList.length === 0) {
