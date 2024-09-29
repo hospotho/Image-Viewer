@@ -1241,6 +1241,26 @@ window.ImageViewerUtils = (function () {
   }
 
   // get image
+  async function getOrderedCanvasList(options) {
+    const minWidth = options.minWidth
+    const minHeight = options.minHeight
+
+    const canvasDataList = []
+    const canvasList = deepQuerySelectorAll(document.body, 'CANVAS', 'canvas')
+    for (const canvas of canvasList) {
+      const {width, height} = canvas.getBoundingClientRect()
+      if (width >= minWidth && height >= minHeight) {
+        const imgSrc = canvas.toDataURL()
+        if (imgSrc === 'data:,') continue
+        canvasDataList.push({src: imgSrc, dom: canvas})
+      }
+    }
+    const iframeCanvasDataList = await getIframeImageList(options)
+
+    const combinedCanvasList = canvasDataList.concat(iframeCanvasDataList)
+    const orderedCanvasList = sortImageDataList(combinedCanvasList)
+    return orderedCanvasList
+  }
   async function getIframeImageList(options) {
     const iframeList = deepQuerySelectorAll(document.body, 'IFRAME', 'iframe')
     const iframeSrcList = iframeList.map(iframe => iframe.src)
@@ -1696,11 +1716,9 @@ window.ImageViewerUtils = (function () {
       return newListStringLength === oldListStringLength
     },
 
-    deepQuerySelectorAll: deepQuerySelectorAll,
-
-    getIframeImageList: getIframeImageList,
-
     getMainContainer: getMainContainer,
+
+    getOrderedCanvasList: getOrderedCanvasList,
 
     getRawUrl: getRawUrl,
 

@@ -22,12 +22,12 @@
   options.canvasMode = true
   window.ImageViewerLastDom = null
 
+  const orderedCanvasList = await ImageViewerUtils.getOrderedCanvasList(options)
+  if (orderedCanvasList.length === 0) {
+    alert('No canvas found')
+    return
+  }
+
   // build image viewer
-  const filteredCanvasList = ImageViewerUtils.deepQuerySelectorAll(document.body, 'CANVAS', 'canvas')
-    .filter(canvas => canvas.clientWidth > options.minWidth && canvas.clientHeight > options.minHeight)
-    .map(canvas => ({src: canvas.toDataURL(), dom: canvas}))
-    .filter(data => data.src !== 'data:,')
-  const iframeCanvasList = await ImageViewerUtils.getIframeImageList(options)
-  const orderedCanvasList = ImageViewerUtils.combineImageList(filteredCanvasList, iframeCanvasList)
   ImageViewer(orderedCanvasList, options)
 })()
