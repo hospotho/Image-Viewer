@@ -907,7 +907,16 @@ window.ImageViewer = (function () {
       }
 
       function searchImageByGoogle(imgUrl) {
-        sendImageByForm(imgUrl, 'https://lens.google.com/v3/upload', 'encoded_image')
+        if (!extensionMode) {
+          alert('google image search is not supported in non-extension mode')
+          return
+        }
+        // temporarily disabled google lens search on data and blob images
+        if (imgUrl.startsWith('file')) {
+          sendImageByForm(imgUrl, 'https://lens.google.com/v3/upload', 'encoded_image')
+        } else {
+          chrome.runtime.sendMessage({msg: 'google_search', src: imgUrl})
+        }
       }
       async function searchImageByYandex(imgUrl) {
         const [buffer, mime] = await getImageBuffer(imgUrl)

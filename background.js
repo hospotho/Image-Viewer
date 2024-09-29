@@ -422,6 +422,34 @@ function addMessageHandler() {
         chrome.tabs.remove(sender.tab.id, () => sendResponse())
         return true
       }
+      case 'google_search': {
+        ;(async () => {
+          const blob = await fetch(request.src).then(res => res.blob())
+          const arrayBuffer = await blob.arrayBuffer()
+          const dataUrl = await new Promise(resolve => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result)
+            reader.readAsDataURL(blob)
+          })
+
+          const endpoint = 'https://www.google.com/searchbyimage/upload'
+          const form = new FormData()
+          form.append('encoded_image', new File([arrayBuffer], 'iv-image.jpg', {type: blob.type}))
+          form.append('image_url', dataUrl)
+          form.append('sbisrc', 'Image Viewer')
+
+          const res = await fetch(endpoint, {method: 'POST', body: form})
+          if (!res.ok) return
+
+          if (lastTabID !== sender.tab.id || lastTabIndex !== sender.tab.index) {
+            lastTabID = sender.tab.id
+            lastTabIndex = sender.tab.index
+            lastTabOpenIndex = sender.tab.index
+          }
+          chrome.tabs.create({active: false, index: ++lastTabOpenIndex, url: res.url}, () => sendResponse())
+        })()
+        return true
+      }
       // download
       case 'download_images': {
         ;(async () => {
