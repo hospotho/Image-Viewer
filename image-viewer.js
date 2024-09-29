@@ -847,7 +847,8 @@ window.ImageViewer = (function () {
             alert('failed to load this blob image')
             throw new Error('failed to load this blob image')
           }
-          const arrayBuffer = await res.arrayBuffer()
+          const blob = await res.blob()
+          const arrayBuffer = await blob.arrayBuffer()
           const buffer = new Uint8Array(arrayBuffer)
           const mime = res.headers.get('content-type').split(';').at(0) || 'image/jpeg'
           return [buffer, mime]
