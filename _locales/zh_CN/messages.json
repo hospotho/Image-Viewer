@@ -140,6 +140,9 @@
   "view_all_images_in_image_viewer": {
     "message": "观看图片(无过滤)"
   },
+  "view_canvas_in_image_viewer": {
+    "message": "在Image Viewer观看画布"
+  },
   "view_images_in_image_viewer": {
     "message": "在Image Viewer观看图片"
   },
