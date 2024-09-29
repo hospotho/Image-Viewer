@@ -1241,11 +1241,11 @@ window.ImageViewerUtils = (function () {
   }
 
   // get image
-  async function getOrderedCanvasList(options) {
-    const minWidth = options.minWidth
-    const minHeight = options.minHeight
-
+  function getCanvasList(options) {
+    const minWidth = options.minWidth || 0
+    const minHeight = options.minHeight || 0
     const canvasDataList = []
+
     const canvasList = deepQuerySelectorAll(document.body, 'CANVAS', 'canvas')
     for (const canvas of canvasList) {
       const {width, height} = canvas.getBoundingClientRect()
@@ -1255,11 +1255,8 @@ window.ImageViewerUtils = (function () {
         canvasDataList.push({src: imgSrc, dom: canvas})
       }
     }
-    const iframeCanvasDataList = await getIframeImageList(options)
 
-    const combinedCanvasList = canvasDataList.concat(iframeCanvasDataList)
-    const orderedCanvasList = sortImageDataList(combinedCanvasList)
-    return orderedCanvasList
+    return canvasDataList
   }
   async function getIframeImageList(options) {
     const iframeList = deepQuerySelectorAll(document.body, 'IFRAME', 'iframe')
@@ -1608,6 +1605,19 @@ window.ImageViewerUtils = (function () {
       return orderedImageList
     },
 
+    getOrderedCanvasList: async function (options) {
+      const iframeCanvasList = await getIframeImageList(options)
+      const canvasList = getCanvasList(options)
+
+      const uniqueCanvasList = iframeCanvasList.concat(canvasList)
+      if (uniqueCanvasList.length === 0) {
+        console.log('Found no image')
+      }
+
+      const orderedCanvasList = sortImageDataList(uniqueCanvasList)
+      return orderedCanvasList
+    },
+
     searchImageInfoIndex: function (input, imageList) {
       const srcList = imageList.map(data => data.src)
       const src = input instanceof Element ? getDomUrl(input) : input
@@ -1717,8 +1727,6 @@ window.ImageViewerUtils = (function () {
     },
 
     getMainContainer: getMainContainer,
-
-    getOrderedCanvasList: getOrderedCanvasList,
 
     getRawUrl: getRawUrl,
 

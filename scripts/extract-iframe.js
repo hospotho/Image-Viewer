@@ -102,7 +102,18 @@ window.ImageViewerExtractor = (function () {
   function getCanvasList(options) {
     const minWidth = options.minWidth || 0
     const minHeight = options.minHeight || 0
-    return [...document.getElementsByTagName('canvas')].filter(canvas => canvas.clientWidth >= minWidth && canvas.clientHeight >= minHeight).map(canvas => canvas.toDataURL())
+    const canvasList = []
+
+    const rawCanvasList = deepQuerySelectorAll(document.body, 'CANVAS', 'canvas')
+    for (const canvas of rawCanvasList) {
+      const {width, height} = canvas.getBoundingClientRect()
+      if (width >= minWidth && height >= minHeight) {
+        const imgSrc = canvas.toDataURL()
+        if (imgSrc === 'data:,') continue
+        canvasList.push({src: imgSrc, dom: canvas})
+      }
+    }
+    return canvasList
   }
 
   return {
