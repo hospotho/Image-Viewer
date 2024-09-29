@@ -75,7 +75,10 @@
 
   const realDrawImage = CanvasRenderingContext2D.prototype.drawImage
   CanvasRenderingContext2D.prototype.drawImage = async function (...args) {
-    if (args[0] instanceof HTMLImageElement) {
+    if (this.canvas.cors === undefined) {
+      this.canvas.cors = await fetch(args[0].src).then(res => !res.ok).catch(() => true)
+    }
+    if (this.canvas.cors) {
       args[0] = await getBase64Image(args[0])
     }
     return realDrawImage.apply(this, args)
