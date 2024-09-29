@@ -1248,7 +1248,9 @@ window.ImageViewerUtils = (function () {
     if (filteredList.length === 0) return []
 
     const minSize = Math.min(options.minWidth, options.minHeight)
-    const iframeImage = (await safeSendMessage({msg: 'extract_frames', minSize: minSize})) || []
+    const message = {msg: 'extract_frames', minSize: minSize}
+    if (options.canvasMode) message.canvasMode = true
+    const iframeImage = (await safeSendMessage(message)) || []
     if (iframeImage.length === 0) return []
 
     // src + iframe url
@@ -1693,6 +1695,10 @@ window.ImageViewerUtils = (function () {
       const oldListStringLength = oldList.map(data => data.src.length).reduce((a, b) => a + b, 0)
       return newListStringLength === oldListStringLength
     },
+
+    deepQuerySelectorAll: deepQuerySelectorAll,
+
+    getIframeImageList: getIframeImageList,
 
     getMainContainer: getMainContainer,
 

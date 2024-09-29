@@ -358,6 +358,7 @@ function addMessageHandler() {
           const newOptions = Object.assign({}, currOptions)
           newOptions.minWidth = request.minSize
           newOptions.minHeight = request.minSize
+          if (request.canvasMode) newOptions.canvasMode = true
 
           // must use frameIds, allFrames: true wont works in most cases
           const frameList = await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})

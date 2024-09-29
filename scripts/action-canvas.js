@@ -7,8 +7,8 @@
     }
   }
 
-  if (typeof ImageViewer !== 'object') {
-    await safeSendMessage('load_script')
+  if (typeof ImageViewerUtils !== 'object') {
+    await safeSendMessage('load_utility')
   }
 
   if (document.body.classList.contains('iv-attached')) {
@@ -16,33 +16,18 @@
     return
   }
 
-  function deepQuerySelectorAll(target, tagName, selector) {
-    const result = []
-    const stack = [target]
-    while (stack.length) {
-      const current = stack.pop()
-      for (const node of current.querySelectorAll(`${selector}, *:not([no-shadow])`)) {
-        if (node.tagName === tagName) result.push(node)
-        if (node.shadowRoot) {
-          stack.push(node.shadowRoot)
-        } else {
-          node.setAttribute('no-shadow', '')
-        }
-      }
-    }
-    return result
-  }
-
   // init
   const options = window.ImageViewerOption
   options.closeButton = true
-  options.minWidth = 0
-  options.minHeight = 0
+  options.canvasMode = true
   window.ImageViewerLastDom = null
 
   // build image viewer
-  const canvasDataList = deepQuerySelectorAll(document.body, 'CANVAS', 'canvas')
+  const filteredCanvasList = ImageViewerUtils.deepQuerySelectorAll(document.body, 'CANVAS', 'canvas')
+    .filter(canvas => canvas.clientWidth > options.minWidth && canvas.clientHeight > options.minHeight)
     .map(canvas => ({src: canvas.toDataURL(), dom: canvas}))
     .filter(data => data.src !== 'data:,')
-  ImageViewer(canvasDataList, options)
+  const iframeCanvasList = await ImageViewerUtils.getIframeImageList(options)
+  const orderedCanvasList = ImageViewerUtils.combineImageList(filteredCanvasList, iframeCanvasList)
+  ImageViewer(orderedCanvasList, options)
 })()

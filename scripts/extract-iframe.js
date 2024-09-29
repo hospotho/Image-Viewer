@@ -99,11 +99,16 @@ window.ImageViewerExtractor = (function () {
       ? [...new Set(imageList)].filter(url => url !== '' && url !== 'about:blank' && !url.includes('.svg'))
       : [...new Set(imageList)].filter(url => url !== '' && url !== 'about:blank')
   }
+  function getCanvasList(options) {
+    const minWidth = options.minWidth || 0
+    const minHeight = options.minHeight || 0
+    return [...document.getElementsByTagName('canvas')].filter(canvas => canvas.clientWidth >= minWidth && canvas.clientHeight >= minHeight).map(canvas => canvas.toDataURL())
+  }
 
   return {
     extractImage: async function (options) {
       const subFrameRedirectedHref = await getSubFrameRedirectedHref()
-      const imageList = getImageList(options)
+      const imageList = options.canvasMode ? getCanvasList(options) : getImageList(options)
       return [location.href, subFrameRedirectedHref, imageList]
     }
   }
