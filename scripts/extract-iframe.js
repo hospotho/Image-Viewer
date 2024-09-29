@@ -108,9 +108,9 @@ window.ImageViewerExtractor = (function () {
     for (const canvas of rawCanvasList) {
       const {width, height} = canvas.getBoundingClientRect()
       if (width >= minWidth && height >= minHeight) {
-        const imgSrc = canvas.toDataURL()
-        if (imgSrc === 'data:,') continue
-        canvasList.push({src: imgSrc, dom: canvas})
+        const dataUrl = canvas.toDataURL()
+        if (dataUrl === 'data:,') continue
+        canvasList.push(dataUrl)
       }
     }
     return canvasList
