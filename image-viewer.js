@@ -837,7 +837,7 @@ window.ImageViewer = (function () {
         }
         return [buffer, mime]
       }
-      async function getImageBuffer(imgUrl) {
+      async function fetchImageBuffer(imgUrl) {
         if (imgUrl.startsWith('data')) {
           return readDateUrl(imgUrl)
         }
@@ -867,7 +867,19 @@ window.ImageViewer = (function () {
         alert('unknown protocol')
         throw new Error('unknown protocol')
       }
-      async function sendImageByForm(buffer, mime, endpoint, felidName) {
+
+      const imageBufferCache = new Map()
+      async function getImageBuffer(imgUrl) {
+        if (imageBufferCache.has(imgUrl)) {
+          return imageBufferCache.get(imgUrl)
+        }
+        const promise = fetchImageBuffer(imgUrl)
+        imageBufferCache.set(imgUrl, promise)
+        return promise
+      }
+      async function sendImageByForm(imgUrl, endpoint, felidName) {
+        const [buffer, mime] = await getImageBuffer(imgUrl)
+
         const form = document.createElement('form')
         const fileInput = document.createElement('input')
         const submitInput = document.createElement('input')
@@ -894,10 +906,11 @@ window.ImageViewer = (function () {
         document.body.removeChild(form)
       }
 
-      function searchImageByGoogle(buffer, mime) {
-        sendImageByForm(buffer, mime, 'https://lens.google.com/v3/upload', 'encoded_image')
+      function searchImageByGoogle(imgUrl) {
+        sendImageByForm(imgUrl, 'https://lens.google.com/v3/upload', 'encoded_image')
       }
-      async function searchImageByYandex(buffer, mime) {
+      async function searchImageByYandex(imgUrl) {
+        const [buffer, mime] = await getImageBuffer(imgUrl)
         const endpoint = 'https://yandex.com/images-apphost/image-download?cbird=111&images_avatars_size=preview&images_avatars_namespace=images-cbir'
         const blob = new Blob([buffer], {type: mime})
         const res = await fetch(endpoint, {method: 'POST', body: blob})
@@ -909,11 +922,11 @@ window.ImageViewer = (function () {
         const url = `https://yandex.com/images/search?rpt=imageview&url=${encodeURIComponent(originalImageUrl)}&cbir_id=${encodeURIComponent(cbirID)}`
         openNewTab(url)
       }
-      function searchImageBySaucenao(buffer, mime) {
-        sendImageByForm(buffer, mime, 'https://saucenao.com/search.php', 'file')
+      function searchImageBySaucenao(imgUrl) {
+        sendImageByForm(imgUrl, 'https://saucenao.com/search.php', 'file')
       }
-      function searchImageByAscii2d(buffer, mime) {
-        sendImageByForm(buffer, mime, 'https://ascii2d.net/search/file', 'file')
+      function searchImageByAscii2d(imgUrl) {
+        sendImageByForm(imgUrl, 'https://ascii2d.net/search/file', 'file')
       }
 
       const extensionMode = !!chrome.runtime?.id
@@ -940,9 +953,8 @@ window.ImageViewer = (function () {
             openNewTab(queryUrl)
             return
           }
-          const [buffer, mime] = await getImageBuffer(imgUrl)
           const searchDataImage = searchImageFunctionList[i]
-          searchDataImage(buffer, mime)
+          searchDataImage(imgUrl)
           return
         }
       })
@@ -959,10 +971,9 @@ window.ImageViewer = (function () {
           }
           return
         }
-        const [buffer, mime] = await getImageBuffer(imgUrl)
         for (let i = urlList.length - 1; i >= 0; i--) {
           const searchDataImage = searchImageFunctionList[i]
-          searchDataImage(buffer, mime)
+          searchDataImage(imgUrl)
         }
       })
 
