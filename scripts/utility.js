@@ -988,6 +988,8 @@ window.ImageViewerUtils = (function () {
     const src = img.currentSrc
     const rawUrl = getRawUrl(src)
     const attrList = []
+
+    // check attributes
     for (const attr of img.attributes) {
       if (passList.has(attr.name) || !attr.value.match(urlRegex)) continue
 
@@ -1000,6 +1002,8 @@ window.ImageViewerUtils = (function () {
         attrList.push({name: 'raw ' + attr.name, url: rawAttrUrl})
       }
     }
+
+    // check srcset and src
     if (img.srcset && img.srcset !== src) {
       const srcsetList = img.srcset
         .split(',')
@@ -1011,6 +1015,8 @@ window.ImageViewerUtils = (function () {
     if (rawUrl !== src) {
       attrList.push({name: 'raw url', url: rawUrl})
     }
+
+    // check url path
     try {
       const url = new URL(src, document.baseURI)
       const pathname = url.pathname
@@ -1021,8 +1027,8 @@ window.ImageViewerUtils = (function () {
         attrList.push({name: 'non thumbnail path', url: nonThumbnail})
       }
 
+      // check url parameters
       if (!src.includes('?')) throw new Error()
-
       if (!pathname.includes('.')) {
         const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
         if (extMatch) {
@@ -1039,6 +1045,8 @@ window.ImageViewerUtils = (function () {
       const noQuery = src.replace(pathname + search, pathname)
       attrList.push({name: 'no query', url: noQuery})
     } catch (error) {}
+
+    // check parent anchor
     const anchor = img.closest('a')
     if (anchor && anchor.href !== src && anchor.href.match(urlRegex)) {
       const anchorHaveExt = cachedExtensionMatch(anchor.href) !== null
