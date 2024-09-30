@@ -1215,7 +1215,7 @@ window.ImageViewer = (function () {
       function searchImgAnchor() {
         const img = shadowRoot.querySelector('li.current img')
         const imgNode = searchImgNode(img)
-        if (!imgNode) return null
+        if (!imgNode || imgNode.tagName === 'IFRAME') return null
 
         const closestAnchor = imgNode.closest('a')
         if (closestAnchor) return closestAnchor
