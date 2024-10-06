@@ -15,7 +15,7 @@
     "message": "Auto navigate period"
   },
   "auto_scroll_desc": {
-    "message": "Some web pages load more contents as you scroll down<br>Enable this option if you want Image Viewer to scroll and load content automatically"
+    "message": "Some web pages load more content as you scroll down.<br>Add domains here to enable automatic scrolling and content loading for those websites."
   },
   "auto_scroll_enable_list": {
     "message": "Enable Auto Scroll"
@@ -72,7 +72,7 @@
     "message": "When more than one search using same hotkey, all search will be triggered, built-in hotkey like 'Ctrl + W' or 'Ctrl + T' will not be overridden.<br><br>When using custom search, '{imgSrc}' will be used to replace with real URL<br><br>Soft disable hotkey without Ctrl/Alt/Shift key, change its value in DevTools to save it."
   },
   "hover_check_desc": {
-    "message": "Image Viewer allows you to select images by right-clicking on them<br>To select video thumbnails, it removes the hover elements by default<br>Disable this behavior if you want to keep the hover elements"
+    "message": "Image Viewer allows you to select images by right-clicking on them.<br>By default, it removes hover elements to select video thumbnails.<br>Add domains here if you want to keep the hover elements for those websites."
   },
   "hover_disable_list": {
     "message": "Disable Hover Check"
