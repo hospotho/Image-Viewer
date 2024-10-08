@@ -78,7 +78,7 @@
     canvas.width = 100
     canvas.height = 100
     const ctx = canvas.getContext('2d')
-    ctx.drawImage(image, 0, 0)
+    realDrawImage.apply(ctx, [image, 0, 0])
     try {
       canvas.toDataURL('image/png')
       return false
