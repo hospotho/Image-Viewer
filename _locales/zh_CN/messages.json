@@ -15,7 +15,7 @@
     "message": "自动翻页间隔"
   },
   "auto_scroll_desc": {
-    "message": "一些网页在向下滚动时会加载更多内容<br>如果要让Image Viewer自动滚动以加载新内容，请启用此选项"
+    "message": "一些网页在向下滚动时会加载更多内容<br>如果要让Image Viewer自动滚动以加载新内容，请在此处添加域名"
   },
   "auto_scroll_enable_list": {
     "message": "启用自动滚动"
@@ -72,7 +72,7 @@
     "message": "多个搜索使用相同的快捷键时，触发后会同时启动，既有快捷键如'Ctrl + W' 'Ctrl + T'等不会被覆盖<br><br>使用自定搜索引擎时，搜索图片的URL会置换'{imgSrc}'成真正的图像连结<br><br>软性禁止没有使用Ctrl/Alt/Shift的热键，在DevTools更改成需要的键以保存"
   },
   "hover_check_desc": {
-    "message": "Image Viewer允许您通过右键来选择图像<br>为了选择视频缩略图，默认情况下会删除悬停元素<br>如果要保留悬停元素，请禁用此行为"
+    "message": "Image Viewer允许您通过右键来选择图像<br>为了选择视频缩略图，默认情况下会删除悬停元素<br>如果要保留悬停元素，请在此处添加域名"
   },
   "hover_disable_list": {
     "message": "禁用悬停检查"
