@@ -48,6 +48,7 @@ window.ImageViewerUtils = (function () {
   })()
 
   // unlazy state
+  let disableImageUnlazy = false
   let unlazyFlag = false
   let lastUnlazyTask = null
   let lastHref = ''
@@ -1233,6 +1234,7 @@ window.ImageViewerUtils = (function () {
       processLazyPlaceholder()
       fakeUserHover()
       enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
+      disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
     }
     if (lastHref !== '' && lastHref !== location.href) {
       const allImageSrc = new Set(getImageListWithoutFilter(options).map(data => data.src))
@@ -1245,6 +1247,8 @@ window.ImageViewerUtils = (function () {
       }
     }
     lastHref = location.href
+    if (disableImageUnlazy) return
+
     const race = createUnlazyRace(options)
     return race
   }
@@ -1384,7 +1388,7 @@ window.ImageViewerUtils = (function () {
   function getImageListWithoutFilter(options) {
     const imageDataList = []
 
-    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img[iv-image]')
+    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', `img${disableImageUnlazy ? '' : '[iv-image]'}`)
     for (const img of rawImageList) {
       const imgSrc = img.currentSrc || img.src
       imageDataList.push({src: imgSrc, dom: img})
@@ -1395,7 +1399,7 @@ window.ImageViewerUtils = (function () {
       imageDataList.push({src: video.poster, dom: video})
     }
 
-    const uncheckedNodeList = document.querySelectorAll('body, body *:not([no-bg]):not([iv-image]):not(video[poster])')
+    const uncheckedNodeList = document.querySelectorAll(`body, body *:not([no-bg])${disableImageUnlazy ? '' : ':not([iv-image])'}:not(video[poster])`)
     for (const node of uncheckedNodeList) {
       const attrUrl = node.getAttribute('data-bg')
       if (attrUrl !== null) {
@@ -1455,7 +1459,7 @@ window.ImageViewerUtils = (function () {
 
     const imageDataList = []
 
-    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img[iv-image]')
+    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', `img${disableImageUnlazy ? '' : '[iv-image]'}`)
     for (const img of rawImageList) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
@@ -1474,7 +1478,7 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    const uncheckedNodeList = document.querySelectorAll('body, body *:not([no-bg]):not([iv-image]):not(video[poster])')
+    const uncheckedNodeList = document.querySelectorAll(`body, body *:not([no-bg])${disableImageUnlazy ? '' : ':not([iv-image])'}:not(video[poster])`)
     for (const node of uncheckedNodeList) {
       const [width, height] = getNodeSize(node)
       if (width < minWidth || height < minHeight) continue
