@@ -77,6 +77,12 @@
   "hover_disable_list": {
     "message": "Disable Hover Check"
   },
+  "image_unlazy_desc": {
+    "message": "Some web pages serve extremely large images through lazy loading (eg. r/EarthPorn).<br>Add domains here if you want to disable image unlazy for those websites."
+  },
+  "image_unlazy_disable_list": {
+    "message": "Disable Image Unlazy"
+  },
   "kofi_link": {
     "message": "Support me"
   },

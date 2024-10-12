@@ -77,6 +77,12 @@
   "hover_disable_list": {
     "message": "ホバーチェックを無効にする"
   },
+  "image_unlazy_desc": {
+    "message": "一部のウェブページでは、遅延読み込みを利用して非常に大きな画像を提供しています（例: r/EarthPorn）。<br>遅延読み込み解除を無効にしたい場合は、ここにドメインを追加してください"
+  },
+  "image_unlazy_disable_list": {
+    "message": "遅延読み込み解除を無効にする"
+  },
   "kofi_link": {
     "message": "Support me"
   },
