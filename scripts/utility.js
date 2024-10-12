@@ -1214,24 +1214,25 @@ window.ImageViewerUtils = (function () {
       image.dispatchEvent(leaveEvent)
     }
   }
-  function setAutoScrollSetting(options) {
+  function getDomainSetting(rawDomainList) {
     const domainList = []
     const regexList = []
-    for (const str of options.autoScrollEnableList) {
+    for (const str of rawDomainList) {
       if (str[0] === '/' && str[str.length - 1] === '/') {
         regexList.push(new RegExp(str.slice(1, -1)))
       } else {
         domainList.push(str)
       }
     }
-    enableAutoScroll = domainList.some(domain => domain === location.hostname || domain === location.hostname.replace('www.', ''))
-    enableAutoScroll ||= regexList.some(regex => regex.test(location.href))
+    let result = domainList.some(domain => domain === location.hostname || domain === location.hostname.replace('www.', ''))
+    result ||= regexList.some(regex => regex.test(location.href))
+    return result
   }
   function startUnlazy(options) {
     if (lastUnlazyTask === null) {
       processLazyPlaceholder()
       fakeUserHover()
-      setAutoScrollSetting(options)
+      enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
     }
     if (lastHref !== '' && lastHref !== location.href) {
       const allImageSrc = new Set(getImageListWithoutFilter(options).map(data => data.src))
