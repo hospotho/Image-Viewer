@@ -20,6 +20,8 @@ If you like this extension, you can [buy me a coffee](https://ko-fi.com/tonymilk
 
 ## Installation
 
+[Web Demo](https://hospotho.github.io/Image-Viewer/) (Does not include some extension-only features)
+
 You can install release version from [Chrome Web Store](https://chrome.google.com/webstore/detail/image-viewer/ghdcoodfcolpdebbdhbgkbodbjololfl) or development version follow steps below:
 
 1. Download the source code and place it anywhere you want.
