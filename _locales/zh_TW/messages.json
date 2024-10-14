@@ -131,6 +131,12 @@
   "speed_control": {
     "message": "速度控制"
   },
+  "support": {
+    "message": "支援"
+  },
+  "support_title": {
+    "message": "支援 - Image Viewer"
+  },
   "svg_filter": {
     "message": "過濾svg"
   },

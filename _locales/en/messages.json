@@ -131,6 +131,12 @@
   "speed_control": {
     "message": "Speed control"
   },
+  "support": {
+    "message": "Support"
+  },
+  "support_title": {
+    "message": "Support - Image Viewer"
+  },
   "svg_filter": {
     "message": "Filter svg"
   },

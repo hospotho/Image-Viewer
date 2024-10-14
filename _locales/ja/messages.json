@@ -131,6 +131,12 @@
   "speed_control": {
     "message": "速度制御"
   },
+  "support": {
+    "message": "サポート"
+  },
+  "support_title": {
+    "message": "サポート - Image Viewer"
+  },
   "svg_filter": {
     "message": "svgをフィルターする"
   },
