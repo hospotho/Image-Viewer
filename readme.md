@@ -155,7 +155,7 @@ You may also use `image-viewer.js` with your own script with Tampermonkey or oth
 ## ToDo
 
 1. `image-viewer.min.js`
-2. Demo page
+2. support more image display mode
 
 ## History
 
