@@ -1,3 +1,9 @@
+1.40 [2024-10-14]:
+1. Added a new option to allow users to disable image unlazy on specific domains.
+2. Introduced a web demo, enabling users to try the feature before installation.
+3. Updated the options page and added a simple support page.
+4. Fixed a bug in the new view canvas feature that caused issues on sites like Notion.
+
 1.39.1 [2024-10-01]:
 Patch Update
 1. Fixed a bug in the new view canvas features that caused issues with some sites like Google Sheets
