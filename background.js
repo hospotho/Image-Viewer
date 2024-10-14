@@ -205,7 +205,7 @@ let lastTabOpenIndex = 0
 
 chrome.runtime.onInstalled.addListener(details => {
   if (details.reason === 'update' || details.reason === 'install') {
-    chrome.windows.create({url: 'popup.html', type: 'popup'})
+    chrome.windows.create({url: '/page/popup.html', type: 'popup'})
   }
 })
 

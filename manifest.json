@@ -13,7 +13,7 @@
   "background": {
     "service_worker": "background.js"
   },
-  "options_page": "options.html",
+  "options_page": "/page/options.html",
   "action": {
     "default_icon": {
       "16": "/icon/icon16.png",
