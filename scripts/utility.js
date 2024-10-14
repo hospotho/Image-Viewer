@@ -1247,7 +1247,10 @@ window.ImageViewerUtils = (function () {
       }
     }
     lastHref = location.href
-    if (disableImageUnlazy) return
+    if (disableImageUnlazy) {
+      enableAutoScroll ? autoScroll() : scrollUnlazy()
+      return
+    }
 
     const race = createUnlazyRace(options)
     return race
