@@ -6,7 +6,38 @@ body {
   font-size: 24px;
   height: 50px;
   line-height: 50px;
+  margin-bottom: 10px;
   background: url(/icon/icon.png) 5px center no-repeat;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+nav > div {
+  height: 50px;
+  border: 2px solid;
+  margin-left: 5px;
+}
+
+a {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  position: relative;
+  background-color: #303030;
+}
+a > img {
+  border-right: 2px solid;
+  border-color: black;
+  background-color: white;
+}
+a > span {
+  color: orange;
+  margin: 0 5px;
 }
 
 form,
