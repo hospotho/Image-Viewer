@@ -1,0 +1,18 @@
+body {
+  font-family: Verdana, Helvetica, Arial, sans-serif;
+}
+#title {
+  padding-left: 70px;
+  font-size: 24px;
+  height: 50px;
+  line-height: 50px;
+  margin-bottom: 10px;
+  background: url(/icon/icon.png) 5px center no-repeat;
+}
+
+ul {
+  font-size: 16px;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
