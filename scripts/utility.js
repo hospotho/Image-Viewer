@@ -838,7 +838,8 @@ window.ImageViewerUtils = (function () {
 
     const release = await semaphore.acquire()
     try {
-      const res = await fetch(url.href, {method: 'HEAD', signal: AbortSignal.timeout(5000)})
+      const method = url.href.startsWith('blob:') ? 'GET' : 'HEAD'
+      const res = await fetch(url.href, {method, signal: AbortSignal.timeout(5000)})
       if (!res.ok) return 0
       if (res.redirected) return -1
       const type = res.headers.get('Content-Type')
