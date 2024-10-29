@@ -646,7 +646,7 @@ window.ImageViewerUtils = (function () {
       }
       if (container.scrollTop !== scrollY) return
 
-      // bottom maybe invalid after scroll
+      // check if bottom invalid when no scroll
       let invalid = false
       for (const img of imageList) {
         const bottomAttr = img.getAttribute('iv-bottom')
