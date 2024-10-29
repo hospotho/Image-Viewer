@@ -1131,7 +1131,7 @@ window.ImageViewerUtils = (function () {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
-    const resultList = await Promise.all(asyncList)
+    const resultList = (await Promise.all(asyncList)).filter(result => result.length > 0)
     const lazyList = resultList.flat()
     if (lazyList.length > resultList.length) console.log('Multiple unlazy attributes found')
     const attrCount = {}
