@@ -120,9 +120,9 @@ window.ImageViewerUtils = (function () {
   const styleObserver = new MutationObserver(mutationsList => {
     for (const mutation of mutationsList) {
       mutation.target.removeAttribute('no-bg')
-      mutation.target.removeAttribute('data-bg')
-      mutation.target.removeAttribute('data-width')
-      mutation.target.removeAttribute('data-height')
+      mutation.target.removeAttribute('iv-bg')
+      mutation.target.removeAttribute('iv-width')
+      mutation.target.removeAttribute('iv-height')
     }
   })
   styleObserver.observe(document.body, {attributes: true, subtree: true, attributeFilter: ['style']})
@@ -631,9 +631,9 @@ window.ImageViewerUtils = (function () {
       let currBottom = 0
       let bottomImg = null
       for (const img of imageList) {
-        const scrollBottom = img.getAttribute('scroll-bottom')
-        const bottom = scrollBottom ? Number(scrollBottom) : img.getBoundingClientRect().bottom + scrollY
-        img.setAttribute('scroll-bottom', bottom)
+        const bottomAttr = img.getAttribute('iv-bottom')
+        const bottom = bottomAttr ? Number(bottomAttr) : img.getBoundingClientRect().bottom + scrollY
+        img.setAttribute('iv-bottom', bottom)
         if (bottom > currBottom) {
           currBottom = bottom
           bottomImg = img
@@ -649,9 +649,9 @@ window.ImageViewerUtils = (function () {
       // bottom maybe invalid after scroll
       let invalid = false
       for (const img of imageList) {
-        const attr = img.getAttribute('scroll-bottom')
-        if (attr === null) continue
-        const scrollBottom = Number(attr)
+        const bottomAttr = img.getAttribute('iv-bottom')
+        if (bottomAttr === null) continue
+        const scrollBottom = Number(bottomAttr)
         const bottom = img.getBoundingClientRect().bottom + scrollY
         if (scrollBottom !== bottom) {
           invalid = true
@@ -662,7 +662,7 @@ window.ImageViewerUtils = (function () {
       if (!invalid) return
       for (const img of imageList) {
         const bottom = img.getBoundingClientRect().bottom + scrollY
-        img.setAttribute('scroll-bottom', bottom)
+        img.setAttribute('iv-bottom', bottom)
       }
     }
     const timer = async () => {
@@ -1405,7 +1405,7 @@ window.ImageViewerUtils = (function () {
 
     const uncheckedNodeList = document.querySelectorAll(`body, body *:not([no-bg])${disableImageUnlazy ? '' : ':not([iv-image])'}:not(video[poster])`)
     for (const node of uncheckedNodeList) {
-      const attrUrl = node.getAttribute('data-bg')
+      const attrUrl = node.getAttribute('iv-bg')
       if (attrUrl !== null) {
         imageDataList.push({src: attrUrl, dom: node})
         continue
@@ -1423,7 +1423,7 @@ window.ImageViewerUtils = (function () {
       const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
       if (bgList.length !== 0) {
         const url = bgList[0].slice(5, -2)
-        node.setAttribute('data-bg', url)
+        node.setAttribute('iv-bg', url)
         imageDataList.push({src: url, dom: node})
       }
     }
@@ -1434,13 +1434,13 @@ window.ImageViewerUtils = (function () {
   async function checkBackgroundSize(node, url, width, height) {
     const realSize = await getImageRealSize(url)
     node.removeAttribute('no-bg')
-    node.setAttribute('data-bg', url)
-    node.setAttribute('data-width', Math.min(realSize, width))
-    node.setAttribute('data-height', Math.min(realSize, height))
+    node.setAttribute('iv-bg', url)
+    node.setAttribute('iv-width', Math.min(realSize, width))
+    node.setAttribute('iv-height', Math.min(realSize, height))
   }
   function getNodeSize(node) {
-    const widthAttr = node.getAttribute('data-width')
-    const heightAttr = node.getAttribute('data-height')
+    const widthAttr = node.getAttribute('iv-width')
+    const heightAttr = node.getAttribute('iv-height')
     if (widthAttr && heightAttr) {
       const width = Number(widthAttr)
       const height = Number(heightAttr)
@@ -1450,8 +1450,8 @@ window.ImageViewerUtils = (function () {
     if (width === 0 || height === 0) {
       node.setAttribute('no-bg', '')
     }
-    node.setAttribute('data-width', width)
-    node.setAttribute('data-height', height)
+    node.setAttribute('iv-width', width)
+    node.setAttribute('iv-height', height)
     return [width, height]
   }
   function getImageList(options) {
@@ -1486,7 +1486,7 @@ window.ImageViewerUtils = (function () {
     for (const node of uncheckedNodeList) {
       const [width, height] = getNodeSize(node)
       if (width < minWidth || height < minHeight) continue
-      const attrUrl = node.getAttribute('data-bg')
+      const attrUrl = node.getAttribute('iv-bg')
       if (attrUrl !== null) {
         imageDataList.push({src: attrUrl, dom: node})
         continue

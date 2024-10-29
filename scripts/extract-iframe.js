@@ -15,8 +15,8 @@ window.ImageViewerExtractor = (function () {
   }
 
   function isNodeSizeEnough(node, minWidth, minHeight) {
-    const widthAttr = node.getAttribute('data-width')
-    const heightAttr = node.getAttribute('data-height')
+    const widthAttr = node.getAttribute('iv-width')
+    const heightAttr = node.getAttribute('iv-height')
     if (widthAttr && heightAttr) {
       const width = Number(widthAttr)
       const height = Number(heightAttr)
@@ -27,8 +27,8 @@ window.ImageViewerExtractor = (function () {
       node.setAttribute('no-bg', '')
       return false
     }
-    node.setAttribute('data-width', width)
-    node.setAttribute('data-height', height)
+    node.setAttribute('iv-width', width)
+    node.setAttribute('iv-height', height)
     return width >= minWidth && height >= minHeight
   }
   function deepQuerySelectorAll(target, tagName, selector) {
@@ -74,7 +74,7 @@ window.ImageViewerExtractor = (function () {
     const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg]):not(img):not(video[poster])')
     for (const node of uncheckedNodeList) {
       if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
-      const attrUrl = node.getAttribute('data-bg')
+      const attrUrl = node.getAttribute('iv-bg')
       if (attrUrl !== null) {
         imageList.push(attrUrl)
         continue
@@ -91,7 +91,7 @@ window.ImageViewerExtractor = (function () {
         continue
       }
       const url = bgList[0].slice(5, -2)
-      node.setAttribute('data-bg', url)
+      node.setAttribute('iv-bg', url)
       imageList.push(url)
     }
 
