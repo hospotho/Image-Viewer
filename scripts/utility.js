@@ -1425,14 +1425,16 @@ window.ImageViewerUtils = (function () {
         const url = bgList[0].slice(5, -2)
         node.setAttribute('iv-bg', url)
         imageDataList.push({src: url, dom: node})
+        checkBackgroundSize(node, url)
       }
     }
 
     const uniqueDataList = processImageDataList(options, imageDataList)
     return uniqueDataList
   }
-  async function checkBackgroundSize(node, url, width, height) {
+  async function checkBackgroundSize(node, url) {
     const realSize = await getImageRealSize(url)
+    const [width, height] = getNodeSize(node)
     node.removeAttribute('no-bg')
     node.setAttribute('iv-bg', url)
     node.setAttribute('iv-width', Math.min(realSize, width))
@@ -1504,7 +1506,7 @@ window.ImageViewerUtils = (function () {
       }
       const url = bgList[0].slice(5, -2)
       node.setAttribute('no-bg', '')
-      checkBackgroundSize(node, url, width, height)
+      checkBackgroundSize(node, url)
     }
 
     const uniqueDataList = processImageDataList(options, imageDataList)
