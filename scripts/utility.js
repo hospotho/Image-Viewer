@@ -1257,7 +1257,7 @@ window.ImageViewerUtils = (function () {
     return race
   }
 
-  // get image
+  // get iframe images
   async function getCanvasList(options) {
     const minWidth = options.minWidth || 0
     const minHeight = options.minHeight || 0
@@ -1326,6 +1326,8 @@ window.ImageViewerUtils = (function () {
     const filteredDataList = imageDataList.filter(data => imageFailureCountMap.get(data.src) === undefined || imageFailureCountMap.get(data.src) < 3)
     return filteredDataList
   }
+
+  // get page images
   function processImageDataList(options, imageDataList) {
     const imageFailureCountMap = ImageViewer('get_image_failure_count')
     const isBadImage = options.svgFilter
@@ -1389,6 +1391,30 @@ window.ImageViewerUtils = (function () {
     const uniqueDataList = Array.from(urlDataMap, ([k, v]) => v)
     return uniqueDataList
   }
+  function getNodeSize(node) {
+    const widthAttr = node.getAttribute('iv-width')
+    const heightAttr = node.getAttribute('iv-height')
+    if (widthAttr && heightAttr) {
+      const width = Number(widthAttr)
+      const height = Number(heightAttr)
+      return [width, height]
+    }
+    const {width, height} = node.getBoundingClientRect()
+    if (width === 0 || height === 0) {
+      node.setAttribute('no-bg', '')
+    }
+    node.setAttribute('iv-width', width)
+    node.setAttribute('iv-height', height)
+    return [width, height]
+  }
+  async function checkBackgroundSize(node, url) {
+    const realSize = await getImageRealSize(url)
+    const [width, height] = getNodeSize(node)
+    node.removeAttribute('no-bg')
+    node.setAttribute('iv-bg', url)
+    node.setAttribute('iv-width', Math.min(realSize, width))
+    node.setAttribute('iv-height', Math.min(realSize, height))
+  }
   function getImageListWithoutFilter(options) {
     const imageDataList = []
 
@@ -1431,30 +1457,6 @@ window.ImageViewerUtils = (function () {
 
     const uniqueDataList = processImageDataList(options, imageDataList)
     return uniqueDataList
-  }
-  async function checkBackgroundSize(node, url) {
-    const realSize = await getImageRealSize(url)
-    const [width, height] = getNodeSize(node)
-    node.removeAttribute('no-bg')
-    node.setAttribute('iv-bg', url)
-    node.setAttribute('iv-width', Math.min(realSize, width))
-    node.setAttribute('iv-height', Math.min(realSize, height))
-  }
-  function getNodeSize(node) {
-    const widthAttr = node.getAttribute('iv-width')
-    const heightAttr = node.getAttribute('iv-height')
-    if (widthAttr && heightAttr) {
-      const width = Number(widthAttr)
-      const height = Number(heightAttr)
-      return [width, height]
-    }
-    const {width, height} = node.getBoundingClientRect()
-    if (width === 0 || height === 0) {
-      node.setAttribute('no-bg', '')
-    }
-    node.setAttribute('iv-width', width)
-    node.setAttribute('iv-height', height)
-    return [width, height]
   }
   function getImageList(options) {
     const minWidth = options.minWidth
