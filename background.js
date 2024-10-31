@@ -567,8 +567,8 @@ function addCommandHandler() {
 function init() {
   resetLocalStorage()
   addMessageHandler()
-  createContextMenu()
   addToolbarIconHandler()
+  createContextMenu()
   addCommandHandler()
   console.log('Init complete')
 }
