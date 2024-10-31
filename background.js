@@ -479,6 +479,14 @@ function addMessageHandler() {
   })
 }
 
+function addToolbarIconHandler() {
+  chrome.action.onClicked.addListener(async tab => {
+    if (!tab.url) return
+    await passOptionToTab(tab.id, currOptions)
+    chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
+  })
+}
+
 function createContextMenu() {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
@@ -530,14 +538,6 @@ function createContextMenu() {
         break
       }
     }
-  })
-}
-
-function addToolbarIconHandler() {
-  chrome.action.onClicked.addListener(async tab => {
-    if (!tab.url) return
-    await passOptionToTab(tab.id, currOptions)
-    chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
   })
 }
 
