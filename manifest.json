@@ -46,6 +46,12 @@
         "default": "Alt+Shift+1"
       },
       "description": "__MSG_view_all_images_in_image_viewer__"
+    },
+    "open-image-viewer-in-canvases-mode": {
+      "suggested_key": {
+        "default": "Alt+2"
+      },
+      "description": "__MSG_view_canvas_in_image_viewer__"
     }
   }
 }

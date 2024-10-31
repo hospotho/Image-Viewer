@@ -555,6 +555,11 @@ function addCommandHandler() {
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         break
       }
+      case 'open-image-viewer-in-canvases-mode': {
+        await passOptionToTab(tab.id, currOptions)
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-canvas.js']})
+        break
+      }
     }
   })
 }
