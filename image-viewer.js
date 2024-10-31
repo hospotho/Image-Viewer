@@ -323,7 +323,7 @@ window.ImageViewer = (function () {
         return imgNode
       }
       const nearest = searchNearestPageImgNode(img)
-      nearest.scrollIntoView({behavior: 'instant', block: 'center'})
+      nearest?.scrollIntoView({behavior: 'instant', block: 'center'})
       nearest !== lastNearest ? (lastNearest = nearest) : repeatCount++
       overtime = await new Promise(resolve => {
         release = () => resolve(false)
@@ -1228,8 +1228,8 @@ window.ImageViewer = (function () {
           if (treeAnchorList.length === 1) return treeAnchorList[0]
         }
 
-        const containerAnchorList = imgNode.closest('div').getElementsByTagName('a')
-        if (containerAnchorList.length === 1) return containerAnchorList[0]
+        const containerAnchorList = imgNode.closest('div')?.getElementsByTagName('a')
+        if (containerAnchorList?.length === 1) return containerAnchorList[0]
 
         const {width: rootWidth, height: rootHeight, top: rootTop, left: rootLeft} = imgNode.getBoundingClientRect()
         let el = imgNode
