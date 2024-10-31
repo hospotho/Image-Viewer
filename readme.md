@@ -132,7 +132,7 @@ For additional options, right-click the extension icon on the toolbar. You can s
     <td><kbd>Shift</kbd>+<kbd>r</kbd> (default)</td>
   </tr>
   <tr>
-    <td rowspan="2">Close image viewer</td>
+    <td rowspan="2">Close Image Viewer</td>
     <td><kbd>ESC</kbd> or <kbd>NumpadAdd</kbd></td>
   </tr>
   <tr>
