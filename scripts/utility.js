@@ -1449,8 +1449,10 @@ window.ImageViewerUtils = (function () {
       const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
       if (bgList.length !== 0) {
         const url = bgList[0].slice(5, -2)
-        node.setAttribute('iv-bg', url)
         imageDataList.push({src: url, dom: node})
+        node.setAttribute('iv-bg', url)
+        node.setAttribute('iv-width', '0')
+        node.setAttribute('iv-height', '0')
         checkBackgroundSize(node, url)
       }
     }
