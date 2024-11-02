@@ -11,7 +11,8 @@
   "permissions": ["storage", "contextMenus", "scripting", "webNavigation"],
   "host_permissions": ["*://*/*", "file:///*"],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js"],
+    "service_worker": "background.js"
   },
   "options_page": "/page/options.html",
   "action": {
