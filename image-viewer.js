@@ -1398,6 +1398,7 @@ window.ImageViewer = (function () {
         dragFlag = true
         lastPos.x = e.clientX
         lastPos.y = e.clientY
+        e.preventDefault()
       })
       li.addEventListener('mousemove', e => {
         if (!dragFlag) return
