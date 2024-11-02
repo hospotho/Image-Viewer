@@ -1395,10 +1395,10 @@ window.ImageViewer = (function () {
       let finalDragTimeout = 0
       const lastPos = {x: 0, y: 0}
       li.addEventListener('mousedown', e => {
+        e.preventDefault()
         dragFlag = true
         lastPos.x = e.clientX
         lastPos.y = e.clientY
-        e.preventDefault()
       })
       li.addEventListener('mousemove', e => {
         if (!dragFlag) return
