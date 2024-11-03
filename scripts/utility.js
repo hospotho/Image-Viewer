@@ -1409,7 +1409,7 @@ window.ImageViewerUtils = (function () {
   }
   async function checkBackgroundSize(node, url) {
     const realSize = await getImageRealSize(url)
-    const [width, height] = getNodeSize(node)
+    const {width, height} = node.getBoundingClientRect()
     node.removeAttribute('no-bg')
     node.setAttribute('iv-bg', url)
     node.setAttribute('iv-width', Math.min(realSize, width))
