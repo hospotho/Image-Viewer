@@ -334,7 +334,7 @@ window.ImageViewerUtils = (function () {
     const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
     return bgList.length !== 0 ? bgList[0].slice(5, -2) : ''
   }
-  function getImageIndexSearcher(srcList) {
+  function createImageIndexSearcher(srcList) {
     function searchIndex(src) {
       const index = srcIndexMap.get(src)
       if (index !== undefined) return index
@@ -1649,7 +1649,7 @@ window.ImageViewerUtils = (function () {
     searchImageInfoIndex: function (input, imageList) {
       const srcList = imageList.map(data => data.src)
       const src = input instanceof Element ? getDomUrl(input) : input
-      const searcher = getImageIndexSearcher(srcList)
+      const searcher = createImageIndexSearcher(srcList)
       const index = searcher.searchIndex(src)
       return index
     },
@@ -1664,8 +1664,8 @@ window.ImageViewerUtils = (function () {
       const combinedSrcList = new Array(newList.length + oldList.length)
       const combinedImageList = new Array(newList.length + oldList.length)
 
-      const oldSearcher = getImageIndexSearcher(oldList.map(data => data.src))
-      const combinedSearcher = getImageIndexSearcher([])
+      const oldSearcher = createImageIndexSearcher(oldList.map(data => data.src))
+      const combinedSearcher = createImageIndexSearcher([])
 
       let leftIndex = 0
       let rightIndex = 0
