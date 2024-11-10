@@ -1056,7 +1056,7 @@ window.ImageViewerUtils = (function () {
       const maybeLarger = anchorHaveExt || anchorHaveExt === rawHaveExt || rawUrl.slice(0, 12).includes('cdn.')
       if (maybeLarger) attrList.push({name: 'parent anchor', url: anchor.href})
     }
-    return attrList.filter(attr => attr.url !== src)
+    return attrList.filter(attr => encodeURI(attr.url) !== src)
   }
   function getUnlazyImageList(minWidth, minHeight) {
     const imgWithAttrList = []
