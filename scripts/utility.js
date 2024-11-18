@@ -1618,6 +1618,9 @@ window.ImageViewerUtils = (function () {
     },
 
     getOrderedImageList: async function (options) {
+      if (options.retryCount === 0) return []
+      options.retryCount = options.retryCount ? options.retryCount - 1 : 3
+
       await startUnlazy(options)
 
       const iframeImageList = await getIframeImageList(options)
@@ -1626,6 +1629,7 @@ window.ImageViewerUtils = (function () {
       const uniqueImageList = iframeImageList.concat(imageList)
       if (uniqueImageList.length === 0) {
         console.log('Found no image')
+        return this.getOrderedImageList(options) 
       }
 
       scrollRelease()
