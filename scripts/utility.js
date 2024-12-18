@@ -640,11 +640,13 @@ window.ImageViewerUtils = (function () {
         }
       }
       bottomImg.scrollIntoView({behavior: 'instant', block: 'start'})
+      if (container.scrollTop > scrollY) return
+
       // allow scroll to document end on edge case
       if (container.scrollHeight - container.scrollTop < window.innerHeight * 2) {
         container.scrollBy({top: window.innerHeight * 2})
       }
-      if (container.scrollTop !== scrollY) return
+      if (container.scrollTop > scrollY) return
 
       // check if bottom invalid when no scroll
       let invalid = false
