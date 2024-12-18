@@ -708,8 +708,6 @@ window.ImageViewerUtils = (function () {
         await new Promise(resolve => setTimeout(resolve, 500))
         if (lastY === container.scrollTop && isImageViewerExist()) {
           count++
-          container.scrollBy(0, -100)
-          container.scrollBy({top: window.innerHeight})
         } else {
           count = 0
         }
