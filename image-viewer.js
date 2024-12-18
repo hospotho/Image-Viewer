@@ -694,17 +694,22 @@ window.ImageViewer = (function () {
       const action = e => {
         const img = e?.target ?? e
         if (img.naturalWidth !== 0 && img.naturalHeight !== 0) return
+        // update counter
+        const src = img.src
+        const lastCount = imageFailureCountMap.get(src) || 0
+        imageFailureCountMap.set(src, lastCount + 1)
+        if (lastCount < 3) {
+          fetch(src, {cache: 'reload'})
+          img.src = src
+          return
+        }
         // remove img container
         const target = img.parentNode
         target.remove()
         // update data list
-        const src = img.src
         const index = imageDataList.findIndex(data => data.src === src)
         if (index === -1) return
         imageDataList.splice(index, 1)
-        // update counter
-        const lastCount = imageFailureCountMap.get(src)
-        imageFailureCountMap.set(src, lastCount ? lastCount + 1 : 1)
         // set new current
         if (target.classList.contains('current')) {
           const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
