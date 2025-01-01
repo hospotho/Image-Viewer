@@ -176,7 +176,7 @@
       return result
     }
 
-    async function searchImageFromTree(dom, viewportPos) {
+    async function searchImageFromTree(dom, mouseX, mouseY) {
       if (!dom) return null
 
       let root = dom
@@ -203,7 +203,6 @@
         hasSameKindSibling ||= nextSibling ? nextClassList === rootClassList || nextSibling.tagName === root.tagName : false
       }
 
-      const [mouseX, mouseY] = viewportPos
       const relatedDomList = []
       const childList = getAllChildElements(root)
       for (const dom of childList) {
@@ -223,7 +222,7 @@
         if (isImageInfoValid(imageInfo)) imageInfoList.push(imageInfo)
       }
       if (imageInfoList.length === 0) {
-        return childList.length < 5 ? searchImageFromTree(root.parentElement, viewportPos) : null
+        return childList.length < 5 ? searchImageFromTree(root.parentElement, mouseX, mouseY) : null
       }
       if (imageInfoList.length === 1) return imageInfoList[0]
       const filteredImageInfoList = imageInfoList.filter(info => info[2].tagName === 'IMG')
@@ -324,7 +323,7 @@
     })()
 
     return {
-      searchDomByPosition: async function (elementList, viewportPos) {
+      searchDomByPosition: async function (elementList, mouseX, mouseY) {
         let firstVisibleDom = null
         let imageInfoFromPoint = null
         let imageDomLayer = 0
@@ -376,7 +375,7 @@
           return hiddenImageInfoFromPoint
         }
 
-        const imageInfoFromTree = await searchImageFromTree(firstVisibleDom, viewportPos)
+        const imageInfoFromTree = await searchImageFromTree(firstVisibleDom, mouseX, mouseY)
         if (isImageInfoValid(imageInfoFromTree)) {
           console.log('Image node found, hide under dom tree')
           markingDom(imageInfoFromTree[2])
@@ -425,20 +424,20 @@
 
   const getOrderedElement = (function () {
     return disableHoverCheck
-      ? e => {
+      ? (mouseX, mouseY) => {
           // lock pointer event back to auto
           document.documentElement.classList.add('iv-worker-checking')
           // get all elements include hover
-          const elementsBeforeDisableHover = deepGetElementFromPoint(e.clientX, e.clientY)
+          const elementsBeforeDisableHover = deepGetElementFromPoint(mouseX, mouseY)
           // reset pointer event as default
           document.documentElement.classList.remove('iv-worker-checking')
           return elementsBeforeDisableHover
         }
-      : async e => {
+      : async (mouseX, mouseY) => {
           // lock pointer event back to auto
           document.documentElement.classList.add('iv-worker-checking')
           // get all elements include hover
-          const elementsBeforeDisableHover = deepGetElementFromPoint(e.clientX, e.clientY)
+          const elementsBeforeDisableHover = deepGetElementFromPoint(mouseX, mouseY)
           // reset pointer event as default
           document.documentElement.classList.remove('iv-worker-checking')
 
@@ -455,7 +454,7 @@
             element.classList.remove('disable-hover')
           }
           // get all non hover elements
-          const elementsAfterDisableHover = deepGetElementFromPoint(e.clientX, e.clientY)
+          const elementsAfterDisableHover = deepGetElementFromPoint(mouseX, mouseY)
 
           const stableElements = []
           const unstableElements = []
@@ -479,9 +478,8 @@
 
       // release priority and allow contextmenu work properly
       await new Promise(resolve => setTimeout(resolve, 0))
-      const viewportPosition = [e.clientX, e.clientY]
-      const orderedElements = await getOrderedElement(e)
-      const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements, viewportPosition)
+      const orderedElements = await getOrderedElement(e.clientX, e.clientY)
+      const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements, e.clientX, e.clientY)
       if (!imageNodeInfo) return
 
       // display image dom
