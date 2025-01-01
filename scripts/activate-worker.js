@@ -314,13 +314,6 @@
       }
       return newRealSize > oldRealSize
     }
-    const markingDom = (function () {
-      return window.top === window.self
-        ? dom => {
-            window.ImageViewerLastDom = dom
-          }
-        : () => safeSendMessage('reset_dom')
-    })()
 
     return {
       searchDomByPosition: async function (elementList, mouseX, mouseY) {
@@ -365,24 +358,20 @@
 
         if (imageInfoFromPoint) {
           console.log(`Image node found, layer ${imageDomLayer}`)
-          markingDom(imageInfoFromPoint[2])
           return imageInfoFromPoint
         }
 
         if (hiddenImageInfoFromPoint) {
           console.log(`Hidden image node found, layer ${hiddenDomLayer}`)
-          markingDom(hiddenImageInfoFromPoint[2])
           return hiddenImageInfoFromPoint
         }
 
         const imageInfoFromTree = await searchImageFromTree(firstVisibleDom, mouseX, mouseY)
         if (isImageInfoValid(imageInfoFromTree)) {
           console.log('Image node found, hide under dom tree')
-          markingDom(imageInfoFromTree[2])
           return imageInfoFromTree
         }
 
-        markingDom(null)
         return null
       }
     }
@@ -421,7 +410,6 @@
     }
     return result
   }
-
   const getOrderedElement = (function () {
     return disableHoverCheck
       ? (mouseX, mouseY) => {
@@ -469,18 +457,34 @@
           return orderedElements
         }
   })()
+  async function getImageNodeInfo(mouseX, mouseY) {
+    if (document.body.classList.contains('iv-attached')) return null
+    const orderedElements = await getOrderedElement(mouseX, mouseY)
+    const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements, mouseX, mouseY)
+    return imageNodeInfo
+  }
+
+  const markingDom = (function () {
+    return window.top === window.self
+      ? dom => {
+          window.ImageViewerLastDom = dom
+        }
+      : () => safeSendMessage('reset_dom')
+  })()
 
   document.addEventListener(
     'contextmenu',
     async e => {
-      if (document.body.classList.contains('iv-attached')) return
       window.ImageViewerLastDom = undefined
 
       // release priority and allow contextmenu work properly
       await new Promise(resolve => setTimeout(resolve, 0))
-      const orderedElements = await getOrderedElement(e.clientX, e.clientY)
-      const imageNodeInfo = await domSearcher.searchDomByPosition(orderedElements, e.clientX, e.clientY)
-      if (!imageNodeInfo) return
+      const imageNodeInfo = await getImageNodeInfo(e.clientX, e.clientY)
+      if (imageNodeInfo === null) {
+        markingDom(null)
+        return
+      }
+      markingDom(imageNodeInfo[2])
 
       // display image dom
       console.log(imageNodeInfo.pop())
