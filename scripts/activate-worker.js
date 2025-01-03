@@ -242,14 +242,25 @@
     }
 
     // utility
-    async function extractBackgroundInfo(dom, minSize) {
-      const nodeStyle = window.getComputedStyle(dom)
+    function extractNodeStyle(nodeStyle) {
       const backgroundImage = nodeStyle.backgroundImage
       if (backgroundImage === 'none') return null
       const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
       if (bgList.length === 0) return null
-
-      const bgUrl = bgList[0].slice(5, -2)
+      return bgList[0].slice(5, -2)
+    }
+    function getBackgroundURL(dom) {
+      const nodeURL = extractNodeStyle(window.getComputedStyle(dom))
+      if (nodeURL) return nodeURL
+      const beforeURL = extractNodeStyle(window.getComputedStyle(dom, '::before'))
+      if (beforeURL) return beforeURL
+      const afterURL = extractNodeStyle(window.getComputedStyle(dom, '::after'))
+      if (afterURL) return afterURL
+      return null
+    }
+    async function extractBackgroundInfo(dom, minSize) {
+      const bgUrl = getBackgroundURL(dom)
+      if (!bgUrl) return null
       const realMinSize = Math.min(minSize, await getImageRealSize(bgUrl))
       return [bgUrl, realMinSize, dom]
     }
