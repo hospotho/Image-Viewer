@@ -7,18 +7,8 @@ window.ImageViewerUtils = (function () {
     }
   }
 
-  // attr unlazy
-  const passList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
-  const urlRegex = /(?:https?:\/)?\/\S+/g
-  const protocol = location.protocol
-  const origin = location.origin + '/'
-  const srcBitSizeMap = new Map()
-  const srcRealSizeMap = new Map()
-  const badImageSet = new Set(['', 'about:blank'])
-  const corsHostSet = new Set()
-  const pseudoImageDataList = []
+  // parallel fetch
   const semaphore = (() => {
-    // parallel fetch
     let activeCount = 0
     const maxConcurrent = 32
     const queue = []
@@ -47,6 +37,19 @@ window.ImageViewerUtils = (function () {
       }
     }
   })()
+
+  // attr unlazy
+  const passList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
+  const urlRegex = /(?:https?:\/)?\/\S+/g
+  const protocol = location.protocol
+  const origin = location.origin + '/'
+
+  // image cache
+  const pseudoImageDataList = []
+  const badImageSet = new Set(['', 'about:blank'])
+  const corsHostSet = new Set()
+  const srcBitSizeMap = new Map()
+  const srcRealSizeMap = new Map()
 
   // unlazy state
   let disableImageUnlazy = false
@@ -264,13 +267,13 @@ window.ImageViewerUtils = (function () {
     }
   })()
 
+  function isImageViewerExist() {
+    return document.body.classList.contains('iv-attached')
+  }
   function isLazyClass(className) {
     if (className === '') return false
     const lower = className.toLowerCase()
     return lower.includes('lazy') || lower.includes('loading')
-  }
-  function isImageViewerExist() {
-    return document.body.classList.contains('iv-attached')
   }
   function isPromiseComplete(promise) {
     const symbol = Symbol('check')
@@ -326,52 +329,6 @@ window.ImageViewerUtils = (function () {
       return container || document.documentElement
     }
   })()
-
-  function getDomUrl(dom) {
-    const tag = dom.tagName
-    if (tag === 'IMG') return dom.currentSrc || dom.src
-    if (tag === 'VIDEO') return dom.poster
-    const backgroundImage = window.getComputedStyle(dom).backgroundImage
-    const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
-    return bgList.length !== 0 ? bgList[0].slice(5, -2) : ''
-  }
-  function createImageIndexSearcher(srcList) {
-    function searchIndex(src) {
-      const index = srcIndexMap.get(src)
-      if (index !== undefined) return index
-      const rawIndex = srcIndexMap.get(getRawUrl(src))
-      if (index !== undefined) return rawIndex
-      const filename = getFilename(src)
-      const filenameIndex = srcIndexMap.get(filename)
-      if (filenameIndex !== undefined) return filenameIndex
-      return -1
-    }
-    function updateCache(srcList) {
-      for (let i = lastLength; i < srcList.length; i++) {
-        srcIndexMap.set(srcList[i], i)
-        // skip same filename
-        const filename = getFilename(srcList[i])
-        if (repeatFilename.has(filename) || srcIndexMap.has(filename)) {
-          repeatFilename.add(filename)
-          srcIndexMap.delete(filename)
-        } else {
-          srcIndexMap.set(filename, i)
-        }
-      }
-      lastLength = srcList.length
-    }
-
-    // assumes previous src unchange
-    let lastLength = 0
-    const srcIndexMap = new Map()
-    const repeatFilename = new Set()
-    updateCache(srcList)
-
-    return {
-      searchIndex: searchIndex,
-      updateCache: updateCache
-    }
-  }
 
   // wrapper size
   function isOneToOne(wrapperList, imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight) {
@@ -1157,30 +1114,6 @@ window.ImageViewerUtils = (function () {
   }
 
   // before unlazy
-  async function createUnlazyRace(options) {
-    // slow connection alert
-    if (lastUnlazyTask === null) {
-      setTimeout(() => {
-        if (unlazyFlag) return
-        const unlazyList = deepQuerySelectorAll(document.body, 'IMG', 'img:not([iv-image])')
-        const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
-        if (stillLoading) {
-          console.log('Slow connection, images still loading')
-          alert('Slow connection, images still loading')
-        }
-      }, 10000)
-    }
-
-    // set timeout for unlazy
-    const unlazyComplete = await isPromiseComplete(lastUnlazyTask)
-    if (unlazyComplete) {
-      const clone = structuredClone(options)
-      lastUnlazyTask = simpleUnlazyImage(clone)
-    }
-    const timeout = new Promise(resolve => setTimeout(resolve, 500))
-    const race = Promise.race([lastUnlazyTask, timeout])
-    return race
-  }
   function processLazyPlaceholder() {
     const lazySrcList = [...document.getElementsByTagName('img')]
       .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || image.src.endsWith('.gif') || isLazyClass(image.className)))
@@ -1268,6 +1201,30 @@ window.ImageViewerUtils = (function () {
     let result = domainList.some(domain => domain === location.hostname || domain === location.hostname.replace('www.', ''))
     result ||= regexList.some(regex => regex.test(location.href))
     return result
+  }
+  async function createUnlazyRace(options) {
+    // slow connection alert
+    if (lastUnlazyTask === null) {
+      setTimeout(() => {
+        if (unlazyFlag) return
+        const unlazyList = deepQuerySelectorAll(document.body, 'IMG', 'img:not([iv-image])')
+        const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
+        if (stillLoading) {
+          console.log('Slow connection, images still loading')
+          alert('Slow connection, images still loading')
+        }
+      }, 10000)
+    }
+
+    // set timeout for unlazy
+    const unlazyComplete = await isPromiseComplete(lastUnlazyTask)
+    if (unlazyComplete) {
+      const clone = structuredClone(options)
+      lastUnlazyTask = simpleUnlazyImage(clone)
+    }
+    const timeout = new Promise(resolve => setTimeout(resolve, 500))
+    const race = Promise.race([lastUnlazyTask, timeout])
+    return race
   }
   function startUnlazy(options) {
     if (lastUnlazyTask === null) {
@@ -1606,6 +1563,14 @@ window.ImageViewerUtils = (function () {
   }
 
   // combine image list
+  function getDomUrl(dom) {
+    const tag = dom.tagName
+    if (tag === 'IMG') return dom.currentSrc || dom.src
+    if (tag === 'VIDEO') return dom.poster
+    const backgroundImage = window.getComputedStyle(dom).backgroundImage
+    const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
+    return bgList.length !== 0 ? bgList[0].slice(5, -2) : ''
+  }
   function removeRepeatNonRaw(newList, oldList) {
     const tempList = newList.concat(oldList)
     const tempImageUrlSet = new Set(tempList.map(data => data.src))
@@ -1628,6 +1593,43 @@ window.ImageViewerUtils = (function () {
       if (url !== rawUrl && tempImageUrlSet.has(rawUrl)) {
         data.src = rawUrl
       }
+    }
+  }
+  function createImageIndexSearcher(srcList) {
+    function searchIndex(src) {
+      const index = srcIndexMap.get(src)
+      if (index !== undefined) return index
+      const rawIndex = srcIndexMap.get(getRawUrl(src))
+      if (index !== undefined) return rawIndex
+      const filename = getFilename(src)
+      const filenameIndex = srcIndexMap.get(filename)
+      if (filenameIndex !== undefined) return filenameIndex
+      return -1
+    }
+    function updateCache(srcList) {
+      for (let i = lastLength; i < srcList.length; i++) {
+        srcIndexMap.set(srcList[i], i)
+        // skip same filename
+        const filename = getFilename(srcList[i])
+        if (repeatFilename.has(filename) || srcIndexMap.has(filename)) {
+          repeatFilename.add(filename)
+          srcIndexMap.delete(filename)
+        } else {
+          srcIndexMap.set(filename, i)
+        }
+      }
+      lastLength = srcList.length
+    }
+
+    // assumes previous src unchange
+    let lastLength = 0
+    const srcIndexMap = new Map()
+    const repeatFilename = new Set()
+    updateCache(srcList)
+
+    return {
+      searchIndex: searchIndex,
+      updateCache: updateCache
     }
   }
 
@@ -1702,8 +1704,8 @@ window.ImageViewerUtils = (function () {
     },
 
     searchImageInfoIndex: function (input, imageList) {
-      const srcList = imageList.map(data => data.src)
       const src = input instanceof Element ? getDomUrl(input) : input
+      const srcList = imageList.map(data => data.src)
       const searcher = createImageIndexSearcher(srcList)
       const index = searcher.searchIndex(src)
       return index
