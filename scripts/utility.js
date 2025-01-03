@@ -1174,7 +1174,7 @@ window.ImageViewerUtils = (function () {
       if (domList.length === 0) continue
 
       const dom = domList[0]
-      const pseudoCss = getComputedStyle(dom, `::${position}`)
+      const pseudoCss = window.getComputedStyle(dom, `::${position}`)
       if (pseudoCss.content === 'none') continue
 
       const url = match[1]
