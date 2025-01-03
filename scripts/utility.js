@@ -141,6 +141,7 @@ window.ImageViewerUtils = (function () {
     return key && ctrl && alt && shift
   }
 
+  // string search
   const cachedExtensionMatch = (function () {
     const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
     const matchCache = new Map()
@@ -267,6 +268,7 @@ window.ImageViewerUtils = (function () {
     }
   })()
 
+  // check function
   function isImageViewerExist() {
     return document.body.classList.contains('iv-attached')
   }
@@ -285,6 +287,7 @@ window.ImageViewerUtils = (function () {
     return isPromiseComplete(promise)
   }
 
+  // dom search
   function deepQuerySelectorAll(target, tagName, selector) {
     const result = []
     const stack = [target]
@@ -1562,7 +1565,7 @@ window.ImageViewerUtils = (function () {
     })
   }
 
-  // combine image list
+  // image search
   function getDomUrl(dom) {
     const tag = dom.tagName
     if (tag === 'IMG') return dom.currentSrc || dom.src
