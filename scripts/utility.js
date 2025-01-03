@@ -16,6 +16,7 @@ window.ImageViewerUtils = (function () {
   const srcRealSizeMap = new Map()
   const badImageSet = new Set(['', 'about:blank'])
   const corsHostSet = new Set()
+  const pseudoImageDataList = []
   const semaphore = (() => {
     // parallel fetch
     let activeCount = 0
@@ -1216,6 +1217,44 @@ window.ImageViewerUtils = (function () {
       image.dispatchEvent(leaveEvent)
     }
   }
+  async function checkPseudoElement(href) {
+    const res = await fetch(href)
+    const cssText = await res.text()
+
+    const matchList = cssText
+      .replaceAll(/[\r\n ]/g, '')
+      .split('}')
+      .map(str => (str.startsWith('@media') ? str.split('{')[1] : str))
+      .map(str => str.match(/:(?:before|after).+background-image:url\((.+)\)/))
+      .filter(Boolean)
+
+    for (const match of matchList) {
+      const [selector, position] = match.input
+        .split('{')[0]
+        .split(',')
+        .filter(s => s.includes(':'))[0]
+        .split(':')
+      const domList = document.querySelectorAll(selector)
+      if (domList.length === 0) continue
+
+      const dom = domList[0]
+      const pseudoCss = getComputedStyle(dom, `::${position}`)
+      if (pseudoCss.content === 'none') continue
+
+      const url = match[1]
+      const realSize = await getImageRealSize(url)
+      const width = Math.min(realSize, Number(pseudoCss.width.slice(0, -2)))
+      const height = Math.min(realSize, Number(pseudoCss.height.slice(0, -2)))
+      pseudoImageDataList.push([url, dom, width, height])
+    }
+  }
+  function checkPseudoCss() {
+    pseudoImageDataList.length = 0
+    for (const sheet of document.styleSheets) {
+      const href = sheet.href
+      if (href) checkPseudoElement(href)
+    }
+  }
   function getDomainSetting(rawDomainList) {
     const domainList = []
     const regexList = []
@@ -1234,6 +1273,7 @@ window.ImageViewerUtils = (function () {
     if (lastUnlazyTask === null) {
       processLazyPlaceholder()
       fakeUserHover()
+      checkPseudoCss()
       enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
       disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
     }
@@ -1457,6 +1497,11 @@ window.ImageViewerUtils = (function () {
       }
     }
 
+    // pseudo element
+    for (const [url, dom] of pseudoImageDataList) {
+      imageDataList.push({src: url, dom})
+    }
+
     const uniqueDataList = processImageDataList(options, imageDataList)
     return uniqueDataList
   }
@@ -1511,6 +1556,13 @@ window.ImageViewerUtils = (function () {
       const url = bgList[0].slice(5, -2)
       node.setAttribute('no-bg', '')
       checkBackgroundSize(node, url)
+    }
+
+    // pseudo element
+    for (const [url, dom, width, height] of pseudoImageDataList) {
+      if (width >= minWidth && height >= minHeight) {
+        imageDataList.push({src: url, dom})
+      }
     }
 
     const uniqueDataList = processImageDataList(options, imageDataList)
