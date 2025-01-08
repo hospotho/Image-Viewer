@@ -855,7 +855,7 @@ window.ImageViewer = (function () {
           const blob = await res.blob()
           const arrayBuffer = await blob.arrayBuffer()
           const buffer = new Uint8Array(arrayBuffer)
-          const mime = res.headers.get('content-type').split(';').at(0) || 'image/jpeg'
+          const mime = res.headers.get('content-type').split(';')[0] || 'image/jpeg'
           return [buffer, mime]
         }
         if (imgUrl.startsWith('file')) {

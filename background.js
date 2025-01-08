@@ -470,7 +470,7 @@ function addMessageHandler() {
             reader.onload = () => resolve(reader.result)
             reader.readAsDataURL(blob)
           })
-          const mime = res.headers.get('content-type').split(';').at(0) || 'image/jpeg'
+          const mime = res.headers.get('content-type').split(';')[0] || 'image/jpeg'
           sendResponse([dataUrl, mime])
         })()
         return true
