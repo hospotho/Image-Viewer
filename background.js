@@ -459,10 +459,10 @@ function addMessageHandler() {
         })()
         return true
       }
-      case 'request_cors_image': {
+      case 'request_cors_url': {
         ;(async () => {
           const release = await semaphore.acquire()
-          const res = await fetch(request.src)
+          const res = await fetch(request.url)
           release()
           const blob = await res.blob()
           const reader = new FileReader()

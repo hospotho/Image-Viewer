@@ -58,7 +58,7 @@
         return dataUrl
       }
     } catch (error) {}
-    const [dataUrl] = await safeSendMessage({msg: 'request_cors_image', src: image.src})
+    const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: image.src})
     return dataUrl
   }
   async function getBase64Image(image) {
