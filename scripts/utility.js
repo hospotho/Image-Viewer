@@ -1154,7 +1154,8 @@ window.ImageViewerUtils = (function () {
     }
   }
   async function checkPseudoElement(href) {
-    const res = await fetch(href)
+    const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: href})
+    const res = await fetch(dataUrl)
     const cssText = await res.text()
 
     const matchList = cssText
