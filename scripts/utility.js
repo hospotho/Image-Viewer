@@ -948,7 +948,7 @@ window.ImageViewerUtils = (function () {
 
   // unlazy main function
   function getUnlazyAttrList(img) {
-    const src = img.currentSrc
+    const src = img.currentSrc || img.src
     const rawUrl = getRawUrl(src)
     const attrList = []
 
