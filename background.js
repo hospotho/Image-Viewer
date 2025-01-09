@@ -122,7 +122,7 @@ async function getImageLocalRealSize(id, src) {
   srcLocalRealSizeMap.set(src, promise)
   return promise
 }
-async function fetchImage(src) {
+async function fetchDataUrl(src) {
   const release = await semaphore.acquire()
   try {
     const res = await fetch(src, {signal: AbortSignal.timeout(10000)})
@@ -144,7 +144,7 @@ async function getDataUrl(src) {
   const cache = srcDataUrlMap.get(src)
   if (cache !== undefined) return cache
 
-  const promise = fetchImage(src)
+  const promise = fetchDataUrl(src)
   srcDataUrlMap.set(src, promise)
   return promise
 }
