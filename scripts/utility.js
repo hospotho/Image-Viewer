@@ -522,12 +522,8 @@ window.ImageViewerUtils = (function () {
     const scrollDelta = window.innerHeight * 1.5
     let top = 0
     while (top < totalHeight && isImageViewerExist()) {
-      container.scrollTo(currentX, top)
       top += scrollDelta
-      await new Promise(resolve => setTimeout(resolve, 150))
-    }
-    if (isImageViewerExist()) {
-      container.scrollTo(currentX, totalHeight)
+      container.scrollTo(currentX, top)
       await new Promise(resolve => setTimeout(resolve, 150))
     }
     container.scrollTo(currentX, currentY)
