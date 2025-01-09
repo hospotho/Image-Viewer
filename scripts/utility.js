@@ -1243,6 +1243,7 @@ window.ImageViewerUtils = (function () {
       const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
       if (allImageSrc.intersection(backupImageSrc).size < 5) {
         unlazyFlag = false
+        scrollUnlazyFlag = false
         lastUnlazyTask = null
         window.backupImageList = []
         ImageViewer('reset_image_list')
