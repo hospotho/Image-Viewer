@@ -845,8 +845,8 @@ window.ImageViewerUtils = (function () {
         .then(updateSize)
         .catch(error => {
           if (error.name !== 'TimeoutError') corsHostSet.add(url.hostname)
-          if (url.hostname !== location.hostname) return 0
-          safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
+          if (url.hostname !== location.hostname) updateSize(0)
+          else safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
         })
     })
 
