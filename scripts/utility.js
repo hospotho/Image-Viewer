@@ -404,10 +404,10 @@ window.ImageViewerUtils = (function () {
     const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
 
     // treat long size as width
-    const [large, small] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
-    const [optionLarge, optionSmall] = options.minWidth > options.minHeight ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
-    const finalWidth = useMinSize ? getMinSize(rawWidth) : useHalfSize ? getHalfSize(rawWidth, optionLarge) : getRefSize(wrapperWidth, large, optionLarge)
-    const finalHeight = useMinSize ? getMinSize(rawHeight) : useHalfSize ? getHalfSize(rawHeight, optionSmall) : getRefSize(wrapperHeight, small, optionSmall)
+    const [long, short] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
+    const [optionLong, optionShort] = options.minWidth > options.minHeight ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
+    const finalWidth = useMinSize ? getMinSize(rawWidth) : useHalfSize ? getHalfSize(rawWidth, optionLong) : getRefSize(wrapperWidth, long, optionLong)
+    const finalHeight = useMinSize ? getMinSize(rawHeight) : useHalfSize ? getHalfSize(rawHeight, optionShort) : getRefSize(wrapperHeight, short, optionShort)
 
     // not allow size below 50 to prevent icon
     const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight))
@@ -447,10 +447,10 @@ window.ImageViewerUtils = (function () {
     for (const dom of targetDom) {
       const {width, height} = dom.getBoundingClientRect()
       if (width === 0 || height === 0) continue
-      const [large, small] = width > height ? [width, height] : [height, width]
-      if (large * 1.5 >= minWidth && small * 1.5 > minHeight) {
-        minWidth = Math.min(domWidth, large)
-        minHeight = Math.min(domWidth, small)
+      const [long, short] = width > height ? [width, height] : [height, width]
+      if (long * 1.5 >= minWidth && short * 1.5 > minHeight) {
+        minWidth = Math.min(domWidth, long)
+        minHeight = Math.min(domWidth, short)
       }
     }
     options.minWidth = Math.min(minWidth - 3, options.minWidth)
