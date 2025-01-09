@@ -443,18 +443,56 @@ window.ImageViewerUtils = (function () {
     const domList = deepQuerySelectorAll(container, tagName, selector, options)
     const targetDom = tagName === 'img' ? domList.filter(img => !img.src.startsWith('data')) : domList
 
-    let [minWidth, minHeight] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
+    const widthList = []
+    const heightList = []
     for (const dom of targetDom) {
       const {width, height} = dom.getBoundingClientRect()
       if (width === 0 || height === 0) continue
-      const [long, short] = width > height ? [width, height] : [height, width]
-      if (long * 1.5 >= minWidth && short * 1.5 > minHeight) {
-        minWidth = Math.min(domWidth, long)
-        minHeight = Math.min(domWidth, short)
+      widthList.push(width)
+      heightList.push(height)
+    }
+
+    // use rect size
+    const useWeightSize = heightList.every(h => h === domHeight)
+    if (useWeightSize) {
+      const targetWidth = Math.min(...widthList) - 3
+      options.minWidth = Math.min(targetWidth, options.minWidth)
+      options.minHeight = Math.min(domHeight, options.minHeight)
+      return
+    }
+    const useHeightSize = widthList.every(w => w === domWidth)
+    if (useHeightSize) {
+      const targetHeight = Math.min(...heightList) - 3
+      options.minWidth = Math.min(domWidth, options.minWidth)
+      options.minHeight = Math.min(targetHeight, options.minHeight)
+      return
+    }
+
+    // use ref size
+    const refSizeList = []
+    for (let i = 0; i < widthList.length; i++) {
+      const width = widthList[i]
+      const height = heightList[i]
+      refSizeList.push(width > height ? [width, height] : [height, width])
+    }
+    refSizeList.sort((a, b) => b[0] + b[1] - a[0] - a[1])
+
+    const [maxLong, maxShort] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
+    const refIndex = refSizeList.findIndex(size => size[0] === maxLong && size[1] === maxShort)
+    const factor = 1.2
+    let minLong = maxLong / factor
+    let minShort = maxShort / factor
+    for (let i = refIndex + 1; i < refSizeList.length; i++) {
+      const [long, short] = refSizeList[i]
+      if (short >= minShort && long >= minLong) {
+        minLong = Math.min(long / factor, minLong)
+        minShort = Math.min(short / factor, minShort)
       }
     }
-    options.minWidth = Math.min(minWidth - 3, options.minWidth)
-    options.minHeight = Math.min(minHeight - 3, options.minHeight)
+
+    const finalSize = Math.min(minLong, minShort) * factor - 3
+    options.minWidth = Math.min(finalSize, options.minWidth)
+    options.minHeight = Math.min(finalSize, options.minHeight)
   }
 
   // scroll unlazy
