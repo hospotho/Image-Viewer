@@ -498,12 +498,13 @@ window.ImageViewerUtils = (function () {
   // scroll unlazy
   async function slowScrollThoughDocument(currentX, currentY) {
     if (!isImageViewerExist()) return
-    const imageCount = ImageViewer('get_image_list').length
-    const startTime = Date.now()
-    const haveNewImage = () => {
-      if (Date.now() - startTime < 5000) return true
-      return imageCount !== ImageViewer('get_image_list').length
-    }
+
+    const haveNewImage = (function () {
+      const imageCount = ImageViewer('get_image_list').length
+      let changed = true
+      setTimeout(() => (changed = false), 5000)
+      return () => changed || (changed = imageCount !== ImageViewer('get_image_list').length)
+    })()
 
     const container = getMainContainer()
     const totalHeight = container.scrollHeight
