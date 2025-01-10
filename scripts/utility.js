@@ -508,12 +508,29 @@ window.ImageViewerUtils = (function () {
 
     const container = getMainContainer()
     const totalHeight = container.scrollHeight
-    let currTop = -1
     container.scrollTo(0, 0)
+
+    const expectedCapacity = totalHeight / 400
+    const waitScrollComplete = async () => {
+      const imageCount = ImageViewer('get_image_list').length
+      if (imageCount < expectedCapacity) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        return
+      }
+      let tempTop = -1
+      while (tempTop !== container.scrollTop) {
+        tempTop = container.scrollTop
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+      const waitTime = ImageViewer('get_image_list').length / 10
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+    }
+
+    let currTop = -1
     while (currTop !== container.scrollTop && currTop < totalHeight * 3 && haveNewImage() && isImageViewerExist()) {
       currTop = container.scrollTop
       container.scrollBy({top: window.innerHeight * 2, behavior: 'smooth'})
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await waitScrollComplete()
     }
     if (isImageViewerExist()) container.scrollTo(currentX, currentY)
   }
