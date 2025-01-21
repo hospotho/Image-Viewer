@@ -699,7 +699,7 @@ window.ImageViewer = (function () {
         const lastCount = imageFailureCountMap.get(src) || 0
         imageFailureCountMap.set(src, lastCount + 1)
         if (lastCount < 3) {
-          fetch(src, {cache: 'reload'})
+          fetch(src, {cache: 'reload'}).catch(() => {})
           img.src = src
           return
         }
