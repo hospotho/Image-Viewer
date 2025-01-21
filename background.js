@@ -61,7 +61,9 @@ async function fetchBitSize(src, useGetMethod = false) {
   const method = useGetMethod ? 'GET' : 'HEAD'
   try {
     const res = await fetch(src, {method: method, signal: AbortSignal.timeout(5000)})
-    if (!res.ok) return 0
+    if (!res.ok) {
+      return !useGetMethod ? fetchBitSize(src, true) : 0
+    }
 
     if (res.redirected) {
       const originalPath = new URL(src).pathname
