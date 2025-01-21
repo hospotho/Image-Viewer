@@ -947,7 +947,7 @@ window.ImageViewerUtils = (function () {
     while (!complete) {
       // init var for current url and size
       const currentSrc = img.currentSrc
-      const realSrc = currentSrc.replace(/https?:/, protocol)
+      const realSrc = currentSrc.replace(/^https?:/, protocol)
       const currentSize = Math.min(img.naturalWidth, img.naturalHeight)
       const [bitSize, naturalSize] = await Promise.all([getImageBitSize(realSrc), currentSize || getImageRealSize(realSrc)])
 
@@ -955,7 +955,7 @@ window.ImageViewerUtils = (function () {
       while (lastIndex < attrList.length) {
         const {name, url} = attrList[lastIndex++]
         complete = lastIndex === attrList.length
-        const newURL = url.replace(/https?:/, protocol).replace(/^\/(?:[^/])/, origin)
+        const newURL = url.replace(/^https?:/, protocol).replace(/^\/(?:[^/])/, origin)
         const betterUrl = await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
         if (betterUrl === null) continue
 
@@ -1172,7 +1172,7 @@ window.ImageViewerUtils = (function () {
   function processLazyPlaceholder() {
     const lazySrcList = [...document.getElementsByTagName('img')]
       .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || image.src.endsWith('.gif') || isLazyClass(image.className)))
-      .map(image => image.currentSrc.replace(/https?:/, protocol))
+      .map(image => image.currentSrc.replace(/^https?:/, protocol))
     if (lazySrcList.length === 0) return
 
     const countMap = {}
