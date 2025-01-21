@@ -72,7 +72,9 @@ async function fetchBitSize(src, useGetMethod = false) {
     }
 
     const type = res.headers.get('Content-Type')
-    if (!type?.startsWith('image')) return 0
+    if (!type?.startsWith('image')) {
+      return !useGetMethod ? fetchBitSize(src, true) : 0
+    }
 
     const length = res.headers.get('Content-Length')
     const size = Number(length)
