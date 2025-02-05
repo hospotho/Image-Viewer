@@ -15,7 +15,7 @@
     "message": "自動観覧間隔"
   },
   "auto_scroll_desc": {
-    "message": "一部のWebページでは、スクロールダウンするとコンテンツが追加で読み込まれます<br>Image Viewerに自動的にスクロールしてコンテンツを読み込んでもらいたい場合は、ここにドメインを追加してください"
+    "message": "一部のWebページでは、スクロールダウンするとコンテンツが追加で読み込まれます<br>Image Viewerのアクティブ自動スクロール機能を有効にしたい場合は、ここにドメインを追加してください"
   },
   "auto_scroll_enable_list": {
     "message": "自動スクロールを有効にする"
@@ -120,7 +120,7 @@
     "message": "保存"
   },
   "scroll_hotkey": {
-    "message": "自動スクロール有効"
+    "message": "アクティブ自動スクロール有効"
   },
   "search_hotkey": {
     "message": "画像検索ホットキー"

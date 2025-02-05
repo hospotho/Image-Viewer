@@ -15,7 +15,7 @@
     "message": "Auto navigate period"
   },
   "auto_scroll_desc": {
-    "message": "Some web pages load more content as you scroll down.<br>Add domains here to enable automatic scrolling and content loading for those websites."
+    "message": "Some web pages load more content as you scroll down.<br>Add domains here to enable active auto scroll for those websites."
   },
   "auto_scroll_enable_list": {
     "message": "Enable Auto Scroll"
@@ -120,7 +120,7 @@
     "message": "Save"
   },
   "scroll_hotkey": {
-    "message": "Enable auto scroll"
+    "message": "Enable active auto scroll"
   },
   "search_hotkey": {
     "message": "Image search hotkey"

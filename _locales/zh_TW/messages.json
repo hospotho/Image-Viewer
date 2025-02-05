@@ -15,7 +15,7 @@
     "message": "自動翻頁間隔"
   },
   "auto_scroll_desc": {
-    "message": "一些網頁會在往下捲動時載入更多內容<br>如果您想讓Image Viewer自動捲動並載入內容，請在此處添加域名"
+    "message": "一些網頁會在往下捲動時載入更多內容<br>如果您想讓Image Viewer通過主動式自動捲動載入內容，請在此處添加域名"
   },
   "auto_scroll_enable_list": {
     "message": "啟用自動捲動"
@@ -120,7 +120,7 @@
     "message": "保存"
   },
   "scroll_hotkey": {
-    "message": "啟用自動捲動"
+    "message": "啟用主動式自動捲動"
   },
   "search_hotkey": {
     "message": "圖像搜索快捷鍵"
