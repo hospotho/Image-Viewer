@@ -55,7 +55,7 @@ window.ImageViewerUtils = (function () {
   let disableImageUnlazy = false
   let unlazyFlag = false
   let lastUnlazyTask = null
-  let lastHref = ''
+  let lastHref = location.href
 
   // scroll state
   let enableAutoScroll = false
@@ -1290,7 +1290,7 @@ window.ImageViewerUtils = (function () {
       enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
       disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
     }
-    if (lastHref !== '' && lastHref !== location.href) {
+    if (lastHref !== location.href) {
       const allImageSrc = new Set(getImageListWithoutFilter(options).map(data => data.src))
       const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
       if (allImageSrc.intersection(backupImageSrc).size < 5) {
