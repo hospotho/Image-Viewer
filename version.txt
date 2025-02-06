@@ -1,8 +1,18 @@
+1.41 [2025-02-06]:
+Stability update
+This version was originally planned as a major update, but the development of new features was delayed
+1. Added a hotkey command for canvas mode
+2. Added support for background images in pseudo elements
+3. Improved scroll unlazy logic
+4. Improved right click image size referencing logic
+5. Other bug fixes and improvements
+P.S. Starting with this version, the extension will also be published on addons.mozilla.org for Firefox users
+
 1.40 [2024-10-14]:
-1. Added a new option to allow users to disable image unlazy on specific domains.
-2. Introduced a web demo, enabling users to try the feature before installation.
-3. Updated the options page and added a simple support page.
-4. Fixed a bug in the new view canvas feature that caused issues on sites like Notion.
+1. Added a new option to allow users to disable image unlazy on specific domains
+2. Introduced a web demo, enabling users to try the feature before installation
+3. Updated the options page and added a simple support page
+4. Fixed a bug in the new view canvas feature that caused issues on sites like Notion
 
 1.39.1 [2024-10-01]:
 Patch Update
