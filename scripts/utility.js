@@ -1283,14 +1283,9 @@ window.ImageViewerUtils = (function () {
     return race
   }
   function startUnlazy(options) {
-    if (lastUnlazyTask === null) {
-      processLazyPlaceholder()
-      fakeUserHover()
-      checkPseudoCss()
-      enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
-      disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
-    }
+    // check href change
     if (lastHref !== location.href) {
+      lastHref = location.href
       const allImageSrc = new Set(getImageListWithoutFilter(options).map(data => data.src))
       const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
       if (allImageSrc.intersection(backupImageSrc).size < 5) {
@@ -1301,12 +1296,20 @@ window.ImageViewerUtils = (function () {
         ImageViewer('reset_image_list')
       }
     }
-    lastHref = location.href
-    if (disableImageUnlazy) {
-      enableAutoScroll ? autoScroll() : scrollUnlazy()
-      return
+    // run init task
+    if (lastUnlazyTask === null) {
+      processLazyPlaceholder()
+      fakeUserHover()
+      checkPseudoCss()
+      enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
+      disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
     }
-
+    // start unlazy
+    if (disableImageUnlazy) {
+      lastUnlazyTask = Promise.resolve()
+      enableAutoScroll ? autoScroll() : scrollUnlazy()
+      return lastUnlazyTask
+    }
     const race = createUnlazyRace(options)
     return race
   }
