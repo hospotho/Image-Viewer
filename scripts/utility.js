@@ -1306,8 +1306,8 @@ window.ImageViewerUtils = (function () {
     }
     // start unlazy
     if (disableImageUnlazy) {
+      if (enableAutoScroll) autoScroll()
       lastUnlazyTask = Promise.resolve()
-      enableAutoScroll ? autoScroll() : scrollUnlazy()
       return lastUnlazyTask
     }
     const race = createUnlazyRace(options)
