@@ -499,13 +499,23 @@ window.ImageViewerUtils = (function () {
       const height = heightList[i]
       refSizeList.push(width > height ? [width, height] : [height, width])
     }
-    refSizeList.sort((a, b) => b[0] + b[1] - a[0] - a[1])
+    // sort by area
+    refSizeList.sort((a, b) => b[0] * b[1] - a[0] * a[1])
 
+    // init min size
     const [maxLong, maxShort] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
     const refIndex = refSizeList.findIndex(size => size[0] === maxLong && size[1] === maxShort)
+    let minLong = maxLong
+    let minShort = maxShort
+    for (let i = 0; i < refIndex; i++) {
+      const [long, short] = refSizeList[i]
+      minLong = Math.min(long, minLong)
+      minShort = Math.min(short, minShort)
+    }
+    // iterate min size
     const factor = 1.2
-    let minLong = maxLong / factor
-    let minShort = maxShort / factor
+    minLong = maxLong / factor
+    minShort = maxShort / factor
     for (let i = refIndex + 1; i < refSizeList.length; i++) {
       const [long, short] = refSizeList[i]
       if (short >= minShort && long >= minLong) {
@@ -1756,7 +1766,7 @@ window.ImageViewerUtils = (function () {
       const domList = deepQuerySelectorAll(document.body, tagName, selector, options)
       const wrapperImageList = [...wrapperList].flatMap(wrapper => [...wrapper.querySelectorAll('img')])
       if (domList.length < wrapperImageList.length) {
-        updateSizeBySelector(domWidth, domHeight, wrapper, 'IMG', selector, options)
+        updateSizeBySelector(domWidth, domHeight, document.body, 'IMG', selector, options)
         return
       }
       // check all images in wrapper list
