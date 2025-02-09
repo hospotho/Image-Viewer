@@ -31,19 +31,20 @@ window.ImageViewerExtractor = (function () {
     node.setAttribute('iv-height', height)
     return width >= minWidth && height >= minHeight
   }
-  function deepQuerySelectorAll(target, tagName, selector) {
+  function deepQuerySelectorAll(target, selector) {
     const result = []
     const stack = [target]
     while (stack.length) {
       const current = stack.pop()
-      for (const node of current.querySelectorAll(`${selector}, *:not([no-shadow])`)) {
-        if (node.tagName === tagName) result.push(node)
+      // check shadowRoot
+      for (const node of current.querySelectorAll('*:not([no-shadow])')) {
         if (node.shadowRoot) {
           stack.push(node.shadowRoot)
         } else {
           node.setAttribute('no-shadow', '')
         }
       }
+      result.push(...current.querySelectorAll(selector))
     }
     return result
   }
@@ -52,7 +53,7 @@ window.ImageViewerExtractor = (function () {
     const minHeight = options.minHeight || 0
     const imageList = []
 
-    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', 'img')
+    const rawImageList = deepQuerySelectorAll(document.body, 'img')
     for (const img of rawImageList) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
@@ -104,7 +105,7 @@ window.ImageViewerExtractor = (function () {
     const minHeight = options.minHeight || 0
     const canvasList = []
 
-    const rawCanvasList = deepQuerySelectorAll(document.body, 'CANVAS', 'canvas')
+    const rawCanvasList = deepQuerySelectorAll(document.body, 'canvas')
     for (const canvas of rawCanvasList) {
       const {width, height} = canvas.getBoundingClientRect()
       if (width >= minWidth && height >= minHeight) {

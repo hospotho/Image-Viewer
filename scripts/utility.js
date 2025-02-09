@@ -288,19 +288,20 @@ window.ImageViewerUtils = (function () {
   }
 
   // dom search
-  function deepQuerySelectorAll(target, tagName, selector) {
+  function deepQuerySelectorAll(target, selector) {
     const result = []
     const stack = [target]
     while (stack.length) {
       const current = stack.pop()
-      for (const node of current.querySelectorAll(`${selector}, *:not([no-shadow])`)) {
-        if (node.tagName === tagName) result.push(node)
+      // check shadowRoot
+      for (const node of current.querySelectorAll('*:not([no-shadow])')) {
         if (node.shadowRoot) {
           stack.push(node.shadowRoot)
         } else {
           node.setAttribute('no-shadow', '')
         }
       }
+      result.push(...current.querySelectorAll(selector))
     }
     return result
   }
@@ -418,7 +419,7 @@ window.ImageViewerUtils = (function () {
   function getWrapperList(wrapper) {
     if (!wrapper) return []
     const rootNode = wrapper.getRootNode()
-    if (rootNode !== document) return deepQuerySelectorAll(document.body, rootNode.host.tagName.toUpperCase(), rootNode.host.tagName)
+    if (rootNode !== document) return deepQuerySelectorAll(document.body, rootNode.host.tagName)
     const classList = wrapper ? '.' + [...wrapper?.classList].map(CSS.escape).join(', .') : ''
     const wrapperList = wrapper ? document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div:is(${classList}) img))`) : []
     return wrapperList
@@ -464,7 +465,7 @@ window.ImageViewerUtils = (function () {
   }
   function updateSizeBySelector(domWidth, domHeight, container, tagName, selector, options) {
     // skip img with data URL
-    const domList = deepQuerySelectorAll(container, tagName, selector, options)
+    const domList = deepQuerySelectorAll(container, selector)
     const targetDom = tagName === 'img' ? domList.filter(img => !img.src.startsWith('data')) : domList
 
     const widthList = []
@@ -744,10 +745,10 @@ window.ImageViewerUtils = (function () {
         lastImageCount = currentImageCount
 
         // wait image load complete
-        let loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img[iv-checking]').length
+        let loadingImageCount = deepQuerySelectorAll(document.body, 'img[iv-checking]').length
         while (loadingImageCount > 0) {
           await new Promise(resolve => setTimeout(resolve, 100))
-          loadingImageCount = deepQuerySelectorAll(document.body, 'IMG', 'img[iv-checking]').length
+          loadingImageCount = deepQuerySelectorAll(document.body, 'img[iv-checking]').length
         }
 
         if (!enableAutoScroll) break
@@ -1109,7 +1110,7 @@ window.ImageViewerUtils = (function () {
     const imgWithAttrList = []
     let allComplete = true
 
-    const targetImageList = deepQuerySelectorAll(document.body, 'IMG', 'img:not([iv-image])')
+    const targetImageList = deepQuerySelectorAll(document.body, 'img:not([iv-image])')
     for (const img of targetImageList) {
       img.loading = 'eager'
       if (img.getAttribute('decoding')) img.decoding = 'sync'
@@ -1297,7 +1298,7 @@ window.ImageViewerUtils = (function () {
     if (lastUnlazyTask === null) {
       setTimeout(() => {
         if (unlazyFlag) return
-        const unlazyList = deepQuerySelectorAll(document.body, 'IMG', 'img:not([iv-image])')
+        const unlazyList = deepQuerySelectorAll(document.body, 'img:not([iv-image])')
         const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
         if (stillLoading) {
           console.log('Slow connection, images still loading')
@@ -1354,7 +1355,7 @@ window.ImageViewerUtils = (function () {
     const minHeight = options.minHeight || 0
     const asyncList = []
 
-    const canvasList = deepQuerySelectorAll(document.body, 'CANVAS', 'canvas')
+    const canvasList = deepQuerySelectorAll(document.body, 'canvas')
     for (const canvas of canvasList) {
       const {width, height} = canvas.getBoundingClientRect()
       if (width < minWidth && height < minHeight) continue
@@ -1372,7 +1373,7 @@ window.ImageViewerUtils = (function () {
     return canvasDataList.filter(data => data !== null)
   }
   async function getIframeImageList(options) {
-    const iframeList = deepQuerySelectorAll(document.body, 'IFRAME', 'iframe')
+    const iframeList = deepQuerySelectorAll(document.body, 'iframe')
     const iframeSrcList = iframeList.map(iframe => iframe.src)
     const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
     if (filteredList.length === 0) return []
@@ -1509,7 +1510,7 @@ window.ImageViewerUtils = (function () {
   function getImageListWithoutFilter(options) {
     const imageDataList = []
 
-    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', `img${disableImageUnlazy ? '' : '[iv-image]'}`)
+    const rawImageList = deepQuerySelectorAll(document.body, `img${disableImageUnlazy ? '' : '[iv-image]'}`)
     for (const img of rawImageList) {
       const imgSrc = img.currentSrc || img.src
       imageDataList.push({src: imgSrc, dom: img})
@@ -1565,7 +1566,7 @@ window.ImageViewerUtils = (function () {
 
     const imageDataList = []
 
-    const rawImageList = deepQuerySelectorAll(document.body, 'IMG', `img${disableImageUnlazy ? '' : '[iv-image]'}`)
+    const rawImageList = deepQuerySelectorAll(document.body, `img${disableImageUnlazy ? '' : '[iv-image]'}`)
     for (const img of rawImageList) {
       // only client size should be checked in order to bypass large icon or hidden image
       const {width, height} = img.getBoundingClientRect()
@@ -1763,7 +1764,7 @@ window.ImageViewerUtils = (function () {
       }
       // not all images in wrapper match selector
       const selector = getDomRawSelector(dom, wrapper)
-      const domList = deepQuerySelectorAll(document.body, tagName, selector, options)
+      const domList = deepQuerySelectorAll(document.body, selector, options)
       const wrapperImageList = [...wrapperList].flatMap(wrapper => [...wrapper.querySelectorAll('img')])
       if (domList.length < wrapperImageList.length) {
         updateSizeBySelector(domWidth, domHeight, document.body, 'IMG', selector, options)
