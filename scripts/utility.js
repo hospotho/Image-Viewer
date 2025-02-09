@@ -1711,7 +1711,7 @@ window.ImageViewerUtils = (function () {
       // image
       const wrapper = dom.closest('div')
       const wrapperList = getWrapperList(wrapper)
-      // wrapper is custom element, check all image in wrapper list
+      // wrapper is custom element, check all images in wrapper list
       if (wrapperList.length !== 0 && wrapperList[0].tagName.includes('-')) {
         updateSizeByWrapper(wrapperList, domWidth, domHeight, options)
         return
@@ -1727,7 +1727,7 @@ window.ImageViewerUtils = (function () {
         updateSizeBySelector(domWidth, domHeight, wrapper, 'IMG', 'img', options)
         return
       }
-      // check all image in wrapper list
+      // check all images in wrapper list
       updateSizeByWrapper(wrapperList, domWidth, domHeight, options)
     },
 
