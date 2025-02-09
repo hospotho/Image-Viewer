@@ -423,9 +423,24 @@ window.ImageViewerUtils = (function () {
     const wrapperList = wrapper ? document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div:is(${classList}) img))`) : []
     return wrapperList
   }
-  function getDomRawSelector(dom) {
-    let curr = dom.parentElement
+  function getDomRawSelector(dom, wrapper) {
     let selector = dom.tagName.toLowerCase()
+    // before wrapper
+    let curr = dom.parentElement
+    while (curr !== wrapper) {
+      selector = curr.tagName.toLowerCase() + ' > ' + selector
+      curr = curr.parentElement
+    }
+    // add wrapper class name
+    if (curr.classList.length > 1) {
+      selector = curr.tagName.toLowerCase() + ':is(.' + [...curr.classList].map(CSS.escape).join(', .') + ') > ' + selector
+    } else if (curr.classList.length === 1) {
+      selector = curr.tagName.toLowerCase() + '.' + CSS.escape(curr.classList[0]) + ' > ' + selector
+    } else {
+      selector = curr.tagName.toLowerCase() + ' > ' + selector
+    }
+    curr = curr.parentElement
+    // after wrapper
     while (curr.parentElement) {
       selector = curr.tagName.toLowerCase() + ' > ' + selector
       curr = curr.parentElement
@@ -1737,7 +1752,7 @@ window.ImageViewerUtils = (function () {
         return
       }
       // not all images in wrapper match selector
-      const selector = getDomRawSelector(dom)
+      const selector = getDomRawSelector(dom, wrapper)
       const domList = deepQuerySelectorAll(document.body, tagName, selector, options)
       const wrapperImageList = [...wrapperList].flatMap(wrapper => [...wrapper.querySelectorAll('img')])
       if (domList.length < wrapperImageList.length) {
