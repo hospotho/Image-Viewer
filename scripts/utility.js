@@ -1034,6 +1034,14 @@ window.ImageViewerUtils = (function () {
   }
 
   // unlazy main function
+  function getSrcsetUrl(value) {
+    const srcsetList = value
+      .split(',')
+      .map(str => str.trim().split(/ +/))
+      .map(([url, size]) => [url, size ? Number(size.slice(0, -1)) : 1])
+      .sort((a, b) => b[1] - a[1])
+    return srcsetList[0][0]
+  }
   function getUnlazyAttrList(img) {
     const src = img.currentSrc || img.src
     const rawUrl = getRawUrl(src)
@@ -1041,9 +1049,13 @@ window.ImageViewerUtils = (function () {
 
     // check attributes
     for (const attr of img.attributes) {
-      if (passList.has(attr.name) || !attr.value.match(urlRegex)) continue
+      if (passList.has(attr.name)) continue
 
-      const attrUrl = new URL(attr.value, document.baseURI).href
+      const match = attr.value.match(urlRegex)
+      if (!match) continue
+
+      // count multiple match as srcset
+      const attrUrl = new URL(match.length > 1 ? getSrcsetUrl(attr.value) : attr.value, document.baseURI).href
       if (attrUrl !== src) {
         attrList.push({name: attr.name, url: attrUrl})
       }
@@ -1055,12 +1067,7 @@ window.ImageViewerUtils = (function () {
 
     // check srcset and src
     if (img.srcset && img.srcset !== src) {
-      const srcsetList = img.srcset
-        .split(',')
-        .map(str => str.trim().split(/ +/))
-        .map(([url, size]) => [url, size ? Number(size.slice(0, -1)) : 1])
-        .sort((a, b) => b[1] - a[1])
-      attrList.push({name: 'srcset', url: srcsetList[0][0]})
+      attrList.push({name: 'srcset', url: getSrcsetUrl(img.srcset)})
     }
     if (rawUrl !== src) {
       attrList.push({name: 'raw url', url: rawUrl})
