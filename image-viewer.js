@@ -925,7 +925,7 @@ window.ImageViewer = (function () {
       }
       async function searchImageByYandex(imgUrl) {
         const [buffer, mime] = await getImageBuffer(imgUrl)
-        const endpoint = 'https://yandex.com/images-apphost/image-download?cbird=111&images_avatars_size=preview&images_avatars_namespace=images-cbir'
+        const endpoint = 'https://yandex.ru/images-apphost/image-download?cbird=111&images_avatars_size=preview&images_avatars_namespace=images-cbir'
         const blob = new Blob([buffer], {type: mime})
         const res = await fetch(endpoint, {method: 'POST', body: blob})
         if (!res.ok) return
@@ -933,7 +933,7 @@ window.ImageViewer = (function () {
         const json = await res.json()
         const originalImageUrl = json.url.replace(/\/preview$/, '/orig')
         const cbirID = json.image_shard + '/' + json.image_id
-        const url = `https://yandex.com/images/search?rpt=imageview&url=${encodeURIComponent(originalImageUrl)}&cbir_id=${encodeURIComponent(cbirID)}`
+        const url = `https://yandex.ru/images/search?rpt=imageview&url=${encodeURIComponent(originalImageUrl)}&cbir_id=${encodeURIComponent(cbirID)}`
         openNewTab(url)
       }
       function searchImageBySaucenao(imgUrl) {
@@ -950,7 +950,7 @@ window.ImageViewer = (function () {
       if (!options.searchHotkey || options.searchHotkey.length < 5) return
       const hotkey = options.searchHotkey
       const googleUrl = 'https://lens.google.com/uploadbyurl?url={imgSrc}'
-      const yandexUrl = 'https://yandex.com/images/search?family=yes&rpt=imageview&url={imgSrc}'
+      const yandexUrl = 'https://yandex.ru/images/search?family=yes&rpt=imageview&url={imgSrc}'
       const saucenaoUrl = 'https://saucenao.com/search.php?db=999&url={imgSrc}'
       const ascii2dUrl = 'https://ascii2d.net/search/url/{imgSrc}'
       const urlList = [googleUrl, yandexUrl, saucenaoUrl, ascii2dUrl]
