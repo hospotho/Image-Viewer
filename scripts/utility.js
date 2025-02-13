@@ -478,18 +478,17 @@ window.ImageViewerUtils = (function () {
     }
 
     // use rect size
-    const useWeightSize = heightList.every(h => h === domHeight)
-    if (useWeightSize) {
-      const targetWidth = Math.min(...widthList) - 3
-      options.minWidth = Math.min(targetWidth, options.minWidth)
-      options.minHeight = Math.min(domHeight, options.minHeight)
-      return
+    const maxWidth = Math.max(...widthList) - 3
+    const maxHeight = Math.max(...heightList) - 3
+    let useRectSize = true
+    for (let i = 0; i < widthList.length; i++) {
+      useRectSize &&= widthList[i] >= maxWidth || heightList[i] >= maxHeight
     }
-    const useHeightSize = widthList.every(w => w === domWidth)
-    if (useHeightSize) {
-      const targetHeight = Math.min(...heightList) - 3
-      options.minWidth = Math.min(domWidth, options.minWidth)
-      options.minHeight = Math.min(targetHeight, options.minHeight)
+    if (useRectSize) {
+      const minWidth = Math.min(...widthList) - 3
+      const minHeight = Math.min(...heightList) - 3
+      options.minWidth = Math.min(minWidth, options.minWidth)
+      options.minHeight = Math.min(minHeight, options.minHeight)
       return
     }
 
