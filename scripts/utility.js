@@ -160,7 +160,7 @@ window.ImageViewerUtils = (function () {
 
   // string search
   const cachedExtensionMatch = (function () {
-    const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!.*\/)/i
+    const extensionRegex = /[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif)/i
     const matchCache = new Map()
     return str => {
       if (str.startsWith('data')) return null
