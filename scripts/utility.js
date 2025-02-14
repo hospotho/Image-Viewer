@@ -1163,8 +1163,8 @@ window.ImageViewerUtils = (function () {
 
     return [false, asyncList]
   }
-  function clearWindowBackup(options) {
-    const allImageUrlSet = new Set(getImageListWithoutFilter(options).map(data => data.src))
+  function clearWindowBackup(svgFilter) {
+    const allImageUrlSet = new Set(getImageListWithoutFilter(svgFilter).map(data => data.src))
     const backup = window.backupImageList
     for (let i = backup.length - 1; i >= 0; i--) {
       if (!allImageUrlSet.has(backup[i].src)) backup.splice(i, 1)
@@ -1203,7 +1203,7 @@ window.ImageViewerUtils = (function () {
     if (!unlazyFlag) {
       unlazyFlag = true
       console.log('First unlazy complete')
-      clearWindowBackup(options)
+      clearWindowBackup(options.svgFilter)
     }
 
     enableAutoScroll ? autoScroll() : scrollUnlazy()
@@ -1327,7 +1327,7 @@ window.ImageViewerUtils = (function () {
     // check href change
     if (lastHref !== location.href) {
       lastHref = location.href
-      const allImageSrc = new Set(getImageListWithoutFilter(options).map(data => data.src))
+      const allImageSrc = new Set(getImageListWithoutFilter(options.svgFilter).map(data => data.src))
       const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
       if (allImageSrc.intersection(backupImageSrc).size < 5) {
         unlazyFlag = false
@@ -1427,9 +1427,9 @@ window.ImageViewerUtils = (function () {
   }
 
   // get page images
-  function processImageDataList(options, imageDataList) {
+  function processImageDataList(svgFilter, imageDataList) {
     const imageFailureCountMap = ImageViewer('get_image_failure_count')
-    const isBadImage = options.svgFilter
+    const isBadImage = svgFilter
       ? url => badImageSet.has(url) || imageFailureCountMap.get(url) >= 3 || url.startsWith('data:image/svg') || url.includes('.svg')
       : url => badImageSet.has(url) || imageFailureCountMap.get(url) >= 3
 
@@ -1514,7 +1514,7 @@ window.ImageViewerUtils = (function () {
     node.setAttribute('iv-width', Math.min(realSize, width))
     node.setAttribute('iv-height', Math.min(realSize, height))
   }
-  function getImageListWithoutFilter(options) {
+  function getImageListWithoutFilter(svgFilter = true) {
     const imageDataList = []
 
     const rawImageList = deepQuerySelectorAll(document.body, `img${disableImageUnlazy ? '' : '[iv-image]'}`)
@@ -1561,14 +1561,14 @@ window.ImageViewerUtils = (function () {
       imageDataList.push({src: url, dom})
     }
 
-    const uniqueDataList = processImageDataList(options, imageDataList)
+    const uniqueDataList = processImageDataList(svgFilter, imageDataList)
     return uniqueDataList
   }
   function getImageList(options) {
     const minWidth = options.minWidth
     const minHeight = options.minHeight
     if (minWidth === 0 && minHeight === 0) {
-      return getImageListWithoutFilter(options)
+      return getImageListWithoutFilter(options.svgFilter)
     }
 
     const imageDataList = []
@@ -1624,7 +1624,7 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    const uniqueDataList = processImageDataList(options, imageDataList)
+    const uniqueDataList = processImageDataList(options.svgFilter, imageDataList)
     return uniqueDataList
   }
 
