@@ -89,6 +89,23 @@ window.ImageViewerUtils = (function () {
     true
   )
 
+  // init observer for href change
+  const hrefObserver = new MutationObserver(() => {
+    if (lastHref === location.href) return
+    lastHref = location.href
+    const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
+    const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
+    if (allImageSrc.intersection(backupImageSrc).size < 5) {
+      unlazyFlag = false
+      scrollUnlazyFlag = false
+      lastUnlazyTask = null
+      window.backupImageList = []
+      ImageViewer('reset_image_list')
+      ImageViewer('close_image_viewer')
+    }
+  })
+  hrefObserver.observe(document.body, {childList: true, subtree: true})
+
   // init observer for unlazy image being modify
   const unlazyObserver = new MutationObserver(mutationsList => {
     const updatedSet = new Set()
@@ -1324,20 +1341,6 @@ window.ImageViewerUtils = (function () {
     return race
   }
   function startUnlazy(options) {
-    // check href change
-    if (lastHref !== location.href) {
-      lastHref = location.href
-      const allImageSrc = new Set(getImageListWithoutFilter(options.svgFilter).map(data => data.src))
-      const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
-      if (allImageSrc.intersection(backupImageSrc).size < 5) {
-        unlazyFlag = false
-        scrollUnlazyFlag = false
-        lastUnlazyTask = null
-        window.backupImageList = []
-        ImageViewer('reset_image_list')
-        ImageViewer('close_image_viewer')
-      }
-    }
     // run init task
     if (lastUnlazyTask === null) {
       processLazyPlaceholder()
