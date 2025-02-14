@@ -1335,6 +1335,7 @@ window.ImageViewerUtils = (function () {
         lastUnlazyTask = null
         window.backupImageList = []
         ImageViewer('reset_image_list')
+        ImageViewer('close_image_viewer')
       }
     }
     // run init task
