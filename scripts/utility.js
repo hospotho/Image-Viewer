@@ -979,6 +979,10 @@ window.ImageViewerUtils = (function () {
     return promise
   }
   async function getBetterUrl(currentSrc, bitSize, naturalSize, newURL) {
+    if (bitSize === -1) {
+      const lazySize = await getImageBitSize(newURL) || await getImageRealSize(newURL)
+      if (lazySize) return newURL
+    }
     const baseSize = bitSize || naturalSize
     const getSizeFunction = bitSize ? getImageBitSize : getImageRealSize
     const lazySize = await getSizeFunction(newURL)
