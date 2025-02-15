@@ -978,20 +978,20 @@ window.ImageViewerUtils = (function () {
     srcRealSizeMap.set(src, promise)
     return promise
   }
-  async function getBetterUrl(currentSrc, bitSize, naturalSize, newURL) {
+  async function isNewUrlBetter(currentSrc, bitSize, naturalSize, newURL) {
+    // current is placeholder
     if (bitSize === -1) {
-      const lazySize = await getImageBitSize(newURL) || await getImageRealSize(newURL)
-      if (lazySize) return newURL
+      const lazySize = (await getImageBitSize(newURL)) || (await getImageRealSize(newURL))
+      if (lazySize) return true
     }
     const baseSize = bitSize || naturalSize
     const getSizeFunction = bitSize ? getImageBitSize : getImageRealSize
     const lazySize = await getSizeFunction(newURL)
-    if (lazySize === 0 || lazySize < baseSize) return null
-    if (lazySize > baseSize) return newURL
+    if (lazySize === 0 || lazySize < baseSize) return false
+    if (lazySize > baseSize) return true
     // when same size
-    const isSameImage = getRawUrl(currentSrc) === getRawUrl(newURL) || currentSrc.split('?')[0].split('/').at(-1) === newURL.split('?')[0].split('/').at(-1)
-    if (!isSameImage) return newURL
-    return null
+    const sameImage = getRawUrl(currentSrc) === getRawUrl(newURL) || currentSrc.split('?')[0].split('/').at(-1) === newURL.split('?')[0].split('/').at(-1)
+    return !sameImage
   }
   async function checkImageAttr(img, attrList) {
     img.setAttribute('iv-checking', '')
@@ -1010,17 +1010,17 @@ window.ImageViewerUtils = (function () {
       while (lastIndex < attrList.length) {
         const {name, url} = attrList[lastIndex++]
         complete = lastIndex === attrList.length
-        const newURL = url.replace(/^https?:/, protocol).replace(/^\/(?:[^/])/, origin)
-        const betterUrl = await getBetterUrl(currentSrc, bitSize, naturalSize, newURL)
-        if (betterUrl === null) continue
+        const newUrl = url.replace(/^https?:/, protocol).replace(/^\/(?:[^/])/, origin)
+        const better = await isNewUrlBetter(currentSrc, bitSize, naturalSize, newUrl)
+        if (!better) continue
 
         // preload image
-        const preloading = preloadImage(img, betterUrl)
+        const preloading = preloadImage(img, newUrl)
         const done = await waitPromiseComplete(preloading, 5000)
         // count overtime as success
         const success = done ? await preloading : true
         if (!success) {
-          console.log(`Failed to load ${betterUrl}`)
+          console.log(`Failed to load ${newUrl}`)
           continue
         }
 
@@ -1028,15 +1028,15 @@ window.ImageViewerUtils = (function () {
         successList.push(name)
         const realAttrName = name.startsWith('raw ') ? name.slice(4) : name
         if (done) {
-          await updateImageSrc(img, betterUrl)
+          await updateImageSrc(img, newUrl)
           img.removeAttribute(realAttrName)
           badImageSet.add(currentSrc)
           break
         }
         // place action to callback
-        console.log(`Image preload overtime: ${betterUrl}`)
+        console.log(`Image preload overtime: ${newUrl}`)
         preloading
-          .then(success => success && updateImageSrc(img, betterUrl))
+          .then(success => success && updateImageSrc(img, newUrl))
           .then(() => {
             img.removeAttribute(realAttrName)
             badImageSet.add(currentSrc)
