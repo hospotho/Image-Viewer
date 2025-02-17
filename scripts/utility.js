@@ -414,18 +414,23 @@ window.ImageViewerUtils = (function () {
   function updateSizeByWrapper(wrapperList, domWidth, domHeight, options) {
     const {imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight} = processWrapperList(wrapperList)
     const isCustomElement = wrapperList[0].tagName.includes('-')
-    const useMinSize = isCustomElement || isLargeContainer(wrapperList, imageCountList)
-    const useHalfSize = !useMinSize && isOneToOne(wrapperList, imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight)
+    const useMinSize = isCustomElement || isLargeContainer(wrapperList, imageCountList) || isOneToOne(wrapperList, imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight)
 
-    const getMinSize = rawSizeList => Math.min(...rawSizeList.filter(Boolean))
-    const getHalfSize = (rawSizeList, optionSize) => Math.min(...rawSizeList.filter(size => size >= optionSize)) / 2
-    const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
+    // use min size
+    if (useMinSize) {
+      const minWidth = Math.min(...rawWidth.filter(Boolean)) - 3
+      const minHeight = Math.min(...rawHeight.filter(Boolean)) - 3
+      options.minWidth = Math.min(minWidth, options.minWidth)
+      options.minHeight = Math.min(minHeight, options.minHeight)
+      return
+    }
 
     // treat long size as width
+    const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
     const [long, short] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
     const [optionLong, optionShort] = options.minWidth > options.minHeight ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
-    const finalWidth = useMinSize ? getMinSize(rawWidth) : useHalfSize ? getHalfSize(rawWidth, optionLong) : getRefSize(wrapperWidth, long, optionLong)
-    const finalHeight = useMinSize ? getMinSize(rawHeight) : useHalfSize ? getHalfSize(rawHeight, optionShort) : getRefSize(wrapperHeight, short, optionShort)
+    const finalWidth = getRefSize(wrapperWidth, long, optionLong)
+    const finalHeight = getRefSize(wrapperHeight, short, optionShort)
 
     // not allow size below 50 to prevent icon
     const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight))
