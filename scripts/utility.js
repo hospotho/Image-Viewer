@@ -1285,7 +1285,7 @@ window.ImageViewerUtils = (function () {
         .split(',')
         .filter(s => s.includes(':'))[0]
         .split(':')
-      const domList = document.querySelectorAll(selector)
+      const domList = selector.endsWith('>') ? document.querySelectorAll(selector + '*') : document.querySelectorAll(selector)
       if (domList.length === 0) continue
 
       const dom = domList[0]
