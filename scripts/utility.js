@@ -461,15 +461,8 @@ window.ImageViewerUtils = (function () {
       return
     }
 
-    // treat long size as width
-    const getRefSize = (sizeList, domSize, optionSize) => Math.min(...sizeList.filter(s => s * 1.5 >= domSize || s * 1.2 >= optionSize))
-    const [long, short] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
-    const [optionLong, optionShort] = options.minWidth > options.minHeight ? [options.minWidth, options.minHeight] : [options.minHeight, options.minWidth]
-    const finalWidth = getRefSize(wrapperWidth, long, optionLong)
-    const finalHeight = getRefSize(wrapperHeight, short, optionShort)
-
-    // not allow size below 50 to prevent icon
-    const finalSize = Math.max(useMinSize ? 0 : 50, Math.min(finalWidth, finalHeight))
+    // use ref size
+    const finalSize = calculateRefSize(rawWidth, rawHeight, domWidth, domHeight)
     options.minWidth = Math.min(finalSize, options.minWidth)
     options.minHeight = Math.min(finalSize, options.minHeight)
   }
