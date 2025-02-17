@@ -352,6 +352,42 @@ window.ImageViewerUtils = (function () {
   })()
 
   // wrapper size
+  function calculateRefSize(widthList, heightList, domWidth, domHeight) {
+    const refSizeList = []
+    for (let i = 0; i < widthList.length; i++) {
+      const width = widthList[i]
+      const height = heightList[i]
+      refSizeList.push(width > height ? [width, height] : [height, width])
+    }
+    // sort by area
+    refSizeList.sort((a, b) => b[0] * b[1] - a[0] * a[1])
+
+    // init min size
+    const [maxLong, maxShort] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
+    const refIndex = refSizeList.findIndex(size => size[0] === maxLong && size[1] === maxShort)
+    let minLong = maxLong
+    let minShort = maxShort
+    for (let i = 0; i < refIndex; i++) {
+      const [long, short] = refSizeList[i]
+      minLong = Math.min(long, minLong)
+      minShort = Math.min(short, minShort)
+    }
+    // iterate min size
+    const factor = 1.2
+    minLong = maxLong / factor
+    minShort = maxShort / factor
+    for (let i = refIndex + 1; i < refSizeList.length; i++) {
+      const [long, short] = refSizeList[i]
+      if (short >= minShort && long >= minLong) {
+        minLong = Math.min(long / factor, minLong)
+        minShort = Math.min(short / factor, minShort)
+      }
+    }
+
+    const finalSize = Math.min(minLong, minShort) * factor - 3
+    return finalSize
+  }
+
   function isOneToOne(wrapperList, imageCountList, rawWidth, rawHeight, wrapperWidth, wrapperHeight) {
     const imageCount = imageCountList.reduce((a, b) => a + b, 0)
     if (imageCount !== wrapperList.length) return false
@@ -515,38 +551,7 @@ window.ImageViewerUtils = (function () {
     }
 
     // use ref size
-    const refSizeList = []
-    for (let i = 0; i < widthList.length; i++) {
-      const width = widthList[i]
-      const height = heightList[i]
-      refSizeList.push(width > height ? [width, height] : [height, width])
-    }
-    // sort by area
-    refSizeList.sort((a, b) => b[0] * b[1] - a[0] * a[1])
-
-    // init min size
-    const [maxLong, maxShort] = domWidth > domHeight ? [domWidth, domHeight] : [domHeight, domWidth]
-    const refIndex = refSizeList.findIndex(size => size[0] === maxLong && size[1] === maxShort)
-    let minLong = maxLong
-    let minShort = maxShort
-    for (let i = 0; i < refIndex; i++) {
-      const [long, short] = refSizeList[i]
-      minLong = Math.min(long, minLong)
-      minShort = Math.min(short, minShort)
-    }
-    // iterate min size
-    const factor = 1.2
-    minLong = maxLong / factor
-    minShort = maxShort / factor
-    for (let i = refIndex + 1; i < refSizeList.length; i++) {
-      const [long, short] = refSizeList[i]
-      if (short >= minShort && long >= minLong) {
-        minLong = Math.min(long / factor, minLong)
-        minShort = Math.min(short / factor, minShort)
-      }
-    }
-
-    const finalSize = Math.min(minLong, minShort) * factor - 3
+    const finalSize = calculateRefSize(widthList, heightList, domWidth, domHeight)
     options.minWidth = Math.min(finalSize, options.minWidth)
     options.minHeight = Math.min(finalSize, options.minHeight)
   }
