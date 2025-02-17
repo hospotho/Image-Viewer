@@ -39,7 +39,7 @@ window.ImageViewerUtils = (function () {
   })()
 
   // attr unlazy
-  const passList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
+  const attrWhiteList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
   const urlRegex = /(?:https?:\/)?\/\S+/g
   const protocol = location.protocol
   const origin = location.origin + '/'
@@ -1068,20 +1068,20 @@ window.ImageViewerUtils = (function () {
     const attrList = []
 
     // check attributes
-    for (const attr of img.attributes) {
-      if (passList.has(attr.name)) continue
+    for (const {name, value} of img.attributes) {
+      if (attrWhiteList.has(name)) continue
 
-      const match = attr.value.match(urlRegex)
+      const match = value.match(urlRegex)
       if (!match) continue
 
       // count multiple match as srcset
-      const attrUrl = new URL(match.length > 1 ? getSrcsetUrl(attr.value) : attr.value, document.baseURI).href
+      const attrUrl = new URL(match.length > 1 ? getSrcsetUrl(value) : value, document.baseURI).href
       if (attrUrl !== src) {
-        attrList.push({name: attr.name, url: attrUrl})
+        attrList.push({name: name, url: attrUrl})
       }
       const rawAttrUrl = getRawUrl(attrUrl)
       if (rawAttrUrl !== attrUrl && rawAttrUrl !== rawUrl) {
-        attrList.push({name: 'raw ' + attr.name, url: rawAttrUrl})
+        attrList.push({name: 'raw ' + name, url: rawAttrUrl})
       }
     }
 
