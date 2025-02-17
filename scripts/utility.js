@@ -40,7 +40,7 @@ window.ImageViewerUtils = (function () {
 
   // attr unlazy
   const attrWhiteList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onerror', 'data-error'])
-  const urlRegex = /(?:https?:\/)?\/\S+/g
+  const urlRegex = /(?:^| |https?:\/)\/\S+/g
   const protocol = location.protocol
   const origin = location.origin + '/'
 
