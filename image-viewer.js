@@ -783,7 +783,7 @@ window.ImageViewer = (function () {
       img.height = h
       img.classList.add('loaded')
     }
-    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${update ? ':not(.addedImageEvent)' : ''}`)
+    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${update ? ':not(.ready)' : ''}`)
     for (const li of liList) {
       const img = li.firstChild
       img.addEventListener('load', () => action(img))
