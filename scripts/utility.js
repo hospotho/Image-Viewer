@@ -1843,7 +1843,7 @@ window.ImageViewerUtils = (function () {
         return this.getOrderedImageList(options, retryCount - 1)
       }
 
-      scrollRelease()
+      setTimeout(scrollRelease, 0)
       const orderedImageList = sortImageDataList(uniqueImageList)
       return orderedImageList
     },
