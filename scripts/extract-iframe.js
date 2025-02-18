@@ -34,6 +34,7 @@ window.ImageViewerExtractor = (function () {
   function deepQuerySelectorAll(target, selector) {
     const result = []
     const stack = [target]
+    const visited = []
     while (stack.length) {
       const current = stack.pop()
       // check shadowRoot
@@ -41,10 +42,13 @@ window.ImageViewerExtractor = (function () {
         if (node.shadowRoot) {
           stack.push(node.shadowRoot)
         } else {
-          node.setAttribute('no-shadow', '')
+          visited.push(node)
         }
       }
       result.push(...current.querySelectorAll(selector))
+    }
+    for (const node of visited) {
+      node.setAttribute('no-shadow', '')
     }
     return result
   }
