@@ -714,7 +714,7 @@ window.ImageViewer = (function () {
         updateCounter()
       }
 
-      for (const img of shadowRoot.querySelectorAll('#iv-image-list img:not(.loaded, .loading)')) {
+      for (const img of shadowRoot.querySelectorAll('img:not(.loaded, .loading)')) {
         if (img.complete && img.naturalWidth === 0) {
           action(img)
           continue
@@ -1633,7 +1633,7 @@ window.ImageViewer = (function () {
   function updateImageList(newList, options) {
     function tryClear() {
       // failed update will became incorrect insertion
-      const invalidImageList = imageDataList.length > newList.length || shadowRoot.querySelectorAll('#iv-image-list li').length > imageDataList.length
+      const invalidImageList = imageDataList.length > newList.length || shadowRoot.querySelectorAll('img').length > imageDataList.length
       if (invalidImageList) {
         const current = shadowRoot.querySelector('li.current img')
         const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
@@ -1712,7 +1712,7 @@ window.ImageViewer = (function () {
     //   const current = shadowRoot.querySelector('li.current img')
     //   const currentSrc = current.src
 
-    //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list img')) {
+    //   for (const imgNode of shadowRoot.querySelectorAll('img')) {
     //     if (!newUrlDataMap.has(imgNode.src)) {
     //       imgNode.parentElement.remove()
     //       updated = true
@@ -1721,7 +1721,7 @@ window.ImageViewer = (function () {
 
     //   const rawUrl = getRawUrl(currentSrc)
     //   if (!shadowRoot.contains(current) || rawUrl === currentSrc) return
-    //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list img')) {
+    //   for (const imgNode of shadowRoot.querySelectorAll('img')) {
     //     if (imgNode.src === rawUrl) {
     //       imgNode.parentElement.classList.add('current')
     //       break
@@ -1733,7 +1733,7 @@ window.ImageViewer = (function () {
     if (cleared) return
 
     // init update check cache
-    const imgList = [...shadowRoot.querySelectorAll('#iv-image-list img')]
+    const imgList = [...shadowRoot.querySelectorAll('img')]
     const currentUrlList = imgList.map(data => data.src)
     const newDomDataMap = new Map()
     const newUrlDataMap = new Map()
@@ -1833,7 +1833,7 @@ window.ImageViewer = (function () {
   function executeCommand(command) {
     switch (command) {
       case 'get_image_list': {
-        const currentImageList = shadowRoot.querySelectorAll('#iv-image-list img')
+        const currentImageList = shadowRoot.querySelectorAll('img')
         return Array.from(currentImageList)
       }
       case 'get_image_failure_count': {
