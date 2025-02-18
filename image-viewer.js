@@ -721,7 +721,7 @@ window.ImageViewer = (function () {
         updateCounter()
       }
 
-      for (const img of shadowRoot.querySelectorAll('#iv-image-list li img')) {
+      for (const img of shadowRoot.querySelectorAll('#iv-image-list img')) {
         if (img.complete) {
           action(img)
         } else {
@@ -737,11 +737,12 @@ window.ImageViewer = (function () {
     const base = current || liList[baseIndex] || liList[0]
     base.classList.add('current')
 
+    const baseImg = base.firstChild
     const targetSrc = clearSrc || lastSrc
-    const src = base.firstChild.src
+    const src = baseImg.src
     if (lastTransform && (targetSrc === src || getFilename(targetSrc) === getFilename(src))) {
-      base.firstChild.style.transition = 'none'
-      base.firstChild.style.transform = lastTransform
+      baseImg.style.transition = 'none'
+      baseImg.style.transform = lastTransform
     }
     lastTransform = ''
 
@@ -753,19 +754,19 @@ window.ImageViewer = (function () {
     updateCounter()
 
     let completeFlag = false
-    if (base.firstChild.complete) {
-      shadowRoot.querySelector('#iv-info-width').textContent = base.firstChild.naturalWidth
-      shadowRoot.querySelector('#iv-info-height').textContent = base.firstChild.naturalHeight
+    if (baseImg.complete) {
+      shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
+      shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
     }
-    base.firstChild.addEventListener('load', () => {
-      base.firstChild.style.transition = ''
+    baseImg.addEventListener('load', () => {
+      baseImg.style.transition = ''
       // prevent image loading flash
       if (!options.closeButton) {
         const viewer = shadowRoot.querySelector('#image-viewer')
         viewer.style.removeProperty('opacity')
       }
-      shadowRoot.querySelector('#iv-info-width').textContent = base.firstChild.naturalWidth
-      shadowRoot.querySelector('#iv-info-height').textContent = base.firstChild.naturalHeight
+      shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
+      shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
       if (!completeFlag) removeFailedImg()
       completeFlag = true
     })
@@ -1717,7 +1718,7 @@ window.ImageViewer = (function () {
     //   const current = shadowRoot.querySelector('li.current img')
     //   const currentSrc = current.src
 
-    //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
+    //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list img')) {
     //     if (!newUrlDataMap.has(imgNode.src)) {
     //       imgNode.parentElement.remove()
     //       updated = true
@@ -1726,7 +1727,7 @@ window.ImageViewer = (function () {
 
     //   const rawUrl = getRawUrl(currentSrc)
     //   if (!shadowRoot.contains(current) || rawUrl === currentSrc) return
-    //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list li img')) {
+    //   for (const imgNode of shadowRoot.querySelectorAll('#iv-image-list img')) {
     //     if (imgNode.src === rawUrl) {
     //       imgNode.parentElement.classList.add('current')
     //       break
@@ -1738,7 +1739,7 @@ window.ImageViewer = (function () {
     if (cleared) return
 
     // init update check cache
-    const imgList = [...shadowRoot.querySelectorAll('#iv-image-list li img')]
+    const imgList = [...shadowRoot.querySelectorAll('#iv-image-list img')]
     const currentUrlList = imgList.map(data => data.src)
     const newDomDataMap = new Map()
     const newUrlDataMap = new Map()
@@ -1838,7 +1839,7 @@ window.ImageViewer = (function () {
   function executeCommand(command) {
     switch (command) {
       case 'get_image_list': {
-        const currentImageList = shadowRoot.querySelectorAll('#iv-image-list li img')
+        const currentImageList = shadowRoot.querySelectorAll('#iv-image-list img')
         return Array.from(currentImageList)
       }
       case 'get_image_failure_count': {
