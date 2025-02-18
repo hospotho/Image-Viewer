@@ -476,7 +476,8 @@ window.ImageViewerUtils = (function () {
     const rootNode = wrapper.getRootNode()
     if (rootNode !== document) return deepQuerySelectorAll(document.body, rootNode.host.tagName)
     const classList = '.' + [...wrapper.classList].map(CSS.escape).join(', .')
-    const wrapperList = document.querySelectorAll(`div:is(${classList}):has(img):not(:has(div:is(${classList}) img))`)
+    const candidateList = document.querySelectorAll(`div:is(${classList}):has(img)`)
+    const wrapperList = [...candidateList].filter(node => node.querySelector(`div:is(${classList}) img`) === null)
     return wrapperList
   }
   function getDomRawSelector(dom, wrapper) {
@@ -1819,8 +1820,8 @@ window.ImageViewerUtils = (function () {
       }
       // not all images in wrapper match selector
       const selector = getDomRawSelector(dom, wrapper)
-      const domList = deepQuerySelectorAll(document.body, selector, options)
-      const wrapperImageList = [...wrapperList].flatMap(wrapper => [...wrapper.querySelectorAll('img')])
+      const domList = deepQuerySelectorAll(document.body, selector)
+      const wrapperImageList = wrapperList.flatMap(wrapper => [...wrapper.querySelectorAll('img')])
       if (domList.length < wrapperImageList.length) {
         updateSizeBySelector(domWidth, domHeight, document.body, 'IMG', selector, options)
         return
