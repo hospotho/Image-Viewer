@@ -1661,18 +1661,55 @@ window.ImageViewerUtils = (function () {
       }
     }
   }
+  function compareNodePosition(a, b) {
+    const comparison = a.dom.compareDocumentPosition(b.dom)
+    if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
+      return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    }
+    if (a.dom.getRootNode({composed: true}) === document && b.dom.getRootNode({composed: true}) === document) {
+      return compareRootPosition(a.dom, b.dom)
+    }
+    // node not attached to document
+    return 0
+  }
   function sortImageDataList(dataList) {
-    return dataList.sort((a, b) => {
-      const comparison = a.dom.compareDocumentPosition(b.dom)
-      if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
-        return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    if (dataList.length < 2) return dataList
+
+    const length = dataList.length
+    let subArraySize = 1
+    while (subArraySize < length) {
+      let startIndex = 0
+      // merge sub array
+      while (startIndex < length) {
+        const leftStart = startIndex
+        const rightStart = Math.min(startIndex + subArraySize, length)
+        const rightEnd = Math.min(startIndex + 2 * subArraySize, length)
+        startIndex += 2 * subArraySize
+        if (rightStart === length) continue
+
+        // already sorted
+        if (compareNodePosition(dataList[rightStart - 1], dataList[rightStart]) <= 0) continue
+
+        // insertion sort
+        let leftIndex = leftStart
+        let rightIndex = rightStart
+        while (leftIndex < rightIndex && rightIndex < rightEnd) {
+          if (compareNodePosition(dataList[leftIndex], dataList[rightIndex]) <= 0) {
+            leftIndex++
+          } else {
+            // shift element
+            const temp = dataList[rightIndex]
+            for (let i = rightIndex; i > leftIndex; i--) {
+              dataList[i] = dataList[i - 1]
+            }
+            dataList[leftIndex++] = temp
+            rightIndex++
+          }
+        }
       }
-      if (a.dom.getRootNode({composed: true}) === document && b.dom.getRootNode({composed: true}) === document) {
-        return compareRootPosition(a.dom, b.dom)
-      }
-      // node not attached to document
-      return 0
-    })
+      subArraySize *= 2
+    }
+    return dataList
   }
 
   // image search
