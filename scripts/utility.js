@@ -1529,8 +1529,7 @@ window.ImageViewerUtils = (function () {
 
     const rawImageList = deepQuerySelectorAll(document.body, `img${disableImageUnlazy ? '' : '[iv-image]'}`)
     for (const img of rawImageList) {
-      const imgSrc = img.currentSrc || img.src
-      imageDataList.push({src: imgSrc, dom: img})
+      imageDataList.push({src: img.currentSrc || img.src, dom: img})
     }
 
     const videoList = document.querySelectorAll('video[poster]')
@@ -1589,8 +1588,7 @@ window.ImageViewerUtils = (function () {
       const {width, height} = img.getBoundingClientRect()
       if ((width >= minWidth && height >= minHeight) || img === window.ImageViewerLastDom) {
         // currentSrc might be empty during unlazy or update
-        const imgSrc = img.currentSrc || img.src
-        imageDataList.push({src: imgSrc, dom: img})
+        imageDataList.push({src: img.currentSrc || img.src, dom: img})
       }
     }
 
@@ -1611,8 +1609,7 @@ window.ImageViewerUtils = (function () {
         imageDataList.push({src: attrUrl, dom: node})
         continue
       }
-      const nodeStyle = window.getComputedStyle(node)
-      const backgroundImage = nodeStyle.backgroundImage
+      const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') {
         node.setAttribute('no-bg', '')
         continue
