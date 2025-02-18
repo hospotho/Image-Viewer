@@ -691,9 +691,7 @@ window.ImageViewer = (function () {
       imageListNode.style.translate = `0 ${-currIndex * 100}%`
     }
     function removeFailedImg() {
-      const action = e => {
-        const img = e?.target ?? e
-        if (img.naturalWidth !== 0 && img.naturalHeight !== 0) return
+      const action = img => {
         // update counter
         const src = img.src
         const lastCount = imageFailureCountMap.get(src) || 0
@@ -703,31 +701,26 @@ window.ImageViewer = (function () {
           img.src = src
           return
         }
-        // remove img container
-        const target = img.parentNode
-        target.remove()
         // update data list
         const index = imageDataList.findIndex(data => data.src === src)
-        if (index === -1) return
-        imageDataList.splice(index, 1)
+        if (index !== -1) imageDataList.splice(index, 1)
         // set new current
+        const target = img.parentNode
         if (target.classList.contains('current')) {
-          const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
-          if (liList.length) {
-            const newIndex = Math.min(index, liList.length - 1)
-            liList[newIndex].classList.add('current')
-          }
+          target.previousSibling?.classList.add('current')
         }
+        // remove img container
+        target.remove()
         updateCounter()
       }
 
-      for (const img of shadowRoot.querySelectorAll('#iv-image-list img')) {
-        if (img.complete) {
+      for (const img of shadowRoot.querySelectorAll('#iv-image-list img:not(.loaded, .loading)')) {
+        if (img.complete && img.naturalWidth === 0) {
           action(img)
-        } else {
-          img.addEventListener('load', action)
-          img.addEventListener('error', action)
+          continue
         }
+        img.classList.add('loading')
+        img.addEventListener('error', () => action(img))
       }
     }
 
@@ -783,12 +776,13 @@ window.ImageViewer = (function () {
       img.width = w
       img.height = h
       img.classList.add('loaded')
+      img.classList.remove('loading')
     }
     const liList = shadowRoot.querySelectorAll(`#iv-image-list li${update ? ':not(.ready)' : ''}`)
     for (const li of liList) {
       const img = li.firstChild
-      img.addEventListener('load', () => action(img))
       if (img.naturalWidth) action(img)
+      else img.addEventListener('load', () => action(img))
     }
     if (reset) {
       const event = new CustomEvent('resetTransform')
