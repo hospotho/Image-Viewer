@@ -254,6 +254,13 @@ window.ImageViewerUtils = (function () {
 
       try {
         const url = new URL(src, document.baseURI)
+        // proxy URL
+        const proxyMatch = url.pathname.slice(1).match(urlRegex)
+        if (proxyMatch) {
+          const pathId = getPathIdentifier(proxyMatch[0] + url.search)
+          pathIdCache.set(src, pathId)
+          return pathId
+        }
         const dotIndex = url.pathname.lastIndexOf('.')
         const pathname = dotIndex === -1 ? url.pathname : url.pathname.slice(0, dotIndex)
         if (url.search === '') {
