@@ -1480,14 +1480,14 @@ window.ImageViewer = (function () {
     let moveLockPromise = Promise.resolve()
 
     function moveToNode(index) {
-      current.textContent = index + 1
-      imageListNode.style.translate = `0 ${-index * 100}%`
-      imageListNode.querySelector('li.current')?.classList.remove('current')
-
+      const currentListItem = imageListNode.querySelector('li.current')
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
+      const relateImage = relateListItem.querySelector('img')
+      currentListItem?.classList.remove('current')
       relateListItem.classList.add('current')
 
-      const relateImage = relateListItem.querySelector('img')
+      imageListNode.style.translate = `0 ${-index * 100}%`
+      current.textContent = index + 1
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
       moveCount++
