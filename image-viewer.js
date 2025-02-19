@@ -1813,14 +1813,13 @@ window.ImageViewer = (function () {
     }
 
     const newIndex = getRestoreIndex()
-    shadowRoot.querySelector('#iv-counter-current').textContent = newIndex + 1
-
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
+    const relateImage = relateListItem.querySelector('img')
+
     imageListNode.querySelector('li.current')?.classList.remove('current')
     relateListItem.classList.add('current')
-
-    const relateImage = relateListItem.querySelector('img')
+    shadowRoot.querySelector('#iv-counter-current').textContent = newIndex + 1
     shadowRoot.querySelector('#iv-info-width').textContent = relateImage.naturalWidth
     shadowRoot.querySelector('#iv-info-height').textContent = relateImage.naturalHeight
 
