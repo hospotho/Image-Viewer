@@ -30,6 +30,7 @@
   transition: 0s;
 }
 #iv-image-list li {
+  position: absolute;
   cursor: move;
   width: 100%;
   height: 100%;
@@ -37,13 +38,17 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  translate: 100% 0;
 }
-#iv-image-list li img {
+#iv-image-list li.current {
+  translate: 0 0;
+}
+img {
   max-width: 100%;
   max-height: 100%;
   transition: transform 0.05s linear;
 }
-#iv-image-list li img.loaded {
+img.loaded {
   max-width: none;
   max-height: none;
 }

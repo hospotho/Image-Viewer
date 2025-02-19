@@ -426,6 +426,7 @@ window.ImageViewer = (function () {
         transition: 0s;
       }
       #iv-image-list li {
+        position: absolute;
         cursor: move;
         width: 100%;
         height: 100%;
@@ -433,13 +434,17 @@ window.ImageViewer = (function () {
         justify-content: center;
         align-items: center;
         overflow: hidden;
+        translate: 100% 0;
       }
-      #iv-image-list li img {
+      #iv-image-list li.current {
+        translate: 0 0;
+      }
+      img {
         max-width: 100%;
         max-height: 100%;
         transition: transform 0.05s linear;
       }
-      #iv-image-list li img.loaded {
+      img.loaded {
         max-width: none;
         max-height: none;
       }
@@ -688,7 +693,6 @@ window.ImageViewer = (function () {
 
       counterTotal.textContent = length
       counterCurrent.textContent = currIndex + 1
-      imageListNode.style.translate = `0 ${-currIndex * 100}%`
     }
     function removeFailedImg() {
       const action = img => {
@@ -738,9 +742,6 @@ window.ImageViewer = (function () {
       baseImg.style.transform = lastTransform
     }
     lastTransform = ''
-
-    const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    imageListNode.style.translate = `0 ${-baseIndex * 100}%`
 
     const counterTotal = shadowRoot.querySelector('#iv-counter-total')
     const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
@@ -1486,7 +1487,6 @@ window.ImageViewer = (function () {
       currentListItem?.classList.remove('current')
       relateListItem.classList.add('current')
 
-      imageListNode.style.translate = `0 ${-index * 100}%`
       current.textContent = index + 1
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
@@ -1817,7 +1817,6 @@ window.ImageViewer = (function () {
 
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
-    imageListNode.style.translate = `0 ${-newIndex * 100}%`
     imageListNode.querySelector('li.current')?.classList.remove('current')
     relateListItem.classList.add('current')
 
