@@ -1077,6 +1077,12 @@ window.ImageViewerUtils = (function () {
       .sort((a, b) => b[1] - a[1])
     return srcsetList[0][0]
   }
+  function getAttrUrl(match, value) {
+    // count multiple match as srcset
+    if (match.length > 1) return new URL(getSrcsetUrl(value), document.baseURI).href
+    const subMatch = value.slice(1).match(/https?:\/\/\S+/g)
+    return new URL(subMatch === null ? value : subMatch[0], document.baseURI).href
+  }
   function getUnlazyAttrList(img) {
     const src = img.currentSrc || img.src
     const rawUrl = getRawUrl(src)
@@ -1089,8 +1095,7 @@ window.ImageViewerUtils = (function () {
       const match = value.match(urlRegex)
       if (!match) continue
 
-      // count multiple match as srcset
-      const attrUrl = new URL(match.length > 1 ? getSrcsetUrl(value) : value, document.baseURI).href
+      const attrUrl = getAttrUrl(match, value)
       if (attrUrl !== src) {
         attrList.push({name: name, url: attrUrl})
       }
