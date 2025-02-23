@@ -1102,6 +1102,33 @@ window.ImageViewerUtils = (function () {
     const subMatch = value.slice(1).match(/https?:\/\/\S+/g)
     return cachedGetUrl(subMatch === null ? value : subMatch[0]).href
   }
+  function checkAttrUrlPath(url, src, attrList) {
+    const pathname = url.pathname
+    const search = url.search
+    if (pathname.match(/[-_]thumb(?=nail)?\./)) {
+      const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
+      const nonThumbnail = src.replace(pathname, nonThumbnailPath)
+      attrList.push({name: 'non thumbnail path', url: nonThumbnail})
+    }
+
+    // check url parameters
+    if (!src.includes('?')) return
+    if (!pathname.includes('.')) {
+      const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
+      if (extMatch) {
+        const filenameWithExt = pathname + '.' + extMatch[0]
+        const rawExtension = src.replace(pathname + search, filenameWithExt)
+        attrList.push({name: 'raw extension', url: rawExtension})
+      }
+    }
+    if (search.includes('width=') || search.includes('height=')) {
+      const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
+      const rawQuery = src.replace(search, noSizeQuery)
+      attrList.push({name: 'no size query', url: rawQuery})
+    }
+    const noQuery = src.replace(pathname + search, pathname)
+    attrList.push({name: 'no query', url: noQuery})
+  }
   function getUnlazyAttrList(img) {
     const src = img.currentSrc || img.src
     const rawUrl = getRawUrl(src)
@@ -1135,32 +1162,7 @@ window.ImageViewerUtils = (function () {
     // check url path
     const url = cachedGetUrl(src)
     if (url !== null) {
-      const pathname = url.pathname
-      const search = url.search
-      if (pathname.match(/[-_]thumb(?=nail)?\./)) {
-        const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
-        const nonThumbnail = src.replace(pathname, nonThumbnailPath)
-        attrList.push({name: 'non thumbnail path', url: nonThumbnail})
-      }
-
-      // check url parameters
-      if (src.includes('?')) {
-        if (!pathname.includes('.')) {
-          const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
-          if (extMatch) {
-            const filenameWithExt = pathname + '.' + extMatch[0]
-            const rawExtension = src.replace(pathname + search, filenameWithExt)
-            attrList.push({name: 'raw extension', url: rawExtension})
-          }
-        }
-        if (search.includes('width=') || search.includes('height=')) {
-          const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
-          const rawQuery = src.replace(search, noSizeQuery)
-          attrList.push({name: 'no size query', url: rawQuery})
-        }
-        const noQuery = src.replace(pathname + search, pathname)
-        attrList.push({name: 'no query', url: noQuery})
-      }
+      checkAttrUrlPath(url, src, attrList)
     }
 
     // check parent anchor
