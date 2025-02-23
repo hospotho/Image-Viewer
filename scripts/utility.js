@@ -159,6 +159,21 @@ window.ImageViewerUtils = (function () {
   }
 
   // string search
+  const cachedGetUrl = (function () {
+    const srcUrlCache = new Map()
+    return src => {
+      const cache = srcUrlCache.get(src)
+      if (cache !== undefined) return cache
+      try {
+        const url = new URL(src, document.baseURI)
+        srcUrlCache.set(src, url)
+        return url
+      } catch (error) {
+        srcUrlCache.set(src, null)
+        return null
+      }
+    }
+  })()
   const cachedExtensionMatch = (function () {
     const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))/i
     const matchCache = new Map()
@@ -181,27 +196,26 @@ window.ImageViewerUtils = (function () {
       const cache = urlSearchCache.get(src)
       if (cache !== undefined) return cache
 
-      try {
-        // protocol-relative URL
-        const url = new URL(src, document.baseURI)
-        if (!url.search) return null
-
-        const baseURI = url.origin + url.pathname
-        const searchList = url.search
-          .slice(1)
-          .split('&')
-          .filter(t => cachedExtensionMatch(t))
-          .join('&')
-        const imgSearch = searchList ? '?' + searchList : ''
-        const rawSearch = baseURI + imgSearch
-
-        const extensionMatch = cachedExtensionMatch(rawSearch)
-        urlSearchCache.set(src, extensionMatch)
-        return extensionMatch
-      } catch (error) {
+      // protocol-relative URL
+      const url = cachedGetUrl(src)
+      if (url === null) {
         urlSearchCache.set(src, null)
         return null
       }
+      if (!url.search) return null
+
+      const baseURI = url.origin + url.pathname
+      const searchList = url.search
+        .slice(1)
+        .split('&')
+        .filter(t => cachedExtensionMatch(t))
+        .join('&')
+      const imgSearch = searchList ? '?' + searchList : ''
+      const rawSearch = baseURI + imgSearch
+
+      const extensionMatch = cachedExtensionMatch(rawSearch)
+      urlSearchCache.set(src, extensionMatch)
+      return extensionMatch
     }
   })()
   const cachedGetRawFilename = (function () {
@@ -257,32 +271,32 @@ window.ImageViewerUtils = (function () {
       const cache = pathIdCache.get(src)
       if (cache !== undefined) return cache
 
-      try {
-        const url = new URL(src, document.baseURI)
-        // proxy URL
-        const proxyMatch = url.pathname.slice(1).match(urlRegex)
-        if (proxyMatch) {
-          const pathId = getPathIdentifier(proxyMatch[0] + url.search)
-          pathIdCache.set(src, pathId)
-          return pathId
-        }
-        const dotIndex = url.pathname.lastIndexOf('.')
-        const pathname = dotIndex === -1 ? url.pathname : url.pathname.slice(0, dotIndex)
-        if (url.search === '') {
-          pathIdCache.set(src, pathname)
-          return pathname
-        }
-        const query = url.search
-          .split('&')
-          .filter(attr => attr.split('=').at(-1).length > 6)
-          .reduce((last, curr) => (curr.length > last.length ? curr : last), '')
-        const pathId = pathname + query
-        pathIdCache.set(src, pathId)
-        return pathId
-      } catch (error) {
+      const url = cachedGetUrl(src)
+      if (url === null) {
         pathIdCache.set(src, null)
         return null
       }
+
+      // proxy URL
+      const proxyMatch = url.pathname.slice(1).match(urlRegex)
+      if (proxyMatch) {
+        const pathId = getPathIdentifier(proxyMatch[0] + url.search)
+        pathIdCache.set(src, pathId)
+        return pathId
+      }
+      const dotIndex = url.pathname.lastIndexOf('.')
+      const pathname = dotIndex === -1 ? url.pathname : url.pathname.slice(0, dotIndex)
+      if (url.search === '') {
+        pathIdCache.set(src, pathname)
+        return pathname
+      }
+      const query = url.search
+        .split('&')
+        .filter(attr => attr.split('=').at(-1).length > 6)
+        .reduce((last, curr) => (curr.length > last.length ? curr : last), '')
+      const pathId = pathname + query
+      pathIdCache.set(src, pathId)
+      return pathId
     }
   })()
   const getFilename = (function () {
@@ -897,7 +911,7 @@ window.ImageViewerUtils = (function () {
         source.srcset = src
       }
     }
-    const srcUrl = new URL(img.src, document.baseURI)
+    const srcUrl = cachedGetUrl(img.src)
     while (srcUrl.href !== img.currentSrc) {
       await new Promise(resolve => setTimeout(resolve, 20))
     }
@@ -958,7 +972,7 @@ window.ImageViewerUtils = (function () {
       }
 
       // protocol-relative URL
-      const url = new URL(src, document.baseURI)
+      const url = cachedGetUrl(src)
       const href = url.href
       if (url.hostname !== location.hostname) {
         waiting = true
@@ -1084,9 +1098,9 @@ window.ImageViewerUtils = (function () {
   }
   function getAttrUrl(match, value) {
     // count multiple match as srcset
-    if (match.length > 1) return new URL(getSrcsetUrl(value), document.baseURI).href
+    if (match.length > 1) return cachedGetUrl(getSrcsetUrl(value)).href
     const subMatch = value.slice(1).match(/https?:\/\/\S+/g)
-    return new URL(subMatch === null ? value : subMatch[0], document.baseURI).href
+    return cachedGetUrl(subMatch === null ? value : subMatch[0]).href
   }
   function getUnlazyAttrList(img) {
     const src = img.currentSrc || img.src
@@ -1119,8 +1133,8 @@ window.ImageViewerUtils = (function () {
     }
 
     // check url path
-    try {
-      const url = new URL(src, document.baseURI)
+    const url = cachedGetUrl(src)
+    if (url !== null) {
       const pathname = url.pathname
       const search = url.search
       if (pathname.match(/[-_]thumb(?=nail)?\./)) {
@@ -1130,23 +1144,24 @@ window.ImageViewerUtils = (function () {
       }
 
       // check url parameters
-      if (!src.includes('?')) throw new Error()
-      if (!pathname.includes('.')) {
-        const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
-        if (extMatch) {
-          const filenameWithExt = pathname + '.' + extMatch[0]
-          const rawExtension = src.replace(pathname + search, filenameWithExt)
-          attrList.push({name: 'raw extension', url: rawExtension})
+      if (src.includes('?')) {
+        if (!pathname.includes('.')) {
+          const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
+          if (extMatch) {
+            const filenameWithExt = pathname + '.' + extMatch[0]
+            const rawExtension = src.replace(pathname + search, filenameWithExt)
+            attrList.push({name: 'raw extension', url: rawExtension})
+          }
         }
+        if (search.includes('width=') || search.includes('height=')) {
+          const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
+          const rawQuery = src.replace(search, noSizeQuery)
+          attrList.push({name: 'no size query', url: rawQuery})
+        }
+        const noQuery = src.replace(pathname + search, pathname)
+        attrList.push({name: 'no query', url: noQuery})
       }
-      if (search.includes('width=') || search.includes('height=')) {
-        const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
-        const rawQuery = src.replace(search, noSizeQuery)
-        attrList.push({name: 'no size query', url: rawQuery})
-      }
-      const noQuery = src.replace(pathname + search, pathname)
-      attrList.push({name: 'no query', url: noQuery})
-    } catch (error) {}
+    }
 
     // check parent anchor
     const anchor = img.closest('a')
