@@ -176,6 +176,11 @@ window.ImageViewerUtils = (function () {
   const cachedUrlSearchMatch = (function () {
     const urlSearchCache = new Map()
     return src => {
+      if (src.startsWith('data')) return null
+
+      const cache = urlSearchCache.get(src)
+      if (cache !== undefined) return cache
+
       try {
         // protocol-relative URL
         const url = new URL(src, document.baseURI)
