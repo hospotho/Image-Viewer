@@ -239,6 +239,22 @@ window.ImageViewerUtils = (function () {
       const cache = rawUrlCache.get(src)
       if (cache !== undefined) return cache
 
+      // always check decode
+      while (true) {
+        const decoded = decodeURIComponent(src)
+        if (src === decoded) break
+        src = decoded
+      }
+
+      const url = cachedGetUrl(src, document.baseURI)
+      // proxy URL
+      const proxyMatch = url.pathname.slice(1).match(urlRegex)
+      if (proxyMatch) {
+        const rawUrl = getRawUrl(proxyMatch[0] + url.search)
+        rawUrlCache.set(src, rawUrl)
+        return rawUrl
+      }
+
       const rawFilenameUrl = cachedGetRawFilename(src)
       if (rawFilenameUrl !== src) {
         rawUrlCache.set(src, rawFilenameUrl)
