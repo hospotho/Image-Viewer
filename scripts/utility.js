@@ -2011,7 +2011,7 @@ window.ImageViewerUtils = (function () {
         if (dom) data.dom = dom
       }
 
-      return uniqueFinalList
+      return sortImageDataList(uniqueFinalList)
     },
 
     isStrLengthEqual: function (newList, oldList) {
