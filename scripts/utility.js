@@ -935,8 +935,7 @@ window.ImageViewerUtils = (function () {
       await new Promise(resolve => setTimeout(resolve, 20))
     }
   }
-  async function preloadImage(img, src) {
-    const release = await semaphore.acquire()
+  async function preloadImage(img, src, release) {
     const success = await new Promise(resolve => {
       const temp = new Image()
       temp.onload = () => resolve(true)
@@ -1069,7 +1068,8 @@ window.ImageViewerUtils = (function () {
 
         // preload image
         preloadTaskCount++
-        const preloading = preloadImage(img, newUrl)
+        const release = await semaphore.acquire()
+        const preloading = preloadImage(img, newUrl, release)
         const done = await waitPromiseComplete(preloading, 5000)
         // count overtime as success
         const success = done ? await preloading : true
