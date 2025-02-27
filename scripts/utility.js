@@ -1115,8 +1115,9 @@ window.ImageViewerUtils = (function () {
   function getAttrUrl(match, value) {
     // count multiple match as srcset
     if (match.length > 1) return cachedGetUrl(getSrcsetUrl(value)).href
-    const subMatch = value.slice(1).match(/https?:\/\/\S+/g)
-    return cachedGetUrl(subMatch === null ? value : subMatch[0]).href
+    const url = cachedGetUrl(value)
+    const subMatch = url.pathname.slice(1).match(/https?:\/\/\S+/g)
+    return cachedGetUrl(subMatch === null ? value : subMatch[0] + url.search).href
   }
   function checkAttrUrlPath(url, src, attrList) {
     const pathname = url.pathname
