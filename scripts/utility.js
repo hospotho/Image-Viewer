@@ -52,10 +52,12 @@ window.ImageViewerUtils = (function () {
   const srcRealSizeMap = new Map()
 
   // unlazy state
+  let lastHref = location.href
+  let slowAlertFlag = false
   let disableImageUnlazy = false
   let unlazyFlag = false
   let lastUnlazyTask = null
-  let lastHref = location.href
+  let preloadTaskCount = 0
 
   // scroll state
   let enableAutoScroll = false
@@ -96,6 +98,7 @@ window.ImageViewerUtils = (function () {
     const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
     const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
     if (allImageSrc.intersection(backupImageSrc).size < 5) {
+      slowAlertFlag = false
       unlazyFlag = false
       scrollUnlazyFlag = false
       lastUnlazyTask = null
@@ -1065,11 +1068,13 @@ window.ImageViewerUtils = (function () {
         if (!better) continue
 
         // preload image
+        preloadTaskCount++
         const preloading = preloadImage(img, newUrl)
         const done = await waitPromiseComplete(preloading, 5000)
         // count overtime as success
         const success = done ? await preloading : true
         if (!success) {
+          preloadTaskCount--
           console.log(`Failed to load ${newUrl}`)
           continue
         }
@@ -1079,6 +1084,7 @@ window.ImageViewerUtils = (function () {
         const realAttrName = name.startsWith('raw ') ? name.slice(4) : name
         if (done) {
           await updateImageSrc(img, newUrl)
+          preloadTaskCount--
           img.removeAttribute(realAttrName)
           badImageSet.add(currentSrc)
           break
@@ -1088,6 +1094,7 @@ window.ImageViewerUtils = (function () {
         preloading
           .then(success => success && updateImageSrc(img, newUrl))
           .then(() => {
+            preloadTaskCount--
             img.removeAttribute(realAttrName)
             badImageSet.add(currentSrc)
           })
@@ -1381,12 +1388,14 @@ window.ImageViewerUtils = (function () {
   }
   async function createUnlazyRace(options) {
     // slow connection alert
-    if (lastUnlazyTask === null) {
+    if (lastUnlazyTask === null || preloadTaskCount !== 0) {
       setTimeout(() => {
-        if (unlazyFlag) return
+        if (unlazyFlag && preloadTaskCount === 0) return
+        if (slowAlertFlag) return
         const unlazyList = deepQuerySelectorAll(document.body, 'img:not([iv-image])')
         const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
-        if (stillLoading) {
+        if (stillLoading || preloadTaskCount !== 0) {
+          slowAlertFlag = true
           console.log('Slow connection, images still loading')
           alert('Slow connection, images still loading')
         }
