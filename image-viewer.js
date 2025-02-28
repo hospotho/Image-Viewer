@@ -1768,8 +1768,8 @@ window.ImageViewer = (function () {
       shadowRoot.querySelector('#iv-counter-total').textContent = imageDataList.length
     }
     if (updated) {
-      tryClear()
-      console.log('Image viewer updated')
+      if (tryClear()) console.log('Image list has been rebuilt')
+      else console.log('Image viewer updated')
     }
   }
 
