@@ -1690,7 +1690,8 @@ window.ImageViewer = (function () {
         return true
       } else {
         clearSrc = ''
-        clearIndex = -1
+        // new first image inserted
+        clearIndex = clearIndex === 0 ? 0 : -1
         return false
       }
     }
