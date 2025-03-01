@@ -705,6 +705,7 @@ window.ImageViewer = (function () {
           img.src = src
           return
         }
+        console.log(`Removing failed img: ${src}`)
         // update data list
         const index = imageDataList.findIndex(data => data.src === src)
         if (index !== -1) imageDataList.splice(index, 1)
