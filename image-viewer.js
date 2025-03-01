@@ -391,6 +391,7 @@ window.ImageViewer = (function () {
           <li><span>${heightText}</span><span>:</span><span id="iv-info-height"></span></li>
         </ul>
       </nav>
+      <button id="iv-control-info"></button>
       <button id="iv-control-close"></button>`
   }
 
@@ -547,6 +548,33 @@ window.ImageViewer = (function () {
       }
       #iv-info span:last-child:hover {
         border-color: #aaa;
+      }
+
+      /* info button */
+      #iv-control-info {
+        cursor: pointer;
+        position: absolute;
+        left: -50px;
+        top: -50px;
+        width: 100px;
+        height: 100px;
+        background: #fff;
+        border: 0;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 #fff;
+        opacity: 0;
+      }
+      #iv-control-info.show {
+        opacity: 0.8;
+      }
+      #iv-control-info:before {
+        content: '\\2139';
+        position: absolute;
+        right: 50%;
+        margin-right: -26px;
+        margin-top: -5px;
+        font-size: 35px;
+        color: #999;
       }
 
       /* close button */
@@ -1072,6 +1100,15 @@ window.ImageViewer = (function () {
         })
       }
     }
+    function addInfoPanelEvent() {
+      const infoButton = shadowRoot.querySelector('#iv-control-info')
+      infoButton.addEventListener('mouseenter', () => {
+        infoButton.classList.add('show')
+      })
+      infoButton.addEventListener('mouseleave', () => {
+        infoButton.classList.remove('show')
+      })
+    }
     function addFitButtonEvent() {
       const currFitBtn = shadowRoot.querySelector(`#iv-control-${options.fitMode}`)
       currFitBtn?.classList.add('on')
@@ -1306,6 +1343,7 @@ window.ImageViewer = (function () {
     addChangeBackgroundHotkey()
     addTransformationHotkey()
     addControlPanelHideEvent()
+    addInfoPanelEvent()
     addFitButtonEvent()
     if (options.closeButton) {
       addMoveToButtonEvent()
