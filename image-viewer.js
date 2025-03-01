@@ -1693,19 +1693,37 @@ window.ImageViewer = (function () {
       const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
       const currentIndex = counterCurrent.textContent - 1
       const currentUrlIndexMap = new Map(currentUrlList.map((url, i) => [url, i]))
+      const newUrlInsertIndexMap = new Map()
+      let indexShift = 0
 
-      for (let i = 0; i < newList.length; i++) {
+      // first image might be new
+      const firstData = newList[0]
+      const firstIndex = currentUrlIndexMap.get(firstData.src)
+      if (firstIndex === undefined) {
+        indexShift++
+        const node = buildImageNode(firstData, options)
+        newUrlInsertIndexMap.set(firstData.src, 0)
+        insertImageNode(node, 0)
+        updated = true
+        if (currentIndex === 0) {
+          console.log('First image changed')
+          clearIndex = 0
+        }
+      }
+      // process remaining list
+      for (let i = 1; i < newList.length; i++) {
         const data = newList[i]
         const index = currentUrlIndexMap.get(data.src)
         if (index !== undefined) continue
 
+        indexShift++
         const node = buildImageNode(data, options)
-        insertImageNode(node, i)
+        const lastSrc = newList[i - 1].src
+        // insert to known position
+        const refIndex = currentUrlIndexMap.get(lastSrc) + indexShift || newUrlInsertIndexMap.get(lastSrc) + 1
+        newUrlInsertIndexMap.set(data.src, refIndex)
+        insertImageNode(node, refIndex)
         updated = true
-        if (i === 0 && currentIndex === 0) {
-          console.log('First image changed')
-          clearIndex = 0
-        }
       }
     }
     // function tryRemove() {
