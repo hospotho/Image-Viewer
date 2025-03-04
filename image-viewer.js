@@ -371,7 +371,7 @@ window.ImageViewer = (function () {
   })()
 
   //==========html&style==========
-  const frame = config => {
+  const frame = i18n => {
     return `<ul id="iv-image-list"></ul>
       <nav id="iv-control">
         <ul id="iv-index">
@@ -387,8 +387,8 @@ window.ImageViewer = (function () {
           <li><button id="iv-control-moveto"></button></li>
         </ul>
         <ul id="iv-info">
-          <li><span>${config.widthText}</span><span>:</span><span id="iv-info-width"></span></li>
-          <li><span>${config.heightText}</span><span>:</span><span id="iv-info-height"></span></li>
+          <li><span>${i18n.widthText}</span><span>:</span><span id="iv-info-width"></span></li>
+          <li><span>${i18n.heightText}</span><span>:</span><span id="iv-info-height"></span></li>
         </ul>
       </nav>
       <button id="iv-control-info"></button>
@@ -669,16 +669,16 @@ window.ImageViewer = (function () {
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
 
-    // ui text i18n
-    const config = {}
+    // init i18n
+    const i18n = {}
     if (chrome.i18n?.getMessage) {
-      config.widthText = chrome.i18n.getMessage('width') || 'Width'
-      config.heightText = chrome.i18n.getMessage('height') || 'Height'
+      i18n.widthText = chrome.i18n.getMessage('width') || 'Width'
+      i18n.heightText = chrome.i18n.getMessage('height') || 'Height'
     } else {
-      config.widthText = 'Width'
-      config.heightText = 'Height'
+      i18n.widthText = 'Width'
+      i18n.heightText = 'Height'
     }
-    viewer.innerHTML = frame(config)
+    viewer.innerHTML = frame(i18n)
 
     if (!options.closeButton) {
       viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
