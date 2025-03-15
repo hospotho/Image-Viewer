@@ -1600,7 +1600,7 @@ window.ImageViewerUtils = (function () {
       imageDataList.push({src: video.poster, dom: video})
     }
 
-    const uncheckedNodeList = document.querySelectorAll(`body, body *:not([no-bg])${disableImageUnlazy ? '' : ':not([iv-image])'}:not(video[poster])`)
+    const uncheckedNodeList = document.querySelectorAll('body, body *:not([no-bg])')
     for (const node of uncheckedNodeList) {
       const attrUrl = node.getAttribute('iv-bg')
       if (attrUrl !== null) {
@@ -1663,7 +1663,7 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    const uncheckedNodeList = document.querySelectorAll(`body, body *:not([no-bg])${disableImageUnlazy ? '' : ':not([iv-image])'}:not(video[poster])`)
+    const uncheckedNodeList = document.querySelectorAll('body, body *:not([no-bg])')
     for (const node of uncheckedNodeList) {
       const [width, height] = getNodeSize(node)
       if (width < minWidth || height < minHeight) continue
