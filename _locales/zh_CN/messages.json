@@ -77,6 +77,15 @@
   "hover_disable_list": {
     "message": "禁用悬停检查"
   },
+  "image_size": {
+    "message": "尺寸"
+  },
+  "image_source": {
+    "message": "来源"
+  },
+  "image_type": {
+    "message": "类型"
+  },
   "image_unlazy_desc": {
     "message": "一些网页通过懒加载来加载非常大的图片（例：r/EarthPorn）<br>如果希望禁用懒加载解除，请在这里添加域名"
   },

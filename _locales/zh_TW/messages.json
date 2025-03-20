@@ -77,6 +77,15 @@
   "hover_disable_list": {
     "message": "停用懸停檢查"
   },
+  "image_size": {
+    "message": "尺寸"
+  },
+  "image_source": {
+    "message": "來源"
+  },
+  "image_type": {
+    "message": "類型"
+  },
   "image_unlazy_desc": {
     "message": "一些網頁通過延遲載入來載入非常大的圖片（例：r/EarthPorn）<br>如果希望禁用反延遲載入，請在這裡添加域名"
   },
