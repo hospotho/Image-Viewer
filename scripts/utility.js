@@ -92,9 +92,11 @@ window.ImageViewerUtils = (function () {
   )
 
   // init observer for href change
-  const hrefObserver = new MutationObserver(() => {
+  const hrefObserver = new MutationObserver(async () => {
     if (lastHref === location.href) return
     lastHref = location.href
+    // release priority
+    await new Promise(resolve => setTimeout(resolve, 100))
     const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
     const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
     if (allImageSrc.intersection(backupImageSrc).size < 5) {
