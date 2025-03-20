@@ -180,6 +180,34 @@ img.loaded {
   color: #999;
 }
 
+/* info popup */
+#iv-info-popup {
+  cursor: pointer;
+  display: none;
+  position: fixed;
+  top: 0;
+  max-width: 70%;
+  opacity: 0.9;
+  background: #fff;
+  border: 1px black solid;
+  z-index: 1;
+}
+#iv-info-popup.show {
+  display: flex;
+}
+#iv-info-popup-list {
+  max-width: calc(100% - 10px);
+  margin: 5px;
+  list-style: none;
+  word-break: break-word;
+}
+#iv-info-popup-list * {
+  color: #000;
+}
+#iv-info-popup-list span {
+  margin-left: 4px;
+}
+
 /* close button */
 #iv-control-close {
   cursor: pointer;

@@ -391,6 +391,13 @@ window.ImageViewer = (function () {
           <li><span>${i18n.heightText}</span><span>:</span><span id="iv-info-height"></span></li>
         </ul>
       </nav>
+      <div id="iv-info-popup">
+        <ul id="iv-info-popup-list">
+          <li>${i18n.sourceText}:<span id="iv-info-source"></span></li>
+          <li>${i18n.sizeText}:<span id="iv-info-size"></span></li>
+          <li>${i18n.typeText}:<span id="iv-info-type"></span></li>
+        </ul>
+      </div>
       <button id="iv-control-info"></button>
       <button id="iv-control-close"></button>`
   }
@@ -577,6 +584,34 @@ window.ImageViewer = (function () {
         color: #999;
       }
 
+      /* info popup */
+      #iv-info-popup {
+        cursor: pointer;
+        display: none;
+        position: fixed;
+        top: 0;
+        max-width: 70%;
+        opacity: 0.9;
+        background: #fff;
+        border: 1px black solid;
+        z-index: 1;
+      }
+      #iv-info-popup.show {
+        display: flex;
+      }
+      #iv-info-popup-list {
+        max-width: calc(100% - 10px);
+        margin: 5px;
+        list-style: none;
+        word-break: break-word;
+      }
+      #iv-info-popup-list * {
+        color: #000;
+      }
+      #iv-info-popup-list span {
+        margin-left: 4px;
+      }
+
       /* close button */
       #iv-control-close {
         cursor: pointer;
@@ -674,9 +709,15 @@ window.ImageViewer = (function () {
     if (chrome.i18n?.getMessage) {
       i18n.widthText = chrome.i18n.getMessage('width') || 'Width'
       i18n.heightText = chrome.i18n.getMessage('height') || 'Height'
+      i18n.sourceText = chrome.i18n.getMessage('image_source') || 'Source'
+      i18n.sizeText = chrome.i18n.getMessage('image_size') || 'Size'
+      i18n.typeText = chrome.i18n.getMessage('image_type') || 'Type'
     } else {
       i18n.widthText = 'Width'
       i18n.heightText = 'Height'
+      i18n.sourceText = 'Source'
+      i18n.sizeText = 'Size'
+      i18n.typeText = 'Type'
     }
     viewer.innerHTML = frame(i18n)
 
