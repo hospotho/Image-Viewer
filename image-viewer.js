@@ -859,7 +859,7 @@ window.ImageViewer = (function () {
       else img.addEventListener('load', () => action(img))
     }
     if (reset) {
-      const event = new CustomEvent('resetTransform')
+      const event = new CustomEvent('reset-transform')
       for (const li of liList) {
         li.dispatchEvent(event)
       }
@@ -1508,7 +1508,7 @@ window.ImageViewer = (function () {
       }
       li.addEventListener('dblclick', reset)
       // custom event
-      li.addEventListener('resetTransform', reset)
+      li.addEventListener('reset-transform', reset)
 
       // handle hotkey
       li.addEventListener('hotkey', e => {
