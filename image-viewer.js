@@ -1144,14 +1144,58 @@ window.ImageViewer = (function () {
         })
       }
     }
-    function addInfoPanelEvent() {
+    function addInfoPopupEvent() {
+      function updateInfoPopup() {
+        if (!displayFlag) return
+        const currentListItem = imageListNode.querySelector('li.current')
+        const currentImage = currentListItem.querySelector('img')
+        const currentIndex = Array.from(imageListNode.children).indexOf(currentListItem)
+        infoSize.textContent = `${currentImage.naturalWidth}x${currentImage.naturalHeight}`
+        if (currentImage.src.startsWith('http')) {
+          infoSource.textContent = currentImage.src
+          infoSource.removeAttribute('data-url')
+        } else {
+          infoSource.textContent = '[Data URL]'
+          infoSource.setAttribute('data-url', currentImage.src)
+        }
+        switch (imageDataList[currentIndex].dom.nodeName) {
+          case 'IMG':
+            infoType.textContent = 'Normal Image'
+            break
+          case 'VIDEO':
+            infoType.textContent = 'Video Poster'
+            break
+          case 'IFRAME':
+            infoType.textContent = 'Iframe Image'
+            break
+          case 'CANVAS':
+            infoType.textContent = 'Canvas Snapshot'
+            break
+          default:
+            infoType.textContent = 'Background Image'
+        }
+      }
+
+      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const infoPopup = shadowRoot.querySelector('#iv-info-popup')
+      const infoSource = shadowRoot.querySelector('#iv-info-source')
+      const infoSize = shadowRoot.querySelector('#iv-info-size')
+      const infoType = shadowRoot.querySelector('#iv-info-type')
       const infoButton = shadowRoot.querySelector('#iv-control-info')
-      infoButton.addEventListener('mouseenter', () => {
-        infoButton.classList.add('show')
+      let displayFlag = false
+
+      infoButton.addEventListener('mouseenter', () => infoButton.classList.add('show'))
+      infoButton.addEventListener('mouseleave', () => infoButton.classList.remove('show'))
+      infoButton.addEventListener('click', () => {
+        infoPopup.classList.add('show')
+        displayFlag = true
+        updateInfoPopup()
       })
-      infoButton.addEventListener('mouseleave', () => {
-        infoButton.classList.remove('show')
+      infoPopup.addEventListener('click', () => {
+        infoPopup.classList.remove('show')
+        displayFlag = false
       })
+      infoPopup.addEventListener('update-info', updateInfoPopup)
     }
     function addFitButtonEvent() {
       const currFitBtn = shadowRoot.querySelector(`#iv-control-${options.fitMode}`)
@@ -1387,7 +1431,7 @@ window.ImageViewer = (function () {
     addChangeBackgroundHotkey()
     addTransformationHotkey()
     addControlPanelHideEvent()
-    addInfoPanelEvent()
+    addInfoPopupEvent()
     addFitButtonEvent()
     if (options.closeButton) {
       addMoveToButtonEvent()
