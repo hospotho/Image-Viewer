@@ -1701,16 +1701,18 @@ window.ImageViewer = (function () {
     // arrow button
     shadowRoot.querySelector('#iv-control-prev').addEventListener('click', prevItem)
     shadowRoot.querySelector('#iv-control-next').addEventListener('click', nextItem)
-    // control bar
-    shadowRoot.querySelector('#iv-control').addEventListener('wheel', e => {
-      e.preventDefault()
-      e.deltaY > 0 ? nextItem() : prevItem()
-    })
-    // close button
-    shadowRoot.querySelector('#iv-control-close').addEventListener('wheel', e => {
-      e.preventDefault()
-      e.deltaY > 0 ? nextItem() : prevItem()
-    })
+    // mouse wheel
+    const controlBar = shadowRoot.querySelector('#iv-control')
+    const infoPopup = shadowRoot.querySelector('#iv-info-popup')
+    const infoButton = shadowRoot.querySelector('#iv-control-info')
+    const closeButton = shadowRoot.querySelector('#iv-control-close')
+    const scrollableElements = [controlBar, infoPopup, infoButton, closeButton]
+    for (const dom of scrollableElements) {
+      dom.addEventListener('wheel', e => {
+        e.preventDefault()
+        e.deltaY > 0 ? nextItem() : prevItem()
+      })
+    }
   }
 
   function updateImageList(newList, options) {
