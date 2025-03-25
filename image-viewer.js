@@ -603,7 +603,7 @@ window.ImageViewer = (function () {
         max-width: calc(100% - 10px);
         margin: 5px;
         list-style: none;
-        word-break: break-word;
+        line-break: anywhere;
       }
       #iv-info-popup-list * {
         color: #000;
