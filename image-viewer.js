@@ -370,6 +370,26 @@ window.ImageViewer = (function () {
     return dict
   })()
 
+  function getRestoreIndex(options) {
+    if (clearIndex === 0 && options.index === undefined) return 0
+
+    const targetSrc = clearSrc || lastSrc
+    const current = shadowRoot.querySelector('#iv-image-list li.current')
+    if (!targetSrc && current) {
+      return [...shadowRoot.querySelectorAll('#iv-image-list li')].indexOf(current)
+    }
+
+    const rawUrl = getRawUrl(targetSrc)
+    const srcList = imageDataList.map(data => data.src)
+    const srcIndex = srcList.findIndex(src => src === targetSrc || src === rawUrl)
+    if (srcIndex !== -1) return srcIndex
+
+    const filename = getFilename(targetSrc)
+    const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(item => item[0] === filename)
+    if (filenameIndexList.length === 1) return filenameIndexList[0][1]
+
+    return Math.min(clearIndex, imageDataList.length - 1)
+  }
   //==========html&style==========
   const frame = i18n => {
     return `<ul id="iv-image-list"></ul>
@@ -1925,27 +1945,6 @@ window.ImageViewer = (function () {
   }
 
   function restoreIndex(options) {
-    function getRestoreIndex() {
-      if (clearIndex === 0 && options.index === undefined) return 0
-
-      const targetSrc = clearSrc || lastSrc
-      const current = shadowRoot.querySelector('#iv-image-list li.current')
-      if (!targetSrc && current) {
-        return [...shadowRoot.querySelectorAll('#iv-image-list li')].indexOf(current)
-      }
-
-      const rawUrl = getRawUrl(targetSrc)
-      const srcList = imageDataList.map(data => data.src)
-      const srcIndex = srcList.findIndex(src => src === targetSrc || src === rawUrl)
-      if (srcIndex !== -1) return srcIndex
-
-      const filename = getFilename(targetSrc)
-      const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(item => item[0] === filename)
-      if (filenameIndexList.length === 1) return filenameIndexList[0][1]
-
-      return Math.min(clearIndex, imageDataList.length - 1)
-    }
-
     const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastSrc !== '')
     if (!neededToRestore) return
 
@@ -1963,7 +1962,7 @@ window.ImageViewer = (function () {
       return
     }
 
-    const newIndex = getRestoreIndex()
+    const newIndex = getRestoreIndex(options)
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
     const relateImage = relateListItem.querySelector('img')
