@@ -390,6 +390,13 @@ window.ImageViewer = (function () {
 
     return Math.min(clearIndex, imageDataList.length - 1)
   }
+  function getBaseIndex(options) {
+    const baseIndex = clearIndex !== -1 ? clearIndex : options.index
+    if (baseIndex) return baseIndex
+    const restoreIndex = getRestoreIndex(options)
+    return restoreIndex !== -1 ? restoreIndex : 0
+  }
+
   //==========html&style==========
   const frame = i18n => {
     return `<ul id="iv-image-list"></ul>
@@ -823,8 +830,7 @@ window.ImageViewer = (function () {
 
     const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
     const current = shadowRoot.querySelector('#iv-image-list li.current')
-    const baseIndex = current ? liList.indexOf(current) : clearIndex !== -1 ? clearIndex : options.index || 0
-    const base = current || liList[baseIndex]
+    const base = current || liList[getBaseIndex(options)]
     base.classList.add('current')
 
     const baseImg = base.firstChild
