@@ -392,7 +392,7 @@ window.ImageViewer = (function () {
   }
   function getBaseIndex(options) {
     const baseIndex = clearIndex !== -1 ? clearIndex : options.index
-    if (baseIndex) return baseIndex
+    if (baseIndex !== undefined) return baseIndex
     const restoreIndex = getRestoreIndex(options)
     return restoreIndex !== -1 ? restoreIndex : 0
   }
