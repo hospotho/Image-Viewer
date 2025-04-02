@@ -1340,6 +1340,7 @@ window.ImageViewerUtils = (function () {
 
     const matchList = cssText
       .replaceAll(/[\r\n ]/g, '')
+      .replaceAll(/\/\*.*?\*\//g, '')
       .split('}')
       .map(str => (str.startsWith('@media') ? str.split('{')[1] : str))
       .map(str => str.match(/:(?:before|after).+background-image:url\((.+)\)/))
