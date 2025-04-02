@@ -4,6 +4,7 @@ const srcLocalRealSizeMap = new Map()
 const srcLocalRealSizeResolveMap = new Map()
 const srcDataUrlMap = new Map()
 const redirectUrlMap = new Map()
+const tabSubtreeMap = new Map()
 const semaphore = (() => {
   // parallel fetch
   let activeCount = 0
@@ -179,6 +180,27 @@ async function getRedirectUrl(urlList) {
   const redirectUrlList = await Promise.all(asyncList)
   return redirectUrlList
 }
+async function openNewTab(senderTab, url) {
+  const subtree = tabSubtreeMap.get(senderTab.id)
+  if (subtree === undefined) {
+    const newTab = await chrome.tabs.create({active: false, index: senderTab.index + 1, url: url})
+    tabSubtreeMap.set(senderTab.id, [newTab.id])
+    return
+  }
+  const tabList = await chrome.tabs.query({windowId: senderTab.windowId})
+  const checkRange = Math.min(tabList.length, senderTab.index + subtree.length + 1)
+  for (let i = senderTab.index + 1; i < checkRange; i++) {
+    const tab = tabList[i]
+    if (!subtree.includes(tab.id)) {
+      subtree.length = i - senderTab.index - 1
+      const newTab = await chrome.tabs.create({active: false, index: i, url: url})
+      subtree.push(newTab.id)
+      return
+    }
+  }
+  const newTab = await chrome.tabs.create({active: false, index: senderTab.index + subtree.length + 1, url: url})
+  subtree.push(newTab.id)
+}
 
 // main function
 const defaultOptions = {
@@ -203,9 +225,6 @@ let currOptions = defaultOptions
 let currOptionsWithoutSize = defaultOptions
 let lastImageNodeInfo = ['', 0]
 let lastImageNodeInfoID = 0
-let lastTabID = 0
-let lastTabIndex = 0
-let lastTabOpenIndex = 0
 
 chrome.runtime.onInstalled.addListener(details => {
   if (details.reason === 'update' || details.reason === 'install') {
@@ -415,12 +434,10 @@ function addMessageHandler() {
       }
       // image viewer
       case 'open_tab': {
-        if (lastTabID !== sender.tab.id || lastTabIndex !== sender.tab.index) {
-          lastTabID = sender.tab.id
-          lastTabIndex = sender.tab.index
-          lastTabOpenIndex = sender.tab.index
-        }
-        chrome.tabs.create({active: false, index: ++lastTabOpenIndex, url: request.url}, () => sendResponse())
+        ;(async () => {
+          await openNewTab(sender.tab, request.url)
+          sendResponse()
+        })()
         return true
       }
       case 'close_tab': {
@@ -446,12 +463,8 @@ function addMessageHandler() {
           const res = await fetch(endpoint, {method: 'POST', body: form})
           if (!res.ok) return
 
-          if (lastTabID !== sender.tab.id || lastTabIndex !== sender.tab.index) {
-            lastTabID = sender.tab.id
-            lastTabIndex = sender.tab.index
-            lastTabOpenIndex = sender.tab.index
-          }
-          chrome.tabs.create({active: false, index: ++lastTabOpenIndex, url: res.url}, () => sendResponse())
+          await openNewTab(sender.tab, res.url)
+          sendResponse()
         })()
         return true
       }
