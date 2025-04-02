@@ -524,7 +524,7 @@ window.ImageViewerUtils = (function () {
     if (rootNode !== document) return deepQuerySelectorAll(document.body, rootNode.host.tagName)
     const classList = '.' + [...wrapper.classList].map(CSS.escape).join(', .')
     const candidateList = document.querySelectorAll(`div:is(${classList}):has(img)`)
-    const wrapperList = [...candidateList].filter(node => node.querySelector(`div:is(${classList}) img`) === null)
+    const wrapperList = [...candidateList].filter(node => node.querySelector(`:scope div:is(${classList}) img`) === null)
     return wrapperList
   }
   function getDomRawSelector(dom, wrapper) {
