@@ -331,6 +331,22 @@ window.ImageViewer = (function () {
       })
     }
   }
+  async function getImgNode(container, targetTop) {
+    // current pos
+    const img = shadowRoot.querySelector('li.current img')
+    let imgNode = searchImgNode(img)
+    if (imgNode !== null) return imgNode
+
+    // ratio pos
+    container.scrollTo(container.scrollLeft, targetTop)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    imgNode = searchImgNode(img)
+    if (imgNode !== null) return imgNode
+
+    // deep search
+    imgNode = await deepSearchImgNode(img)
+    return imgNode
+  }
 
   const fitFuncDict = (function () {
     // calculate document size is very slow
@@ -1298,31 +1314,22 @@ window.ImageViewer = (function () {
         const imageListLength = Number(total.textContent)
         closeImageViewer()
 
+        const ratio = currIndex / imageListLength
+        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
+        const targetTop = totalHeight * ratio
+        const container = getMainContainer()
+
         const htmlTemp = document.documentElement.style.scrollBehavior
         const bodyTemp = document.body.style.scrollBehavior
         document.documentElement.style.scrollBehavior = 'auto'
         document.body.style.scrollBehavior = 'auto'
 
-        const ratio = currIndex / imageListLength
-        const totalHeight = document.body.scrollHeight || document.documentElement.scrollHeight
-        const targetTop = totalHeight * ratio
-        const container = getMainContainer()
-        container.scrollTo(container.scrollLeft, targetTop)
-        await new Promise(resolve => setTimeout(resolve, 100))
+        const imgNode = await getImgNode(container, targetTop)
+        if (imgNode === null) {
+          console.log('Image node not found')
+          return
+        }
 
-        const img = shadowRoot.querySelector('li.current img')
-        let imgNode = searchImgNode(img)
-        if (imgNode === null) {
-          await new Promise(resolve => setTimeout(resolve, 100))
-          imgNode = searchImgNode(img)
-        }
-        if (imgNode === null) {
-          imgNode = await deepSearchImgNode(img)
-          if (imgNode === null) {
-            console.log('Image node not found')
-            return
-          }
-        }
         // check visibility by offsetParent
         if (imgNode.offsetParent === null && imgNode.style.position !== 'fixed') {
           console.log('Image node not visible')
