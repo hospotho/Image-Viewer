@@ -1404,8 +1404,8 @@ window.ImageViewerUtils = (function () {
     }
 
     // set timeout for unlazy
-    const unlazyComplete = await isPromiseComplete(lastUnlazyTask)
-    if (unlazyComplete) {
+    const unlazyCompleted = await isPromiseComplete(lastUnlazyTask)
+    if (unlazyCompleted) {
       const clone = structuredClone(options)
       lastUnlazyTask = simpleUnlazyImage(clone)
     }
