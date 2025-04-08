@@ -10,30 +10,41 @@ window.ImageViewerUtils = (function () {
   // parallel fetch
   const semaphore = (() => {
     let activeCount = 0
+    let slowAlertFlag = false
     const maxConcurrent = 32
     const queue = []
     return {
       acquire: function () {
         let executed = false
+        let slowTimeout = 0
         const release = () => {
           if (executed) return
           executed = true
           activeCount--
+          clearTimeout(slowTimeout)
           const grantAccess = queue.shift()
           if (grantAccess) grantAccess()
         }
 
         if (activeCount < maxConcurrent) {
           activeCount++
+          slowTimeout = setTimeout(this.slowAlert, 5000)
           return release
         }
         const {promise, resolve} = Promise.withResolvers()
         const grantAccess = () => {
           activeCount++
+          slowTimeout = setTimeout(this.slowAlert, 5000)
           resolve(release)
         }
         queue.push(grantAccess)
         return promise
+      },
+      slowAlert: function () {
+        if (slowAlertFlag) return
+        slowAlertFlag = true
+        console.log('Slow connection, images still loading')
+        alert('Slow connection, images still loading')
       }
     }
   })()
@@ -53,11 +64,9 @@ window.ImageViewerUtils = (function () {
 
   // unlazy state
   let lastHref = location.href
-  let slowAlertFlag = false
   let disableImageUnlazy = false
   let unlazyFlag = false
   let lastUnlazyTask = null
-  let preloadTaskCount = 0
 
   // scroll state
   let enableAutoScroll = false
@@ -100,7 +109,6 @@ window.ImageViewerUtils = (function () {
     const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
     const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
     if (allImageSrc.intersection(backupImageSrc).size < 5) {
-      slowAlertFlag = false
       unlazyFlag = false
       scrollUnlazyFlag = false
       lastUnlazyTask = null
@@ -1067,14 +1075,12 @@ window.ImageViewerUtils = (function () {
         if (!better) continue
 
         // preload image
-        preloadTaskCount++
         const release = await semaphore.acquire()
         const preloading = preloadImage(img, newUrl, release)
         const done = await waitPromiseComplete(preloading, 5000)
         // count overtime as success
         const success = done ? await preloading : true
         if (!success) {
-          preloadTaskCount--
           console.log(`Failed to load ${newUrl}`)
           continue
         }
@@ -1084,7 +1090,6 @@ window.ImageViewerUtils = (function () {
         const realAttrName = name.startsWith('raw ') ? name.slice(4) : name
         if (done) {
           await updateImageSrc(img, newUrl)
-          preloadTaskCount--
           img.removeAttribute(realAttrName)
           badImageSet.add(currentSrc)
           break
@@ -1094,7 +1099,6 @@ window.ImageViewerUtils = (function () {
         preloading
           .then(success => success && updateImageSrc(img, newUrl))
           .then(() => {
-            preloadTaskCount--
             img.removeAttribute(realAttrName)
             badImageSet.add(currentSrc)
           })
@@ -1388,21 +1392,6 @@ window.ImageViewerUtils = (function () {
     return result
   }
   async function createUnlazyRace(options) {
-    // slow connection alert
-    if (lastUnlazyTask === null || preloadTaskCount !== 0) {
-      setTimeout(() => {
-        if (unlazyFlag && preloadTaskCount === 0) return
-        if (slowAlertFlag) return
-        const unlazyList = deepQuerySelectorAll(document.body, 'img:not([iv-image])')
-        const stillLoading = [...unlazyList].some(img => !img.complete && img.loading !== 'lazy')
-        if (stillLoading || preloadTaskCount !== 0) {
-          slowAlertFlag = true
-          console.log('Slow connection, images still loading')
-          alert('Slow connection, images still loading')
-        }
-      }, 10000)
-    }
-
     // set timeout for unlazy
     const unlazyCompleted = await isPromiseComplete(lastUnlazyTask)
     if (unlazyCompleted) {
