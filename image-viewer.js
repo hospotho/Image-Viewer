@@ -867,18 +867,22 @@ window.ImageViewer = (function () {
       shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
       shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
     }
-    baseImg.addEventListener('load', () => {
-      baseImg.style.transition = ''
-      // prevent image loading flash
-      if (!options.closeButton) {
-        const viewer = shadowRoot.querySelector('#image-viewer')
-        viewer.style.removeProperty('opacity')
-      }
-      shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
-      shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
-      if (!completeFlag) removeFailedImg()
-      completeFlag = true
-    })
+    baseImg.addEventListener(
+      'load',
+      () => {
+        baseImg.style.transition = ''
+        // prevent image loading flash
+        if (!options.closeButton) {
+          const viewer = shadowRoot.querySelector('#image-viewer')
+          viewer.style.removeProperty('opacity')
+        }
+        shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
+        shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
+        if (!completeFlag) removeFailedImg()
+        completeFlag = true
+      },
+      {once: true}
+    )
     setTimeout(() => {
       if (!completeFlag) removeFailedImg()
       completeFlag = true
