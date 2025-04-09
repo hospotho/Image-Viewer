@@ -873,8 +873,10 @@ window.ImageViewer = (function () {
           const viewer = shadowRoot.querySelector('#image-viewer')
           viewer.style.removeProperty('opacity')
         }
-        shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
-        shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
+        if (base.classList.contains('current')) {
+          shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
+          shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
+        }
         if (!completeFlag) removeFailedImg()
         completeFlag = true
       },
