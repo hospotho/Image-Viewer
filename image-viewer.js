@@ -835,12 +835,9 @@ window.ImageViewer = (function () {
       }
 
       for (const img of shadowRoot.querySelectorAll('img:not(.loaded, .loading)')) {
-        if (img.complete && img.naturalWidth === 0) {
-          action(img)
-          continue
-        }
         img.classList.add('loading')
         img.addEventListener('error', () => action(img))
+        if (img.complete && img.naturalWidth === 0) action(img)
       }
     }
 
