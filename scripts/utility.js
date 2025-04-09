@@ -526,12 +526,21 @@ window.ImageViewerUtils = (function () {
     options.minHeight = Math.min(finalSize, options.minHeight)
   }
 
+  function getElementDepth(el) {
+    let depth = 0
+    while (el.parentElement) {
+      el = el.parentElement
+      depth++
+    }
+    return depth
+  }
   function getWrapperList(wrapper) {
     if (!wrapper) return []
     const rootNode = wrapper.getRootNode()
     if (rootNode !== document) return deepQuerySelectorAll(document.body, rootNode.host.tagName)
+    const path = '*>'.repeat(getElementDepth(wrapper))
     const classList = '.' + [...wrapper.classList].map(CSS.escape).join(', .')
-    const candidateList = document.querySelectorAll(`div:is(${classList}):has(img)`)
+    const candidateList = document.querySelectorAll(`${path}div:is(${classList}):has(img)`)
     const wrapperList = [...candidateList].filter(node => node.querySelector(`:scope div:is(${classList}) img`) === null)
     return wrapperList
   }
