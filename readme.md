@@ -116,12 +116,16 @@ For additional options, right-click the extension icon on the toolbar. You can s
     <td>Hold <kbd>Alt</kbd> and <kbd>click</kbd></td>
   </tr>
   <tr>
-    <td>Image reverse search</td>
-    <td>Press the hotkeys defined in setting</td>
-  </tr>
-  <tr>
     <td>Change background color<br>(loop: transparent -> black -> white)</td>
     <td><kbd>Shift</kbd>+<kbd>b</kbd></td>
+  </tr>
+  <tr>
+    <td>Download current images</td>
+    <td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>d</kbd></td>
+  </tr>
+  <tr>
+    <td>Image reverse search</td>
+    <td>Press the hotkeys defined in setting</td>
   </tr>
   <tr>
     <td>Download collected images</td>
