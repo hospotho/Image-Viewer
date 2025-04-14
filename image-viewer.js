@@ -976,6 +976,17 @@ window.ImageViewer = (function () {
         current.dispatchEvent(event)
       })
     }
+    function addDownloadHotkey() {
+      keydownHandlerList.push(e => {
+        if (!e.ctrlKey || !e.shiftKey || e.key.toUpperCase() !== 'D') return
+        e.preventDefault()
+        const imgSrc = shadowRoot.querySelector('li.current img').src
+        const a = document.createElement('a')
+        a.href = imgSrc
+        a.download = imgSrc.startsWith('blob:') || imgSrc.startsWith('data:') ? '' : imgSrc.split('/').at(-1)
+        a.click()
+      })
+    }
     function addImageReverseSearchHotkey() {
       function checkKey(e, hotkey) {
         const keyList = hotkey.split('+').map(str => str.trim())
@@ -1465,6 +1476,7 @@ window.ImageViewer = (function () {
     initKeydownHandler()
     addChangeBackgroundHotkey()
     addTransformationHotkey()
+    addDownloadHotkey()
     addImageReverseSearchHotkey()
     addControlPanelHideEvent()
     addInfoPopupEvent()
