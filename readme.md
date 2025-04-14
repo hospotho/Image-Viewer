@@ -120,7 +120,7 @@ For additional options, right-click the extension icon on the toolbar. You can s
     <td><kbd>Shift</kbd>+<kbd>b</kbd></td>
   </tr>
   <tr>
-    <td>Download current images</td>
+    <td>Download current image</td>
     <td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>d</kbd></td>
   </tr>
   <tr>
