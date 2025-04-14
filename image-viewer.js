@@ -935,6 +935,47 @@ window.ImageViewer = (function () {
         true
       )
     }
+    function addChangeBackgroundHotkey() {
+      const backgroundList = [
+        ['rgb(0, 0, 0)', 'important'],
+        ['rgb(255, 255, 255)', 'important']
+      ]
+      if (options.closeButton) backgroundList.unshift([''])
+      if (options.canvasMode) backgroundList.sort((a, b) => b[0].length - a[0].length)
+      let index = 0
+      keydownHandlerList.push(e => {
+        if (!e.shiftKey || e.key.toUpperCase() !== 'B') return
+        index = (index + 1) % backgroundList.length
+        shadowRoot.querySelector('#image-viewer').style.setProperty('background', ...backgroundList[index])
+      })
+    }
+    function addTransformationHotkey() {
+      const keyMap = {
+        ArrowUp: 0,
+        w: 0,
+        ArrowDown: 1,
+        s: 1,
+        ArrowLeft: 2,
+        a: 2,
+        ArrowRight: 3,
+        d: 3
+      }
+      let lastHotkeyTime = 0
+      keydownHandlerList.push(e => {
+        if (!(e.altKey || e.getModifierState('AltGraph')) || e.shiftKey) return
+        const action = keyMap[e.key]
+        if (action === undefined) return
+        const now = Date.now()
+        if (e.repeat && now - lastHotkeyTime < 30) return
+        lastHotkeyTime = now
+        e.preventDefault()
+        const type = e.ctrlKey || e.ctrlWithAltGraph ? 'move' : action < 2 ? 'zoom' : 'rotate'
+        const data = {detail: {type: type, action: action}}
+        const event = new CustomEvent('hotkey', data)
+        const current = shadowRoot.querySelector('li.current')
+        current.dispatchEvent(event)
+      })
+    }
     function addImageReverseSearchHotkey() {
       function checkKey(e, hotkey) {
         const keyList = hotkey.split('+').map(str => str.trim())
@@ -1122,47 +1163,6 @@ window.ImageViewer = (function () {
           openNewTab(queryUrl)
           break
         }
-      })
-    }
-    function addChangeBackgroundHotkey() {
-      const backgroundList = [
-        ['rgb(0, 0, 0)', 'important'],
-        ['rgb(255, 255, 255)', 'important']
-      ]
-      if (options.closeButton) backgroundList.unshift([''])
-      if (options.canvasMode) backgroundList.sort((a, b) => b[0].length - a[0].length)
-      let index = 0
-      keydownHandlerList.push(e => {
-        if (!e.shiftKey || e.key.toUpperCase() !== 'B') return
-        index = (index + 1) % backgroundList.length
-        shadowRoot.querySelector('#image-viewer').style.setProperty('background', ...backgroundList[index])
-      })
-    }
-    function addTransformationHotkey() {
-      const keyMap = {
-        ArrowUp: 0,
-        w: 0,
-        ArrowDown: 1,
-        s: 1,
-        ArrowLeft: 2,
-        a: 2,
-        ArrowRight: 3,
-        d: 3
-      }
-      let lastHotkeyTime = 0
-      keydownHandlerList.push(e => {
-        if (!(e.altKey || e.getModifierState('AltGraph')) || e.shiftKey) return
-        const action = keyMap[e.key]
-        if (action === undefined) return
-        const now = Date.now()
-        if (e.repeat && now - lastHotkeyTime < 30) return
-        lastHotkeyTime = now
-        e.preventDefault()
-        const type = e.ctrlKey || e.ctrlWithAltGraph ? 'move' : action < 2 ? 'zoom' : 'rotate'
-        const data = {detail: {type: type, action: action}}
-        const event = new CustomEvent('hotkey', data)
-        const current = shadowRoot.querySelector('li.current')
-        current.dispatchEvent(event)
       })
     }
     function addControlPanelHideEvent() {
@@ -1463,9 +1463,9 @@ window.ImageViewer = (function () {
     }
 
     initKeydownHandler()
-    addImageReverseSearchHotkey()
     addChangeBackgroundHotkey()
     addTransformationHotkey()
+    addImageReverseSearchHotkey()
     addControlPanelHideEvent()
     addInfoPopupEvent()
     addFitButtonEvent()
