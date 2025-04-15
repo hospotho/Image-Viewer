@@ -254,9 +254,13 @@ window.ImageViewerUtils = (function () {
 
       // always check decode
       while (true) {
-        const decoded = decodeURIComponent(src)
-        if (src === decoded) break
-        src = decoded
+        try {
+          const decoded = decodeURIComponent(src)
+          if (src === decoded) break
+          src = decoded
+        } catch (e) {
+          break
+        }
       }
 
       const url = cachedGetUrl(src, document.baseURI)
