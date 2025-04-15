@@ -1487,12 +1487,7 @@ window.ImageViewerUtils = (function () {
       }
       // document url maybe change, search index by url origin
       const rawIndex = rawIframeRedirectSrcList.indexOf(iframeSrc)
-      if (rawIndex !== -1) {
-        imageDataList.push({src: imageSrc, dom: iframeList[rawIndex]})
-        continue
-      }
-      // not found, pass first iframe as fallback
-      imageDataList.push({src: imageSrc, dom: iframeList[0]})
+      imageDataList.push({src: imageSrc, dom: iframeList[rawIndex !== -1 ? rawIndex : 0]})
     }
 
     const imageFailureCountMap = ImageViewer('get_image_failure_count')
