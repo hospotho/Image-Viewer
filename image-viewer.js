@@ -977,14 +977,38 @@ window.ImageViewer = (function () {
       })
     }
     function addDownloadHotkey() {
-      keydownHandlerList.push(e => {
+      keydownHandlerList.push(async e => {
         if (!e.ctrlKey || !e.shiftKey || e.key.toUpperCase() !== 'D') return
         e.preventDefault()
+
         const imgSrc = shadowRoot.querySelector('li.current img').src
         const a = document.createElement('a')
         a.href = imgSrc
-        a.download = imgSrc.startsWith('blob:') || imgSrc.startsWith('data:') ? '' : imgSrc.split('/').at(-1)
+        if (a.host === location.host || imgSrc.startsWith('blob:') || imgSrc.startsWith('data:')) {
+          a.download = ''
+          a.click()
+          return
+        }
+
+        // download attr only works for same-origin url
+        const blob = await fetch(imgSrc)
+          .then(res => res.blob())
+          .catch(async () => {
+            if (!chrome.runtime?.id) return null
+            const [dataUrl] = await chrome.runtime.sendMessage({msg: 'request_cors_url', url: imgSrc})
+            const res = await fetch(dataUrl)
+            return res.blob()
+          })
+        if (blob === null) {
+          alert('download CORS image is not supported in non-extension mode')
+          throw new Error('download CORS image is not supported in non-extension mode')
+        }
+
+        const url = URL.createObjectURL(blob)
+        a.href = url
+        a.download = imgSrc.split('/').at(-1).split('?')[0]
         a.click()
+        URL.revokeObjectURL(url)
       })
     }
     function addImageReverseSearchHotkey() {
