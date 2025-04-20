@@ -104,8 +104,18 @@ window.ImageViewerUtils = (function () {
   const hrefObserver = new MutationObserver(async () => {
     if (lastHref === location.href) return
     lastHref = location.href
-    // release priority
-    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // wait page load
+    let timeout = 0
+    const {promise, resolve} = Promise.withResolvers()
+    const observer = new MutationObserver(() => {
+      clearTimeout(timeout)
+      timeout = setTimeout(resolve, 100)
+    })
+    observer.observe(document.body, {childList: true, subtree: true})
+    await promise
+
+    // check image list
     const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
     const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
     if (allImageSrc.intersection(backupImageSrc).size < 5) {
