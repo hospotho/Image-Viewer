@@ -1265,7 +1265,6 @@ window.ImageViewer = (function () {
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
 
       let displayFlag = false
-      let lastSelectionText = null
       infoButton.addEventListener('mouseenter', () => infoButton.classList.add('show'))
       infoButton.addEventListener('mouseleave', () => infoButton.classList.remove('show'))
       infoButton.addEventListener('click', () => {
@@ -1273,16 +1272,32 @@ window.ImageViewer = (function () {
         displayFlag = true
         updateInfoPopup()
       })
-      infoPopup.addEventListener('click', () => {
+
+      let lastSelectionText = null
+      let dbClickFlag = false
+      // indicate maybe double click
+      infoSource.addEventListener('click', e => e.preventDefault())
+      infoSize.addEventListener('click', e => e.preventDefault())
+      infoType.addEventListener('click', e => e.preventDefault())
+      infoPopup.addEventListener('click', async e => {
+        if (e.defaultPrevented) await new Promise(resolve => setTimeout(resolve, 200))
+        if (dbClickFlag) return
         const selection = shadowRoot.getSelection()
         const text = selection.toString()
-        if (lastSelectionText !== text && selection.containsNode(infoPopup, true)) {
+        if (selection.type === 'Range' && lastSelectionText !== text && selection.containsNode(infoPopup, true)) {
           lastSelectionText = text
           return
         }
         infoPopup.classList.remove('show')
         displayFlag = false
         lastSelectionText = null
+      })
+      infoPopup.addEventListener('dblclick', async () => {
+        const selection = shadowRoot.getSelection()
+        lastSelectionText = selection.toString()
+        dbClickFlag = true
+        await new Promise(resolve => setTimeout(resolve, 250))
+        dbClickFlag = false
       })
       infoPopup.addEventListener('update-info', updateInfoPopup)
     }
