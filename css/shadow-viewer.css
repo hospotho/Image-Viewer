@@ -206,6 +206,7 @@ img.loaded {
 }
 #iv-info-popup-list span {
   margin-left: 4px;
+  user-select: text;
 }
 
 /* close button */

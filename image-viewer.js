@@ -653,6 +653,7 @@ window.ImageViewer = (function () {
       }
       #iv-info-popup-list span {
         margin-left: 4px;
+        user-select: text;
       }
 
       /* close button */
@@ -1256,14 +1257,15 @@ window.ImageViewer = (function () {
         }
       }
 
-      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const infoButton = shadowRoot.querySelector('#iv-control-info')
       const infoPopup = shadowRoot.querySelector('#iv-info-popup')
       const infoSource = shadowRoot.querySelector('#iv-info-source')
       const infoSize = shadowRoot.querySelector('#iv-info-size')
       const infoType = shadowRoot.querySelector('#iv-info-type')
-      const infoButton = shadowRoot.querySelector('#iv-control-info')
-      let displayFlag = false
+      const imageListNode = shadowRoot.querySelector('#iv-image-list')
 
+      let displayFlag = false
+      let lastSelectionText = null
       infoButton.addEventListener('mouseenter', () => infoButton.classList.add('show'))
       infoButton.addEventListener('mouseleave', () => infoButton.classList.remove('show'))
       infoButton.addEventListener('click', () => {
@@ -1272,8 +1274,15 @@ window.ImageViewer = (function () {
         updateInfoPopup()
       })
       infoPopup.addEventListener('click', () => {
+        const selection = shadowRoot.getSelection()
+        const text = selection.toString()
+        if (lastSelectionText !== text && selection.containsNode(infoPopup, true)) {
+          lastSelectionText = text
+          return
+        }
         infoPopup.classList.remove('show')
         displayFlag = false
+        lastSelectionText = null
       })
       infoPopup.addEventListener('update-info', updateInfoPopup)
     }
