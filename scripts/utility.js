@@ -106,6 +106,7 @@ window.ImageViewerUtils = (function () {
     lastHref = location.href
 
     // check image update
+    const viewerExist = isImageViewerExist()
     const {promise, resolve} = Promise.withResolvers()
     const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
     const checkImageUpdate = () => {
@@ -116,7 +117,7 @@ window.ImageViewerUtils = (function () {
         lastUnlazyTask = null
         window.backupImageList = []
         ImageViewer('reset_image_list')
-        ImageViewer('close_image_viewer')
+        if (viewerExist) ImageViewer('close_image_viewer')
         resolve()
       }
     }
