@@ -105,27 +105,31 @@ window.ImageViewerUtils = (function () {
     if (lastHref === location.href) return
     lastHref = location.href
 
-    // wait page load
-    let timeout = 0
+    // check image update
     const {promise, resolve} = Promise.withResolvers()
+    const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
+    const checkImageUpdate = () => {
+      const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
+      if (allImageSrc.intersection(backupImageSrc).size < 5) {
+        unlazyFlag = false
+        scrollUnlazyFlag = false
+        lastUnlazyTask = null
+        window.backupImageList = []
+        ImageViewer('reset_image_list')
+        ImageViewer('close_image_viewer')
+        resolve()
+      }
+    }
+
+    // setup observer
+    let timeout = 0
     const observer = new MutationObserver(() => {
       clearTimeout(timeout)
-      timeout = setTimeout(resolve, 100)
+      timeout = setTimeout(checkImageUpdate, 100)
     })
     observer.observe(document.body, {childList: true, subtree: true})
-    await promise
-
-    // check image list
-    const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
-    const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
-    if (allImageSrc.intersection(backupImageSrc).size < 5) {
-      unlazyFlag = false
-      scrollUnlazyFlag = false
-      lastUnlazyTask = null
-      window.backupImageList = []
-      ImageViewer('reset_image_list')
-      ImageViewer('close_image_viewer')
-    }
+    await waitPromiseComplete(promise, 2000)
+    observer.disconnect()
   })
   hrefObserver.observe(document.body, {childList: true, subtree: true})
 
