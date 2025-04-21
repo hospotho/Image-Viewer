@@ -123,9 +123,11 @@ window.ImageViewerUtils = (function () {
 
     // setup observer
     let timeout = 0
+    const currentHref = location.href
     const observer = new MutationObserver(() => {
       clearTimeout(timeout)
-      timeout = setTimeout(checkImageUpdate, 100)
+      if (currentHref !== location.href) resolve()
+      else timeout = setTimeout(checkImageUpdate, 100)
     })
     observer.observe(document.body, {childList: true, subtree: true})
     await waitPromiseComplete(promise, 2000)
