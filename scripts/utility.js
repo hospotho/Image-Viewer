@@ -102,11 +102,13 @@ window.ImageViewerUtils = (function () {
 
   // init observer for href change
   const hrefObserver = new MutationObserver(async () => {
+    const viewerExist = isImageViewerExist()
+    if (!viewerExist) return
+
     if (lastHref === location.href) return
     lastHref = location.href
 
     // check image update
-    const viewerExist = isImageViewerExist()
     const {promise, resolve} = Promise.withResolvers()
     const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
     const checkImageUpdate = () => {
@@ -117,7 +119,7 @@ window.ImageViewerUtils = (function () {
         lastUnlazyTask = null
         window.backupImageList = []
         ImageViewer('reset_image_list')
-        if (viewerExist) ImageViewer('close_image_viewer')
+        ImageViewer('close_image_viewer')
         resolve()
       }
     }
