@@ -917,12 +917,14 @@ window.ImageViewer = (function () {
     function initKeydownHandler() {
       if (document.body.classList.contains('iv-ready')) return
       document.body.classList.add('iv-ready')
+
       let ctrlWithAltGraph = false
       window.addEventListener(
         'keydown',
         e => {
           if (!document.body.classList.contains('iv-attached')) return
-          ctrlWithAltGraph = e.getModifierState('AltGraph') && e.key === 'Control' ? true : ctrlWithAltGraph
+          const pressed = (e.getModifierState('AltGraph') && e.key === 'Control') || (e.ctrlKey && e.key === 'AltGraph')
+          ctrlWithAltGraph = pressed || ctrlWithAltGraph
           e.ctrlWithAltGraph = ctrlWithAltGraph
           keydownHandlerList.forEach(func => func(e))
         },
@@ -931,7 +933,8 @@ window.ImageViewer = (function () {
       window.addEventListener(
         'keyup',
         e => {
-          ctrlWithAltGraph = e.getModifierState('AltGraph') && e.key === 'Control' ? false : ctrlWithAltGraph
+          const released = (e.getModifierState('AltGraph') && e.key === 'Control') || (e.ctrlKey && e.key === 'AltGraph')
+          ctrlWithAltGraph = !released && ctrlWithAltGraph
         },
         true
       )
