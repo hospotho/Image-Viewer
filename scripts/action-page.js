@@ -101,4 +101,7 @@
       await new Promise(resolve => setTimeout(resolve, 100))
     }
   }
+  initObserver.disconnect()
+  updateObserver.disconnect()
+  unlazyObserver.disconnect()
 })()
