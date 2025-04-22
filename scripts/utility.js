@@ -1424,6 +1424,11 @@ window.ImageViewerUtils = (function () {
     return result
   }
   async function createUnlazyRace(options) {
+    if (disableImageUnlazy) {
+      if (enableAutoScroll) autoScroll()
+      lastUnlazyTask = Promise.resolve()
+      return lastUnlazyTask
+    }
     // set timeout for unlazy
     const unlazyCompleted = await isPromiseComplete(lastUnlazyTask)
     if (unlazyCompleted) {
@@ -1444,11 +1449,6 @@ window.ImageViewerUtils = (function () {
       disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
     }
     // start unlazy
-    if (disableImageUnlazy) {
-      if (enableAutoScroll) autoScroll()
-      lastUnlazyTask = Promise.resolve()
-      return lastUnlazyTask
-    }
     const race = createUnlazyRace(options)
     return race
   }
