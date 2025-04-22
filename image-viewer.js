@@ -1404,8 +1404,8 @@ window.ImageViewer = (function () {
         while (currentY !== container.scrollTop) {
           currentY = container.scrollTop
           imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
+          await new Promise(resolve => setTimeout(resolve, 50))
         }
-        await new Promise(resolve => setTimeout(resolve, 50))
         document.documentElement.style.scrollBehavior = htmlTemp
         document.body.style.scrollBehavior = bodyTemp
         displayBorder(imgNode)
