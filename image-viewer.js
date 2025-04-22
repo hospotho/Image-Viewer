@@ -2,6 +2,7 @@ window.ImageViewer = (function () {
   'use strict'
 
   let shadowRoot = null
+  let lastHref = location.href
   let lastUpdateTime = 0
   let imageDataList = []
   const imageFailureCountMap = new Map()
@@ -787,8 +788,9 @@ window.ImageViewer = (function () {
     imageList.map(data => buildImageNode(data, options)).forEach(li => fragment.appendChild(li))
     _imageList.appendChild(fragment)
 
-    imageDataList = Array.from(imageList)
+    lastHref = location.href
     lastUpdateTime = Date.now()
+    imageDataList = Array.from(imageList)
 
     if (imageList.length === 1) return
     shadowRoot.querySelector('#iv-index').style.display = 'flex'
@@ -2059,6 +2061,9 @@ window.ImageViewer = (function () {
 
   function executeCommand(command) {
     switch (command) {
+      case 'get_href': {
+        return lastHref
+      }
       case 'get_image_list': {
         const currentImageList = shadowRoot.querySelectorAll('img')
         return Array.from(currentImageList)

@@ -102,24 +102,17 @@ window.ImageViewerUtils = (function () {
 
   // init observer for href change
   const hrefObserver = new MutationObserver(async () => {
-    const viewerExist = isImageViewerExist()
-    if (!viewerExist) return
-
     if (lastHref === location.href) return
     lastHref = location.href
 
     // check image update
+    const viewerExist = isImageViewerExist()
     const {promise, resolve} = Promise.withResolvers()
     const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
     const checkImageUpdate = () => {
       const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
       if (allImageSrc.intersection(backupImageSrc).size < 5) {
-        unlazyFlag = false
-        scrollUnlazyFlag = false
-        lastUnlazyTask = null
-        window.backupImageList = []
-        ImageViewer('reset_image_list')
-        ImageViewer('close_image_viewer')
+        if (viewerExist) ImageViewer('close_image_viewer')
         resolve()
       }
     }
@@ -1424,11 +1417,6 @@ window.ImageViewerUtils = (function () {
     return result
   }
   async function createUnlazyRace(options) {
-    if (disableImageUnlazy) {
-      if (enableAutoScroll) autoScroll()
-      lastUnlazyTask = Promise.resolve()
-      return lastUnlazyTask
-    }
     // set timeout for unlazy
     const unlazyCompleted = await isPromiseComplete(lastUnlazyTask)
     if (unlazyCompleted) {
@@ -1440,6 +1428,18 @@ window.ImageViewerUtils = (function () {
     return race
   }
   function startUnlazy(options) {
+    // check still on same page
+    if (ImageViewer('get_href') !== location.href) {
+      const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
+      const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
+      if (allImageSrc.intersection(backupImageSrc).size < 5) {
+        unlazyFlag = false
+        scrollUnlazyFlag = false
+        lastUnlazyTask = null
+        window.backupImageList = []
+        ImageViewer('reset_image_list')
+      }
+    }
     // run init task
     if (lastUnlazyTask === null) {
       processLazyPlaceholder()
@@ -1448,7 +1448,12 @@ window.ImageViewerUtils = (function () {
       enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
       disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
     }
-    // start unlazy
+    // skip unlazy
+    if (disableImageUnlazy) {
+      if (enableAutoScroll) autoScroll()
+      lastUnlazyTask = Promise.resolve()
+      return lastUnlazyTask
+    }
     const race = createUnlazyRace(options)
     return race
   }
