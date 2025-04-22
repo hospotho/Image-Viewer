@@ -312,7 +312,7 @@ window.ImageViewer = (function () {
     })
     newNodeObserver.observe(document.body, {childList: true, subtree: true})
 
-    let release = null
+    let release = () => {}
     let repeatCount = 0
     let overtime = false
     let lastNearest = null
