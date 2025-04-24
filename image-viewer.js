@@ -1402,9 +1402,14 @@ window.ImageViewer = (function () {
           console.log('Image node not visible')
         }
         console.log('Move to image node')
-        let currentY = -1
-        while (currentY !== container.scrollTop) {
-          currentY = container.scrollTop
+        let prevY = -1
+        let prevTop = -1
+        while (true) {
+          const currY = container.scrollTop
+          const currTop = imgNode.getBoundingClientRect().top
+          if (prevY === currY || prevTop === currTop) break
+          prevY = currY
+          prevTop = currTop
           imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
           await new Promise(resolve => setTimeout(resolve, 50))
         }
