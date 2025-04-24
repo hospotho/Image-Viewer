@@ -873,28 +873,15 @@ window.ImageViewerUtils = (function () {
   function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
     let scrollFlag = false
 
+    // check if moveTo function called
     const originalScrollIntoView = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = function () {
-      if (!isImageViewerExist()) {
-        scrollFlag = true
-      }
-      const container = getMainContainer()
-      let currX = container.scrollLeft
-      let currY = container.scrollTop
+      scrollFlag = !isImageViewerExist()
       originalScrollIntoView.apply(this, arguments)
-      // for unknown reason can't move to correct position with single scroll
-      while (currX !== container.scrollLeft || currY !== container.scrollTop) {
-        currX = container.scrollLeft
-        currY = container.scrollTop
-        originalScrollIntoView.apply(this, arguments)
-      }
     }
-
     const originalScrollTo = Element.prototype.scrollTo
     Element.prototype.scrollTo = function () {
-      if (!isImageViewerExist()) {
-        scrollFlag = true
-      }
+      scrollFlag = !isImageViewerExist()
       originalScrollTo.apply(this, arguments)
     }
 
@@ -927,12 +914,6 @@ window.ImageViewerUtils = (function () {
     const startY = container.scrollTop
     const imageListLength = ImageViewer('get_image_list').length
 
-    if (imageListLength > 50) {
-      const totalHeight = container.scrollHeight
-      const targetHeight = Math.min(container.scrollTop, totalHeight - window.innerHeight * 10)
-      container.scrollTo(startX, targetHeight)
-    }
-
     const {isStopped, timer} = startAutoScroll()
 
     let existNewDom = false
@@ -941,6 +922,8 @@ window.ImageViewerUtils = (function () {
       if (isStopped()) timer()
     })
     newNodeObserver.observe(document.body, {childList: true, subtree: true})
+
+    // help auto scroll scroll to bottom
     setTimeout(() => {
       if (isImageViewerExist() && (!existNewDom || imageListLength === ImageViewer('get_image_list').length)) {
         const container = getMainContainer()
