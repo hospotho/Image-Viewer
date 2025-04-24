@@ -170,7 +170,7 @@ img.loaded {
 #iv-control-info.show {
   opacity: 0.8;
 }
-#iv-control-info:before {
+#iv-control-info::before {
   content: '\\2139';
   position: absolute;
   right: 50%;
@@ -227,8 +227,8 @@ img.loaded {
 #iv-control-close.show {
   visibility: visible;
 }
-#iv-control-close:before,
-#iv-control-close:after {
+#iv-control-close::before,
+#iv-control-close::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -238,28 +238,28 @@ img.loaded {
   width: 5px;
   height: 30px;
 }
-#iv-control-close:before {
+#iv-control-close::before {
   transform: rotate(-45deg);
 }
-#iv-control-close:after {
+#iv-control-close::after {
   transform: rotate(45deg);
 }
 
 /* navigation button */
-#iv-index button:after {
+#iv-index button::after {
   content: '';
   position: absolute;
   margin-top: -12px;
   display: block;
   border-style: solid;
 }
-#iv-control-prev:after {
+#iv-control-prev::after {
   left: 50%;
   margin-left: -10px;
   border-width: 12px 18px 12px 0;
   border-color: transparent #787878 transparent transparent;
 }
-#iv-control-next:after {
+#iv-control-next::after {
   right: 50%;
   margin-right: -10px;
   border-width: 12px 0 12px 18px;
