@@ -162,7 +162,7 @@ async function getLocalUrl(tabId, src) {
 }
 async function getRedirectUrl(urlList) {
   const asyncList = urlList.map(async url => {
-    if (url === '' || url === 'about:blank') return url
+    if (url === '' || url === 'about:blank' || url.startsWith('javascript')) return url
 
     const cache = redirectUrlMap.get(url)
     if (cache !== undefined) return cache
