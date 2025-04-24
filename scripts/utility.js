@@ -942,7 +942,7 @@ window.ImageViewerUtils = (function () {
     })
     newNodeObserver.observe(document.body, {childList: true, subtree: true})
     setTimeout(() => {
-      if (!existNewDom || imageListLength === ImageViewer('get_image_list').length) {
+      if (isImageViewerExist() && (!existNewDom || imageListLength === ImageViewer('get_image_list').length)) {
         const container = getMainContainer()
         const totalHeight = container.scrollHeight
         container.scrollTo(startX, totalHeight)
