@@ -80,7 +80,7 @@
 
   const unlazyObserver = new MutationObserver(mutationList => {
     const unlazyUpdate = mutationList.some(mutation => mutation.attributeName === 'iv-checking' && !mutation.target.hasAttribute('iv-checking'))
-    if (unlazyUpdate) {
+    if (unlazyUpdate || !document.body.classList.contains('iv-attached')) {
       updatePeriod = 500
       updateRelease()
     }
