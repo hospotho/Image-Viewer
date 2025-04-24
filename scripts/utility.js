@@ -775,7 +775,6 @@ window.ImageViewerUtils = (function () {
     let stopFlag = true
     const isStopped = () => stopFlag
     const action = () => {
-      if (!isImageViewerExist()) return
       const container = getMainContainer()
       const scrollY = container.scrollTop
       const imageList = document.getElementsByTagName('img')
@@ -825,9 +824,7 @@ window.ImageViewerUtils = (function () {
       let lastY = container.scrollTop
       let lastImageCount = 0
       let count = 0
-      while (lastY < container.scrollHeight && count < 5) {
-        if (!isImageViewerExist()) break
-
+      while (isImageViewerExist() && lastY < container.scrollHeight && count < 5) {
         while (document.visibilityState !== 'visible') {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
@@ -856,7 +853,7 @@ window.ImageViewerUtils = (function () {
         }
 
         if (!enableAutoScroll) break
-        action()
+        if (isImageViewerExist()) action()
 
         // check scroll complete
         await new Promise(resolve => setTimeout(resolve, 500))
