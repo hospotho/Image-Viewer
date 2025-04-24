@@ -22,7 +22,6 @@
   options.referrerPolicy = !!document.querySelector('img[referrerPolicy="no-referrer"]')
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
   window.ImageViewerLastDom = null
-  window.backupImageList ??= []
 
   const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)

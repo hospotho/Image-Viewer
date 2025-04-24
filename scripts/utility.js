@@ -56,6 +56,7 @@ window.ImageViewerUtils = (function () {
   const origin = location.origin + '/'
 
   // image cache
+  window.backupImageList = []
   const pseudoImageDataList = []
   const badImageSet = new Set(['', 'about:blank'])
   const corsHostSet = new Set()

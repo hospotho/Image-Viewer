@@ -18,7 +18,6 @@
   options.closeButton = true
   options.referrerPolicy = !!document.querySelector('img[referrerPolicy="no-referrer"]')
   options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
-  window.backupImageList ??= []
 
   // update image size filter
   const nodeInfo = (await safeSendMessage('get_info')) || []
