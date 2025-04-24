@@ -1352,7 +1352,7 @@ window.ImageViewerUtils = (function () {
       .replaceAll(/[\r\n ]/g, '')
       .replaceAll(/\/\*.*?\*\//g, '')
       .split('}')
-      .map(str => (str.startsWith('@media') ? str.split('{')[1] : str))
+      .map(str => (str.startsWith('@') ? str.split('{')[1] : str))
       .map(str => str.match(/:(?:before|after).+background-image:url\((.+)\)/))
       .filter(Boolean)
 
