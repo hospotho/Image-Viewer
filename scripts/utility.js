@@ -1357,11 +1357,15 @@ window.ImageViewerUtils = (function () {
       .filter(Boolean)
 
     for (const match of matchList) {
-      const [selector, position] = match.input
+      const rawSelector = match.input
         .split('{')[0]
         .split(',')
         .filter(s => s.includes(':'))[0]
-        .split(':')
+      const index = rawSelector.lastIndexOf(':')
+      // maybe single-colon in css2
+      const offset = rawSelector[index - 1] === ':' ? 1 : 0
+      const selector = rawSelector.substring(0, index - offset)
+      const position = rawSelector.substring(index + 1)
       const domList = selector.endsWith('>') ? document.querySelectorAll(selector + '*') : document.querySelectorAll(selector)
       if (domList.length === 0) continue
 
