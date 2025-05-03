@@ -1737,8 +1737,8 @@ window.ImageViewerUtils = (function () {
     if (a.getRootNode({composed: true}) === document && b.getRootNode({composed: true}) === document) {
       return compareRootPosition(a, b)
     }
-    // node not attached to document
-    return 0
+    // node not attached to document, place removed node to start
+    return document.contains(a) ? 1 : -1
   }
   function sortImageDataList(dataList) {
     if (dataList.length < 2) return dataList
