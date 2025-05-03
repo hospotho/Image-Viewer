@@ -1730,12 +1730,12 @@ window.ImageViewerUtils = (function () {
     }
   }
   function compareNodePosition(a, b) {
-    const comparison = a.dom.compareDocumentPosition(b.dom)
+    const comparison = a.compareDocumentPosition(b)
     if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
       return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
     }
-    if (a.dom.getRootNode({composed: true}) === document && b.dom.getRootNode({composed: true}) === document) {
-      return compareRootPosition(a.dom, b.dom)
+    if (a.getRootNode({composed: true}) === document && b.getRootNode({composed: true}) === document) {
+      return compareRootPosition(a, b)
     }
     // node not attached to document
     return 0
@@ -1756,13 +1756,13 @@ window.ImageViewerUtils = (function () {
         if (rightStart === length) continue
 
         // already sorted
-        if (compareNodePosition(dataList[rightStart - 1], dataList[rightStart]) <= 0) continue
+        if (compareNodePosition(dataList[rightStart - 1].dom, dataList[rightStart].dom) <= 0) continue
 
         // insertion sort
         let leftIndex = leftStart
         let rightIndex = rightStart
         while (leftIndex < rightIndex && rightIndex < rightEnd) {
-          if (compareNodePosition(dataList[leftIndex], dataList[rightIndex]) <= 0) {
+          if (compareNodePosition(dataList[leftIndex].dom, dataList[rightIndex].dom) <= 0) {
             leftIndex++
           } else {
             // shift element
