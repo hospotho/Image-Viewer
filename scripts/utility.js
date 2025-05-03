@@ -603,7 +603,7 @@ window.ImageViewerUtils = (function () {
   function updateSizeBySelector(domWidth, domHeight, container, tagName, selector, options) {
     // skip img with data URL
     const domList = deepQuerySelectorAll(container, selector)
-    const targetDom = tagName === 'img' ? domList.filter(img => !img.src.startsWith('data')) : domList
+    const targetDom = tagName === 'img' ? domList.filter(img => !img.src.startsWith('data')) : domList.filter(dom => getComputedStyle(dom).backgroundImage !== 'none')
 
     const widthList = []
     const heightList = []
