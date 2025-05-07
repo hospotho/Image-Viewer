@@ -1945,7 +1945,7 @@ window.ImageViewerUtils = (function () {
       removeRepeatNonRaw(newList, oldList)
 
       const combinedSrcList = new Array(newList.length + oldList.length)
-      const combinedImageList = new Array(newList.length + oldList.length)
+      const combinedDataList = new Array(newList.length + oldList.length)
 
       const oldSearcher = createImageIndexSearcher(oldList.map(data => data.src))
       const combinedSearcher = createImageIndexSearcher([])
@@ -1975,14 +1975,14 @@ window.ImageViewerUtils = (function () {
         distance = indexAtOldArray - oldArrayLastIndex
         for (let i = 0; i < distance; i++) {
           combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
-          combinedImageList[vacancyIndex++] = oldList[oldArrayLastIndex++]
+          combinedDataList[vacancyIndex++] = oldList[oldArrayLastIndex++]
         }
 
         // fill list with newList from left index to right index
         distance = rightIndex - leftIndex + 1
         for (let i = 0; i < distance; i++) {
           combinedSrcList[vacancyIndex] = newList[leftIndex].src
-          combinedImageList[vacancyIndex++] = newList[leftIndex++]
+          combinedDataList[vacancyIndex++] = newList[leftIndex++]
         }
         rightIndex = leftIndex
         oldArrayLastIndex++
@@ -1992,7 +1992,7 @@ window.ImageViewerUtils = (function () {
       distance = oldList.length - oldArrayLastIndex
       for (let i = 0; i < distance; i++) {
         combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
-        combinedImageList[vacancyIndex++] = oldList[oldArrayLastIndex++]
+        combinedDataList[vacancyIndex++] = oldList[oldArrayLastIndex++]
       }
 
       // last element of newList is not a anchor
@@ -2001,11 +2001,11 @@ window.ImageViewerUtils = (function () {
         distance = newList.length - leftIndex
         for (let i = 0; i < distance; i++) {
           combinedSrcList[vacancyIndex] = newList[leftIndex].src
-          combinedImageList[vacancyIndex++] = newList[leftIndex++]
+          combinedDataList[vacancyIndex++] = newList[leftIndex++]
         }
       }
 
-      const finalList = combinedImageList.filter(Boolean)
+      const finalList = combinedDataList.filter(Boolean)
 
       const imageUrlSet = new Set()
       const uniqueFinalList = []
