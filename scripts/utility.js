@@ -2025,7 +2025,8 @@ window.ImageViewerUtils = (function () {
       }
       for (const data of uniqueFinalList) {
         const dom = newSrcDomMap.get(data.src)
-        if (dom) data.dom = dom
+        if (!dom || (dom.tagName !== 'IMG' && data.dom.tagName === 'IMG')) continue
+        data.dom = dom
       }
 
       return sortImageDataList(uniqueFinalList)
