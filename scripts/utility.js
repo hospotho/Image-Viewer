@@ -1737,8 +1737,8 @@ window.ImageViewerUtils = (function () {
     if (a.getRootNode({composed: true}) === document && b.getRootNode({composed: true}) === document) {
       return compareRootPosition(a, b)
     }
-    // node not attached to document, place removed node to start
-    return document.contains(a) ? 1 : -1
+    // node not attached to document
+    return 0
   }
   function sortImageDataList(dataList) {
     if (dataList.length < 2) return dataList
@@ -1851,6 +1851,29 @@ window.ImageViewerUtils = (function () {
     }
   }
 
+  // combine image list
+  function handleShuffledList(newList, oldList, oldSearcher) {
+    let shuffled = false
+    let lastCheckIndex = -1
+    for (const data of newList) {
+      const index = oldSearcher.searchIndex(data.src)
+      if (index === -1 || oldList[index].dom.tagName !== data.dom.tagName) continue
+      if (index > lastCheckIndex) {
+        lastCheckIndex = index
+      } else {
+        shuffled = true
+        break
+      }
+    }
+    if (!shuffled) return
+
+    for (let i = newList.length - 1; i >= 0; i--) {
+      const data = newList[i]
+      const index = oldSearcher.searchIndex(data.src)
+      if (index !== -1) newList.splice(i, 1)
+    }
+  }
+
   return {
     updateWrapperSize: function (dom, domSize, options) {
       if (!dom || dom.getRootNode({composed: true}) !== document) return
@@ -1949,6 +1972,9 @@ window.ImageViewerUtils = (function () {
 
       const oldSearcher = createImageIndexSearcher(oldList.map(data => data.src))
       const combinedSearcher = createImageIndexSearcher([])
+
+      // relative order may not be preserved
+      handleShuffledList(newList, oldList, oldSearcher)
 
       let leftIndex = 0
       let rightIndex = 0
