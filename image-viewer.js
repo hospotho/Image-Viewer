@@ -891,7 +891,7 @@ window.ImageViewer = (function () {
     }, 3000)
   }
 
-  function fitImage(options, reset = true, update = false) {
+  function fitImage(options, reset = true) {
     const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
     const action = img => {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
@@ -900,11 +900,12 @@ window.ImageViewer = (function () {
       img.classList.add('loaded')
       img.classList.remove('loading')
     }
-    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${update ? ':not(.ready)' : ''}`)
+    const liList = shadowRoot.querySelectorAll('#iv-image-list li:not(.resized)')
     for (const li of liList) {
       const img = li.firstChild
       if (img.naturalWidth) action(img)
-      else img.addEventListener('load', () => action(img))
+      else img.addEventListener('load', () => action(img), {once: true})
+      li.classList.add('resized')
     }
     if (reset) {
       const event = new CustomEvent('reset-transform')
@@ -1901,7 +1902,7 @@ window.ImageViewer = (function () {
         if (domData !== undefined && src !== domData.src) {
           currentUrlList[i] = domData.src
           imgList[i].src = domData.src
-          updated = true
+          imgList[i].parentElement.classList.remove('resized')
           continue
         }
         const rawUrl = getRawUrl(data.src)
@@ -1909,7 +1910,7 @@ window.ImageViewer = (function () {
         if (src !== rawUrl && urlData !== undefined) {
           currentUrlList[i] = urlData.src
           imgList[i].src = urlData.src
-          updated = true
+          imgList[i].parentElement.classList.remove('resized')
           continue
         }
         const filename = getFilename(data.src)
@@ -1917,7 +1918,7 @@ window.ImageViewer = (function () {
         if (filenameData !== undefined && src !== filenameData.src) {
           currentUrlList[i] = filenameData.src
           imgList[i].src = filenameData.src
-          updated = true
+          imgList[i].parentElement.classList.remove('resized')
         }
       }
     }
@@ -2114,7 +2115,7 @@ window.ImageViewer = (function () {
     } else {
       updateImageList(imageList, options)
       initImageList(options)
-      fitImage(options, false, true)
+      fitImage(options, false)
       addImageEvent(options)
     }
     restoreIndex(options)
