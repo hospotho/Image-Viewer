@@ -1873,6 +1873,90 @@ window.ImageViewerUtils = (function () {
       if (index !== -1) newList.splice(i, 1)
     }
   }
+  function insertionJoinImageList(newList, oldList, combinedSrcList, combinedDataList, oldSearcher, combinedSearcher) {
+    let leftIndex = 0
+    let rightIndex = 0
+    let indexAtOldArray = -1
+    let indexAtCombinedArray = -1
+    let vacancyIndex = 0
+    let oldArrayLastIndex = 0
+    let distance = 0
+
+    while (rightIndex < newList.length) {
+      const right = newList[rightIndex]
+
+      combinedSearcher.updateCache(combinedSrcList.slice(0, vacancyIndex))
+      indexAtOldArray = oldSearcher.searchIndex(right.src)
+      indexAtCombinedArray = combinedSearcher.searchIndex(right.src)
+
+      // right is not a anchor
+      if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
+        rightIndex++
+        continue
+      }
+
+      // fill list with oldList (exclude right)
+      distance = indexAtOldArray - oldArrayLastIndex
+      for (let i = 0; i < distance; i++) {
+        combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
+        combinedDataList[vacancyIndex++] = oldList[oldArrayLastIndex++]
+      }
+
+      // fill list with newList from left index to right index
+      distance = rightIndex - leftIndex + 1
+      for (let i = 0; i < distance; i++) {
+        combinedSrcList[vacancyIndex] = newList[leftIndex].src
+        combinedDataList[vacancyIndex++] = newList[leftIndex++]
+      }
+      rightIndex = leftIndex
+      oldArrayLastIndex++
+    }
+
+    // fill list with remained oldList
+    distance = oldList.length - oldArrayLastIndex
+    for (let i = 0; i < distance; i++) {
+      combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
+      combinedDataList[vacancyIndex++] = oldList[oldArrayLastIndex++]
+    }
+
+    // last element of newList is not a anchor
+    if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
+      // fill list with remained newList
+      distance = newList.length - leftIndex
+      for (let i = 0; i < distance; i++) {
+        combinedSrcList[vacancyIndex] = newList[leftIndex].src
+        combinedDataList[vacancyIndex++] = newList[leftIndex++]
+      }
+    }
+  }
+  function clearCombinedDataList(combinedDataList, newList) {
+    const finalList = combinedDataList.filter(Boolean)
+
+    const imageUrlSet = new Set()
+    const uniqueFinalList = []
+    for (const data of finalList) {
+      const url = data.src
+      if (!imageUrlSet.has(url)) {
+        imageUrlSet.add(url)
+        uniqueFinalList.push(data)
+      }
+    }
+
+    const newSrcDomMap = new Map()
+    for (const {src, dom} of newList) {
+      if (dom.tagName !== 'IFRAME') {
+        newSrcDomMap.set(src, dom)
+      }
+    }
+    for (const data of uniqueFinalList) {
+      const newDom = newSrcDomMap.get(data.src)
+      if (newDom && (newDom.tagName === 'IMG' || data.dom.tagName !== 'IMG')) {
+        data.dom = newDom
+      }
+    }
+
+    return uniqueFinalList
+  }
 
   return {
     updateWrapperSize: function (dom, domSize, options) {
@@ -1976,85 +2060,9 @@ window.ImageViewerUtils = (function () {
       // relative order may not be preserved
       handleShuffledList(newList, oldList, oldSearcher)
 
-      let leftIndex = 0
-      let rightIndex = 0
-      let indexAtOldArray = -1
-      let indexAtCombinedArray = -1
-      let vacancyIndex = 0
-      let oldArrayLastIndex = 0
-      let distance = 0
+      insertionJoinImageList(newList, oldList, combinedSrcList, combinedDataList, oldSearcher, combinedSearcher)
 
-      while (rightIndex < newList.length) {
-        const right = newList[rightIndex]
-
-        combinedSearcher.updateCache(combinedSrcList.slice(0, vacancyIndex))
-        indexAtOldArray = oldSearcher.searchIndex(right.src)
-        indexAtCombinedArray = combinedSearcher.searchIndex(right.src)
-
-        // right is not a anchor
-        if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
-          rightIndex++
-          continue
-        }
-
-        // fill list with oldList (exclude right)
-        distance = indexAtOldArray - oldArrayLastIndex
-        for (let i = 0; i < distance; i++) {
-          combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
-          combinedDataList[vacancyIndex++] = oldList[oldArrayLastIndex++]
-        }
-
-        // fill list with newList from left index to right index
-        distance = rightIndex - leftIndex + 1
-        for (let i = 0; i < distance; i++) {
-          combinedSrcList[vacancyIndex] = newList[leftIndex].src
-          combinedDataList[vacancyIndex++] = newList[leftIndex++]
-        }
-        rightIndex = leftIndex
-        oldArrayLastIndex++
-      }
-
-      // fill list with remained oldList
-      distance = oldList.length - oldArrayLastIndex
-      for (let i = 0; i < distance; i++) {
-        combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
-        combinedDataList[vacancyIndex++] = oldList[oldArrayLastIndex++]
-      }
-
-      // last element of newList is not a anchor
-      if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
-        // fill list with remained newList
-        distance = newList.length - leftIndex
-        for (let i = 0; i < distance; i++) {
-          combinedSrcList[vacancyIndex] = newList[leftIndex].src
-          combinedDataList[vacancyIndex++] = newList[leftIndex++]
-        }
-      }
-
-      const finalList = combinedDataList.filter(Boolean)
-
-      const imageUrlSet = new Set()
-      const uniqueFinalList = []
-      for (const data of finalList) {
-        const url = data.src
-        if (!imageUrlSet.has(url)) {
-          imageUrlSet.add(url)
-          uniqueFinalList.push(data)
-        }
-      }
-
-      const newSrcDomMap = new Map()
-      for (const {src, dom} of newList) {
-        if (dom.tagName !== 'IFRAME') {
-          newSrcDomMap.set(src, dom)
-        }
-      }
-      for (const data of uniqueFinalList) {
-        const dom = newSrcDomMap.get(data.src)
-        if (!dom || (dom.tagName !== 'IMG' && data.dom.tagName === 'IMG')) continue
-        data.dom = dom
-      }
-
+      const uniqueFinalList = clearCombinedDataList(combinedDataList, newList)
       return sortImageDataList(uniqueFinalList)
     },
 
