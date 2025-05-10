@@ -1405,12 +1405,15 @@ window.ImageViewer = (function () {
         console.log('Move to image node')
         let prevY = Number.MAX_VALUE
         let prevTop = Number.MAX_VALUE
-        while (true) {
+        let stopFlag = false
+        while (!stopFlag) {
           const currY = container.scrollTop
           if (prevY === currY) break
           const {top, bottom} = imgNode.getBoundingClientRect()
           const center = (top + bottom) / 2
-          if (prevTop === top && window.innerHeight > center && center > 0) break
+          if (prevTop === top && window.innerHeight > center && center > 0) {
+            setTimeout(() => (stopFlag = true), 500)
+          }
           prevY = currY
           prevTop = top
           imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
