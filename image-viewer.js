@@ -830,7 +830,8 @@ window.ImageViewer = (function () {
         // set new current
         const target = img.parentNode
         if (target.classList.contains('current')) {
-          target.previousSibling?.classList.add('current')
+          const newCurrent = target.previousElementSibling || target.nextElementSibling
+          newCurrent?.classList.add('current')
         }
         // remove img container
         target.remove()
