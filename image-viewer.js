@@ -930,6 +930,7 @@ window.ImageViewer = (function () {
           ctrlWithAltGraph = pressed || ctrlWithAltGraph
           e.ctrlWithAltGraph = ctrlWithAltGraph
           keydownHandlerList.forEach(func => func(e))
+          e.stopImmediatePropagation()
         },
         true
       )
