@@ -952,14 +952,19 @@ window.ImageViewerUtils = (function () {
     }
   }
   async function preloadImage(img, src, release) {
-    const success = await new Promise(resolve => {
-      const temp = new Image()
-      temp.onload = () => resolve(true)
-      temp.onerror = () => resolve(false)
-      temp.loading = 'eager'
-      temp.referrerPolicy = img.referrerPolicy
-      temp.src = src
-    })
+    let success = false
+    const deadline = Date.now() + 500
+    while (!success && deadline > Date.now()) {
+      success = await new Promise(resolve => {
+        const temp = new Image()
+        temp.onload = () => resolve(true)
+        temp.onerror = () => resolve(false)
+        temp.loading = 'eager'
+        temp.referrerPolicy = img.referrerPolicy
+        temp.src = src
+      })
+      if (!success) await new Promise(resolve => setTimeout(resolve, 50))
+    }
     release()
     return success
   }
