@@ -1728,6 +1728,8 @@ window.ImageViewerUtils = (function () {
         return topA.compareDocumentPosition(topB) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
       }
     }
+    // must have same root, should never happen
+    return 0
   }
   function compareNodePosition(a, b) {
     // iframe image
