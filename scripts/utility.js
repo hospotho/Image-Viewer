@@ -954,7 +954,7 @@ window.ImageViewerUtils = (function () {
   async function preloadImage(img, src, release) {
     let success = false
     const deadline = Date.now() + 500
-    while (!success && deadline > Date.now()) {
+    while (!success) {
       success = await new Promise(resolve => {
         const temp = new Image()
         temp.onload = () => resolve(true)
@@ -963,6 +963,7 @@ window.ImageViewerUtils = (function () {
         temp.referrerPolicy = img.referrerPolicy
         temp.src = src
       })
+      if (Date.now() > deadline) break
       if (!success) await new Promise(resolve => setTimeout(resolve, 50))
     }
     release()
