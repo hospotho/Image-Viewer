@@ -1730,6 +1730,8 @@ window.ImageViewerUtils = (function () {
     }
   }
   function compareNodePosition(a, b) {
+    // iframe image
+    if (a === b) return 0
     const comparison = a.compareDocumentPosition(b)
     if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
       return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
