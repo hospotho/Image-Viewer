@@ -901,7 +901,7 @@ window.ImageViewer = (function () {
       img.classList.add('loaded')
       img.classList.remove('loading')
     }
-    const liList = shadowRoot.querySelectorAll('#iv-image-list li:not(.resized)')
+    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not(.resized)'}`)
     for (const li of liList) {
       const img = li.firstChild
       if (img.naturalWidth) action(img)
