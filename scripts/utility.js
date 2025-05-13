@@ -502,8 +502,8 @@ window.ImageViewerUtils = (function () {
       const heightList = []
       for (const img of imgList) {
         const rect = img.getBoundingClientRect()
-        const width = img.naturalWidth ? Math.min(rect.width, img.naturalWidth) : rect.width
-        const height = img.naturalHeight ? Math.min(rect.height, img.naturalHeight) : rect.height
+        const width = img.naturalWidth > 15 ? Math.min(rect.width, img.naturalWidth) : rect.width
+        const height = img.naturalHeight > 15 ? Math.min(rect.height, img.naturalHeight) : rect.height
         rawWidth.push(width)
         rawHeight.push(height)
         if (width > height) {
