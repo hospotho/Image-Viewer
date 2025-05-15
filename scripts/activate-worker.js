@@ -237,7 +237,7 @@
       })
       const first = imageInfoList[0]
       const second = imageInfoList[1]
-      const check = await isNewImageInfoBetter(first, second)
+      const check = await isNewImageInfoBetter(first, second, mouseX, mouseY)
       return check ? first : second
     }
 
@@ -294,7 +294,7 @@
     }
 
     const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
-    const isNewImageInfoBetter = async (newInfo, oldInfo) => {
+    const isNewImageInfoBetter = async (newInfo, oldInfo, mouseX, mouseY) => {
       if (oldInfo === null) return true
       // data url
       const newUrl = newInfo[0]
@@ -317,6 +317,14 @@
         const isPartialBackground = bgPos.split('px').map(Number).some(Boolean)
         return isPartialBackground ? newInfo[1] >= oldInfo[1] : true
       }
+      // mouse position
+      const newRect = newInfo[2].getBoundingClientRect()
+      const oldRect = oldInfo[2].getBoundingClientRect()
+      const newOffset = [mouseX - newRect.left - newRect.width / 2, mouseY - newRect.top - newRect.height / 2]
+      const oldOffset = [mouseX - oldRect.left - oldRect.width / 2, mouseY - oldRect.top - oldRect.height / 2]
+      const newDist = Math.sqrt(newOffset[0] ** 2 + newOffset[1] ** 2)
+      const oldDist = Math.sqrt(oldOffset[0] ** 2 + oldOffset[1] ** 2)
+      if (newDist > oldDist + 50) return false
       // size check
       const asyncList = [[newUrl, oldUrl].map(getImageBitSize), [newUrl, oldUrl].map(getImageRealSize)].flat()
       const [newBitSize, oldBitSize, newRealSize, oldRealSize] = await Promise.all(asyncList)
@@ -355,7 +363,7 @@
             tryCount = Math.max(maxTry - 5, ++tryCount)
             continue
           }
-          const better = await isNewImageInfoBetter(imageInfo, imageInfoFromPoint)
+          const better = await isNewImageInfoBetter(imageInfo, imageInfoFromPoint, mouseX, mouseY)
           if (better) {
             imageInfoFromPoint = imageInfo
             imageDomLayer = index
