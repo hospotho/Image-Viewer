@@ -1830,15 +1830,16 @@ window.ImageViewerUtils = (function () {
       const rawIndex = srcIndexMap.get(getRawUrl(src))
       if (index !== undefined) return rawIndex
       const filename = getFilename(src)
+      if (filename === '') return -1
       const filenameIndex = srcIndexMap.get(filename)
-      if (filenameIndex !== undefined) return filenameIndex
-      return -1
+      return filenameIndex !== undefined ? filenameIndex : -1
     }
     function updateCache(srcList) {
       for (let i = lastLength; i < srcList.length; i++) {
         srcIndexMap.set(srcList[i], i)
         // skip same filename
         const filename = getFilename(srcList[i])
+        if (filename === '') continue
         if (repeatFilename.has(filename) || srcIndexMap.has(filename)) {
           repeatFilename.add(filename)
           srcIndexMap.delete(filename)
