@@ -1333,6 +1333,8 @@ window.ImageViewer = (function () {
         border.style.boxSizing = 'border-box'
         border.style.zIndex = '2147483647'
         border.style.pointerEvents = 'none'
+        border.style.display = 'block'
+        border.style.opacity = '1'
         document.body.appendChild(border)
 
         let endFlag = false
