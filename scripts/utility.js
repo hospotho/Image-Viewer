@@ -1835,6 +1835,7 @@ window.ImageViewerUtils = (function () {
       if (index !== undefined) return index
       const rawIndex = srcIndexMap.get(getRawUrl(src))
       if (index !== undefined) return rawIndex
+      if (src.startsWith('data:')) return -1
       const filename = getFilename(src)
       if (filename === '') return -1
       const filenameIndex = srcIndexMap.get(filename)
@@ -1843,6 +1844,7 @@ window.ImageViewerUtils = (function () {
     function updateCache(srcList) {
       for (let i = lastLength; i < srcList.length; i++) {
         srcIndexMap.set(srcList[i], i)
+        if (srcList[i].startsWith('data:')) continue
         // skip same filename
         const filename = getFilename(srcList[i])
         if (filename === '') continue
