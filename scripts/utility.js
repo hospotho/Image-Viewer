@@ -298,11 +298,13 @@ window.ImageViewerUtils = (function () {
         return rawSearchUrl
       }
 
-      const extensionMatch = cachedExtensionMatch(src)
+      const fullPath = url.pathname + url.search
+      const extensionMatch = cachedExtensionMatch(fullPath)
       const rawExtensionUrl = extensionMatch?.[1]
-      if (rawExtensionUrl && rawExtensionUrl !== src) {
-        rawUrlCache.set(src, rawExtensionUrl)
-        return rawExtensionUrl
+      if (rawExtensionUrl && rawExtensionUrl !== fullPath) {
+        const rawExtensionFullUrl = url.origin + rawExtensionUrl
+        rawUrlCache.set(src, rawExtensionFullUrl)
+        return rawExtensionFullUrl
       }
 
       rawUrlCache.set(src, src)
