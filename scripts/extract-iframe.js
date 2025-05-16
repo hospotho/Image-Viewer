@@ -68,7 +68,7 @@ window.ImageViewerExtractor = (function () {
       }
     }
 
-    const videoList = document.querySelectorAll('video[poster]')
+    const videoList = deepQuerySelectorAll(document.body, 'video[poster]')
     for (const video of videoList) {
       const {width, height} = video.getBoundingClientRect()
       if (width >= minWidth && height >= minHeight) {
@@ -76,7 +76,8 @@ window.ImageViewerExtractor = (function () {
       }
     }
 
-    const uncheckedNodeList = document.body.querySelectorAll('*:not([no-bg]):not(img):not(video[poster])')
+    const uncheckedNodeList = deepQuerySelectorAll(document.body, '*:not([no-bg])')
+    if (!document.body.hasAttribute('no-bg')) uncheckedNodeList.push(document.body)
     for (const node of uncheckedNodeList) {
       if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
       const attrUrl = node.getAttribute('iv-bg')
