@@ -590,6 +590,8 @@ window.ImageViewerUtils = (function () {
   function getDomSelector(dom) {
     let curr = dom.parentElement
     let selector = dom.tagName.toLowerCase()
+    // in custom element
+    if (curr === null) return selector
     while (curr.parentElement) {
       if (curr.classList.length > 1) {
         selector = curr.tagName.toLowerCase() + ':is(.' + [...curr.classList].map(CSS.escape).join(', .') + ') > ' + selector
