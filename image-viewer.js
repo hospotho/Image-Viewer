@@ -24,7 +24,9 @@ window.ImageViewer = (function () {
     const dom = data.dom
     if (dom.alt) img.alt = dom.alt
     if (dom.crossOrigin) img.crossOrigin = dom.crossOrigin
-    if (dom.referrerPolicy) img.referrerPolicy = dom.referrerPolicy
+    // chrome bug ref: https://issues.chromium.org/issues/327707429
+    // if (dom.referrerPolicy) img.referrerPolicy = dom.referrerPolicy
+    if (dom.getAttribute('referrerpolicy')) img.referrerPolicy = dom.getAttribute('referrerpolicy')
     if (dom.tagName === 'IFRAME') {
       img.setAttribute('data-iframe-src', dom.src)
       img.referrerPolicy = 'no-referrer'
