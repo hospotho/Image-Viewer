@@ -1946,6 +1946,7 @@ window.ImageViewer = (function () {
       const currentUrlIndexMap = new Map(currentUrlList.map((url, i) => [url, i]))
       const newUrlInsertIndexMap = new Map()
       let indexShift = 0
+      let firstImageChanged = false
 
       // first image might be new
       const firstData = newList[0]
@@ -1958,7 +1959,7 @@ window.ImageViewer = (function () {
         updated = true
         if (currentIndex === 0) {
           console.log('First image changed')
-          clearIndex = 0
+          firstImageChanged = true
         }
       }
       // process remaining list
@@ -1975,6 +1976,19 @@ window.ImageViewer = (function () {
         newUrlInsertIndexMap.set(data.src, refIndex)
         insertImageNode(node, refIndex)
         updated = true
+      }
+      // first image changed
+      if (!firstImageChanged) return
+      const imgList = [...shadowRoot.querySelectorAll('#iv-image-list li img')]
+      const oldFirstSrc = imageDataList[0].src
+      const newFirstIndex = imgList.findIndex(node => node.src === oldFirstSrc)
+      for (let i = 0; i < newFirstIndex; i++) {
+        const src = imgList[i].src
+        const dom = newList.find(data => data.src === src).dom
+        if (dom.tagName === 'IMAGE' || dom.tagName === 'VIDEO' || dom.tagName === 'IFRAME') {
+          clearIndex = i
+          break
+        }
       }
     }
     // function tryRemove() {
