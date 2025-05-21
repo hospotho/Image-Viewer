@@ -19,8 +19,6 @@
   // init
   const options = window.ImageViewerOption
   options.closeButton = true
-  options.referrerPolicy = !!document.querySelector('img[referrerPolicy="no-referrer"]')
-  options.cors = !!document.querySelector('img[crossorigin="anonymous"]')
   window.ImageViewerLastDom = null
 
   const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)

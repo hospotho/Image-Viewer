@@ -16,21 +16,21 @@ window.ImageViewer = (function () {
   const keydownHandlerList = []
 
   //==========utility==========
-  function buildImageNode(data, options) {
+  function buildImageNode(data) {
     const li = document.createElement('li')
     const img = document.createElement('img')
     li.appendChild(img)
 
-    img.alt = ''
-    img.style.transform = 'matrix(1,0,0,1,0,0)'
-    if (options.referrerPolicy) img.referrerPolicy = 'no-referrer'
-    if (options.cors) img.crossOrigin = 'anonymous'
-
-    img.src = data.src
-    if (data.dom.tagName === 'IFRAME') {
-      img.setAttribute('data-iframe-src', data.dom.src)
+    const dom = data.dom
+    if (dom.alt) img.alt = dom.alt
+    if (dom.crossOrigin) img.crossOrigin = dom.crossOrigin
+    if (dom.referrerPolicy) img.referrerPolicy = dom.referrerPolicy
+    if (dom.tagName === 'IFRAME') {
+      img.setAttribute('data-iframe-src', dom.src)
       img.referrerPolicy = 'no-referrer'
     }
+    img.style.transform = 'matrix(1,0,0,1,0,0)'
+    img.src = data.src
 
     return li
   }
@@ -782,10 +782,10 @@ window.ImageViewer = (function () {
     document.body.classList.add('iv-attached')
   }
 
-  function buildImageList(imageList, options) {
+  function buildImageList(imageList) {
     const _imageList = shadowRoot.querySelector('#iv-image-list')
     const fragment = document.createDocumentFragment()
-    imageList.map(data => buildImageNode(data, options)).forEach(li => fragment.appendChild(li))
+    fragment.append(...imageList.map(buildImageNode))
     _imageList.appendChild(fragment)
 
     lastHref = location.href
@@ -2112,7 +2112,7 @@ window.ImageViewer = (function () {
 
     if (!document.body.classList.contains('iv-attached')) {
       buildApp(options)
-      buildImageList(imageList, options)
+      buildImageList(imageList)
       initImageList(options)
       fitImage(options, false)
       addFrameEvent(options)
