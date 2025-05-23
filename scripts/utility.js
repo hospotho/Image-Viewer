@@ -134,32 +134,24 @@ window.ImageViewerUtils = (function () {
 
   // init observer for unlazy image being modify
   const unlazyObserver = new MutationObserver(mutationsList => {
-    const updatedSet = new Set()
     const modifiedSet = new Set()
     for (const mutation of mutationsList) {
       const element = mutation.target
-      if (element.hasAttribute('iv-observing')) {
-        updatedSet.add(element)
-        continue
-      }
+      if (element.hasAttribute('iv-observing')) continue
       if (element.hasAttribute('iv-image') && !element.hasAttribute('iv-checking')) {
         modifiedSet.add(element)
       }
     }
-    for (const img of updatedSet) {
-      img.removeAttribute('iv-observing')
-    }
-    for (const img of modifiedSet) {
+    modifiedSet.forEach(async img => {
+      while (!img.complete) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+      const attrList = getUnlazyAttrList(img)
+      if (attrList.length === 0) return
       img.setAttribute('iv-observing', '')
-      setTimeout(async () => {
-        while (!img.complete) {
-          await new Promise(resolve => setTimeout(resolve, 50))
-        }
-        const attrList = getUnlazyAttrList(img)
-        if (attrList.length === 0) return
-        checkImageAttr(img, attrList)
-      }, 100)
-    }
+      await checkImageAttr(img, attrList)
+      img.removeAttribute('iv-observing')
+    })
   })
   unlazyObserver.observe(document.body, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
 
