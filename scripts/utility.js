@@ -1137,11 +1137,11 @@ window.ImageViewerUtils = (function () {
       .map(str => str.trim().split(/ +/))
       .map(([url, size]) => [url, size ? Number(size.slice(0, -1)) : 1])
       .sort((a, b) => b[1] - a[1])
-    return srcsetList[0][0]
+    return cachedGetUrl(srcsetList[0][0]).href
   }
   function getAttrUrl(match, value) {
     // count multiple match as srcset
-    if (match.length > 1) return cachedGetUrl(getSrcsetUrl(value)).href
+    if (match.length > 1) return getSrcsetUrl(value)
     const url = cachedGetUrl(value)
     const subMatch = url.pathname.slice(1).match(/https?:\/\/\S+/g)
     return cachedGetUrl(subMatch === null ? value : subMatch[0] + url.search).href
