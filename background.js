@@ -78,6 +78,20 @@ async function fetchBitSize(src, useGetMethod = false) {
     }
 
     const length = res.headers.get('Content-Length')
+    // may be transfer-encoding: chunked
+    if (length === null) {
+      const res = await fetch(url.href, {signal: AbortSignal.timeout(5000)})
+      if (!res.ok) return 0
+      let totalSize = 0
+      const reader = res.body.getReader()
+      while (true) {
+        const {done, value} = await reader.read()
+        if (done) break
+        totalSize += value.length
+      }
+      return totalSize
+    }
+
     const size = Number(length)
     // some server return strange content length for HEAD method
     if (size < 100 && !useGetMethod) {

@@ -976,8 +976,23 @@ window.ImageViewerUtils = (function () {
       const res = await fetch(url.href, {method, signal: AbortSignal.timeout(5000)})
       if (!res.ok) return 0
       if (res.redirected) return -1
-      const type = res.headers.get('Content-Type')
+
       const length = res.headers.get('Content-Length')
+      // may be transfer-encoding: chunked
+      if (length === null) {
+        const res = await fetch(url.href, {signal: AbortSignal.timeout(5000)})
+        if (!res.ok) return 0
+        let totalSize = 0
+        const reader = res.body.getReader()
+        while (true) {
+          const {done, value} = await reader.read()
+          if (done) break
+          totalSize += value.length
+        }
+        return totalSize
+      }
+
+      const type = res.headers.get('Content-Type')
       if (type?.startsWith('image') || (type === 'application/octet-stream' && cachedExtensionMatch(url.href))) {
         const size = Number(length)
         return size
