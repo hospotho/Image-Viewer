@@ -1170,13 +1170,13 @@ window.ImageViewerUtils = (function () {
 
     // check attributes
     for (const {name, value} of img.attributes) {
-      if (attrWhiteList.has(name)) continue
+      if (attrWhiteList.has(name) || value.startsWith('data')) continue
 
-      const match = value.match(urlRegex)
-      if (!match) continue
+      const length = value.split(/\s+/).filter(str => str.includes('/') || str.includes('.')).length
+      if (length === 0) continue
 
       // count multiple match as srcset
-      const attrUrl = match.length > 1 ? getSrcsetUrl(value) : getAttrUrl(value)
+      const attrUrl = length > 1 ? getSrcsetUrl(value) : getAttrUrl(value)
       if (attrUrl !== src) {
         attrList.push({name: name, url: attrUrl})
       }
