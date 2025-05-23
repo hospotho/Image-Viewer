@@ -59,6 +59,7 @@ window.ImageViewerUtils = (function () {
   window.backupImageList = []
   const pseudoImageDataList = []
   const badImageSet = new Set(['', 'about:blank'])
+  const pendingBadImageMap = new Map()
   const corsHostSet = new Set()
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
@@ -1115,7 +1116,8 @@ window.ImageViewerUtils = (function () {
           await updateImageSrc(img, newUrl)
           img.removeAttribute(realAttrName)
           badImageSet.add(currentSrc)
-          break
+          pendingBadImageMap.get(newUrl)?.forEach(url => badImageSet.add(url))
+          continue
         }
         // place action to callback
         console.log(`Image preload overtime: ${newUrl}`)
@@ -1124,8 +1126,8 @@ window.ImageViewerUtils = (function () {
           .then(() => {
             img.removeAttribute(realAttrName)
             badImageSet.add(currentSrc)
+            pendingBadImageMap.get(newUrl)?.forEach(url => badImageSet.add(url))
           })
-        break
       }
     }
     if (successList.length) {
@@ -1144,7 +1146,9 @@ window.ImageViewerUtils = (function () {
       .map(str => str.trim().split(/ +/))
       .map(([url, size]) => [url, size ? Number(size.slice(0, -1)) : 1])
       .sort((a, b) => b[1] - a[1])
-    return cachedGetUrl(srcsetList[0][0]).href
+      .map(([url]) => cachedGetUrl(url).href)
+    pendingBadImageMap.set(srcsetList[0], srcsetList.slice(1))
+    return srcsetList[0]
   }
   function getAttrUrl(value) {
     const url = cachedGetUrl(value)
