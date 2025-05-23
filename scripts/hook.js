@@ -58,6 +58,11 @@
         return dataUrl
       }
     } catch (error) {}
+    // wake up background
+    while (true) {
+      if (await safeSendMessage({msg: 'ping'})) break
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
     const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: image.src})
     return dataUrl
   }

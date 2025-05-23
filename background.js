@@ -286,6 +286,11 @@ function addMessageHandler() {
     }
 
     switch (type) {
+      // wake up
+      case 'ping': {
+        _sendResponse(true)
+        return true
+      }
       // option
       case 'update_options': {
         ;(async () => {
