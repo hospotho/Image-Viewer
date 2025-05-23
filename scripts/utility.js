@@ -1131,9 +1131,7 @@ window.ImageViewerUtils = (function () {
       .sort((a, b) => b[1] - a[1])
     return cachedGetUrl(srcsetList[0][0]).href
   }
-  function getAttrUrl(match, value) {
-    // count multiple match as srcset
-    if (match.length > 1) return getSrcsetUrl(value)
+  function getAttrUrl(value) {
     const url = cachedGetUrl(value)
     const subMatch = url.pathname.slice(1).match(/https?:\/\/\S+/g)
     return subMatch === null ? url.href : cachedGetUrl(subMatch[0] + url.search).href
@@ -1177,7 +1175,8 @@ window.ImageViewerUtils = (function () {
       const match = value.match(urlRegex)
       if (!match) continue
 
-      const attrUrl = getAttrUrl(match, value)
+      // count multiple match as srcset
+      const attrUrl = match.length > 1 ? getSrcsetUrl(value) : getAttrUrl(value)
       if (attrUrl !== src) {
         attrList.push({name: name, url: attrUrl})
       }
