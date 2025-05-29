@@ -1236,6 +1236,18 @@ window.ImageViewer = (function () {
       }
     }
     function addInfoPopupEvent() {
+      function decodeNestedURIComponent(src) {
+        while (true) {
+          try {
+            const decoded = decodeURIComponent(src)
+            if (src === decoded) break
+            src = decoded
+          } catch (e) {
+            break
+          }
+        }
+        return src
+      }
       function updateInfoPopup() {
         if (!displayFlag) return
         const currentListItem = imageListNode.querySelector('li.current')
@@ -1243,7 +1255,7 @@ window.ImageViewer = (function () {
         const currentIndex = Array.from(imageListNode.children).indexOf(currentListItem)
         infoSize.textContent = `${currentImage.naturalWidth}x${currentImage.naturalHeight}`
         if (currentImage.src.startsWith('http') || currentImage.src.startsWith('file')) {
-          infoSource.textContent = currentImage.src
+          infoSource.textContent = decodeNestedURIComponent(currentImage.src)
           infoSource.removeAttribute('data-url')
         } else {
           infoSource.textContent = '[Data URL]'
