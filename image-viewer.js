@@ -1242,7 +1242,7 @@ window.ImageViewer = (function () {
         const currentImage = currentListItem.querySelector('img')
         const currentIndex = Array.from(imageListNode.children).indexOf(currentListItem)
         infoSize.textContent = `${currentImage.naturalWidth}x${currentImage.naturalHeight}`
-        if (currentImage.src.startsWith('http')) {
+        if (currentImage.src.startsWith('http') || currentImage.src.startsWith('file')) {
           infoSource.textContent = currentImage.src
           infoSource.removeAttribute('data-url')
         } else {
