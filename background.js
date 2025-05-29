@@ -80,7 +80,7 @@ async function fetchBitSize(src, useGetMethod = false) {
     const length = res.headers.get('Content-Length')
     // may be transfer-encoding: chunked
     if (length === null) {
-      const res = await fetch(url.href, {signal: AbortSignal.timeout(5000)})
+      const res = await fetch(src, {signal: AbortSignal.timeout(5000)})
       if (!res.ok) return 0
       let totalSize = 0
       const reader = res.body.getReader()
