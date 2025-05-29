@@ -451,6 +451,14 @@ function addMessageHandler() {
         })()
         return true
       }
+      case 'is_file_image': {
+        ;(async () => {
+          const asyncList = request.urlList.map(url => fetch(url, {method: 'HEAD'}).then(res => (res.headers.get('Content-Type')?.startsWith('image') ? 1 : 0)))
+          const result = await Promise.all(asyncList)
+          sendResponse(result)
+        })()
+        return true
+      }
       // image viewer
       case 'open_tab': {
         ;(async () => {
@@ -518,8 +526,12 @@ function addMessageHandler() {
 function addToolbarIconHandler() {
   chrome.action.onClicked.addListener(async tab => {
     if (!tab.url) return
+    const supported = tab.url.startsWith('http') || (tab.url.startsWith('file') && (await chrome.extension.isAllowedFileSchemeAccess()))
+    if (!supported) return
+
     await passOptionToTab(tab.id, currOptions)
-    chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
+    const script = tab.url.startsWith('file') && tab.url.endsWith('/') ? '/scripts/action-folder.js' : '/scripts/action-page.js'
+    chrome.scripting.executeScript({target: {tabId: tab.id}, files: [script]})
   })
 }
 
@@ -552,6 +564,11 @@ function createContextMenu() {
     const supported = tab.url.startsWith('http') || (tab.url.startsWith('file') && (await chrome.extension.isAllowedFileSchemeAccess()))
     if (!supported) return
 
+    if (tab.url.startsWith('file') && tab.url.endsWith('/')) {
+      await passOptionToTab(tab.id, info.menuItemId === 'view_all_image_in_image_viewer' ? currOptionsWithoutSize : currOptions)
+      chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-folder.js']})
+      return
+    }
     switch (info.menuItemId) {
       case 'view_images_in_image_viewer': {
         await passOptionToTab(tab.id, currOptions)
@@ -580,6 +597,14 @@ function createContextMenu() {
 function addCommandHandler() {
   chrome.commands.onCommand.addListener(async (command, tab) => {
     if (!tab.url) return
+    const supported = tab.url.startsWith('http') || (tab.url.startsWith('file') && (await chrome.extension.isAllowedFileSchemeAccess()))
+    if (!supported) return
+
+    if (tab.url.startsWith('file') && tab.url.endsWith('/')) {
+      await passOptionToTab(tab.id, command === 'open-image-viewer-without-size-filter' ? currOptionsWithoutSize : currOptions)
+      chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-folder.js']})
+      return
+    }
     switch (command) {
       case 'open-image-viewer': {
         await passOptionToTab(tab.id, currOptions)

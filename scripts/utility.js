@@ -2105,6 +2105,8 @@ window.ImageViewerUtils = (function () {
 
     getRawUrl: getRawUrl,
 
-    getFilename: getFilename
+    getFilename: getFilename,
+
+    getImageRealSize: getImageRealSize
   }
 })()
