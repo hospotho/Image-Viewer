@@ -2,7 +2,7 @@
 const srcBitSizeMap = new Map()
 const srcLocalRealSizeMap = new Map()
 const srcLocalRealSizeResolveMap = new Map()
-const srcDataUrlMap = new Map()
+const srcLocalUrlMap = new Map()
 const redirectUrlMap = new Map()
 const tabSubtreeMap = new Map()
 const semaphore = (() => {
@@ -159,40 +159,37 @@ async function fetchDataUrl(src) {
     release()
   }
 }
-async function getDataUrl(src) {
-  const cache = srcDataUrlMap.get(src)
-  if (cache !== undefined) return cache
-
-  const promise = fetchDataUrl(src)
-  srcDataUrlMap.set(src, promise)
-  return promise
-}
 async function getLocalUrl(tabId, src) {
   if (src.startsWith('data:')) return src
+
+  const cache = srcLocalUrlMap.get(src)
+  if (cache !== undefined) return cache
+
   const size = await getImageLocalRealSize(tabId, src)
-  if (size) return src
-  const dataUrl = await getDataUrl(src)
+  if (size) {
+    srcLocalUrlMap.set(src, src)
+    return src
+  }
+
+  const dataUrl = await fetchDataUrl(src)
+  srcLocalUrlMap.set(src, dataUrl)
   return dataUrl
 }
-async function getRedirectUrl(urlList) {
-  const asyncList = urlList.map(async url => {
-    if (url === '' || url === 'about:blank' || url.startsWith('javascript')) return url
+async function getRedirectUrl(url) {
+  if (url === '' || url === 'about:blank' || url.startsWith('javascript')) return url
 
-    const cache = redirectUrlMap.get(url)
-    if (cache !== undefined) return cache
+  const cache = redirectUrlMap.get(url)
+  if (cache !== undefined) return cache
 
-    try {
-      const res = await fetch(url)
-      const finalUrl = res.redirected ? res.url : url
-      redirectUrlMap.set(url, finalUrl)
-      return finalUrl
-    } catch (error) {}
+  try {
+    const res = await fetch(url)
+    const finalUrl = res.redirected ? res.url : url
+    redirectUrlMap.set(url, finalUrl)
+    return finalUrl
+  } catch (error) {}
 
-    redirectUrlMap.set(url, url)
-    return url
-  })
-  const redirectUrlList = await Promise.all(asyncList)
-  return redirectUrlList
+  redirectUrlMap.set(url, url)
+  return url
 }
 async function openNewTab(senderTab, url) {
   const subtree = tabSubtreeMap.get(senderTab.id)
@@ -412,11 +409,12 @@ function addMessageHandler() {
           if (frameList === null || frameList.length < 2) {
             sendResponse([])
           }
-          const iframeList = frameList.slice(1)
+          const iframeIdList = frameList.slice(1).map(frame => frame.frameId)
+          const func = async option => await window.ImageViewerExtractor?.extractImage(option)
           const results = await chrome.scripting.executeScript({
             args: [newOptions],
-            target: {tabId: sender.tab.id, frameIds: iframeList.map(frame => frame.frameId)},
-            func: async option => await window.ImageViewerExtractor?.extractImage(option)
+            target: {tabId: sender.tab.id, frameIds: iframeIdList},
+            func: func
           })
           if (results instanceof Error) {
             sendResponse([])
@@ -425,21 +423,26 @@ function addMessageHandler() {
 
           const relation = new Map()
           const pageDataList = []
+          const asyncList = []
           for (const result of results) {
             if (!result.result) continue
             const [href, subHrefList, imageList] = result.result
-            const localImageList = Promise.all(imageList.map(src => getLocalUrl(sender.tab.id, src)))
             for (const subHref of subHrefList) {
               if (subHref !== href) relation.set(subHref, href)
             }
-            pageDataList.push([localImageList, href])
+            const localImageList = imageList.map(src => getLocalUrl(sender.tab.id, src))
+            pageDataList.push([href, localImageList])
+            asyncList.push(localImageList)
           }
 
+          await Promise.all(asyncList.flat())
+
           const result = []
-          for (const [imageList, href] of pageDataList) {
+          for (const [href, asyncList] of pageDataList) {
             let top = href
             while (relation.has(top)) top = relation.get(top)
-            for (const image of await imageList) {
+            const imageList = await Promise.all(asyncList)
+            for (const image of imageList) {
               result.push([image, top])
             }
           }
@@ -449,7 +452,7 @@ function addMessageHandler() {
       }
       case 'get_redirect': {
         ;(async () => {
-          const resultList = await getRedirectUrl(request.data)
+          const resultList = await Promise.all(request.data.map(getRedirectUrl))
           sendResponse(resultList)
         })()
         return true
