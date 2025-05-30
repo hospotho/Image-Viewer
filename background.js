@@ -324,10 +324,8 @@ function addMessageHandler() {
         return true
       }
       case 'load_extractor': {
-        ;(async () => {
-          await chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/extract-iframe.js']})
-          sendResponse()
-        })()
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js', '/scripts/extract-iframe.js']})
+        sendResponse()
         return true
       }
       case 'load_utility': {

@@ -175,16 +175,17 @@
   }
 
   async function init() {
+    // should already init
+    if (window.top !== window.self) {
+      safeSendMessage('load_extractor')
+      return
+    }
+
     // Chrome terminated service worker
     while (!(await safeSendMessage('ping'))) {
       await new Promise(resolve => setTimeout(resolve, 50))
     }
 
-    if (window.top !== window.self) {
-      safeSendMessage('load_worker')
-      safeSendMessage('load_extractor')
-      return
-    }
     try {
       const image = document.querySelector(`img[src='${location.href}']`)
       image ? initImageViewer(image) : safeSendMessage('load_worker')
