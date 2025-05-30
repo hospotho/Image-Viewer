@@ -136,6 +136,7 @@
   async function initImageViewer(image) {
     console.log('Start image mode')
 
+    await safeSendMessage('get_options')
     const options = window.ImageViewerOption
     options.closeButton = false
     options.minWidth = 0
@@ -174,11 +175,9 @@
   }
 
   async function init() {
-    await safeSendMessage('get_options')
     // Chrome terminated service worker
-    while (!window.ImageViewerOption) {
+    while (!(await safeSendMessage('ping'))) {
       await new Promise(resolve => setTimeout(resolve, 50))
-      await safeSendMessage('get_options')
     }
 
     if (window.top !== window.self) {
