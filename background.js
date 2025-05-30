@@ -289,7 +289,7 @@ function addMessageHandler() {
       // wake up
       case 'ping': {
         _sendResponse(true)
-        return true
+        return
       }
       // option
       case 'update_options': {
@@ -300,7 +300,7 @@ function addMessageHandler() {
           currOptionsWithoutSize.minWidth = 0
           currOptionsWithoutSize.minHeight = 0
           console.log(currOptions)
-          sendResponse()
+          _sendResponse()
         })()
         return true
       }
@@ -312,47 +312,52 @@ function addMessageHandler() {
             target: {tabId: sender.tab.id, frameIds: [sender.frameId]},
             func: option => (window.ImageViewerOption = option)
           })
-          sendResponse()
+          _sendResponse()
         })()
         return true
       }
       case 'load_worker': {
-        ;(async () => {
-          await chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js']})
-          sendResponse()
-        })()
-        return true
+        chrome.scripting.executeScript({
+          args: [currOptions],
+          target: {tabId: sender.tab.id, frameIds: [sender.frameId]},
+          func: option => (window.ImageViewerOption = option)
+        })
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js']})
+        _sendResponse()
+        return
       }
       case 'load_extractor': {
+        chrome.scripting.executeScript({
+          args: [currOptions],
+          target: {tabId: sender.tab.id, frameIds: [sender.frameId]},
+          func: option => (window.ImageViewerOption = option)
+        })
         chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js', '/scripts/extract-iframe.js']})
-        sendResponse()
-        return true
+        _sendResponse()
+        return
       }
       case 'load_utility': {
         ;(async () => {
-          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js']})
-          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']})
-          sendResponse()
+          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/utility.js', 'image-viewer.js']})
+          _sendResponse()
         })()
         return true
       }
       case 'load_script': {
         ;(async () => {
           await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['image-viewer.js']})
-          sendResponse()
+          _sendResponse()
         })()
         return true
       }
       // worker
       case 'reset_dom': {
-        ;(async () => {
-          await chrome.scripting.executeScript({
-            target: {tabId: sender.tab.id},
-            func: () => (window.ImageViewerLastDom = null)
-          })
-          sendResponse()
-        })()
-        return true
+        chrome.scripting.executeScript({
+          target: {tabId: sender.tab.id},
+          func: () => (window.ImageViewerLastDom = null)
+        })
+        _sendResponse()
+        return
       }
       case 'update_info': {
         ;(async () => {
@@ -365,7 +370,7 @@ function addMessageHandler() {
           // image size maybe decreased in dataURL
           lastImageNodeInfo[1] -= 3
           console.table(lastImageNodeInfo)
-          sendResponse()
+          _sendResponse()
         })()
         return true
       }
@@ -375,7 +380,7 @@ function addMessageHandler() {
         } else {
           sendResponse()
         }
-        return true
+        return
       }
       case 'reply_local_size': {
         const resolve = srcLocalRealSizeResolveMap.get(request.src)
@@ -383,8 +388,8 @@ function addMessageHandler() {
           resolve(request.size)
           srcLocalRealSizeResolveMap.delete(request.src)
         }
-        sendResponse()
-        return true
+        _sendResponse()
+        return
       }
       // utility
       case 'get_size': {
@@ -459,15 +464,14 @@ function addMessageHandler() {
       }
       // image viewer
       case 'open_tab': {
-        ;(async () => {
-          await openNewTab(sender.tab, request.url)
-          sendResponse()
-        })()
-        return true
+        openNewTab(sender.tab, request.url)
+        _sendResponse()
+        return
       }
       case 'close_tab': {
-        chrome.tabs.remove(sender.tab.id, () => sendResponse())
-        return true
+        chrome.tabs.remove(sender.tab.id)
+        _sendResponse()
+        return
       }
       case 'google_search': {
         ;(async () => {
@@ -488,18 +492,16 @@ function addMessageHandler() {
           const res = await fetch(endpoint, {method: 'POST', body: form})
           if (!res.ok) return
 
-          await openNewTab(sender.tab, res.url)
-          sendResponse()
+          openNewTab(sender.tab, res.url)
+          _sendResponse()
         })()
         return true
       }
       // download
       case 'download_images': {
-        ;(async () => {
-          await chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/download-images.js']})
-          sendResponse()
-        })()
-        return true
+        chrome.scripting.executeScript({target: {tabId: sender.tab.id}, files: ['/scripts/download-images.js']})
+        _sendResponse()
+        return
       }
       case 'request_cors_url': {
         ;(async () => {
