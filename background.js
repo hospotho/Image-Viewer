@@ -314,11 +314,6 @@ function addMessageHandler() {
         return true
       }
       case 'load_worker': {
-        chrome.scripting.executeScript({
-          args: [currOptions],
-          target: {tabId: sender.tab.id, frameIds: [sender.frameId]},
-          func: option => (window.ImageViewerOption = option)
-        })
         chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js']})
         _sendResponse()
         return
