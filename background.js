@@ -51,9 +51,7 @@ function passOptionToTab(id, option) {
   return chrome.scripting.executeScript({
     args: [option],
     target: {tabId: id},
-    func: option => {
-      window.ImageViewerOption = option
-    }
+    func: option => (window.ImageViewerOption = option)
   })
 }
 
@@ -304,11 +302,7 @@ function addMessageHandler() {
       // init
       case 'get_options': {
         ;(async () => {
-          await chrome.scripting.executeScript({
-            args: [currOptions],
-            target: {tabId: sender.tab.id, frameIds: [sender.frameId]},
-            func: option => (window.ImageViewerOption = option)
-          })
+          await passOptionToTab(sender.tab.id, currOptions)
           _sendResponse()
         })()
         return true
@@ -319,11 +313,7 @@ function addMessageHandler() {
         return
       }
       case 'load_extractor': {
-        chrome.scripting.executeScript({
-          args: [currOptions],
-          target: {tabId: sender.tab.id, frameIds: [sender.frameId]},
-          func: option => (window.ImageViewerOption = option)
-        })
+        passOptionToTab(sender.tab.id, currOptions)
         chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js', '/scripts/extract-iframe.js']})
         _sendResponse()
         return
