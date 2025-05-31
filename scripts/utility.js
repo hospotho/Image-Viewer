@@ -69,6 +69,8 @@ window.ImageViewerUtils = (function () {
   let disableImageUnlazy = false
   let unlazyFlag = false
   let lastUnlazyTask = null
+  let lastIframeCanvasTask = null
+  let lastIframeImageTask = null
 
   // scroll state
   let enableAutoScroll = false
@@ -1495,7 +1497,22 @@ window.ImageViewerUtils = (function () {
     const minSize = Math.min(options.minWidth, options.minHeight)
     const message = {msg: 'extract_frames', minSize: minSize}
     if (options.canvasMode) message.canvasMode = true
-    const iframeImage = (await safeSendMessage(message)) || []
+
+    // overtime and resume
+    const lastTask = options.canvasMode ? lastIframeCanvasTask : lastIframeImageTask
+    const currTask = lastTask || safeSendMessage(message)
+    const ready = await waitPromiseComplete(currTask, 500)
+    if (!ready) {
+      if (!lastTask) {
+        options.canvasMode ? (lastIframeCanvasTask = currTask) : (lastIframeImageTask = currTask)
+      }
+      return []
+    }
+    if (lastTask) {
+      const task = safeSendMessage(message)
+      options.canvasMode ? (lastIframeCanvasTask = task) : (lastIframeImageTask = task)
+    }
+    const iframeImage = (await currTask) || []
     if (iframeImage.length === 0) return []
 
     // src + iframe url
