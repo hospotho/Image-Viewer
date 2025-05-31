@@ -47,10 +47,10 @@ chrome.scripting.executeScript = async function () {
   }
 }
 
-function passOptionToTab(id, option) {
+function passOptionToTab(id, option, frameIds = undefined) {
   return chrome.scripting.executeScript({
     args: [option],
-    target: {tabId: id},
+    target: {tabId: id, frameIds: frameIds},
     func: option => (window.ImageViewerOption = option)
   })
 }
@@ -313,7 +313,7 @@ function addMessageHandler() {
         return
       }
       case 'load_extractor': {
-        passOptionToTab(sender.tab.id, currOptions)
+        passOptionToTab(sender.tab.id, currOptions, [sender.frameId])
         chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js', '/scripts/extract-iframe.js']})
         _sendResponse()
         return
@@ -553,7 +553,8 @@ function createContextMenu() {
     if (!supported) return
 
     if (tab.url.startsWith('file') && tab.url.endsWith('/')) {
-      await passOptionToTab(tab.id, info.menuItemId === 'view_all_image_in_image_viewer' ? currOptionsWithoutSize : currOptions)
+      const targetOptions = info.menuItemId === 'view_all_image_in_image_viewer' ? currOptionsWithoutSize : currOptions
+      await passOptionToTab(tab.id, targetOptions)
       chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-folder.js']})
       return
     }
@@ -589,7 +590,8 @@ function addCommandHandler() {
     if (!supported) return
 
     if (tab.url.startsWith('file') && tab.url.endsWith('/')) {
-      await passOptionToTab(tab.id, command === 'open-image-viewer-without-size-filter' ? currOptionsWithoutSize : currOptions)
+      const targetOptions = command === 'open-image-viewer-without-size-filter' ? currOptionsWithoutSize : currOptions
+      await passOptionToTab(tab.id, targetOptions)
       chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-folder.js']})
       return
     }
