@@ -174,14 +174,14 @@
   }
 
   async function init() {
-    // should already init
+    // safe to send message in iframe
     if (window.top !== window.self) {
       safeSendMessage('load_extractor')
       return
     }
 
     await safeSendMessage('get_options')
-    // Chrome terminated service worker
+    // Chrome may terminated service worker
     while (!window.ImageViewerOption) {
       await new Promise(resolve => setTimeout(resolve, 50))
       await safeSendMessage('get_options')
