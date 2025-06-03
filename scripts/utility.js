@@ -1861,26 +1861,11 @@ window.ImageViewerUtils = (function () {
       const index = srcIndexMap.get(src)
       if (index !== undefined) return index
       const rawIndex = srcIndexMap.get(getRawUrl(src))
-      if (index !== undefined) return rawIndex
-      if (src.startsWith('data:')) return -1
-      const filename = getFilename(src)
-      if (filename === '') return -1
-      const filenameIndex = srcIndexMap.get(filename)
-      return filenameIndex !== undefined ? filenameIndex : -1
+      return rawIndex !== undefined ? rawIndex : -1
     }
     function updateCache(srcList) {
       for (let i = lastLength; i < srcList.length; i++) {
         srcIndexMap.set(srcList[i], i)
-        if (srcList[i].startsWith('data:')) continue
-        // skip same filename
-        const filename = getFilename(srcList[i])
-        if (filename === '') continue
-        if (repeatFilename.has(filename) || srcIndexMap.has(filename)) {
-          repeatFilename.add(filename)
-          srcIndexMap.delete(filename)
-        } else {
-          srcIndexMap.set(filename, i)
-        }
       }
       lastLength = srcList.length
     }
@@ -1888,7 +1873,6 @@ window.ImageViewerUtils = (function () {
     // assumes previous src unchange
     let lastLength = 0
     const srcIndexMap = new Map()
-    const repeatFilename = new Set()
     updateCache(srcList)
 
     return {
