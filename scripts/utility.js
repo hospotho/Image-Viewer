@@ -1856,24 +1856,30 @@ window.ImageViewerUtils = (function () {
       }
     }
   }
-  function createImageIndexSearcher(srcList) {
-    function searchIndex(src) {
-      const index = srcIndexMap.get(src)
-      if (index !== undefined) return index
+  function createImageIndexSearcher(dataList) {
+    function searchIndex(data) {
+      const {src, dom} = data
+      const domIndex = domIndexMap.get(dom)
+      if (domIndex !== undefined) return domIndex
+      const srcIndex = srcIndexMap.get(src)
+      if (srcIndex !== undefined) return srcIndex
       const rawIndex = srcIndexMap.get(getRawUrl(src))
       return rawIndex !== undefined ? rawIndex : -1
     }
-    function updateCache(srcList) {
-      for (let i = lastLength; i < srcList.length; i++) {
-        srcIndexMap.set(srcList[i], i)
+    function updateCache(dataList) {
+      for (let i = lastLength; i < dataList.length; i++) {
+        const {src, dom} = dataList[i]
+        srcIndexMap.set(src, i)
+        domIndexMap.set(dom, i)
       }
-      lastLength = srcList.length
+      lastLength = dataList.length
     }
 
     // assumes previous src unchange
     let lastLength = 0
     const srcIndexMap = new Map()
-    updateCache(srcList)
+    const domIndexMap = new Map()
+    updateCache(dataList)
 
     return {
       searchIndex: searchIndex,
@@ -1886,7 +1892,7 @@ window.ImageViewerUtils = (function () {
     let shuffled = false
     let lastCheckIndex = -1
     for (const data of newList) {
-      const index = oldSearcher.searchIndex(data.src)
+      const index = oldSearcher.searchIndex(data)
       if (index === -1 || oldList[index].dom.tagName !== data.dom.tagName) continue
       if (index > lastCheckIndex) {
         lastCheckIndex = index
@@ -1899,11 +1905,11 @@ window.ImageViewerUtils = (function () {
 
     for (let i = newList.length - 1; i >= 0; i--) {
       const data = newList[i]
-      const index = oldSearcher.searchIndex(data.src)
+      const index = oldSearcher.searchIndex(data)
       if (index !== -1) newList.splice(i, 1)
     }
   }
-  function insertionJoinImageList(newList, oldList, combinedSrcList, combinedDataList, oldSearcher, combinedSearcher) {
+  function insertionJoinImageList(newList, oldList, combinedDataList, oldSearcher, combinedSearcher) {
     let leftIndex = 0
     let rightIndex = 0
     let indexAtOldArray = -1
@@ -1915,9 +1921,9 @@ window.ImageViewerUtils = (function () {
     while (rightIndex < newList.length) {
       const right = newList[rightIndex]
 
-      combinedSearcher.updateCache(combinedSrcList.slice(0, vacancyIndex))
-      indexAtOldArray = oldSearcher.searchIndex(right.src)
-      indexAtCombinedArray = combinedSearcher.searchIndex(right.src)
+      combinedSearcher.updateCache(combinedDataList.slice(0, vacancyIndex))
+      indexAtOldArray = oldSearcher.searchIndex(right)
+      indexAtCombinedArray = combinedSearcher.searchIndex(right)
 
       // right is not a anchor
       if (indexAtOldArray === -1 || (indexAtOldArray !== -1 && indexAtCombinedArray !== -1)) {
@@ -1928,14 +1934,12 @@ window.ImageViewerUtils = (function () {
       // fill list with oldList (exclude right)
       distance = indexAtOldArray - oldArrayLastIndex
       for (let i = 0; i < distance; i++) {
-        combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
         combinedDataList[vacancyIndex++] = oldList[oldArrayLastIndex++]
       }
 
       // fill list with newList from left index to right index
       distance = rightIndex - leftIndex + 1
       for (let i = 0; i < distance; i++) {
-        combinedSrcList[vacancyIndex] = newList[leftIndex].src
         combinedDataList[vacancyIndex++] = newList[leftIndex++]
       }
       rightIndex = leftIndex
@@ -1945,7 +1949,6 @@ window.ImageViewerUtils = (function () {
     // fill list with remained oldList
     distance = oldList.length - oldArrayLastIndex
     for (let i = 0; i < distance; i++) {
-      combinedSrcList[vacancyIndex] = oldList[oldArrayLastIndex].src
       combinedDataList[vacancyIndex++] = oldList[oldArrayLastIndex++]
     }
 
@@ -1954,7 +1957,6 @@ window.ImageViewerUtils = (function () {
       // fill list with remained newList
       distance = newList.length - leftIndex
       for (let i = 0; i < distance; i++) {
-        combinedSrcList[vacancyIndex] = newList[leftIndex].src
         combinedDataList[vacancyIndex++] = newList[leftIndex++]
       }
     }
@@ -2066,11 +2068,11 @@ window.ImageViewerUtils = (function () {
       return orderedCanvasList
     },
 
-    searchImageInfoIndex: function (input, imageList) {
-      const src = input instanceof Element ? getDomUrl(input) : input
-      const srcList = imageList.map(data => data.src)
-      const searcher = createImageIndexSearcher(srcList)
-      const index = searcher.searchIndex(src)
+    // searchImageInfoIndex: function (input, imageList) {
+    searchImageInfoIndex: function (data, imageList) {
+      if (data.dom) data.src = getDomUrl(data.dom)
+      const searcher = createImageIndexSearcher(imageList)
+      const index = searcher.searchIndex(data)
       return index
     },
 
@@ -2081,16 +2083,15 @@ window.ImageViewerUtils = (function () {
 
       removeRepeatNonRaw(newList, oldList)
 
-      const combinedSrcList = new Array(newList.length + oldList.length)
       const combinedDataList = new Array(newList.length + oldList.length)
 
-      const oldSearcher = createImageIndexSearcher(oldList.map(data => data.src))
+      const oldSearcher = createImageIndexSearcher(oldList)
       const combinedSearcher = createImageIndexSearcher([])
 
       // relative order may not be preserved
       handleShuffledList(newList, oldList, oldSearcher)
 
-      insertionJoinImageList(newList, oldList, combinedSrcList, combinedDataList, oldSearcher, combinedSearcher)
+      insertionJoinImageList(newList, oldList, combinedDataList, oldSearcher, combinedSearcher)
 
       const uniqueFinalList = clearCombinedDataList(combinedDataList, newList)
       return sortImageDataList(uniqueFinalList)

@@ -39,7 +39,7 @@
   window.backupImageList = Array.from(combinedImageList)
 
   // find image index
-  options.index = ImageViewerUtils.searchImageInfoIndex(dom || srcUrl, window.backupImageList)
+  options.index = ImageViewerUtils.searchImageInfoIndex({src: srcUrl, dom: dom}, window.backupImageList)
   if (dom && options.index === -1) {
     options.index = 0
     window.backupImageList.unshift({src: srcUrl, dom: dom})
