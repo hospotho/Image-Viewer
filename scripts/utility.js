@@ -951,22 +951,50 @@ window.ImageViewerUtils = (function () {
     }
   }
   async function preloadImage(img, src, release) {
-    let success = false
     const deadline = Date.now() + 500
-    while (!success) {
-      success = await new Promise(resolve => {
-        const temp = new Image()
-        temp.onload = () => resolve(true)
-        temp.onerror = () => resolve(false)
-        temp.loading = 'eager'
-        temp.referrerPolicy = img.referrerPolicy
-        temp.src = src
-      })
+    const referrerPolicy = img.getAttribute('referrerpolicy')
+    const action = resolve => {
+      const temp = new Image()
+      temp.onload = () => resolve(true)
+      temp.onerror = () => resolve(false)
+      temp.loading = 'eager'
+      temp.referrerPolicy = referrerPolicy
+      temp.src = src
+    }
+
+    // try default setting
+    const success = await new Promise(action)
+    if (success || Date.now() > deadline) {
+      release()
+      return success
+    }
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    // try fallback
+    const fallbackSuccess = await new Promise(resolve => {
+      const temp = new Image()
+      temp.onload = () => resolve(true)
+      temp.onerror = () => resolve(false)
+      temp.loading = 'eager'
+      if (!referrerPolicy) temp.referrerPolicy = 'no-referrer'
+      temp.src = src
+    })
+    if (fallbackSuccess || Date.now() > deadline) {
+      release()
+      img.referrerPolicy = referrerPolicy ? '' : 'no-referrer'
+      return fallbackSuccess
+    }
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    // normal retry
+    let retrySuccess = false
+    while (!retrySuccess) {
+      retrySuccess = await new Promise(action)
       if (Date.now() > deadline) break
-      if (!success) await new Promise(resolve => setTimeout(resolve, 50))
+      if (!retrySuccess) await new Promise(resolve => setTimeout(resolve, 50))
     }
     release()
-    return success
+    return retrySuccess
   }
 
   // attr unlazy
