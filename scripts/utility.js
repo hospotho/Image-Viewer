@@ -1071,6 +1071,10 @@ window.ImageViewerUtils = (function () {
     if (bitSize === -1) return true
 
     const baseSize = bitSize || naturalSize
+    if (baseSize === 0) {
+      const lazySize = (await getImageBitSize(newURL)) || (await getImageRealSize(newURL))
+      return lazySize > 0
+    }
     const getSizeFunction = bitSize ? getImageBitSize : getImageRealSize
     const lazySize = await getSizeFunction(newURL)
     if (lazySize === 0 || lazySize < baseSize) return false
