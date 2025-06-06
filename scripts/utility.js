@@ -1902,7 +1902,7 @@ window.ImageViewerUtils = (function () {
       for (let i = lastLength; i < dataList.length; i++) {
         const {src, dom} = dataList[i]
         srcIndexMap.set(src, i)
-        domIndexMap.set(dom, i)
+        if (dom.tagName !== 'IFRAME') domIndexMap.set(dom, i)
       }
       lastLength = dataList.length
     }
