@@ -28,11 +28,44 @@
     document.head.appendChild(styleSheet)
   }
 
+  // internal bad image set
+  const badImageSet = new Set(['', 'about:blank'])
+
   // image size
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
   const corsHostSet = new Set()
   const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+
+  function isLazyClass(className) {
+    if (className === '') return false
+    const lower = className.toLowerCase()
+    return lower.includes('lazy') || lower.includes('loading')
+  }
+  function processLazyPlaceholder() {
+    const lazySrcList = [...document.getElementsByTagName('img')]
+      .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || image.src.endsWith('.gif') || isLazyClass(image.className)))
+      .map(image => image.currentSrc.replace(/^https?:/, location.protocol))
+    if (lazySrcList.length === 0) return
+
+    const countMap = {}
+    for (const src of lazySrcList) {
+      if (countMap[src] === undefined) {
+        countMap[src] = 1
+      } else {
+        countMap[src]++
+      }
+    }
+
+    for (const src in countMap) {
+      if (countMap[src] >= 5) {
+        console.log(`Found lazy src appear ${countMap[src]} times ${src}`)
+        srcBitSizeMap.set(src, -1)
+        srcRealSizeMap.set(src, -1)
+        badImageSet.add(src)
+      }
+    }
+  }
 
   async function fetchBitSize(url) {
     if (corsHostSet.has(url.hostname)) return 0
@@ -293,7 +326,7 @@
       return null
     }
 
-    const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank'
+    const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank' && !badImageSet.has(imageInfo[0])
     const isNewImageInfoBetter = async (newInfo, oldInfo, mouseX, mouseY) => {
       if (oldInfo === null) return true
       // data url
@@ -491,6 +524,10 @@
       : () => safeSendMessage('reset_dom')
   })()
 
+  // init bad image set
+  document.addEventListener('contextmenu', processLazyPlaceholder, {capture: true, once: true})
+
+  // right click image picker
   document.addEventListener(
     'contextmenu',
     async e => {
