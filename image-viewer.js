@@ -520,8 +520,8 @@ window.ImageViewer = (function () {
         opacity: 1;
       }
       #iv-control ul {
-        height: 50px;
-        margin: 5px 0;
+        height: 55px;
+        margin: 5px 0 0;
         list-style: none;
       }
       #iv-control span {
