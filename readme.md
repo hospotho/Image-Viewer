@@ -51,14 +51,11 @@ For additional options, right-click the extension icon on the toolbar. You can s
     <td><kbd>right-click</kbd> on the image</td>
   </tr>
   <tr>
-    <td rowspan="3">View previous/next image</td>
+    <td rowspan="2">View previous/next image</td>
     <td><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd><kbd>w</kbd><kbd>a</kbd><kbd>s</kbd><kbd>d</kbd></td>
   </tr>
   <tr>
-    <td>Scroll on the control bar</td>
-  </tr>
-  <tr>
-    <td>Scroll on the close button</td>
+    <td>Scroll on the any UI</td>
   </tr>
   <tr>
     <td>Fast navigation<br>(10 images, no throttle)</td>
