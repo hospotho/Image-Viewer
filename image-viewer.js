@@ -1738,9 +1738,15 @@ window.ImageViewer = (function () {
 
     // filter navigation call during long paint
     let moveLock = false
-    let moveLockPromise = Promise.resolve()
 
-    function moveToNode(index) {
+    async function moveToNode(index) {
+      if (moveLock) return
+
+      // wait start of next frame
+      await new Promise(resolve => requestAnimationFrame(resolve))
+      if (moveLock) return
+      moveLock = true
+
       const currentListItem = imageListNode.querySelector('li.current')
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
       const relateImage = relateListItem.querySelector('img')
@@ -1753,14 +1759,11 @@ window.ImageViewer = (function () {
       infoPopup.dispatchEvent(updateEvent)
       moveCount++
 
-      const {promise, resolve} = Promise.withResolvers()
-      requestAnimationFrame(() => {
+      // wait this frame render complete
+      await new Promise(resolve => requestAnimationFrame(resolve))
+
         throttleTimestamp = Date.now()
         moveLock = false
-        resolve()
-      })
-      moveLock = true
-      moveLockPromise = promise
     }
 
     function resetTimeout() {
@@ -1868,7 +1871,6 @@ window.ImageViewer = (function () {
 
         moveToNode(newIndex)
         lastMoveCount = moveCount
-        await moveLockPromise
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
       }
       autoNavigateFlag = 0
