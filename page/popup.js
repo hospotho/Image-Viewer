@@ -2,6 +2,23 @@
   'use strict'
 
   const rawText = `
+1.42 [2025-07-23]:
+Major Update
+Been crazy busy these days, so no time to publish a new release version.
+But waiting over 6 months is too long, so here it is
+Tons of new features, performance improvements, and bug fixes added
+1. Added local folder support, just drag a folder into the browser and use the hotkey or click the icon as usual
+2. Implemented info button and info popup, no longer a fake button
+  // You can scroll to navigate like other UI elements
+3. Added hotkey to download the current image: Ctrl + Shift + D
+4. Improved positioning of new tabs, now more like what you'd expect
+5. Changed Yandex TLD to .ru, you can use Yandex image reverse search again
+6. Tons of performance improvements, especially for large images and cases with many images
+7. Improved right-click picker, smarter and more accurate at guessing the needed image size
+8. Added support for proxy images
+9. Other bug fixes and improvements
+P.S. For the latest updates, use the Dev version on GitHub if possible
+
 1.41 [2025-02-06]:
 Stability update
 This version was originally planned as a major update, but the development of new features was delayed
@@ -36,7 +53,7 @@ Major Update
 1.38 [2024-09-09]:
 Stability update
 1. Added support for data URL images to mainstream reverse search
-2. Fixed a bug that could change the website's default layout 
+2. Fixed a bug that could change the website's default layout
 3. Fixed a bug that could toggle the website's default hotkeys (eg. page navigation)
 4. Other bug fixes and improvements
 
@@ -56,7 +73,7 @@ Major Update
 1. Added a hotkey for auto navigation (shift + arrow keys)
 2. Added ton of code to support of custom element
 3. Add sub-image check to improve image unlazy in url mode
-4. Improve and refactor iframe image extraction logic 
+4. Improve and refactor iframe image extraction logic
 5. Improve CSS and layout of the image viewer
 6. Refactor data structure for image info
 7. Other bug fixes and improvements
@@ -106,7 +123,7 @@ Functional Update
 1. Rotation now rotates around the center of the viewpoint
 2. Auto scroll hotkey will toggle auto scroll instead of just starting it
 3. Navigation with "WASD" is now supported
-4. Support fast navigation by pressing the Ctrl key at the same time to activate it  
+4. Support fast navigation by pressing the Ctrl key at the same time to activate it
 5. Support memory of last image when restarting in page mode
 6. Enhanced code quality
 7. Other bug fixes and improvements
@@ -294,7 +311,7 @@ Large Update
 
 1.2  [2022-07-01]:
 1. Add simpleUnlazyImage() to unlazy image before getting image list
-2. Change CSS to pin image viewer counter 
+2. Change CSS to pin image viewer counter
 
 1.1  [2022-07-01]:
 1. Support mirror effect
