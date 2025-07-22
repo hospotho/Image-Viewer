@@ -484,13 +484,14 @@ window.ImageViewer = (function () {
         cursor: move;
         width: 100%;
         height: 100%;
-        display: flex;
+        display: none;
         justify-content: center;
         align-items: center;
         overflow: hidden;
         translate: 100% 0;
       }
       #iv-image-list li.current {
+        display: flex;
         translate: 0 0;
       }
       img {
