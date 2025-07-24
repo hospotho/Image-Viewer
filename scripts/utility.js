@@ -1181,7 +1181,10 @@ window.ImageViewerUtils = (function () {
       .map(([url, size]) => [url, size ? Number(size.slice(0, -1)) : 1])
       .sort((a, b) => b[1] - a[1])
       .map(([url]) => cachedGetUrl(url).href)
-    pendingBadImageMap.set(srcsetList[0], srcsetList.slice(1))
+    pendingBadImageMap.set(
+      srcsetList[0],
+      srcsetList.slice(1).filter(url => url !== srcsetList[0])
+    )
     return srcsetList[0]
   }
   function getAttrUrl(value) {
