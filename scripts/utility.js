@@ -1034,7 +1034,7 @@ window.ImageViewerUtils = (function () {
     }
   }
   function getImageBitSize(src) {
-    if (!src || src === 'about:blank' || src.startsWith('data')) return 0
+    if (src.startsWith('data')) return 0
 
     const cache = srcBitSizeMap.get(src)
     if (cache !== undefined) return cache
@@ -1096,7 +1096,7 @@ window.ImageViewerUtils = (function () {
   }
   async function isNewUrlBetter(currentSrc, bitSize, naturalSize, newURL) {
     // current is placeholder
-    if (bitSize === -1) return true
+    if (badImageSet.has(currentSrc)) return true
 
     const baseSize = bitSize || naturalSize
     if (baseSize === 0) {
