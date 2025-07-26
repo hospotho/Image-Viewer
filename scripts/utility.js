@@ -272,6 +272,13 @@ window.ImageViewerUtils = (function () {
       }
 
       const url = cachedGetUrl(src, document.baseURI)
+
+      // invalid URL
+      if (url === null) {
+        rawUrlCache.set(src, src)
+        return src
+      }
+
       // proxy URL
       const proxyMatch = url.pathname.slice(1).match(urlRegex)
       if (proxyMatch) {
