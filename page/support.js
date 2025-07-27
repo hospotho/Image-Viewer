@@ -24,4 +24,7 @@
     el.textContent = message
     if (el.value !== '') el.value = message
   }
+
+  const manifest = chrome.runtime.getManifest()
+  document.getElementById('version').textContent += manifest.version
 })()
