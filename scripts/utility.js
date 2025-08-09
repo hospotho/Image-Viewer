@@ -1294,7 +1294,7 @@ window.ImageViewerUtils = (function () {
       }
 
       // check url and size
-      const lazy = img.src === '' || img.naturalWidth === 0 || img.naturalHeight === 0
+      const lazy = badImageSet.has(img.currentSrc) || img.naturalWidth === 0 || img.naturalHeight === 0
       if (lazy) {
         imgWithAttrList.push([img, attrList])
         continue
