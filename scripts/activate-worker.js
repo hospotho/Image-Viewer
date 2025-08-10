@@ -70,8 +70,6 @@
       }
     }
   }
-  if (document.readyState === 'interactive') processLazyPlaceholder()
-  else document.addEventListener('DOMContentLoaded', processLazyPlaceholder)
 
   async function fetchBitSize(url) {
     if (corsHostSet.has(url.hostname)) return 0
@@ -529,6 +527,10 @@
         }
       : () => safeSendMessage('reset_dom')
   })()
+
+  // update bad image set when page loaded
+  if (document.readyState === 'interactive' || document.readyState === 'complete') processLazyPlaceholder()
+  else document.addEventListener('DOMContentLoaded', processLazyPlaceholder)
 
   // right click image picker
   document.addEventListener(
