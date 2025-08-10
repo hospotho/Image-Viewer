@@ -1158,17 +1158,20 @@ window.ImageViewerUtils = (function () {
           img.removeAttribute(realAttrName)
           badImageSet.add(currentSrc)
           pendingBadImageMap.get(newUrl)?.forEach(url => badImageSet.add(url))
-          continue
+          // reset current url and size
+          break
         }
-        // place action to callback
+
+        // handle overtime img
         console.log(`Image preload overtime: ${newUrl}`)
-        preloading
-          .then(success => success && updateImageSrc(img, newUrl))
-          .then(() => {
-            img.removeAttribute(realAttrName)
-            badImageSet.add(currentSrc)
-            pendingBadImageMap.get(newUrl)?.forEach(url => badImageSet.add(url))
-          })
+        preloading.then(async success => {
+          if (!success) return
+          // wait current check complete
+          while (img.hasAttribute('iv-checking')) {
+            await new Promise(resolve => setTimeout(resolve, 100))
+          }
+          checkImageAttr(img, [{name, url}])
+        })
       }
     }
     if (successList.length) {
