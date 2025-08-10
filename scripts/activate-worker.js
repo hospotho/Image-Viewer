@@ -28,15 +28,15 @@
     document.head.appendChild(styleSheet)
   }
 
-  // internal bad image set
-  window.badImageSet = new Set([])
-  const badImageSet = window.badImageSet
-
   // image size
   const srcBitSizeMap = new Map()
   const srcRealSizeMap = new Map()
   const corsHostSet = new Set()
   const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+
+  // init bad image set
+  window.badImageSet = new Set(['', 'about:blank'])
+  const badImageSet = window.badImageSet
 
   function isLazyClass(className) {
     if (className === '') return false
@@ -44,9 +44,8 @@
     return lower.includes('lazy') || lower.includes('loading')
   }
   function processLazyPlaceholder() {
-    if (badImageSet.size > 0) return
-    badImageSet.add('')
-    badImageSet.add('about:blank')
+    if (badImageSet.has(location.href)) return
+    badImageSet.add(location.href)
 
     const lazySrcList = [...document.getElementsByTagName('img')]
       .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || image.src.endsWith('.gif') || isLazyClass(image.className)))
@@ -71,6 +70,8 @@
       }
     }
   }
+  if (document.readyState === 'interactive') processLazyPlaceholder()
+  else document.addEventListener('DOMContentLoaded', processLazyPlaceholder)
 
   async function fetchBitSize(url) {
     if (corsHostSet.has(url.hostname)) return 0
@@ -529,9 +530,6 @@
       : () => safeSendMessage('reset_dom')
   })()
 
-  // init bad image set
-  document.addEventListener('contextmenu', processLazyPlaceholder, {capture: true, once: true})
-
   // right click image picker
   document.addEventListener(
     'contextmenu',
@@ -540,6 +538,10 @@
 
       // release priority and allow contextmenu work properly
       await new Promise(resolve => setTimeout(resolve, 0))
+
+      // check if bad image set valid
+      processLazyPlaceholder()
+
       const imageNodeInfo = await getImageNodeInfo(e.clientX, e.clientY)
       if (imageNodeInfo === null) {
         markingDom(null)

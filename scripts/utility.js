@@ -1375,9 +1375,8 @@ window.ImageViewerUtils = (function () {
 
   // before unlazy
   function processLazyPlaceholder() {
-    if (badImageSet.size > 0) return
-    badImageSet.add('')
-    badImageSet.add('about:blank')
+    if (badImageSet.has(location.href)) return
+    badImageSet.add(location.href)
 
     const lazySrcList = [...document.getElementsByTagName('img')]
       .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || image.src.endsWith('.gif') || isLazyClass(image.className)))
