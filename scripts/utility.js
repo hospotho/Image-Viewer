@@ -58,7 +58,7 @@ window.ImageViewerUtils = (function () {
   // image cache
   window.backupImageList = []
   const pseudoImageDataList = []
-  const badImageSet = new Set(['', 'about:blank'])
+  const badImageSet = window.badImageSet
   const pendingBadImageMap = new Map()
   const corsHostSet = new Set()
   const srcBitSizeMap = new Map()
@@ -1375,6 +1375,10 @@ window.ImageViewerUtils = (function () {
 
   // before unlazy
   function processLazyPlaceholder() {
+    if (badImageSet.size > 0) return
+    badImageSet.add('')
+    badImageSet.add('about:blank')
+
     const lazySrcList = [...document.getElementsByTagName('img')]
       .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || image.src.endsWith('.gif') || isLazyClass(image.className)))
       .map(image => image.currentSrc.replace(/^https?:/, protocol))

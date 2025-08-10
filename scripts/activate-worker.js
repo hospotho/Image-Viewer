@@ -29,7 +29,8 @@
   }
 
   // internal bad image set
-  const badImageSet = new Set(['', 'about:blank'])
+  window.badImageSet = new Set([])
+  const badImageSet = window.badImageSet
 
   // image size
   const srcBitSizeMap = new Map()
@@ -43,6 +44,10 @@
     return lower.includes('lazy') || lower.includes('loading')
   }
   function processLazyPlaceholder() {
+    if (badImageSet.size > 0) return
+    badImageSet.add('')
+    badImageSet.add('about:blank')
+
     const lazySrcList = [...document.getElementsByTagName('img')]
       .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || image.src.endsWith('.gif') || isLazyClass(image.className)))
       .map(image => image.currentSrc.replace(/^https?:/, location.protocol))
