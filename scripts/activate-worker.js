@@ -434,36 +434,20 @@
   })()
 
   function deepGetElementFromPoint(x, y) {
-    function createTravelTask(root) {
-      // lazy evaluation
-      return () => {
-        const queue = []
-        const elementList = root.elementsFromPoint(x, y)
-        for (const element of elementList) {
-          if (visited.has(element) || visited.has(element.shadowRoot)) continue
-          if (element.shadowRoot) {
-            visited.add(element.shadowRoot)
-            queue.push(createTravelTask(element.shadowRoot))
-          } else {
-            visited.add(element)
-            queue.push(element)
-          }
+    function travelRoot(root, depth) {
+      const elementList = root.elementsFromPoint(x, y)
+      for (let i = elementList.length - 1 - depth; i >= 0; i--) {
+        const element = elementList[i]
+        if (element.shadowRoot) {
+          travelRoot(element.shadowRoot, elementList.length - i)
+        } else {
+          result.unshift(element)
         }
-        return queue
       }
     }
 
     const result = []
-    const visited = new Set()
-    const queue = [createTravelTask(document)]
-    while (queue.length) {
-      const current = queue.shift()
-      if (typeof current === 'function') {
-        queue.unshift(...current())
-      } else {
-        result.push(current)
-      }
-    }
+    travelRoot(document, 0)
     return result
   }
   const getOrderedElement = (function () {
