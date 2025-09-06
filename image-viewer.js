@@ -393,11 +393,6 @@ window.ImageViewer = (function () {
     if (clearIndex === 0 && options.index === undefined) return 0
 
     const targetSrc = clearSrc || lastSrc
-    const current = shadowRoot.querySelector('#iv-image-list li.current')
-    if (!targetSrc && current) {
-      return [...shadowRoot.querySelectorAll('#iv-image-list li')].indexOf(current)
-    }
-
     const rawUrl = getRawUrl(targetSrc)
     const srcList = imageDataList.map(data => data.src)
     const srcIndex = srcList.findIndex(src => src === targetSrc || src === rawUrl)
@@ -410,10 +405,8 @@ window.ImageViewer = (function () {
     return Math.min(clearIndex, imageDataList.length - 1)
   }
   function getBaseIndex(options) {
-    const baseIndex = clearIndex !== -1 ? clearIndex : options.index
-    if (baseIndex !== undefined && baseIndex !== -1) return baseIndex
-    const restoreIndex = getRestoreIndex(options)
-    return restoreIndex !== -1 ? restoreIndex : 0
+    if (clearIndex !== -1) return getRestoreIndex(options)
+    return Math.min(options.index || 0, imageDataList.length - 1)
   }
 
   //==========html&style==========
@@ -1763,8 +1756,8 @@ window.ImageViewer = (function () {
       // wait this frame render complete
       await new Promise(resolve => requestAnimationFrame(resolve))
 
-        throttleTimestamp = Date.now()
-        moveLock = false
+      throttleTimestamp = Date.now()
+      moveLock = false
     }
 
     function resetTimeout() {
