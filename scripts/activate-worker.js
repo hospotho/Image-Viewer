@@ -7,7 +7,11 @@
     }
   }
 
-  // init
+  // init bad image set
+  window.badImageSet = new Set(['', 'about:blank'])
+  const badImageSet = window.badImageSet
+
+  // init hover check
   const options = window.ImageViewerOption
   const domainList = []
   const regexList = []
@@ -33,10 +37,6 @@
   const srcRealSizeMap = new Map()
   const corsHostSet = new Set()
   const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
-
-  // init bad image set
-  window.badImageSet = new Set(['', 'about:blank'])
-  const badImageSet = window.badImageSet
 
   function isLazyClass(className) {
     if (className === '') return false
