@@ -406,7 +406,8 @@ window.ImageViewer = (function () {
   }
   function getBaseIndex(options) {
     if (clearIndex !== -1) return getRestoreIndex(options)
-    return Math.min(options.index || 0, imageDataList.length - 1)
+    if (options.index === undefined || options.index === -1) return 0
+    return Math.min(options.index, imageDataList.length - 1)
   }
 
   //==========html&style==========
