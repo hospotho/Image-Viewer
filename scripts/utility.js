@@ -56,6 +56,7 @@ window.ImageViewerUtils = (function () {
   const origin = location.origin + '/'
 
   // image cache
+  window.badImageSet ??= new Set(['', 'about:blank'])
   window.backupImageList = []
   const pseudoImageDataList = []
   const badImageSet = window.badImageSet

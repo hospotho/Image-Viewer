@@ -8,7 +8,7 @@
   }
 
   // init bad image set
-  window.badImageSet = new Set(['', 'about:blank'])
+  window.badImageSet ??= new Set(['', 'about:blank'])
   const badImageSet = window.badImageSet
 
   // init hover check
