@@ -1577,7 +1577,7 @@ window.ImageViewer = (function () {
       moveX = moveX * options.zoomRatio ** deltaZoom
       moveY = moveY * options.zoomRatio ** deltaZoom
       // rotate value must be reset every time after updating the transform matrix
-      rotate = (mirror * options.rotateDeg * rotateCount) % 360
+      rotate = mirror * options.rotateDeg * rotateCount
       img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
     }
     function updateRotate(img, deltaRotate, rotateCount) {
@@ -1590,7 +1590,7 @@ window.ImageViewer = (function () {
       moveX = radial * Math.cos(newRadian)
       moveY = radial * Math.sin(newRadian)
       // rotate value must be reset every time after updating the transform matrix
-      rotate = (mirror * options.rotateDeg * rotateCount) % 360
+      rotate = mirror * options.rotateDeg * rotateCount
       img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
     }
     function updateDisplacement(img, deltaX, deltaY, rotateCount) {
@@ -1598,7 +1598,7 @@ window.ImageViewer = (function () {
       const mirror = Math.sign(scaleX) * Math.sign(scaleY)
       moveX += deltaX
       moveY += deltaY
-      rotate = (mirror * options.rotateDeg * rotateCount) % 360
+      rotate = mirror * options.rotateDeg * rotateCount
       img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
     }
 
@@ -1638,7 +1638,7 @@ window.ImageViewer = (function () {
         if (!e.altKey && !e.getModifierState('AltGraph')) return
         let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
         const mirror = Math.sign(scaleX) * Math.sign(scaleY)
-        rotate = (mirror * options.rotateDeg * rotateCount) % 360
+        rotate = mirror * options.rotateDeg * rotateCount
         rotateCount *= -1
         img.style.transform = VtoM(-scaleX, scaleY, rotate, -moveX, moveY)
       })
