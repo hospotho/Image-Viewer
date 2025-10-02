@@ -253,6 +253,30 @@ window.ImageViewerUtils = (function () {
       return rawFilename
     }
   })()
+  const cachedGetProxySrc = (function () {
+    const proxyUrlCache = new Map()
+    return (url, regex) => {
+      const cache = proxyUrlCache.get(url.href)
+      if (cache !== undefined) return cache
+
+      const pathProxyMatch = url.pathname.slice(1).match(regex)
+      if (pathProxyMatch) {
+        const proxy = pathProxyMatch[0] + url.search
+        proxyUrlCache.set(url.href, proxy)
+        return proxy
+      }
+
+      const searchProxyMatch = url.search.match(regex)
+      if (searchProxyMatch) {
+        const subUrl = searchProxyMatch[0]
+        const proxy = subUrl.includes('?') || subUrl.indexOf('&') === -1 ? subUrl : subUrl.slice(0, subUrl.indexOf('&'))
+        proxyUrlCache.set(url.href, proxy)
+        return proxy
+      }
+
+      return null
+    }
+  })()
   const getRawUrl = (function () {
     const rawUrlCache = new Map()
     return src => {
@@ -280,9 +304,9 @@ window.ImageViewerUtils = (function () {
       }
 
       // proxy URL
-      const proxyMatch = url.pathname.slice(1).match(urlRegex)
-      if (proxyMatch) {
-        const rawUrl = getRawUrl(proxyMatch[0] + url.search)
+      const proxy = cachedGetProxySrc(url, urlRegex)
+      if (proxy) {
+        const rawUrl = getRawUrl(proxy)
         rawUrlCache.set(src, rawUrl)
         return rawUrl
       }
@@ -329,9 +353,9 @@ window.ImageViewerUtils = (function () {
       }
 
       // proxy URL
-      const proxyMatch = url.pathname.slice(1).match(urlRegex)
-      if (proxyMatch) {
-        const pathId = getPathIdentifier(proxyMatch[0] + url.search)
+      const proxy = cachedGetProxySrc(url, urlRegex)
+      if (proxy) {
+        const pathId = getPathIdentifier(proxy)
         pathIdCache.set(src, pathId)
         return pathId
       }
@@ -1204,8 +1228,8 @@ window.ImageViewerUtils = (function () {
   }
   function getAttrUrl(value) {
     const url = cachedGetUrl(value)
-    const subMatch = url.pathname.slice(1).match(/https?:\/\/\S+/g)
-    return subMatch === null ? url.href : cachedGetUrl(subMatch[0] + url.search).href
+    const proxy = cachedGetProxySrc(url, /https?:\/\/\S+/g)
+    return proxy || url.href
   }
   function checkAttrUrlPath(url, src, attrList) {
     const pathname = url.pathname
