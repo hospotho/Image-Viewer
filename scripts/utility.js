@@ -277,15 +277,13 @@ window.ImageViewerUtils = (function () {
       return null
     }
   })()
-  const getRawUrl = (function () {
-    const rawUrlCache = new Map()
-    return src => {
-      if (src.startsWith('data') || src.startsWith('blob')) return src
-
-      const cache = rawUrlCache.get(src)
+  const cachedDeepDecode = (function () {
+    const decodeCache = new Map()
+    return _src => {
+      const cache = decodeCache.get(_src)
       if (cache !== undefined) return cache
 
-      // always check decode
+      let src = _src
       while (true) {
         try {
           const decoded = decodeURIComponent(src)
@@ -295,6 +293,21 @@ window.ImageViewerUtils = (function () {
           break
         }
       }
+
+      decodeCache.set(_src, src)
+      return src
+    }
+  })()
+  const getRawUrl = (function () {
+    const rawUrlCache = new Map()
+    return src => {
+      if (src.startsWith('data') || src.startsWith('blob')) return src
+
+      const cache = rawUrlCache.get(src)
+      if (cache !== undefined) return cache
+
+      // always check decode
+      src = cachedDeepDecode(src)
 
       // invalid URL
       const url = cachedGetUrl(src, document.baseURI)
@@ -344,6 +357,9 @@ window.ImageViewerUtils = (function () {
 
       const cache = pathIdCache.get(src)
       if (cache !== undefined) return cache
+
+      // always check decode
+      src = cachedDeepDecode(src)
 
       // invalid URL
       const url = cachedGetUrl(src)
@@ -1227,7 +1243,8 @@ window.ImageViewerUtils = (function () {
     return srcsetList[0]
   }
   function getAttrUrl(value) {
-    const url = cachedGetUrl(value)
+    const src = cachedDeepDecode(value)
+    const url = cachedGetUrl(src)
     const proxy = cachedGetProxySrc(url, /https?:\/\/\S+/g)
     return proxy || url.href
   }
