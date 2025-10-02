@@ -823,16 +823,16 @@ window.ImageViewer = (function () {
     const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
     const current = shadowRoot.querySelector('#iv-image-list li.current')
     const base = current || liList[getBaseIndex(options)]
+    const baseImg = base.firstChild
     base.classList.add('current')
 
-    const baseImg = base.firstChild
-    const targetSrc = clearSrc || lastSrc
-    const src = baseImg.src
-    if (lastTransform && (targetSrc === src || getFilename(targetSrc) === getFilename(src))) {
+    const targetDom = clearDom || lastDom
+    const baseIndex = liList.indexOf(base)
+    if (lastTransform && targetDom === imageDataList[baseIndex]?.dom) {
       baseImg.style.transition = 'none'
       applyTransform(baseImg, ...lastTransform)
+      lastTransform = null
     }
-    lastTransform = null
 
     const counterTotal = shadowRoot.querySelector('#iv-counter-total')
     const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
@@ -2067,6 +2067,7 @@ window.ImageViewer = (function () {
     shadowRoot.querySelector('#iv-counter-current').textContent = newIndex + 1
     shadowRoot.querySelector('#iv-info-width').textContent = relateImage.naturalWidth
     shadowRoot.querySelector('#iv-info-height').textContent = relateImage.naturalHeight
+    if (lastTransform) applyTransform(relateImage, ...lastTransform)
 
     clearIndex = -1
     clearDom = null
@@ -2074,6 +2075,7 @@ window.ImageViewer = (function () {
     lastIndex = -1
     lastDom = null
     lastSrc = ''
+    lastTransform = null
   }
 
   function executeCommand(command) {
