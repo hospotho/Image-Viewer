@@ -11,7 +11,7 @@ window.ImageViewer = (function () {
   let clearIndex = -1
   let lastUrl = location.href
   let lastSrc = ''
-  let lastTransform = ''
+  let lastTransform = null
 
   const keydownHandlerList = []
 
@@ -31,7 +31,7 @@ window.ImageViewer = (function () {
       img.setAttribute('data-iframe-src', dom.src)
       img.referrerPolicy = 'no-referrer'
     }
-    img.style.transform = 'matrix(1,0,0,1,0,0)'
+    applyTransform(img, 1, 1, 0, 0, 0)
     img.src = data.src
 
     return li
@@ -46,7 +46,7 @@ window.ImageViewer = (function () {
     clearIndex = -1
     const current = shadowRoot.querySelector('li.current img')
     lastSrc = current?.src || ''
-    lastTransform = current?.style?.transform || ''
+    lastTransform = current ? getTransform(current) : null
     keydownHandlerList.length = 0
 
     const viewer = shadowRoot.querySelector('#image-viewer')
@@ -55,48 +55,16 @@ window.ImageViewer = (function () {
     viewer.style.opacity = '0'
   }
 
-  function VtoM(scaleX, scaleY, rotate, moveX, moveY) {
-    const m = [0, 0, 0, 0, 0, 0]
-    const deg = Math.PI / 180
-    m[0] = scaleX * Math.cos(rotate * deg)
-    m[1] = scaleY * Math.sin(rotate * deg)
-    m[2] = -scaleX * Math.sin(rotate * deg)
-    m[3] = scaleY * Math.cos(rotate * deg)
-    m[4] = moveX
-    m[5] = moveY
-    return `matrix(${m})`
+  function applyTransform(img, scaleX, scaleY, rotate, moveX, moveY) {
+    img.style.scale = `${scaleX} ${scaleY}`
+    img.style.rotate = `${rotate}deg`
+    img.style.translate = `${moveX}px ${moveY}px`
   }
-  function MtoV(str) {
-    const match = str.match(/matrix\([\d.+-e, ]+\)/)
-    if (!match) return [1, 1, 0, 0, 0]
-    const m = match[0].slice(7, -1).split(',').map(Number)
-    // https://www.w3.org/TR/css-transforms-1/#decomposing-a-2d-matrix
-    let row0x = m[0]
-    let row0y = m[2]
-    let row1x = m[1]
-    let row1y = m[3]
-    const moveX = m[4]
-    const moveY = m[5]
-    let scaleX = Math.sqrt(row0x * row0x + row0y * row0y)
-    let scaleY = Math.sqrt(row1x * row1x + row1y * row1y)
-    const determinant = row0x * row1y - row0y * row1x
-    if (determinant < 0) {
-      scaleX = -scaleX
-    }
-    if (determinant === 0) {
-      scaleX = 1
-      scaleY = 1
-    }
-    if (scaleX) {
-      row0x *= 1 / scaleX
-      row0y *= 1 / scaleX
-    }
-    if (scaleY) {
-      row1x *= 1 / scaleY
-      row1y *= 1 / scaleY
-    }
-    const rotate = Math.atan2(row0y, row0x)
-    return [scaleX, scaleY, (rotate / Math.PI) * 180, moveX, moveY]
+  function getTransform(img) {
+    const scale = img.style.scale.split(' ')
+    const rotate = img.style.rotate.replace('deg', '')
+    const moveX = img.style.translate.replaceAll('px', '').split(' ')
+    return [Number(scale[0]) || 1, Number(scale[1]) || Math.abs(Number(scale[0])) || 1, Number(rotate) || 0, Number(moveX[0]) || 0, Number(moveX[1]) || 0]
   }
 
   const getRawUrl = (function () {
@@ -852,9 +820,9 @@ window.ImageViewer = (function () {
     const src = baseImg.src
     if (lastTransform && (targetSrc === src || getFilename(targetSrc) === getFilename(src))) {
       baseImg.style.transition = 'none'
-      baseImg.style.transform = lastTransform
+      applyTransform(baseImg, ...lastTransform)
     }
-    lastTransform = ''
+    lastTransform = null
 
     const counterTotal = shadowRoot.querySelector('#iv-counter-total')
     const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
@@ -1568,46 +1536,41 @@ window.ImageViewer = (function () {
 
   function addImageEvent(options) {
     // transform function
-    function updateZoom(img, deltaZoom, zoomCount, rotateCount) {
-      let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
-      const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+    function updateZoom(img, deltaZoom, zoomCount) {
+      let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
       scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
       scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
       // recalculate displacement for zooming at the center of the viewpoint
       moveX = moveX * options.zoomRatio ** deltaZoom
       moveY = moveY * options.zoomRatio ** deltaZoom
-      // rotate value must be reset every time after updating the transform matrix
-      rotate = mirror * options.rotateDeg * rotateCount
-      img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
+      applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
     }
     function updateRotate(img, deltaRotate, rotateCount) {
-      let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
+      let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
       const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+      rotate = mirror * options.rotateDeg * rotateCount
       // recalculate displacement for rotation around the center of the viewpoint
       const radial = Math.sqrt(moveX ** 2 + moveY ** 2)
       const deltaRadian = ((options.rotateDeg * deltaRotate) / 180) * Math.PI
       const newRadian = Math.atan2(moveY, moveX) + deltaRadian
       moveX = radial * Math.cos(newRadian)
       moveY = radial * Math.sin(newRadian)
-      // rotate value must be reset every time after updating the transform matrix
-      rotate = mirror * options.rotateDeg * rotateCount
-      img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
+      applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
     }
-    function updateDisplacement(img, deltaX, deltaY, rotateCount) {
-      let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
-      const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+    function updateDisplacement(img, deltaX, deltaY) {
+      let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
       moveX += deltaX
       moveY += deltaY
-      rotate = mirror * options.rotateDeg * rotateCount
-      img.style.transform = VtoM(scaleX, scaleY, rotate, moveX, moveY)
+      applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
     }
 
     function addTransformHandler(li) {
       const img = li.firstChild
+      let mirror = false
       let zoomCount = 0
       let rotateCount = 0
       if (li.classList.contains('current')) {
-        const [scaleX, , rotate, ,] = MtoV(img.style.transform)
+        const [scaleX, , rotate, ,] = getTransform(img)
         zoomCount = Math.round(Math.log(scaleX) / Math.log(options.zoomRatio))
         rotateCount = rotate / options.rotateDeg
       }
@@ -1624,11 +1587,10 @@ window.ImageViewer = (function () {
         if (!e.altKey && !e.getModifierState('AltGraph')) {
           const deltaZoom = e.deltaY > 0 ? -1 : 1
           zoomCount += deltaZoom
-          updateZoom(img, deltaZoom, zoomCount, rotateCount)
+          updateZoom(img, deltaZoom, zoomCount)
         } else {
-          // mirror === 1 ? (e.deltaY > 0 ? rotateCount++ : rotateCount--) : e.deltaY > 0 ? rotateCount-- : rotateCount++
-          const deltaRotate = (e.deltaY > 0) * 2 - 1
-          rotateCount += deltaRotate
+          const deltaRotate = e.deltaY > 0 ? 1 : -1
+          rotateCount += mirror ? -deltaRotate : deltaRotate
           updateRotate(img, deltaRotate, rotateCount)
         }
       })
@@ -1636,11 +1598,9 @@ window.ImageViewer = (function () {
       // mirror-reflect
       li.addEventListener('click', e => {
         if (!e.altKey && !e.getModifierState('AltGraph')) return
-        let [scaleX, scaleY, rotate, moveX, moveY] = MtoV(img.style.transform)
-        const mirror = Math.sign(scaleX) * Math.sign(scaleY)
-        rotate = mirror * options.rotateDeg * rotateCount
-        rotateCount *= -1
-        img.style.transform = VtoM(-scaleX, scaleY, rotate, -moveX, moveY)
+        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
+        mirror = !mirror
+        applyTransform(img, -scaleX, scaleY, -rotate, -moveX, moveY)
       })
 
       // dragging
@@ -1673,7 +1633,7 @@ window.ImageViewer = (function () {
       const reset = () => {
         zoomCount = 0
         rotateCount = 0
-        img.style.transform = 'matrix(1,0,0,1,0,0)'
+        applyTransform(img, 1, 1, 0, 0, 0)
       }
       li.addEventListener('dblclick', reset)
       // custom event
@@ -1686,18 +1646,18 @@ window.ImageViewer = (function () {
           case 'zoom': {
             const deltaZoom = action === 1 ? -1 : 1
             zoomCount += deltaZoom
-            updateZoom(img, deltaZoom, zoomCount, rotateCount)
+            updateZoom(img, deltaZoom, zoomCount)
             break
           }
           case 'rotate': {
             const deltaRotate = action === 3 ? 1 : -1
-            rotateCount += deltaRotate
+            rotateCount += mirror ? -deltaRotate : deltaRotate
             updateRotate(img, deltaRotate, rotateCount)
             break
           }
           case 'move': {
-            const displacement = 50 * ((action % 2) * 2 - 1)
-            action > 1 ? updateDisplacement(img, displacement, 0, rotateCount) : updateDisplacement(img, 0, displacement, rotateCount)
+            const displacement = action % 2 === 1 ? 50 : -50
+            action > 1 ? updateDisplacement(img, displacement, 0) : updateDisplacement(img, 0, displacement)
             break
           }
           default:
@@ -1898,7 +1858,7 @@ window.ImageViewer = (function () {
         const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
         clearSrc = current.src
         clearIndex = counterCurrent.textContent - 1
-        lastTransform = current.style.transform
+        lastTransform = getTransform(current)
 
         imageDataList.length = 0
         const imageListNode = shadowRoot.querySelector('#iv-image-list')
