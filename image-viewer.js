@@ -927,12 +927,16 @@ window.ImageViewer = (function () {
       const keyMap = {
         ArrowUp: 0,
         w: 0,
+        W: 0,
         ArrowDown: 1,
         s: 1,
+        S: 1,
         ArrowLeft: 2,
         a: 2,
+        A: 2,
         ArrowRight: 3,
-        d: 3
+        d: 3,
+        D: 3
       }
       let lastHotkeyTime = 0
       keydownHandlerList.push(e => {
