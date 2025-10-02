@@ -9,7 +9,6 @@ window.ImageViewer = (function () {
 
   let clearSrc = ''
   let clearIndex = -1
-  let lastUrl = location.href
   let lastSrc = ''
   let lastTransform = null
 
@@ -2034,8 +2033,8 @@ window.ImageViewer = (function () {
     if (!neededToRestore) return
 
     // reset after url change
-    if (lastUrl !== location.href) {
-      lastUrl = location.href
+    if (lastHref !== location.href) {
+      lastHref = location.href
       clearSrc = ''
       clearIndex = -1
       lastSrc = ''
