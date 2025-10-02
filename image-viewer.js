@@ -7,8 +7,11 @@ window.ImageViewer = (function () {
   let imageDataList = []
   const imageFailureCountMap = new Map()
 
-  let clearSrc = ''
   let clearIndex = -1
+  let clearDom = null
+  let clearSrc = ''
+  let lastIndex = -1
+  let lastDom = null
   let lastSrc = ''
   let lastTransform = null
 
@@ -20,8 +23,11 @@ window.ImageViewer = (function () {
     if (!root) return
 
     document.body.classList.remove('iv-attached')
-    clearSrc = ''
     clearIndex = -1
+    clearDom = null
+    clearSrc = ''
+    lastIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
+    lastDom = imageDataList[lastIndex]?.dom || null
     const current = shadowRoot.querySelector('li.current img')
     lastSrc = current?.src || ''
     lastTransform = current ? getTransform(current) : null
@@ -358,6 +364,11 @@ window.ImageViewer = (function () {
 
   function getRestoreIndex(options) {
     if (clearIndex === 0 && options.index === undefined) return 0
+
+    const targetDom = clearDom || lastDom
+    const domList = imageDataList.map(data => data.dom)
+    const domIndex = domList.findIndex(dom => dom === targetDom)
+    if (domIndex !== -1) return domIndex
 
     const targetSrc = clearSrc || lastSrc
     const rawUrl = getRawUrl(targetSrc)
@@ -1858,9 +1869,9 @@ window.ImageViewer = (function () {
       const invalidImageList = imageDataList.length > newList.length || shadowRoot.querySelectorAll('img').length > imageDataList.length
       if (invalidImageList) {
         const current = shadowRoot.querySelector('li.current img')
-        const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+        clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
+        clearDom = imageDataList[clearIndex]?.dom || null
         clearSrc = current.src
-        clearIndex = counterCurrent.textContent - 1
         lastTransform = getTransform(current)
 
         imageDataList.length = 0
@@ -1869,9 +1880,10 @@ window.ImageViewer = (function () {
         buildImageList(newList, options)
         return true
       } else {
-        clearSrc = ''
         // new first image inserted
         clearIndex = clearIndex === 0 ? 0 : -1
+        clearDom = null
+        clearSrc = ''
         return false
       }
     }
@@ -2029,20 +2041,19 @@ window.ImageViewer = (function () {
   }
 
   function restoreIndex(options) {
-    const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastSrc !== '')
+    const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastIndex !== -1)
     if (!neededToRestore) return
 
-    // reset after url change
-    if (lastHref !== location.href) {
+    // url change or canvas mode
+    if (lastHref !== location.href || options.canvasMode) {
       lastHref = location.href
-      clearSrc = ''
       clearIndex = -1
+      clearDom = null
+      clearSrc = ''
+      lastIndex = -1
+      lastDom = null
       lastSrc = ''
-      return
-    }
-    // canvas mode
-    if (options.canvasMode) {
-      lastSrc = ''
+      lastTransform = null
       return
     }
 
@@ -2057,8 +2068,11 @@ window.ImageViewer = (function () {
     shadowRoot.querySelector('#iv-info-width').textContent = relateImage.naturalWidth
     shadowRoot.querySelector('#iv-info-height').textContent = relateImage.naturalHeight
 
-    clearSrc = ''
     clearIndex = -1
+    clearDom = null
+    clearSrc = ''
+    lastIndex = -1
+    lastDom = null
     lastSrc = ''
   }
 
