@@ -272,9 +272,8 @@ window.ImageViewerUtils = (function () {
         }
       }
 
-      const url = cachedGetUrl(src, document.baseURI)
-
       // invalid URL
+      const url = cachedGetUrl(src, document.baseURI)
       if (url === null) {
         rawUrlCache.set(src, src)
         return src
@@ -322,6 +321,7 @@ window.ImageViewerUtils = (function () {
       const cache = pathIdCache.get(src)
       if (cache !== undefined) return cache
 
+      // invalid URL
       const url = cachedGetUrl(src)
       if (url === null) {
         pathIdCache.set(src, null)
@@ -335,12 +335,16 @@ window.ImageViewerUtils = (function () {
         pathIdCache.set(src, pathId)
         return pathId
       }
+
+      // extension dot check
       const dotIndex = url.pathname.lastIndexOf('.')
       const pathname = dotIndex === -1 ? url.pathname : url.pathname.slice(0, dotIndex)
       if (url.search === '') {
         pathIdCache.set(src, pathname)
         return pathname
       }
+
+      // longest query check
       const query = url.search
         .split('&')
         .filter(attr => attr.split('=').at(-1).length > 6)
