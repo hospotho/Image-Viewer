@@ -363,7 +363,8 @@ window.ImageViewer = (function () {
   })()
 
   function getRestoreIndex(options) {
-    if (clearIndex === 0 && options.index === undefined) return 0
+    // page mode + first image instead
+    if (options.index === undefined && clearIndex === 0) return 0
 
     const targetDom = clearDom || lastDom
     const domList = imageDataList.map(data => data.dom)
@@ -383,9 +384,10 @@ window.ImageViewer = (function () {
     return Math.min(clearIndex, imageDataList.length - 1)
   }
   function getBaseIndex(options) {
-    if (clearIndex !== -1) return getRestoreIndex(options)
-    if (options.index === undefined || options.index === -1) return 0
-    return Math.min(options.index, imageDataList.length - 1)
+    // page mode
+    if (options.index === undefined) return lastIndex !== -1 ? getRestoreIndex(options) : 0
+    // image mode
+    return options.index === -1 ? 0 : Math.min(options.index, imageDataList.length - 1)
   }
 
   //==========html&style==========
