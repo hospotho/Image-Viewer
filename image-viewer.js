@@ -16,27 +16,6 @@ window.ImageViewer = (function () {
   const keydownHandlerList = []
 
   //==========utility==========
-  function buildImageNode(data) {
-    const li = document.createElement('li')
-    const img = document.createElement('img')
-    li.appendChild(img)
-
-    const dom = data.dom
-    if (dom.alt) img.alt = dom.alt
-    if (dom.crossOrigin) img.crossOrigin = dom.crossOrigin
-    // chrome bug ref: https://issues.chromium.org/issues/327707429
-    // if (dom.referrerPolicy) img.referrerPolicy = dom.referrerPolicy
-    if (dom.getAttribute('referrerpolicy')) img.referrerPolicy = dom.getAttribute('referrerpolicy')
-    if (dom.tagName === 'IFRAME') {
-      img.setAttribute('data-iframe-src', dom.src)
-      img.referrerPolicy = 'no-referrer'
-    }
-    applyTransform(img, 1, 1, 0, 0, 0)
-    img.src = data.src
-
-    return li
-  }
-
   function closeImageViewer() {
     const root = shadowRoot.host
     if (!root) return
@@ -65,6 +44,27 @@ window.ImageViewer = (function () {
     const rotate = img.style.rotate.replace('deg', '')
     const moveX = img.style.translate.replaceAll('px', '').split(' ')
     return [Number(scale[0]) || 1, Number(scale[1]) || Math.abs(Number(scale[0])) || 1, Number(rotate) || 0, Number(moveX[0]) || 0, Number(moveX[1]) || 0]
+  }
+
+  function buildImageNode(data) {
+    const li = document.createElement('li')
+    const img = document.createElement('img')
+    li.appendChild(img)
+
+    const dom = data.dom
+    if (dom.alt) img.alt = dom.alt
+    if (dom.crossOrigin) img.crossOrigin = dom.crossOrigin
+    // chrome bug ref: https://issues.chromium.org/issues/327707429
+    // if (dom.referrerPolicy) img.referrerPolicy = dom.referrerPolicy
+    if (dom.getAttribute('referrerpolicy')) img.referrerPolicy = dom.getAttribute('referrerpolicy')
+    if (dom.tagName === 'IFRAME') {
+      img.setAttribute('data-iframe-src', dom.src)
+      img.referrerPolicy = 'no-referrer'
+    }
+    applyTransform(img, 1, 1, 0, 0, 0)
+    img.src = data.src
+
+    return li
   }
 
   const getRawUrl = (function () {
