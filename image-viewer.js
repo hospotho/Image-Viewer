@@ -76,11 +76,26 @@ window.ImageViewer = (function () {
     const getRawUrl = window.ImageViewerUtils?.getRawUrl
     if (typeof getRawUrl === 'function') return getRawUrl
 
+    const cachedGetUrl = (function () {
+      const srcUrlCache = new Map()
+      return src => {
+        const cache = srcUrlCache.get(src)
+        if (cache !== undefined) return cache
+        try {
+          const url = new URL(src, document.baseURI)
+          srcUrlCache.set(src, url)
+          return url
+        } catch (error) {
+          srcUrlCache.set(src, null)
+          return null
+        }
+      }
+    })()
     const cachedExtensionMatch = (function () {
-      const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
+      const extensionRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))/i
       const matchCache = new Map()
       return str => {
-        if (str.startsWith('data') || str.startsWith('blob')) return null
+        if (str.startsWith('data')) return null
 
         const cache = matchCache.get(str)
         if (cache !== undefined) return cache
@@ -93,33 +108,37 @@ window.ImageViewer = (function () {
     const cachedUrlSearchMatch = (function () {
       const urlSearchCache = new Map()
       return src => {
-        try {
-          // protocol-relative URL
-          const url = new URL(src, document.baseURI)
-          if (!url.search) return null
+        if (src.startsWith('data')) return null
 
-          const baseURI = url.origin + url.pathname
-          const searchList = url.search
-            .slice(1)
-            .split('&')
-            .filter(t => cachedExtensionMatch(t))
-            .join('&')
-          const imgSearch = searchList ? '?' + searchList : ''
-          const rawSearch = baseURI + imgSearch
+        const cache = urlSearchCache.get(src)
+        if (cache !== undefined) return cache
 
-          const extensionMatch = cachedExtensionMatch(rawSearch)
-          urlSearchCache.set(src, extensionMatch)
-          return extensionMatch
-        } catch (error) {
+        // protocol-relative URL
+        const url = cachedGetUrl(src)
+        if (url === null) {
           urlSearchCache.set(src, null)
           return null
         }
+        if (!url.search) return null
+
+        const baseURI = url.origin + url.pathname
+        const searchList = url.search
+          .slice(1)
+          .split('&')
+          .filter(t => cachedExtensionMatch(t))
+          .join('&')
+        const imgSearch = searchList ? '?' + searchList : ''
+        const rawSearch = baseURI + imgSearch
+
+        const extensionMatch = cachedExtensionMatch(rawSearch)
+        urlSearchCache.set(src, extensionMatch)
+        return extensionMatch
       }
     })()
-    const cachedGetFilename = (function () {
+    const cachedGetRawFilename = (function () {
       const filenameCache = new Map()
       return str => {
-        if (str.startsWith('data') || str.startsWith('blob')) return null
+        if (str.startsWith('data')) return null
 
         const cache = filenameCache.get(str)
         if (cache !== undefined) return cache
@@ -127,6 +146,51 @@ window.ImageViewer = (function () {
         const rawFilename = str.replace(/[-_]\d{3,4}x(?:\d{3,4})?\./, '.')
         filenameCache.set(str, rawFilename)
         return rawFilename
+      }
+    })()
+    const cachedGetProxySrc = (function () {
+      const proxyUrlCache = new Map()
+      return (url, regex) => {
+        const cache = proxyUrlCache.get(url.href)
+        if (cache !== undefined) return cache
+
+        const pathProxyMatch = url.pathname.slice(1).match(regex)
+        if (pathProxyMatch) {
+          const proxy = pathProxyMatch[0] + url.search
+          proxyUrlCache.set(url.href, proxy)
+          return proxy
+        }
+
+        const searchProxyMatch = url.search.match(regex)
+        if (searchProxyMatch) {
+          const subUrl = searchProxyMatch[0]
+          const proxy = subUrl.includes('?') || subUrl.indexOf('&') === -1 ? subUrl : subUrl.slice(0, subUrl.indexOf('&'))
+          proxyUrlCache.set(url.href, proxy)
+          return proxy
+        }
+
+        return null
+      }
+    })()
+    const cachedDeepDecode = (function () {
+      const decodeCache = new Map()
+      return _src => {
+        const cache = decodeCache.get(_src)
+        if (cache !== undefined) return cache
+
+        let src = _src
+        while (true) {
+          try {
+            const decoded = decodeURIComponent(src)
+            if (src === decoded) break
+            src = decoded
+          } catch (e) {
+            break
+          }
+        }
+
+        decodeCache.set(_src, src)
+        return src
       }
     })()
 
@@ -137,7 +201,25 @@ window.ImageViewer = (function () {
       const cache = rawUrlCache.get(src)
       if (cache !== undefined) return cache
 
-      const rawFilenameUrl = cachedGetFilename(src)
+      // always check decode
+      src = cachedDeepDecode(src)
+
+      // invalid URL
+      const url = cachedGetUrl(src, document.baseURI)
+      if (url === null) {
+        rawUrlCache.set(src, src)
+        return src
+      }
+
+      // proxy URL
+      const proxy = cachedGetProxySrc(url, /(?:^| |https?:\/)\/\S+/g)
+      if (proxy) {
+        const rawUrl = getRawUrl(proxy)
+        rawUrlCache.set(src, rawUrl)
+        return rawUrl
+      }
+
+      const rawFilenameUrl = cachedGetRawFilename(src)
       if (rawFilenameUrl !== src) {
         rawUrlCache.set(src, rawFilenameUrl)
         return rawFilenameUrl
@@ -150,11 +232,13 @@ window.ImageViewer = (function () {
         return rawSearchUrl
       }
 
-      const extensionMatch = cachedExtensionMatch(src)
+      const fullPath = url.pathname + url.search
+      const extensionMatch = cachedExtensionMatch(fullPath)
       const rawExtensionUrl = extensionMatch?.[1]
-      if (rawExtensionUrl && rawExtensionUrl !== src) {
-        rawUrlCache.set(src, rawExtensionUrl)
-        return rawExtensionUrl
+      if (rawExtensionUrl && rawExtensionUrl !== fullPath) {
+        const rawExtensionFullUrl = url.origin + rawExtensionUrl
+        rawUrlCache.set(src, rawExtensionFullUrl)
+        return rawExtensionFullUrl
       }
 
       rawUrlCache.set(src, src)
