@@ -2161,7 +2161,6 @@ window.ImageViewerUtils = (function () {
       return orderedCanvasList
     },
 
-    // searchImageInfoIndex: function (input, imageList) {
     searchImageInfoIndex: function (data, imageList) {
       if (data.dom) data.src = getDomUrl(data.dom)
       const searcher = createImageIndexSearcher(imageList)

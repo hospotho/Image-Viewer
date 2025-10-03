@@ -85,8 +85,7 @@ window.ImageViewerExtractor = (function () {
         imageList.push(attrUrl)
         continue
       }
-      const nodeStyle = window.getComputedStyle(node)
-      const backgroundImage = nodeStyle.backgroundImage
+      const backgroundImage = window.getComputedStyle(node).backgroundImage
       if (backgroundImage === 'none') {
         node.setAttribute('no-bg', '')
         continue
