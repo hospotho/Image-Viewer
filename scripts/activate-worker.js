@@ -171,15 +171,8 @@
       const e2ActualPositionX = e2Rect.x - parentPosition.x
       const e2ActualPositionY = e2Rect.y - parentPosition.y
 
-      if (e1ActualPositionY < e2ActualPositionY) {
-        return -1
-      } else if (e1ActualPositionY > e2ActualPositionY) {
-        return 1
-      } else if (e1ActualPositionX < e2ActualPositionX) {
-        return -1
-      } else {
-        return 1
-      }
+      if (e1ActualPositionY !== e2ActualPositionY) return e1ActualPositionY < e2ActualPositionY ? -1 : 1
+      return e1ActualPositionX < e2ActualPositionX ? -1 : 1
     }
     function getTopElement(e1, e2) {
       // e1 -1, e2 1, same 0
