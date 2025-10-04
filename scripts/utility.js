@@ -431,7 +431,7 @@ window.ImageViewerUtils = (function () {
     const stack = [target]
     const visited = []
     while (stack.length) {
-      const current = stack.pop()
+      const current = stack.shift()
       // check shadowRoot
       for (const node of current.querySelectorAll('*:not([no-shadow])')) {
         if (node.shadowRoot) {
