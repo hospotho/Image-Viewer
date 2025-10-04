@@ -1418,7 +1418,7 @@ window.ImageViewer = (function () {
         let lastTop = NaN
         let lastLeft = NaN
         const drawBorder = () => {
-          if (endFlag) return
+          if (endFlag) return border.remove()
           const {top, left, width, height} = imgNode.getBoundingClientRect()
           if (top !== lastTop || left !== lastLeft) {
             lastTop = top
@@ -1429,11 +1429,13 @@ window.ImageViewer = (function () {
           }
           requestAnimationFrame(drawBorder)
         }
-        drawBorder()
-        setTimeout(() => {
-          endFlag = true
-          border.remove()
-        }, 1000)
+
+        const {promise, resolve} = Promise.withResolvers()
+        requestAnimationFrame(resolve)
+        promise.then(() => {
+          drawBorder()
+          setTimeout(() => (endFlag = true), 1000)
+        })
       }
       function getMainContainer() {
         const windowWidth = document.documentElement.clientWidth
