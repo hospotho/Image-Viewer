@@ -2193,9 +2193,11 @@ window.ImageViewerUtils = (function () {
     getOrderedImageList: async function (options, retryCount = 3) {
       if (retryCount === 0) return []
 
-      await startUnlazy(options)
+      const unlazyPromise = startUnlazy(options)
+      const iframePromise = getIframeImageList(options)
+      await Promise.all([unlazyPromise, iframePromise])
 
-      const iframeImageList = await getIframeImageList(options)
+      const iframeImageList = await iframePromise
       const imageList = getImageList(options)
 
       const uniqueImageList = iframeImageList.concat(imageList)
