@@ -1539,19 +1539,19 @@ window.ImageViewer = (function () {
         const closestAnchor = imgNode.closest('a')
         if (closestAnchor) return closestAnchor
 
-        const siblingAnchor = [...imgNode.parentElement.children].find(node => node?.tagName === 'A')
+        const siblingAnchor = [...imgNode.parentNode.children].find(node => node?.tagName === 'A')
         if (siblingAnchor) return siblingAnchor
 
-        if (imgNode.parentElement.tagName !== 'DIV') {
-          const treeAnchorList = imgNode.parentElement.getElementsByTagName('a')
+        if (imgNode.parentNode.tagName !== 'DIV') {
+          const treeAnchorList = imgNode.parentNode.querySelectorAll('a')
           if (treeAnchorList.length === 1) return treeAnchorList[0]
         }
 
-        const containerAnchorList = imgNode.closest('div')?.getElementsByTagName('a')
+        const containerAnchorList = imgNode.closest('div')?.querySelectorAll('a')
         if (containerAnchorList?.length === 1) return containerAnchorList[0]
 
         const {width: rootWidth, height: rootHeight, top: rootTop, left: rootLeft} = imgNode.getBoundingClientRect()
-        let el = imgNode.parentElement
+        let el = imgNode.parentNode
         while (el) {
           const anchorList = el.querySelectorAll(':scope > * > a')
           for (const anchor of anchorList) {
@@ -1559,7 +1559,7 @@ window.ImageViewer = (function () {
             const include = top <= rootTop && left <= rootLeft && top + height >= rootTop + rootHeight && left + width >= rootLeft + rootWidth
             if (include) return anchor
           }
-          el = el.parentElement
+          el = el.parentNode || el.host
         }
 
         return null
