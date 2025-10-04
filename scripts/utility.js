@@ -508,6 +508,73 @@ window.ImageViewerUtils = (function () {
       return collection
     }
   })()
+  const getNodeId = (function () {
+    const nodeIdMap = new WeakMap()
+    let nodeIdCounter = 0
+    return node => {
+      const cache = nodeIdMap.get(node)
+      if (cache !== undefined) return cache
+      nodeIdMap.set(node, nodeIdCounter)
+      return nodeIdCounter++
+    }
+  })()
+  const cachedCompareRootPosition = (function () {
+    function compareRootPosition(a, b) {
+      const aRootList = cachedGetNodeRootList(a)
+      const bRootList = cachedGetNodeRootList(b)
+      const minLength = Math.min(aRootList.length, bRootList.length)
+      for (let i = 1; i <= minLength; i++) {
+        const topA = aRootList[aRootList.length - i]
+        const topB = bRootList[bRootList.length - i]
+        if (topA !== topB) {
+          return topA.compareDocumentPosition(topB) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+        }
+      }
+      // must have same root, should never happen
+      return 0
+    }
+
+    const rootPositionCache = new Map()
+    return (a, b) => {
+      const aId = getNodeId(a)
+      const bId = getNodeId(b)
+      const cache = rootPositionCache.get((aId << 16) + bId)
+      if (cache !== undefined) return cache
+      const reverseCache = rootPositionCache.get((bId << 16) + aId)
+      if (reverseCache !== undefined) return reverseCache * -1
+      const result = compareRootPosition(a, b)
+      rootPositionCache.set((aId << 16) + bId, result)
+      return result
+    }
+  })()
+  const cachedCompareNodePosition = (function () {
+    function compareNodePosition(a, b) {
+      // iframe image
+      if (a === b) return 0
+      const comparison = a.compareDocumentPosition(b)
+      if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
+        return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+      }
+      if (cachedGetRootNode(a, true) === document && cachedGetRootNode(b, true) === document) {
+        return cachedCompareRootPosition(a, b)
+      }
+      // node not attached to document
+      return 0
+    }
+
+    const nodePositionCache = new Map()
+    return (a, b) => {
+      const aId = getNodeId(a)
+      const bId = getNodeId(b)
+      const cache = nodePositionCache.get((aId << 16) + bId)
+      if (cache !== undefined) return cache
+      const reverseCache = nodePositionCache.get((bId << 16) + aId)
+      if (reverseCache !== undefined) return reverseCache * -1
+      const result = compareNodePosition(a, b)
+      nodePositionCache.set((aId << 16) + bId, result)
+      return result
+    }
+  })()
 
   // wrapper size
   function calculateRefSize(widthList, heightList, domWidth, domHeight) {
@@ -1874,33 +1941,6 @@ window.ImageViewerUtils = (function () {
   }
 
   // sort image list
-  function compareRootPosition(a, b) {
-    const aRootList = cachedGetNodeRootList(a)
-    const bRootList = cachedGetNodeRootList(b)
-    const minLength = Math.min(aRootList.length, bRootList.length)
-    for (let i = 1; i <= minLength; i++) {
-      const topA = aRootList[aRootList.length - i]
-      const topB = bRootList[bRootList.length - i]
-      if (topA !== topB) {
-        return topA.compareDocumentPosition(topB) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
-      }
-    }
-    // must have same root, should never happen
-    return 0
-  }
-  function compareNodePosition(a, b) {
-    // iframe image
-    if (a === b) return 0
-    const comparison = a.compareDocumentPosition(b)
-    if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
-      return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
-    }
-    if (cachedGetRootNode(a, true) === document && cachedGetRootNode(b, true) === document) {
-      return compareRootPosition(a, b)
-    }
-    // node not attached to document
-    return 0
-  }
   function sortImageDataList(dataList) {
     if (dataList.length < 2) return dataList
 
@@ -1917,13 +1957,13 @@ window.ImageViewerUtils = (function () {
         if (rightStart === length) continue
 
         // already sorted
-        if (compareNodePosition(dataList[rightStart - 1].dom, dataList[rightStart].dom) <= 0) continue
+        if (cachedCompareNodePosition(dataList[rightStart - 1].dom, dataList[rightStart].dom) <= 0) continue
 
         // insertion sort
         let leftIndex = leftStart
         let rightIndex = rightStart
         while (leftIndex < rightIndex && rightIndex < rightEnd) {
-          if (compareNodePosition(dataList[leftIndex].dom, dataList[rightIndex].dom) <= 0) {
+          if (cachedCompareNodePosition(dataList[leftIndex].dom, dataList[rightIndex].dom) <= 0) {
             leftIndex++
           } else {
             // shift element
