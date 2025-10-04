@@ -479,23 +479,23 @@ window.ImageViewerUtils = (function () {
     const rootNodeMap = new WeakMap()
     const composedRootNodeMap = new WeakMap()
     return (node, composed = false) => {
-      const cache = composed ? composedRootNodeMap.get(node) : rootNodeMap.get(node)
+      const cache = composed ? composedRootNodeMap.get(node.parentNode) : rootNodeMap.get(node.parentNode)
       if (cache !== undefined) return cache
 
       if (composed) {
         const root = node.getRootNode({composed: true})
-        composedRootNodeMap.set(node, root)
+        composedRootNodeMap.set(node.parentNode, root)
         return root
       }
       const root = node.getRootNode()
-      rootNodeMap.set(node, root)
+      rootNodeMap.set(node.parentNode, root)
       return root
     }
   })()
   const cachedGetNodeRootList = (function () {
     const nodeRootListMap = new WeakMap()
     return node => {
-      const cache = nodeRootListMap.get(node)
+      const cache = nodeRootListMap.get(node.parentNode)
       if (cache !== undefined) return cache
 
       const collection = [node]
@@ -504,7 +504,7 @@ window.ImageViewerUtils = (function () {
         collection.push(root.host)
         root = cachedGetRootNode(root.host)
       }
-      nodeRootListMap.set(node, collection)
+      nodeRootListMap.set(node.parentNode, collection)
       return collection
     }
   })()
