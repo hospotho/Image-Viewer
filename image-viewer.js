@@ -1551,12 +1551,14 @@ window.ImageViewer = (function () {
         if (containerAnchorList?.length === 1) return containerAnchorList[0]
 
         const {width: rootWidth, height: rootHeight, top: rootTop, left: rootLeft} = imgNode.getBoundingClientRect()
+        const middleX = rootLeft + rootWidth / 2
+        const middleY = rootTop + rootHeight / 2
         let el = imgNode.parentNode
         while (el) {
           const anchorList = el.querySelectorAll(':scope > * > a')
           for (const anchor of anchorList) {
             const {width, height, top, left} = anchor.getBoundingClientRect()
-            const include = top <= rootTop && left <= rootLeft && top + height >= rootTop + rootHeight && left + width >= rootLeft + rootWidth
+            const include = top < middleY && middleY < top + height && left < middleX && middleX < left + width
             if (include) return anchor
           }
           el = el.parentNode || el.host
