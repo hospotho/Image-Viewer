@@ -475,6 +475,39 @@ window.ImageViewerUtils = (function () {
       return container || document.documentElement
     }
   })()
+  const cachedGetRootNode = (function () {
+    const rootNodeMap = new WeakMap()
+    const composedRootNodeMap = new WeakMap()
+    return (node, composed = false) => {
+      const cache = composed ? composedRootNodeMap.get(node) : rootNodeMap.get(node)
+      if (cache !== undefined) return cache
+
+      if (composed) {
+        const root = node.getRootNode({composed: true})
+        composedRootNodeMap.set(node, root)
+        return root
+      }
+      const root = node.getRootNode()
+      rootNodeMap.set(node, root)
+      return root
+    }
+  })()
+  const cachedGetNodeRootList = (function () {
+    const nodeRootListMap = new WeakMap()
+    return node => {
+      const cache = nodeRootListMap.get(node)
+      if (cache !== undefined) return cache
+
+      const collection = [node]
+      let root = cachedGetRootNode(node)
+      while (root !== document) {
+        collection.push(root.host)
+        root = cachedGetRootNode(root.host)
+      }
+      nodeRootListMap.set(node, collection)
+      return collection
+    }
+  })()
 
   // wrapper size
   function calculateRefSize(widthList, heightList, domWidth, domHeight) {
@@ -602,7 +635,7 @@ window.ImageViewerUtils = (function () {
   }
   function getWrapperList(wrapper) {
     if (!wrapper) return []
-    const rootNode = wrapper.getRootNode()
+    const rootNode = cachedGetRootNode(wrapper)
     if (rootNode !== document) return deepQuerySelectorAll(document.body, rootNode.host.tagName)
     const path = '*>'.repeat(getElementDepth(wrapper))
     const classList = '.' + [...wrapper.classList].map(CSS.escape).join(', .')
@@ -1841,22 +1874,6 @@ window.ImageViewerUtils = (function () {
   }
 
   // sort image list
-  const cachedGetNodeRootList = (function () {
-    const nodeRootListMap = new WeakMap()
-    return node => {
-      const cache = nodeRootListMap.get(node)
-      if (cache !== undefined) return cache
-
-      const collection = [node]
-      let root = node.getRootNode()
-      while (root !== document) {
-        collection.push(root.host)
-        root = root.host.getRootNode()
-      }
-      nodeRootListMap.set(node, collection)
-      return collection
-    }
-  })()
   function compareRootPosition(a, b) {
     const aRootList = cachedGetNodeRootList(a)
     const bRootList = cachedGetNodeRootList(b)
@@ -1878,7 +1895,7 @@ window.ImageViewerUtils = (function () {
     if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
       return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
     }
-    if (a.getRootNode({composed: true}) === document && b.getRootNode({composed: true}) === document) {
+    if (cachedGetRootNode(a, true) === document && cachedGetRootNode(b, true) === document) {
       return compareRootPosition(a, b)
     }
     // node not attached to document
@@ -2092,7 +2109,7 @@ window.ImageViewerUtils = (function () {
 
   return {
     updateWrapperSize: function (dom, domSize, options) {
-      if (!dom || dom.getRootNode({composed: true}) !== document) return
+      if (!dom || cachedGetRootNode(dom, true) !== document) return
 
       const tagName = dom.tagName
       const [domWidth, domHeight] = domSize
