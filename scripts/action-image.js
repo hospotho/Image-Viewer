@@ -50,17 +50,9 @@
   ImageViewer(window.backupImageList, options)
 
   // auto update
-  let initComplete = false
-  const initPeriod = 200
-
   let updateRelease = () => {}
   let updatePeriod = 500
   const multiplier = 1.2
-
-  const initObserver = new MutationObserver(mutationList => {
-    initComplete = mutationList.every(mutation => mutation.addedNodes.length === 0)
-  })
-  initObserver.observe(document.body, {childList: true, subtree: true})
 
   const container = ImageViewerUtils.getMainContainer()
   const updateObserver = new MutationObserver(async () => {
@@ -88,13 +80,6 @@
   unlazyObserver.observe(document.body, {childList: true, subtree: true, attributeFilter: ['iv-checking']})
 
   while (document.body.classList.contains('iv-attached')) {
-    // wait website init
-    while (!initComplete) {
-      initComplete = true
-      await new Promise(resolve => setTimeout(resolve, initPeriod))
-    }
-    if (!document.body.classList.contains('iv-attached')) return
-
     // update image viewer
     if (dom?.tagName === 'IMG') {
       ImageViewerUtils.updateWrapperSize(dom, domSize, options)
@@ -122,7 +107,6 @@
       await new Promise(resolve => setTimeout(resolve, 100))
     }
   }
-  initObserver.disconnect()
   updateObserver.disconnect()
   unlazyObserver.disconnect()
 })()

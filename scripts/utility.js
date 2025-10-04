@@ -1489,9 +1489,7 @@ window.ImageViewerUtils = (function () {
     while (!allComplete) {
       const [complete, taskList] = unlazyImage(minWidth, minHeight)
       asyncList.push(...taskList)
-      if (complete) {
-        allComplete = await isPromiseComplete(Promise.all(asyncList))
-      }
+      allComplete = complete && (await waitPromiseComplete(Promise.all(asyncList), 0))
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
@@ -1515,8 +1513,6 @@ window.ImageViewerUtils = (function () {
       console.log('First unlazy complete')
       clearWindowBackup(options.svgFilter)
     }
-
-    enableAutoScroll ? autoScroll() : scrollUnlazy()
   }
 
   // before unlazy
@@ -1623,6 +1619,7 @@ window.ImageViewerUtils = (function () {
     if (unlazyCompleted) {
       const clone = structuredClone(options)
       lastUnlazyTask = simpleUnlazyImage(clone)
+      enableAutoScroll ? autoScroll() : scrollUnlazy()
     }
     const timeout = new Promise(resolve => setTimeout(resolve, 500))
     const race = Promise.race([lastUnlazyTask, timeout])
