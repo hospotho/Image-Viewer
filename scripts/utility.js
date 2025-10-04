@@ -1841,18 +1841,25 @@ window.ImageViewerUtils = (function () {
   }
 
   // sort image list
-  function getNodeRootList(node) {
-    const collection = [node]
-    let root = node.getRootNode()
-    while (root !== document) {
-      collection.push(root.host)
-      root = root.host.getRootNode()
+  const cachedGetNodeRootList = (function () {
+    const nodeRootListMap = new WeakMap()
+    return node => {
+      const cache = nodeRootListMap.get(node)
+      if (cache !== undefined) return cache
+
+      const collection = [node]
+      let root = node.getRootNode()
+      while (root !== document) {
+        collection.push(root.host)
+        root = root.host.getRootNode()
+      }
+      nodeRootListMap.set(node, collection)
+      return collection
     }
-    return collection
-  }
+  })()
   function compareRootPosition(a, b) {
-    const aRootList = getNodeRootList(a)
-    const bRootList = getNodeRootList(b)
+    const aRootList = cachedGetNodeRootList(a)
+    const bRootList = cachedGetNodeRootList(b)
     const minLength = Math.min(aRootList.length, bRootList.length)
     for (let i = 1; i <= minLength; i++) {
       const topA = aRootList[aRootList.length - i]
