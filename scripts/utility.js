@@ -54,6 +54,8 @@ window.ImageViewerUtils = (function () {
   const urlRegex = /(?:^| |https?:\/)\/\S+/g
   const protocol = location.protocol
   const origin = location.origin + '/'
+  const symbol = Symbol('check')
+  const signal = Promise.resolve(symbol)
 
   // image cache
   window.badImageSet ??= new Set(['', 'about:blank'])
@@ -416,8 +418,6 @@ window.ImageViewerUtils = (function () {
     return lower.includes('lazy') || lower.includes('loading')
   }
   function isPromiseComplete(promise) {
-    const symbol = Symbol('check')
-    const signal = new Promise(resolve => setTimeout(resolve, 0, symbol))
     return Promise.race([promise, signal]).then(result => result !== symbol)
   }
   async function waitPromiseComplete(promise, maxWait) {
