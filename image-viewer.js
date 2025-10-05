@@ -1876,10 +1876,14 @@ window.ImageViewer = (function () {
       ArrowUp: 0,
       w: 0,
       a: 0,
+      W: 0,
+      A: 0,
       ArrowRight: 1,
       ArrowDown: 1,
       s: 1,
-      d: 1
+      d: 1,
+      S: 1,
+      D: 1
     }
     const normalNavigation = e => {
       if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
