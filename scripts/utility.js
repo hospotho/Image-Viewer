@@ -50,7 +50,30 @@ window.ImageViewerUtils = (function () {
   })()
 
   // attr unlazy
-  const attrWhiteList = new Set(['class', 'style', 'src', 'srcset', 'alt', 'title', 'loading', 'crossorigin', 'width', 'height', 'max-width', 'max-height', 'sizes', 'onload', 'onerror', 'data-error'])
+  const attrWhiteList = new Set([
+    'class',
+    'style',
+    'src',
+    'srcset',
+    'alt',
+    'title',
+    'loading',
+    'crossorigin',
+    'width',
+    'height',
+    'max-width',
+    'max-height',
+    'iv-width',
+    'iv-height',
+    'sizes',
+    'onload',
+    'onerror',
+    'data-error',
+    'iv-image',
+    'iv-bg',
+    'no-bg',
+    'no-shadow'
+  ])
   const urlRegex = /(?:^| |https?:\/)\/\S+/g
   const protocol = location.protocol
   const origin = location.origin + '/'
