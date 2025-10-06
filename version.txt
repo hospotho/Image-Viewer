@@ -1,3 +1,12 @@
+1.43 [2025-10-06]:
+Performance and Stability update
+1. Improved image collection logic, reduce initial delay.
+2. Improved caching to reduce lag when the number of images increases.
+3. Improved logic for restoring image index and transformation when restarting the viewer.
+4. Rewrote image transformation code to improve performance and fix a rare bug that caused strange animations.
+5. Fixed a bug that sometimes skipped the largest version of an image during the unlazy.
+6. Other bug fixes and improvements.
+
 1.42 [2025-07-23]:
 Major Update
 Been crazy busy these days, so no time to publish a new release version.
