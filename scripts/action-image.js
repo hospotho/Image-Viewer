@@ -54,30 +54,11 @@
   let updatePeriod = 500
   const multiplier = 1.2
 
-  const container = ImageViewerUtils.getMainContainer()
   const updateObserver = new MutationObserver(async () => {
-    let currentScrollX = container.scrollLeft
-    let currentScrollY = container.scrollTop
-    await new Promise(resolve => setTimeout(resolve, 50))
-    // check scroll complete
-    while (currentScrollX !== container.scrollLeft || currentScrollY !== container.scrollTop) {
-      currentScrollX = container.scrollLeft
-      currentScrollY = container.scrollTop
-      await new Promise(resolve => setTimeout(resolve, 200))
-    }
-    updatePeriod = 500
+    updatePeriod = 100
     updateRelease()
   })
   updateObserver.observe(document.body, {childList: true, subtree: true})
-
-  const unlazyObserver = new MutationObserver(mutationList => {
-    const unlazyUpdate = mutationList.some(mutation => mutation.attributeName === 'iv-checking' && !mutation.target.hasAttribute('iv-checking'))
-    if (unlazyUpdate || !document.body.classList.contains('iv-attached')) {
-      updatePeriod = 500
-      updateRelease()
-    }
-  })
-  unlazyObserver.observe(document.body, {childList: true, subtree: true, attributeFilter: ['iv-checking']})
 
   while (document.body.classList.contains('iv-attached')) {
     // update image viewer
@@ -108,5 +89,4 @@
     }
   }
   updateObserver.disconnect()
-  unlazyObserver.disconnect()
 })()
