@@ -378,7 +378,7 @@ window.ImageViewer = (function () {
     let lastNearest = null
     while (true) {
       const imgNode = searchImgNode(img)
-      if (imgNode !== null || repeatCount > 5 || overtime) {
+      if (imgNode || repeatCount > 5 || overtime) {
         newNodeObserver.disconnect()
         return imgNode
       }
@@ -395,13 +395,13 @@ window.ImageViewer = (function () {
     // current pos
     const img = shadowRoot.querySelector('li.current img')
     let imgNode = searchImgNode(img)
-    if (imgNode !== null) return imgNode
+    if (imgNode) return imgNode
 
     // ratio pos
     container.scrollTo(container.scrollLeft, targetTop)
     await new Promise(resolve => setTimeout(resolve, 100))
     imgNode = searchImgNode(img)
-    if (imgNode !== null) return imgNode
+    if (imgNode) return imgNode
 
     // deep search
     imgNode = await deepSearchImgNode(img)
@@ -1476,7 +1476,7 @@ window.ImageViewer = (function () {
         document.body.style.scrollBehavior = 'auto'
 
         const imgNode = await getImgNode(container, targetTop)
-        if (imgNode === null) {
+        if (!imgNode) {
           console.log('Image node not found')
           return
         }
