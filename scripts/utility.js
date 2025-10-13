@@ -1034,7 +1034,7 @@ window.ImageViewerUtils = (function () {
 
         // check scroll complete
         await new Promise(resolve => setTimeout(resolve, 500))
-        if (lastY === container.scrollTop && isImageViewerExist()) {
+        if (lastY === container.scrollTop) {
           count++
         } else {
           count = 0
@@ -1376,8 +1376,8 @@ window.ImageViewerUtils = (function () {
   function checkAttrUrlPath(url, src, attrList) {
     const pathname = url.pathname
     const search = url.search
-    if (pathname.match(/[-_]thumb(?=nail)?\./)) {
-      const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
+    const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
+    if (pathname !== nonThumbnailPath) {
       const nonThumbnail = src.replace(pathname, nonThumbnailPath)
       attrList.push({name: 'non thumbnail path', url: nonThumbnail})
     }
