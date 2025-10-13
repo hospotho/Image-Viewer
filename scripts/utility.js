@@ -1682,28 +1682,6 @@ window.ImageViewerUtils = (function () {
   }
 
   // get iframe images
-  async function getCanvasList(options) {
-    const minWidth = options.minWidth || 0
-    const minHeight = options.minHeight || 0
-    const asyncList = []
-
-    const canvasList = deepQuerySelectorAll(document.body, 'canvas')
-    for (const canvas of canvasList) {
-      const {width, height} = canvas.getBoundingClientRect()
-      if (width < minWidth && height < minHeight) continue
-      const promise = new Promise(resolve => {
-        canvas.toBlob(blob => {
-          if (blob.size === 0) resolve(null)
-          const url = URL.createObjectURL(blob)
-          resolve({src: url, dom: canvas})
-        })
-      })
-      asyncList.push(promise)
-    }
-
-    const canvasDataList = await Promise.all(asyncList)
-    return canvasDataList.filter(data => data !== null)
-  }
   async function getIframeImageList(options) {
     const iframeList = deepQuerySelectorAll(document.body, 'iframe')
     const iframeSrcList = iframeList.map(iframe => iframe.src)
@@ -1762,6 +1740,28 @@ window.ImageViewerUtils = (function () {
   }
 
   // get page images
+  async function getCanvasList(options) {
+    const minWidth = options.minWidth || 0
+    const minHeight = options.minHeight || 0
+    const asyncList = []
+
+    const canvasList = deepQuerySelectorAll(document.body, 'canvas')
+    for (const canvas of canvasList) {
+      const {width, height} = canvas.getBoundingClientRect()
+      if (width < minWidth && height < minHeight) continue
+      const promise = new Promise(resolve => {
+        canvas.toBlob(blob => {
+          if (blob.size === 0) resolve(null)
+          const url = URL.createObjectURL(blob)
+          resolve({src: url, dom: canvas})
+        })
+      })
+      asyncList.push(promise)
+    }
+
+    const canvasDataList = await Promise.all(asyncList)
+    return canvasDataList.filter(data => data !== null)
+  }
   function processImageDataList(svgFilter, imageDataList) {
     const imageFailureCountMap = ImageViewer('get_image_failure_count')
     const isBadImage = svgFilter
