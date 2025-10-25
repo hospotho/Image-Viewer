@@ -403,7 +403,8 @@ window.ImageViewerUtils = (function () {
 
       // extension dot check
       const dotIndex = url.pathname.lastIndexOf('.')
-      const pathname = dotIndex === -1 ? url.pathname : url.pathname.slice(0, dotIndex)
+      const slashIndex = url.pathname.lastIndexOf('/')
+      const pathname = dotIndex !== -1 && dotIndex > slashIndex ? url.pathname.slice(0, dotIndex) : url.pathname
       if (url.search === '') {
         pathIdCache.set(src, pathname)
         return pathname
