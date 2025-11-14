@@ -1680,24 +1680,28 @@ window.ImageViewer = (function () {
       }
 
       // zoom & rotate
-      li.addEventListener('wheel', e => {
-        e.preventDefault()
-        // transition cause flash when high zoom rate
-        if (options.zoomRatio ** zoomCount > 2) {
-          img.style.transition = 'none'
-        } else {
-          img.style.transition = ''
-        }
-        if (!e.altKey && !e.getModifierState('AltGraph')) {
-          const deltaZoom = e.deltaY > 0 ? -1 : 1
-          zoomCount += deltaZoom
-          updateZoom(img, deltaZoom, zoomCount)
-        } else {
-          const deltaRotate = e.deltaY > 0 ? 1 : -1
-          rotateCount += mirror ? -deltaRotate : deltaRotate
-          updateRotate(img, deltaRotate, rotateCount)
-        }
-      })
+      li.addEventListener(
+        'wheel',
+        e => {
+          e.preventDefault()
+          // transition cause flash when high zoom rate
+          if (options.zoomRatio ** zoomCount > 2) {
+            img.style.transition = 'none'
+          } else {
+            img.style.transition = ''
+          }
+          if (!e.altKey && !e.getModifierState('AltGraph')) {
+            const deltaZoom = e.deltaY > 0 ? -1 : 1
+            zoomCount += deltaZoom
+            updateZoom(img, deltaZoom, zoomCount)
+          } else {
+            const deltaRotate = e.deltaY > 0 ? 1 : -1
+            rotateCount += mirror ? -deltaRotate : deltaRotate
+            updateRotate(img, deltaRotate, rotateCount)
+          }
+        },
+        {passive: false}
+      )
 
       // mirror-reflect
       li.addEventListener('click', e => {
@@ -1957,10 +1961,14 @@ window.ImageViewer = (function () {
     const closeButton = shadowRoot.querySelector('#iv-control-close')
     const scrollableElements = [controlBar, infoPopup, infoButton, closeButton]
     for (const dom of scrollableElements) {
-      dom.addEventListener('wheel', e => {
-        e.preventDefault()
-        e.deltaY > 0 ? nextItem() : prevItem()
-      })
+      dom.addEventListener(
+        'wheel',
+        e => {
+          e.preventDefault()
+          e.deltaY > 0 ? nextItem() : prevItem()
+        },
+        {passive: false}
+      )
     }
   }
 
