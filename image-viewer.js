@@ -1685,11 +1685,8 @@ window.ImageViewer = (function () {
         e => {
           e.preventDefault()
           // transition cause flash when high zoom rate
-          if (options.zoomRatio ** zoomCount > 2) {
-            img.style.transition = 'none'
-          } else {
-            img.style.transition = ''
-          }
+          const ratio = img.clientWidth / img.naturalWidth
+          img.style.transition = ratio * options.zoomRatio ** zoomCount > 2 ? 'none' : ''
           if (!e.altKey && !e.getModifierState('AltGraph')) {
             const deltaZoom = e.deltaY > 0 ? -1 : 1
             zoomCount += deltaZoom
