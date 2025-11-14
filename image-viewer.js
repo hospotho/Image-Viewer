@@ -555,7 +555,7 @@ window.ImageViewer = (function () {
       img {
         max-width: 100%;
         max-height: 100%;
-        transition: transform 0.05s linear;
+        transition: scale 0.05s linear, rotate 0.05s linear, translate 0.05s linear;
       }
       img.loaded {
         max-width: none;
