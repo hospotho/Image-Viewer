@@ -1734,9 +1734,16 @@ window.ImageViewer = (function () {
       li.addEventListener('mouseup', () => (dragFlag = false))
 
       // reset
-      const reset = () => {
+      const reset = async () => {
         zoomCount = 0
         rotateCount = 0
+        // normalize rotation
+        img.style.transition = 'none'
+        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
+        applyTransform(img, scaleX, scaleY, rotate % 360, moveX, moveY)
+        await new Promise(resolve => setTimeout(resolve, 20))
+        // reset
+        img.style.transition = ''
         applyTransform(img, 1, 1, 0, 0, 0)
       }
       li.addEventListener('dblclick', reset)
