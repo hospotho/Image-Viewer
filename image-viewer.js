@@ -1684,14 +1684,16 @@ window.ImageViewer = (function () {
         'wheel',
         e => {
           e.preventDefault()
-          // transition cause flash when high zoom rate
-          const ratio = img.clientWidth / img.naturalWidth
-          img.style.transition = ratio * options.zoomRatio ** zoomCount > 2 ? 'none' : ''
           if (!e.altKey && !e.getModifierState('AltGraph')) {
+            img.style.transition = ''
             const deltaZoom = e.deltaY > 0 ? -1 : 1
             zoomCount += deltaZoom
             updateZoom(img, deltaZoom, zoomCount)
           } else {
+            // transition cause flash when large offset
+            const [, , , moveX, moveY] = getTransform(img)
+            const offset = Math.sqrt(moveX ** 2 + moveY ** 2)
+            img.style.transition = offset > 350 ? 'none' : ''
             const deltaRotate = e.deltaY > 0 ? 1 : -1
             rotateCount += mirror ? -deltaRotate : deltaRotate
             updateRotate(img, deltaRotate, rotateCount)
