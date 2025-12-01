@@ -401,16 +401,16 @@ window.ImageViewerUtils = (function () {
         return pathId
       }
 
-      // extension dot check
-      const dotIndex = url.pathname.lastIndexOf('.')
-      const slashIndex = url.pathname.lastIndexOf('/')
-      const pathname = dotIndex !== -1 && dotIndex > slashIndex ? url.pathname.slice(0, dotIndex) : url.pathname
+      // simple file check
       if (url.search === '') {
-        pathIdCache.set(src, pathname)
-        return pathname
+        pathIdCache.set(src, url.pathname)
+        return url.pathname
       }
 
       // longest query check
+      const dotIndex = url.pathname.lastIndexOf('.')
+      const slashIndex = url.pathname.lastIndexOf('/')
+      const pathname = dotIndex !== -1 && dotIndex > slashIndex ? url.pathname.slice(0, dotIndex) : url.pathname
       const query = url.search
         .split('&')
         .filter(attr => attr.split('=').at(-1).length > 6)
