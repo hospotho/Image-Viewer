@@ -1685,7 +1685,7 @@ window.ImageViewerUtils = (function () {
   // get iframe images
   async function getIframeImageList(options) {
     const iframeList = deepQuerySelectorAll(document.body, 'iframe')
-    const iframeSrcList = iframeList.map(iframe => iframe.src)
+    const iframeSrcList = iframeList.map(iframe => iframe.src || iframe.contentWindow.location.href || '')
     const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
     if (filteredList.length === 0) return []
 
