@@ -114,13 +114,18 @@
   }
 
   const realDrawImage = CanvasRenderingContext2D.prototype.drawImage
-  CanvasRenderingContext2D.prototype.drawImage = async function (...args) {
-    if (args[0] instanceof HTMLImageElement) {
-      this.canvas.cors = this.canvas.cors || checkCORS(args[0])
-      if (this.canvas.cors) {
-        args[0] = await getBase64Image(args[0])
+  CanvasRenderingContext2D.prototype.drawImage = function (...args) {
+    if (args[0] instanceof HTMLImageElement && checkCORS(args[0])) {
+      const result = getBase64Image(args[0].src)
+      if (result instanceof HTMLImageElement) {
+        args[0] = result
+      } else if (result instanceof Promise) {
+        result.then(image => {
+          args[0] = image
+          realDrawImage.apply(this, args)
+        })
       }
     }
-    return realDrawImage.apply(this, args)
+    realDrawImage.apply(this, args)
   }
 })()
