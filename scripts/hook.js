@@ -45,6 +45,7 @@
   }
 
   // canvas cache
+  const srcBase64Map = new Map()
   const imageCORSMap = new Map()
 
   // prevent canvas tainted
@@ -69,16 +70,24 @@
     const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: src})
     return dataUrl
   }
-  async function getBase64Image(image) {
-    const dataUrl = await getImageDataURL(image.src)
-    const dataImage = new Image()
-    const result = await new Promise(resolve => {
-      dataImage.onload = resolve(true)
-      dataImage.onerror = resolve(false)
-      dataImage.src = dataUrl
+  function getBase64Image(src) {
+    const cache = srcBase64Map.get(src)
+    if (cache !== undefined) return cache
+
+    const promise = new Promise(_resolve => {
+      const resolve = result => {
+        srcBase64Map.set(src, result)
+        _resolve(result)
+      }
+
+      const dataImage = new Image()
+      dataImage.onload = () => resolve(dataImage)
+      dataImage.onerror = () => resolve(null)
+      getImageDataURL(src).then(dataUrl => (dataImage.src = dataUrl))
     })
-    // return empty image on failure
-    return result ? dataImage : new Image()
+
+    srcBase64Map.set(src, promise)
+    return promise
   }
   function checkCORS(image) {
     const cached = imageCORSMap.get(image.src)
