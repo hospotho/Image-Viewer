@@ -1,12 +1,6 @@
 ;(function () {
   'use strict'
 
-  const safeSendMessage = function (...args) {
-    if (chrome.runtime?.id) {
-      return chrome.runtime.sendMessage(...args)
-    }
-  }
-
   // prevent image blob revoked
   const isImageUrlMap = new Map()
   const realCreate = URL.createObjectURL
@@ -62,12 +56,23 @@
         return dataUrl
       }
     } catch (error) {}
-    // wake up background
-    while (true) {
-      if (await safeSendMessage({msg: 'ping'})) break
-      await new Promise(resolve => setTimeout(resolve, 50))
-    }
-    const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: src})
+
+    // only possible to communicate through DOM in MAIN world
+    const {promise, resolve} = Promise.withResolvers()
+    const div = document.createElement('div')
+    div.id = 'iv-request-' + Math.random().toString(16).slice(2)
+    div.style.display = 'none'
+    div.setAttribute('iv-url', src)
+
+    const observer = new MutationObserver(() => {
+      observer.disconnect()
+      resolve(div.getAttribute('iv-url'))
+      document.body.removeChild(div)
+    })
+    observer.observe(div, {attributeFilter: ['iv-url']})
+    document.body.appendChild(div)
+
+    const dataUrl = await promise
     return dataUrl
   }
   function getBase64Image(src) {
@@ -124,6 +129,7 @@
           args[0] = image
           realDrawImage.apply(this, args)
         })
+        return
       }
     }
     realDrawImage.apply(this, args)

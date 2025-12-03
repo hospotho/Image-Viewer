@@ -33,6 +33,12 @@
       "matches": ["*://*/*"],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "js": ["/scripts/hook-helper.js"],
+      "matches": ["*://*/*"],
+      "run_at": "document_start",
+      "all_frames": true
     }
   ],
   "commands": {
