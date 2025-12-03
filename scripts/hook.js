@@ -44,6 +44,9 @@
     if (!isImage) realRevoke(url)
   }
 
+  // canvas cache
+  const imageCORSMap = new Map()
+
   // prevent canvas tainted
   async function getImageDataURL(src) {
     try {
@@ -78,17 +81,27 @@
     return result ? dataImage : new Image()
   }
   function checkCORS(image) {
-    if (image.crossOrigin === 'anonymous') return false
-    const canvas = document.createElement('canvas')
-    canvas.width = 100
-    canvas.height = 100
-    const ctx = canvas.getContext('2d')
-    realDrawImage.apply(ctx, [image, 0, 0])
-    try {
-      canvas.toDataURL('image/png')
+    const cached = imageCORSMap.get(image.src)
+    if (cached !== undefined) return cached
+
+    if (image.crossOrigin === 'anonymous') {
+      imageCORSMap.set(image.src, true)
       return false
-    } catch (error) {}
-    return true
+    }
+
+    try {
+      const canvas = document.createElement('canvas')
+      canvas.width = 100
+      canvas.height = 100
+      const ctx = canvas.getContext('2d')
+      realDrawImage.apply(ctx, [image, 0, 0])
+      canvas.toDataURL('image/png')
+      imageCORSMap.set(image.src, false)
+      return false
+    } catch (error) {
+      imageCORSMap.set(image.src, true)
+      return true
+    }
   }
 
   const realDrawImage = CanvasRenderingContext2D.prototype.drawImage
