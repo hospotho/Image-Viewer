@@ -45,9 +45,9 @@
   }
 
   // prevent canvas tainted
-  async function getImageBase64(image) {
+  async function getImageDataURL(src) {
     try {
-      const res = await fetch(image.src)
+      const res = await fetch(src)
       if (res.ok) {
         const blob = await res.blob()
         const reader = new FileReader()
@@ -63,11 +63,11 @@
       if (await safeSendMessage({msg: 'ping'})) break
       await new Promise(resolve => setTimeout(resolve, 50))
     }
-    const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: image.src})
+    const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: src})
     return dataUrl
   }
   async function getBase64Image(image) {
-    const dataUrl = await getImageBase64(image)
+    const dataUrl = await getImageDataURL(image.src)
     const dataImage = new Image()
     const result = await new Promise(resolve => {
       dataImage.onload = resolve(true)
