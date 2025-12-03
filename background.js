@@ -410,7 +410,12 @@ function addMessageHandler() {
           const pageDataList = []
           const asyncList = []
           for (const result of results) {
-            if (!result.result) continue
+            // load extractor if failed to extract
+            if (!result.result) {
+              passOptionToTab(sender.tab.id, currOptions, [result.frameId])
+              chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [result.frameId]}, files: ['/scripts/activate-worker.js', '/scripts/extract-iframe.js']})
+              continue
+            }
             const [href, subHrefList, imageList] = result.result
             for (const subHref of subHrefList) {
               if (subHref !== href) relation.set(subHref, href)
