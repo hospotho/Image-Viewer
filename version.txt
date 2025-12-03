@@ -1,3 +1,10 @@
+1.44 [2025-12-03]:
+Stability update
+1. Fixed a bug that caused images to not transform smoothly.
+2. Fixed a bug that caused image transitions to flash in some conditions.
+3. Added caching for canvas functionality, this should reduce potential bugs related to canvas.
+4. Other bug fixes and improvements.
+
 1.43 [2025-10-06]:
 Performance and Stability update
 1. Improved image collection logic, reduce initial delay.
