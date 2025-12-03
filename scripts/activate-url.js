@@ -189,7 +189,8 @@
 
     try {
       const image = document.querySelector(`img[src='${location.href}']`)
-      image ? initImageViewer(image) : safeSendMessage('load_worker')
+      const found = image && image.parentElement === document.body && image.previousElementSibling === null && image.nextElementSibling === null
+      found ? initImageViewer(image) : safeSendMessage('load_worker')
     } catch (error) {}
   }
 
