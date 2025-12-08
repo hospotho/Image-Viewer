@@ -1303,6 +1303,7 @@ window.ImageViewerUtils = (function () {
       const realSrc = currentSrc.replace(/^https?:/, protocol)
       const currentSize = Math.min(img.naturalWidth, img.naturalHeight)
       const [bitSize, naturalSize] = await Promise.all([getImageBitSize(realSrc), currentSize || getImageRealSize(realSrc)])
+      const isHighPriority = badImageSet.has(currentSrc)
 
       // loop thought remaining attr
       while (lastIndex < attrList.length) {
@@ -1313,7 +1314,6 @@ window.ImageViewerUtils = (function () {
         if (!better) continue
 
         // preload image
-        const isHighPriority = badImageSet.has(currentSrc)
         const release = await semaphore.acquire(isHighPriority)
         const preloading = preloadImage(img, newUrl, release)
         const done = isHighPriority || (await waitPromiseComplete(preloading, 5000))
