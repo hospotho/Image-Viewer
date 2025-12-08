@@ -48,7 +48,7 @@ window.ImageViewerUtils = (function () {
         if (isAvailable) {
           fastCount += highPriority ? 1 : 0
           normalCount += highPriority ? 0 : 1
-          slowTimeout = setTimeout(this.slowAlert, 5000)
+          slowTimeout = setTimeout(this.slowAlert, 200 * maxConcurrent)
           return release
         }
 
@@ -57,7 +57,7 @@ window.ImageViewerUtils = (function () {
         const grantAccess = () => {
           fastCount += highPriority ? 1 : 0
           normalCount += highPriority ? 0 : 1
-          slowTimeout = setTimeout(this.slowAlert, 5000)
+          slowTimeout = setTimeout(this.slowAlert, 200 * maxConcurrent)
           resolve(release)
         }
         const targetQueue = highPriority ? fastQueue : normalQueue
