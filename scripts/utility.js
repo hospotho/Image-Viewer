@@ -9,11 +9,13 @@ window.ImageViewerUtils = (function () {
 
   // parallel fetch
   const semaphore = (() => {
-    let activeCount = 0
-    let slowAlertFlag = false
     const maxConcurrent = 32
     const fastQueue = []
     const normalQueue = []
+    let fastCount = 0
+    let normalCount = 0
+    let processFlag = false
+    let slowAlertFlag = false
     return {
       acquire: function (highPriority = false) {
         let executed = false
@@ -21,26 +23,56 @@ window.ImageViewerUtils = (function () {
         const release = () => {
           if (executed) return
           executed = true
-          activeCount--
+          fastCount -= highPriority ? 1 : 0
+          normalCount -= highPriority ? 0 : 1
           clearTimeout(slowTimeout)
-          const grantAccess = fastQueue.shift() || normalQueue.shift()
+
+          // check fast queue
+          const fastAccess = fastQueue.shift()
+          if (fastAccess) {
+            fastAccess()
+            return
+          }
+
+          // wait until all fast tasks complete
+          if (fastCount > 0 || fastQueue.length > 0) {
+            this.process()
+            return
+          }
+          const grantAccess = normalQueue.shift()
           if (grantAccess) grantAccess()
         }
 
-        if (activeCount < maxConcurrent) {
-          activeCount++
+        // check availability
+        const isAvailable = (highPriority && fastCount + normalCount < maxConcurrent) || (fastCount === 0 && normalCount < maxConcurrent)
+        if (isAvailable) {
+          fastCount += highPriority ? 1 : 0
+          normalCount += highPriority ? 0 : 1
           slowTimeout = setTimeout(this.slowAlert, 5000)
           return release
         }
+
+        // create ticket
         const {promise, resolve} = Promise.withResolvers()
         const grantAccess = () => {
-          activeCount++
+          fastCount += highPriority ? 1 : 0
+          normalCount += highPriority ? 0 : 1
           slowTimeout = setTimeout(this.slowAlert, 5000)
           resolve(release)
         }
         const targetQueue = highPriority ? fastQueue : normalQueue
         targetQueue.push(grantAccess)
         return promise
+      },
+      process: async function () {
+        if (processFlag) return
+        processFlag = true
+        while (true) {
+          if (fastCount === 0 && fastQueue.length === 0) break
+          await new Promise(resolve => setTimeout(resolve, 50))
+        }
+        normalQueue.splice(0, maxConcurrent - normalCount).map(grantAccess => grantAccess())
+        processFlag = false
       },
       slowAlert: function () {
         if (slowAlertFlag) return
