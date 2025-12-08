@@ -12,9 +12,10 @@ window.ImageViewerUtils = (function () {
     let activeCount = 0
     let slowAlertFlag = false
     const maxConcurrent = 32
-    const queue = []
+    const fastQueue = []
+    const normalQueue = []
     return {
-      acquire: function () {
+      acquire: function (highPriority = false) {
         let executed = false
         let slowTimeout = 0
         const release = () => {
@@ -22,7 +23,7 @@ window.ImageViewerUtils = (function () {
           executed = true
           activeCount--
           clearTimeout(slowTimeout)
-          const grantAccess = queue.shift()
+          const grantAccess = fastQueue.shift() || normalQueue.shift()
           if (grantAccess) grantAccess()
         }
 
@@ -37,7 +38,8 @@ window.ImageViewerUtils = (function () {
           slowTimeout = setTimeout(this.slowAlert, 5000)
           resolve(release)
         }
-        queue.push(grantAccess)
+        const targetQueue = highPriority ? fastQueue : normalQueue
+        targetQueue.push(grantAccess)
         return promise
       },
       slowAlert: function () {
@@ -1312,9 +1314,9 @@ window.ImageViewerUtils = (function () {
 
         // preload image
         const isHighPriority = badImageSet.has(currentSrc)
-        const release = await semaphore.acquire()
+        const release = await semaphore.acquire(isHighPriority)
         const preloading = preloadImage(img, newUrl, release)
-        const done = isHighPriority || await waitPromiseComplete(preloading, 5000)
+        const done = isHighPriority || (await waitPromiseComplete(preloading, 5000))
         // count overtime as success
         const success = done ? await preloading : true
         if (!success) {
