@@ -1787,6 +1787,16 @@ window.ImageViewer = (function () {
   }
 
   function addImageListEvent(options) {
+    async function getFPS(tick = 20) {
+      const {promise, resolve} = Promise.withResolvers()
+      const time = Array(tick + 1)
+      const action = i => (i >= 0 ? ((time[i] = performance.now()), requestAnimationFrame(() => action(i - 1))) : resolve())
+      requestAnimationFrame(() => action(tick))
+      await promise
+      const fps = Math.round((tick * 1000) / (time[0] - time[tick]))
+      return tick === 20 ? getFPS(fps >>> 1) : fps
+    }
+
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const current = shadowRoot.querySelector('#iv-counter-current')
     const total = shadowRoot.querySelector('#iv-counter-total')
@@ -1798,9 +1808,12 @@ window.ImageViewer = (function () {
 
     const debouncePeriod = options.debouncePeriod ?? 1500
     const throttlePeriod = options.throttlePeriod ?? 80
+    const smoothThrottleRatio = 0.75
 
+    let fps = getFPS().then(result => (fps = result)) && 60
     let debounceTimeout = 0
     let debounceFlag = false
+    let smoothThrottle = 0
     let throttleTimestamp = Date.now()
     let autoNavigateFlag = 0
     let moveCount = 0
@@ -1812,6 +1825,7 @@ window.ImageViewer = (function () {
       if (moveLock) return
 
       // wait start of next frame
+      const startTime = performance.now()
       await new Promise(resolve => requestAnimationFrame(resolve))
       if (moveLock) return
       moveLock = true
@@ -1831,7 +1845,11 @@ window.ImageViewer = (function () {
       // wait this frame render complete
       await new Promise(resolve => requestAnimationFrame(resolve))
 
-      throttleTimestamp = Date.now()
+      // wait 1.5 frame in average
+      const extraRenderTime = performance.now() - startTime - (1.5 * 1000) / fps
+      smoothThrottle = Math.max(smoothThrottle * smoothThrottleRatio, Math.max(0, extraRenderTime))
+      smoothThrottle = smoothThrottle > 1 ? smoothThrottle : 0
+      throttleTimestamp = Date.now() + smoothThrottle
       moveLock = false
     }
 
