@@ -1311,9 +1311,10 @@ window.ImageViewerUtils = (function () {
         if (!better) continue
 
         // preload image
+        const isHighPriority = badImageSet.has(currentSrc)
         const release = await semaphore.acquire()
         const preloading = preloadImage(img, newUrl, release)
-        const done = await waitPromiseComplete(preloading, 5000)
+        const done = isHighPriority || await waitPromiseComplete(preloading, 5000)
         // count overtime as success
         const success = done ? await preloading : true
         if (!success) {
