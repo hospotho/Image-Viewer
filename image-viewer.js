@@ -646,6 +646,7 @@ window.ImageViewer = (function () {
       #iv-info li {
         height: 22px;
         display: flex;
+        justify-content: flex-end;
       }
       #iv-info span {
         font-size: 16px;
