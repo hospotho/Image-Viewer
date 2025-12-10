@@ -437,8 +437,9 @@ window.ImageViewerUtils = (function () {
 
       // simple file check
       if (url.search === '') {
-        pathIdCache.set(src, url.pathname)
-        return url.pathname
+        const pathId = url.pathname + url.hash
+        pathIdCache.set(src, pathId)
+        return pathId
       }
 
       // longest query check
