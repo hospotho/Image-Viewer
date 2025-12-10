@@ -1342,7 +1342,11 @@ window.ImageViewerUtils = (function () {
       while (lastIndex < attrList.length) {
         const {name, url} = attrList[lastIndex++]
         complete = lastIndex === attrList.length
-        const newSrc = url.replace(/^https?:/, protocol).replace(/^\/(?:[^/])/, origin)
+        // some websites does not follow fragment identifier standard
+        const newSrc = url
+          .replaceAll('#', '%23')
+          .replace(/^https?:/, protocol)
+          .replace(/^\/(?:[^/])/, origin)
         const better = await isNewSrcBetter(currentSrc, bitSize, naturalSize, newSrc)
         if (!better) continue
 
