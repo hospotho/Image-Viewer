@@ -1789,12 +1789,12 @@ window.ImageViewer = (function () {
 
   function addImageListEvent(options) {
     async function getFPS(tick = 20) {
+      let startTime = 0
       const {promise, resolve} = Promise.withResolvers()
-      const time = Array(tick + 1)
-      const action = i => (i >= 0 ? ((time[i] = performance.now()), requestAnimationFrame(() => action(i - 1))) : resolve())
-      requestAnimationFrame(() => action(tick))
+      const action = i => (i > 0 ? requestAnimationFrame(() => action(i - 1)) : resolve())
+      requestAnimationFrame(() => action(tick) && (startTime = performance.now()))
       await promise
-      const fps = Math.round((tick * 1000) / (time[0] - time[tick]))
+      const fps = Math.round((tick * 1000) / (performance.now() - startTime))
       return tick === 20 ? getFPS(fps >>> 1) : fps
     }
 
