@@ -1961,7 +1961,7 @@ window.ImageViewer = (function () {
         const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
         if (currIndex === newIndex) break
 
-        moveToNode(newIndex)
+        await moveToNode(newIndex)
         lastMoveCount = moveCount
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
       }
