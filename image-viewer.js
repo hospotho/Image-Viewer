@@ -2008,30 +2008,30 @@ window.ImageViewer = (function () {
       }
     }
     function tryUpdate() {
+      const action = (i, src) => {
+        currentUrlList[i] = src
+        imgList[i].src = '' // clear image
+        imgList[i].src = src
+        imgList[i].parentElement.classList.remove('resized')
+      }
       for (let i = 0; i < currentUrlList.length; i++) {
         const src = currentUrlList[i]
         const data = imageDataList[i]
         const domData = newDomDataMap.get(data.dom)
         if (domData !== undefined && src !== domData.src) {
-          currentUrlList[i] = domData.src
-          imgList[i].src = domData.src
-          imgList[i].parentElement.classList.remove('resized')
+          action(i, domData.src)
           continue
         }
         const rawUrl = getRawUrl(data.src)
         const urlData = newUrlDataMap.get(rawUrl)
         if (src !== rawUrl && urlData !== undefined) {
-          currentUrlList[i] = urlData.src
-          imgList[i].src = urlData.src
-          imgList[i].parentElement.classList.remove('resized')
+          action(i, urlData.src)
           continue
         }
         const filename = getFilename(data.src)
         const filenameData = newFilenameDataMap.get(filename)
         if (filenameData !== undefined && src !== filenameData.src) {
-          currentUrlList[i] = filenameData.src
-          imgList[i].src = filenameData.src
-          imgList[i].parentElement.classList.remove('resized')
+          action(i, filenameData.src)
         }
       }
     }
