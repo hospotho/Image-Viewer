@@ -133,10 +133,12 @@ window.ImageViewerUtils = (function () {
   let lastIframeImageTask = null
 
   // scroll state
+  let viewerMoveToFlag = false
   let enableAutoScroll = false
   let scrollUnlazyFlag = false
   let autoScrollFlag = false
   let scrollRelease = () => {}
+  document.addEventListener('iv-moveto', () => (viewerMoveToFlag = true))
 
   // init function hotkey
   window.addEventListener(
@@ -469,7 +471,9 @@ window.ImageViewerUtils = (function () {
 
   // check function
   function isImageViewerExist() {
-    return document.body.classList.contains('iv-attached')
+    const exist = document.body.classList.contains('iv-attached')
+    if (exist) viewerMoveToFlag = false
+    return exist
   }
   function isLazyClass(className) {
     if (className === '') return false
@@ -896,7 +900,7 @@ window.ImageViewerUtils = (function () {
       container.scrollTo(currentX, top)
       await new Promise(resolve => setTimeout(resolve, 150))
     }
-    container.scrollTo(currentX, currentY)
+    if (!viewerMoveToFlag) container.scrollTo(currentX, currentY)
   }
   async function tryActivateLazyImage(isDomChanged) {
     const container = getMainContainer()
@@ -1084,20 +1088,6 @@ window.ImageViewerUtils = (function () {
     return {isStopped, timer}
   }
   function stopAutoScrollOnExit(newNodeObserver, startX, startY) {
-    let scrollFlag = false
-
-    // check if moveTo function called
-    const originalScrollIntoView = Element.prototype.scrollIntoView
-    Element.prototype.scrollIntoView = function () {
-      scrollFlag = !isImageViewerExist()
-      originalScrollIntoView.apply(this, arguments)
-    }
-    const originalScrollTo = Element.prototype.scrollTo
-    Element.prototype.scrollTo = function () {
-      scrollFlag = !isImageViewerExist()
-      originalScrollTo.apply(this, arguments)
-    }
-
     const imageViewerObserver = new MutationObserver(() => {
       if (isImageViewerExist()) return
       autoScrollFlag = false
@@ -1105,9 +1095,7 @@ window.ImageViewerUtils = (function () {
       newNodeObserver.disconnect()
       setTimeout(() => {
         const container = getMainContainer()
-        if (!scrollFlag) container.scrollTo(startX, startY)
-        Element.prototype.scrollIntoView = originalScrollIntoView
-        Element.prototype.scrollTo = originalScrollTo
+        if (!viewerMoveToFlag) container.scrollTo(startX, startY)
       }, 500)
     })
     imageViewerObserver.observe(document.body, {attributes: true, attributeFilter: ['class']})

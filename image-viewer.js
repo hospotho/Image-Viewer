@@ -1460,6 +1460,9 @@ window.ImageViewer = (function () {
         return container || document.documentElement
       }
       async function moveTo() {
+        const event = new CustomEvent('iv-moveto')
+        document.dispatchEvent(event)
+
         const current = shadowRoot.querySelector('#iv-counter-current')
         const total = shadowRoot.querySelector('#iv-counter-total')
         const currIndex = Number(current.textContent) - 1
