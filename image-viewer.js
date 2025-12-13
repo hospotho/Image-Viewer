@@ -1818,9 +1818,10 @@ window.ImageViewer = (function () {
       moveLock = true
 
       // wait current frame render complete
-      await new Promise(resolve => requestAnimationFrame(resolve))
-
       const startTime = performance.now()
+      const previousFrameTime = await new Promise(resolve => requestAnimationFrame(resolve))
+      const frameStartTime = previousFrameTime > startTime ? previousFrameTime : await new Promise(resolve => requestAnimationFrame(resolve))
+
       const currentListItem = imageListNode.querySelector('li.current')
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
       const relateImage = relateListItem.querySelector('img')
@@ -1834,14 +1835,29 @@ window.ImageViewer = (function () {
       moveCount++
 
       // wait this frame render complete
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      let lastFrameEndTime = frameStartTime
+      let frameEndTime = await new Promise(resolve => requestAnimationFrame(resolve))
+      // skip partial render frames
+      while (fps * (frameEndTime - lastFrameEndTime) < 0.75 * 1000) {
+        lastFrameEndTime = frameEndTime
+        frameEndTime = await new Promise(resolve => requestAnimationFrame(resolve))
+      }
 
-      const renderTime = performance.now() - startTime
-      const extraRenderTime = renderTime - 1000 / fps
-      fps += fps * renderTime > 1000 ? -1 : 1
-      smoothThrottle = Math.max(smoothThrottle * smoothThrottleRatio, extraRenderTime)
-      smoothThrottle = smoothThrottle > 1 ? smoothThrottle : 0
+      const endTime = performance.now()
+      const renderTime = frameEndTime - frameStartTime
+      const waitTime = endTime - startTime - renderTime
+
+      // update fps if complete in single frame
+      if (lastFrameEndTime === frameStartTime) fps += fps * renderTime > 1000 ? -1 : 1
+
+      // calculate smooth throttle
+      const estimatedRenderTime = 1000 / fps
+      const extraRenderTime = Math.max(0, renderTime - estimatedRenderTime)
+      const extraWaitTime = Math.max(0, waitTime - 0.5 * estimatedRenderTime)
+      smoothThrottle = Math.max(smoothThrottle, extraRenderTime + extraWaitTime)
       throttleTimestamp = Date.now() + smoothThrottle
+      smoothThrottle *= smoothThrottleRatio
+      smoothThrottle = smoothThrottle > 1 ? smoothThrottle : 0
       moveLock = false
     }
 
