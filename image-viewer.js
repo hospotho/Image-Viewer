@@ -1854,7 +1854,9 @@ window.ImageViewer = (function () {
       const estimatedRenderTime = 1000 / fps
       const extraRenderTime = Math.max(0, renderTime - estimatedRenderTime)
       const extraWaitTime = Math.max(0, waitTime - 0.5 * estimatedRenderTime)
-      smoothThrottle = Math.max(smoothThrottle, extraRenderTime + extraWaitTime)
+      // humans overestimate short delays around 40% https://doi.org/10.1086/208998
+      const expectedDelay = (extraRenderTime + extraWaitTime) * 1.4
+      smoothThrottle = Math.max(smoothThrottle, expectedDelay)
       throttleTimestamp = Date.now() + smoothThrottle
       smoothThrottle *= smoothThrottleRatio
       smoothThrottle = smoothThrottle > 1 ? smoothThrottle : 0
