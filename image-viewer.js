@@ -1426,11 +1426,11 @@ window.ImageViewer = (function () {
         border.style.opacity = '1'
         document.body.appendChild(border)
 
-        let endFlag = false
-        let lastTop = NaN
-        let lastLeft = NaN
+        let count = 0
+        let lastTop = Number.MAX_VALUE
+        let lastLeft = Number.MAX_VALUE
         const drawBorder = () => {
-          if (endFlag) return border.remove()
+          if (count++ === fps) return border.remove()
           const {top, left, width, height} = imgNode.getBoundingClientRect()
           if (top !== lastTop || left !== lastLeft) {
             lastTop = top
@@ -1441,13 +1441,7 @@ window.ImageViewer = (function () {
           }
           requestAnimationFrame(drawBorder)
         }
-
-        const {promise, resolve} = Promise.withResolvers()
-        requestAnimationFrame(resolve)
-        promise.then(() => {
-          drawBorder()
-          setTimeout(() => (endFlag = true), 1000)
-        })
+        requestAnimationFrame(drawBorder)
       }
       function getMainContainer() {
         const windowWidth = document.documentElement.clientWidth
@@ -1501,25 +1495,21 @@ window.ImageViewer = (function () {
           console.log('Image node not visible')
         }
         console.log('Move to image node')
-        let prevY = Number.MAX_VALUE
         let prevTop = Number.MAX_VALUE
         let stopFlag = false
         while (!stopFlag) {
-          const currY = container.scrollTop
-          if (prevY === currY) break
           const {top, bottom} = imgNode.getBoundingClientRect()
           const center = (top + bottom) / 2
           if (prevTop === top && window.innerHeight > center && center > 0) {
-            setTimeout(() => (stopFlag = true), 500)
+            setTimeout(() => (stopFlag = true), 300)
+            displayBorder(imgNode)
           }
-          prevY = currY
           prevTop = top
           imgNode.scrollIntoView({behavior: 'instant', block: 'center'})
           await new Promise(resolve => setTimeout(resolve, 10))
         }
         document.documentElement.style.scrollBehavior = htmlTemp
         document.body.style.scrollBehavior = bodyTemp
-        displayBorder(imgNode)
       }
 
       shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
