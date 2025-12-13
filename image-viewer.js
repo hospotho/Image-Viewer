@@ -1803,7 +1803,7 @@ window.ImageViewer = (function () {
 
     const debouncePeriod = options.debouncePeriod ?? 1500
     const throttlePeriod = options.throttlePeriod ?? 80
-    const smoothThrottleRatio = 0.75
+    const smoothThrottleRatio = 0.8
 
     let debounceTimeout = 0
     let debounceFlag = false
@@ -1817,13 +1817,12 @@ window.ImageViewer = (function () {
 
     async function moveToNode(index) {
       if (moveLock) return
-
-      // wait start of next frame
-      const startTime = performance.now()
-      await new Promise(resolve => requestAnimationFrame(resolve))
-      if (moveLock) return
       moveLock = true
 
+      // wait current frame render complete
+      await new Promise(resolve => requestAnimationFrame(resolve))
+
+      const startTime = performance.now()
       const currentListItem = imageListNode.querySelector('li.current')
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
       const relateImage = relateListItem.querySelector('img')
@@ -1839,9 +1838,10 @@ window.ImageViewer = (function () {
       // wait this frame render complete
       await new Promise(resolve => requestAnimationFrame(resolve))
 
-      // wait 1.5 frame in average
-      const extraRenderTime = performance.now() - startTime - (1.5 * 1000) / fps
-      smoothThrottle = Math.max(smoothThrottle * smoothThrottleRatio, Math.max(0, extraRenderTime))
+      const renderTime = performance.now() - startTime
+      const extraRenderTime = renderTime - 1000 / fps
+      fps += fps * renderTime > 1000 ? -1 : 1
+      smoothThrottle = Math.max(smoothThrottle * smoothThrottleRatio, extraRenderTime)
       smoothThrottle = smoothThrottle > 1 ? smoothThrottle : 0
       throttleTimestamp = Date.now() + smoothThrottle
       moveLock = false
