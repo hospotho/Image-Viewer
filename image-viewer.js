@@ -7,6 +7,7 @@ window.ImageViewer = (function () {
   let imageDataList = []
   const imageFailureCountMap = new Map()
 
+  let fps = getFPS().then(result => (fps = result)) && 60
   let clearIndex = -1
   let clearDom = null
   let clearSrc = ''
@@ -37,6 +38,16 @@ window.ImageViewer = (function () {
     viewer.addEventListener('transitionend', () => root.remove())
     viewer.style.transition = 'opacity 0.2s'
     viewer.style.opacity = '0'
+  }
+
+  async function getFPS(tick = 20) {
+    let startTime = 0
+    const {promise, resolve} = Promise.withResolvers()
+    const action = i => (i > 0 ? requestAnimationFrame(() => action(i - 1)) : resolve())
+    requestAnimationFrame(() => action(tick) && (startTime = performance.now()))
+    await promise
+    const fps = Math.round((tick * 1000) / (performance.now() - startTime))
+    return tick === 20 ? getFPS(fps >>> 1) : fps
   }
 
   function applyTransform(img, scaleX, scaleY, rotate, moveX, moveY) {
@@ -1791,16 +1802,6 @@ window.ImageViewer = (function () {
   }
 
   function addImageListEvent(options) {
-    async function getFPS(tick = 20) {
-      let startTime = 0
-      const {promise, resolve} = Promise.withResolvers()
-      const action = i => (i > 0 ? requestAnimationFrame(() => action(i - 1)) : resolve())
-      requestAnimationFrame(() => action(tick) && (startTime = performance.now()))
-      await promise
-      const fps = Math.round((tick * 1000) / (performance.now() - startTime))
-      return tick === 20 ? getFPS(fps >>> 1) : fps
-    }
-
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const current = shadowRoot.querySelector('#iv-counter-current')
     const total = shadowRoot.querySelector('#iv-counter-total')
@@ -1814,7 +1815,6 @@ window.ImageViewer = (function () {
     const throttlePeriod = options.throttlePeriod ?? 80
     const smoothThrottleRatio = 0.75
 
-    let fps = getFPS().then(result => (fps = result)) && 60
     let debounceTimeout = 0
     let debounceFlag = false
     let smoothThrottle = 0
