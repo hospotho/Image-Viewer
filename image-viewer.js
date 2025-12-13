@@ -40,14 +40,12 @@ window.ImageViewer = (function () {
     viewer.style.opacity = '0'
   }
 
-  async function getFPS(tick = 20) {
-    let startTime = 0
-    const {promise, resolve} = Promise.withResolvers()
-    const action = i => (i > 0 ? requestAnimationFrame(() => action(i - 1)) : resolve())
-    requestAnimationFrame(() => action(tick) && (startTime = performance.now()))
-    await promise
-    const fps = Math.round((tick * 1000) / (performance.now() - startTime))
-    return tick === 20 ? getFPS(fps >>> 1) : fps
+  async function getFPS(tick = 10) {
+    const timeList = Array(tick)
+    for (let i = 0; i < tick; i++) timeList[i] = await new Promise(resolve => requestAnimationFrame(resolve))
+    const intervalList = timeList.slice(1).map((t, i) => t - timeList[i])
+    const median = intervalList.sort((a, b) => a - b)[Math.floor(intervalList.length / 2)]
+    return Math.round(1000 / median)
   }
 
   function applyTransform(img, scaleX, scaleY, rotate, moveX, moveY) {
