@@ -1812,6 +1812,7 @@ window.ImageViewer = (function () {
     // filter navigation call during long paint
     let moveLock = false
     let lastDecodeTime = 0
+    let resetDecodeTimeout = 0
 
     async function moveToNode(index) {
       if (moveLock) return
@@ -1819,6 +1820,7 @@ window.ImageViewer = (function () {
 
       // compensate last decode time
       await new Promise(resolve => setTimeout(resolve, lastDecodeTime))
+      clearTimeout(resetDecodeTimeout)
 
       // wait gpu decode next image
       const startTime = performance.now()
@@ -1838,6 +1840,7 @@ window.ImageViewer = (function () {
 
       const totalTime = performance.now() - startTime
       lastDecodeTime = Math.max(lastDecodeTime * smoothThrottleRatio, totalTime)
+      resetDecodeTimeout = setTimeout(() => (lastDecodeTime = 0), 1500)
       throttleTimestamp = Date.now() + throttlePeriod
       moveLock = false
     }
