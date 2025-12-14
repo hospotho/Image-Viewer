@@ -1825,7 +1825,7 @@ window.ImageViewer = (function () {
       const currentListItem = imageListNode.querySelector('li.current')
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
       const relateImage = relateListItem.querySelector('img')
-      await relateImage.decode()
+      await relateImage.decode().catch(() => {})
 
       // update dom
       currentListItem?.classList.remove('current')
