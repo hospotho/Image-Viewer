@@ -1799,7 +1799,7 @@ window.ImageViewer = (function () {
 
     const debouncePeriod = options.debouncePeriod ?? 1500
     const throttlePeriod = options.throttlePeriod ?? 80
-    const smoothThrottleRatio = 0.8
+    const smoothThrottleRatio = 0.75
 
     let debounceTimeout = 0
     let debounceFlag = false
@@ -1817,7 +1817,7 @@ window.ImageViewer = (function () {
       moveLock = true
 
       // compensate last decode time
-      await new Promise(resolve => setTimeout(resolve, lastDecodeTime))
+      if (lastDecodeTime > 0) await new Promise(resolve => setTimeout(resolve, lastDecodeTime))
       clearTimeout(resetDecodeTimeout)
 
       // wait gpu decode next image
@@ -1837,7 +1837,7 @@ window.ImageViewer = (function () {
       moveCount++
 
       const totalTime = performance.now() - startTime
-      lastDecodeTime = Math.max(lastDecodeTime * smoothThrottleRatio, totalTime)
+      lastDecodeTime = Math.max(lastDecodeTime * smoothThrottleRatio, totalTime) - throttlePeriod
       resetDecodeTimeout = setTimeout(() => (lastDecodeTime = 0), 1500)
       throttleTimestamp = Date.now() + throttlePeriod
       moveLock = false
