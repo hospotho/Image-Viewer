@@ -1731,9 +1731,7 @@ window.ImageViewer = (function () {
         lastPos.y = e.clientY
         // reset transition
         clearTimeout(finalDragTimeout)
-        finalDragTimeout = setTimeout(() => {
-          img.style.transition = ''
-        }, 30)
+        finalDragTimeout = setTimeout(() => (img.style.transition = ''), 30)
         img.style.transition = 'none'
         updateDisplacement(img, deltaX, deltaY, rotateCount)
       })
