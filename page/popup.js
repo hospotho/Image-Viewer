@@ -2,6 +2,14 @@
   'use strict'
 
   const rawText = `
+1.45 [2025-12-14]:
+Major Update
+1. Added smooth throttling for image navigation when rendering lag occurs.
+2. Relaxed auto activation check for image tab, reducing potential conflicts with other extensions.
+3. Improved unlazy flow to reduce loading delays under slow network conditions.
+4. Improved moveTo logic to handle more edge cases correctly.
+5. Other bug fixes and improvements.
+
 1.44 [2025-12-03]:
 Stability update
 1. Fixed a bug that caused images to not transform smoothly.
