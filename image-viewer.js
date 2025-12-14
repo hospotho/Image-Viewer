@@ -1805,61 +1805,40 @@ window.ImageViewer = (function () {
 
     let debounceTimeout = 0
     let debounceFlag = false
-    let smoothThrottle = 0
     let throttleTimestamp = Date.now()
     let autoNavigateFlag = 0
     let moveCount = 0
 
     // filter navigation call during long paint
     let moveLock = false
+    let lastDecodeTime = 0
 
     async function moveToNode(index) {
       if (moveLock) return
       moveLock = true
 
-      // wait current frame render complete
-      const startTime = performance.now()
-      const previousFrameTime = await new Promise(resolve => requestAnimationFrame(resolve))
-      const frameStartTime = previousFrameTime > startTime ? previousFrameTime : await new Promise(resolve => requestAnimationFrame(resolve))
+      // compensate last decode time
+      await new Promise(resolve => setTimeout(resolve, lastDecodeTime))
 
+      // wait gpu decode next image
+      const startTime = performance.now()
       const currentListItem = imageListNode.querySelector('li.current')
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
       const relateImage = relateListItem.querySelector('img')
+      await relateImage.decode()
+
+      // update dom
       currentListItem?.classList.remove('current')
       relateListItem.classList.add('current')
-
       current.textContent = index + 1
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
       infoPopup.dispatchEvent(updateEvent)
       moveCount++
 
-      // wait this frame render complete
-      let lastFrameEndTime = frameStartTime
-      let frameEndTime = await new Promise(resolve => requestAnimationFrame(resolve))
-      // skip partial render frames
-      while (fps * (frameEndTime - lastFrameEndTime) < 0.75 * 1000) {
-        lastFrameEndTime = frameEndTime
-        frameEndTime = await new Promise(resolve => requestAnimationFrame(resolve))
-      }
-
-      const endTime = performance.now()
-      const renderTime = frameEndTime - frameStartTime
-      const waitTime = endTime - startTime - renderTime
-
-      // update fps if complete in single frame
-      if (lastFrameEndTime === frameStartTime) fps += fps * renderTime > 1000 ? -1 : 1
-
-      // calculate smooth throttle
-      const estimatedRenderTime = 1000 / fps
-      const extraRenderTime = Math.max(0, renderTime - estimatedRenderTime)
-      const extraWaitTime = Math.max(0, waitTime - 0.5 * estimatedRenderTime)
-      // humans overestimate short delays around 40% https://doi.org/10.1086/208998
-      const expectedDelay = (extraRenderTime + extraWaitTime) * 1.4
-      smoothThrottle = Math.max(smoothThrottle, expectedDelay)
-      throttleTimestamp = Date.now() + smoothThrottle
-      smoothThrottle *= smoothThrottleRatio
-      smoothThrottle = smoothThrottle > 1 ? smoothThrottle : 0
+      const totalTime = performance.now() - startTime
+      lastDecodeTime = Math.max(lastDecodeTime * smoothThrottleRatio, totalTime)
+      throttleTimestamp = Date.now() + throttlePeriod
       moveLock = false
     }
 
@@ -1882,7 +1861,7 @@ window.ImageViewer = (function () {
         const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
         debounceTimeout = setTimeout(prevItem, delay)
         debounceFlag = true
-      } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
+      } else if (Date.now() > throttleTimestamp) {
         resetTimeout()
         moveToNode(prevIndex)
       }
@@ -1902,7 +1881,7 @@ window.ImageViewer = (function () {
         const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
         debounceTimeout = setTimeout(nextItem, delay)
         debounceFlag = true
-      } else if (Date.now() >= throttleTimestamp + throttlePeriod) {
+      } else if (Date.now() > throttleTimestamp) {
         resetTimeout()
         moveToNode(nextIndex)
       }
