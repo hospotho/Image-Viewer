@@ -1817,8 +1817,8 @@ window.ImageViewer = (function () {
       moveLock = true
 
       // compensate last decode time
-      if (lastDecodeTime > 0) await new Promise(resolve => setTimeout(resolve, lastDecodeTime))
       clearTimeout(resetDecodeTimeout)
+      if (lastDecodeTime > 0) await new Promise(resolve => setTimeout(resolve, lastDecodeTime))
 
       // wait gpu decode next image
       const startTime = performance.now()
