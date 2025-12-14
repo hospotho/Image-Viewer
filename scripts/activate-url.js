@@ -189,7 +189,7 @@
 
     try {
       const image = document.querySelector(`img[src='${location.href}']`)
-      const found = (image && image.parentElement === document.body) || (await fetch(location.href).then(res => res.headers.get('Content-Type')?.startsWith('image/')))
+      const found = image && (image.parentElement === document.body || (await fetch(location.href).then(res => res.headers.get('Content-Type')?.startsWith('image/'))))
       found ? initImageViewer(image) : safeSendMessage('load_worker')
     } catch (error) {}
   }
