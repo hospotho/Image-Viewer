@@ -888,7 +888,7 @@ window.ImageViewerUtils = (function () {
       container.scrollBy({top: window.innerHeight * 2, behavior: 'smooth'})
       await waitScrollComplete()
     }
-    if (isImageViewerExist()) container.scrollTo(currentX, currentY)
+    if (!viewerMoveToFlag) container.scrollTo(currentX, currentY)
   }
   async function scrollThoughDocument(currentX, currentY) {
     const container = getMainContainer()
