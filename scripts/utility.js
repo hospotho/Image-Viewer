@@ -855,12 +855,10 @@ window.ImageViewerUtils = (function () {
   async function slowScrollThoughDocument(currentX, currentY) {
     if (!isImageViewerExist()) return
 
-    const haveNewImage = (function () {
-      const imageCount = ImageViewer('get_image_list').length
-      let changed = true
-      setTimeout(() => (changed = false), 5000)
-      return () => changed || (changed = imageCount !== ImageViewer('get_image_list').length)
-    })()
+    let fresh = true
+    const imageCount = ImageViewer('get_image_list').length
+    const haveNewImage = () => fresh || (fresh = imageCount !== ImageViewer('get_image_list').length)
+    setTimeout(() => (fresh = false), 5000)
 
     const container = getMainContainer()
     const totalHeight = container.scrollHeight
