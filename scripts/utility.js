@@ -1400,16 +1400,13 @@ window.ImageViewerUtils = (function () {
     const proxy = cachedGetProxySrc(url, /https?:\/\/\S+/g)
     return proxy || url.href
   }
-  function checkAttrUrlPath(url, src, attrList) {
-    const origin = url.origin
-    const pathname = url.pathname
-    const search = url.search
+  function checkAttrUrlPath(url, attrList) {
+    const {origin, pathname, search} = url
 
     // check url filename
     const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
     if (pathname !== nonThumbnailPath) {
-      const nonThumbnail = src.replace(pathname, nonThumbnailPath)
-      attrList.push({name: 'non thumbnail path', url: nonThumbnail})
+      attrList.push({name: 'non thumbnail path', url: origin + nonThumbnailPath + search})
     }
     const filenameIndex = pathname.lastIndexOf('/')
     const filename = pathname.slice(filenameIndex + 1)
@@ -1417,26 +1414,22 @@ window.ImageViewerUtils = (function () {
     if (lastMatch) {
       const rawFilename = filename.slice(0, lastMatch.index) + filename.slice(lastMatch.index + lastMatch[0].length)
       const rawSizePath = pathname.slice(0, filenameIndex + 1) + rawFilename
-      attrList.push({name: 'no size path', url: origin + rawSizePath})
+      attrList.push({name: 'no size path', url: origin + rawSizePath + search})
     }
 
     // check url parameters
-    if (!src.includes('?')) return
+    if (search === '' || search === '?') return
     if (!pathname.includes('.')) {
       const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
       if (extMatch) {
-        const filenameWithExt = pathname + '.' + extMatch[0]
-        const rawExtension = src.replace(pathname + search, filenameWithExt)
-        attrList.push({name: 'raw extension', url: rawExtension})
+        attrList.push({name: 'raw extension', url: origin + pathname + '.' + extMatch[0]})
       }
     }
     if (search.includes('width=') || search.includes('height=')) {
       const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
-      const rawQuery = src.replace(search, noSizeQuery)
-      attrList.push({name: 'no size query', url: rawQuery})
+      attrList.push({name: 'no size query', url: origin + pathname + noSizeQuery})
     }
-    const noQuery = src.replace(pathname + search, pathname)
-    attrList.push({name: 'no query', url: noQuery})
+    attrList.push({name: 'no query', url: origin + pathname})
   }
   function getUnlazyAttrList(img) {
     const src = img.currentSrc || img.src
@@ -1472,7 +1465,7 @@ window.ImageViewerUtils = (function () {
     // check url path
     const url = cachedGetUrl(src)
     if (url !== null) {
-      checkAttrUrlPath(url, src, attrList)
+      checkAttrUrlPath(url, attrList)
     }
 
     // check parent anchor
