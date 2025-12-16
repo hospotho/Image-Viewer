@@ -1982,7 +1982,7 @@ window.ImageViewer = (function () {
   function updateImageList(newList, options) {
     function tryClear() {
       // failed update will became incorrect insertion
-      const invalidImageList = imageDataList.length > newList.length || shadowRoot.querySelectorAll('img').length > imageDataList.length
+      const invalidImageList = imageDataList.length > newList.length || imgList.length > imageDataList.length
       if (invalidImageList) {
         const current = shadowRoot.querySelector('li.current img')
         clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
@@ -2112,11 +2112,11 @@ window.ImageViewer = (function () {
     //   }
     // }
 
+    const imgList = [...shadowRoot.querySelectorAll('img')]
     const cleared = tryClear()
     if (cleared) return
 
     // init update check cache
-    const imgList = [...shadowRoot.querySelectorAll('img')]
     const currentUrlList = imgList.map(data => data.src)
     const newDomDataMap = new Map()
     const newUrlDataMap = new Map()
