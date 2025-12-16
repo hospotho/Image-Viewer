@@ -1401,12 +1401,23 @@ window.ImageViewerUtils = (function () {
     return proxy || url.href
   }
   function checkAttrUrlPath(url, src, attrList) {
+    const origin = url.origin
     const pathname = url.pathname
     const search = url.search
+
+    // check url filename
     const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
     if (pathname !== nonThumbnailPath) {
       const nonThumbnail = src.replace(pathname, nonThumbnailPath)
       attrList.push({name: 'non thumbnail path', url: nonThumbnail})
+    }
+    const filenameIndex = pathname.lastIndexOf('/')
+    const filename = pathname.slice(filenameIndex + 1)
+    const lastMatch = filename.matchAll(/[-_]\d{3,4}(?:x\d{3,4})?/g).reduce((_, m) => m, null)
+    if (lastMatch) {
+      const rawFilename = filename.slice(0, lastMatch.index) + filename.slice(lastMatch.index + lastMatch[0].length)
+      const rawSizePath = pathname.slice(0, filenameIndex + 1) + rawFilename
+      attrList.push({name: 'no size path', url: origin + rawSizePath})
     }
 
     // check url parameters
