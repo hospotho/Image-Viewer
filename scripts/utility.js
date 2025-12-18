@@ -542,6 +542,7 @@ window.ImageViewerUtils = (function () {
     const rootNodeMap = new WeakMap()
     const composedRootNodeMap = new WeakMap()
     return (node, composed = false) => {
+      if (!node) return document
       const key = node.parentNode || node
       const cache = composed ? composedRootNodeMap.get(key) : rootNodeMap.get(key)
       if (cache !== undefined) return cache
