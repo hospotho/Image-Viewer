@@ -1825,7 +1825,7 @@ window.ImageViewer = (function () {
       const currentListItem = imageListNode.querySelector('li.current')
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
       const relateImage = relateListItem.querySelector('img')
-      await relateImage.decode().catch(() => {})
+      if (relateImage.complete) await relateImage.decode().catch(() => {})
 
       // update dom
       currentListItem?.classList.remove('current')
@@ -1852,6 +1852,8 @@ window.ImageViewer = (function () {
       const imageListLength = Number(total.textContent)
       const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
       if (!repeat) {
+        lastDecodeTime = 0
+        clearTimeout(resetDecodeTimeout)
         resetTimeout()
         moveToNode(prevIndex)
         return
@@ -1872,6 +1874,8 @@ window.ImageViewer = (function () {
       const imageListLength = Number(total.textContent)
       const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
       if (!repeat) {
+        lastDecodeTime = 0
+        clearTimeout(resetDecodeTimeout)
         resetTimeout()
         moveToNode(nextIndex)
         return
