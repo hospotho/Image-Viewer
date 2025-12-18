@@ -1297,6 +1297,7 @@ window.ImageViewerUtils = (function () {
   async function isNewSrcBetter(currentSrc, bitSize, naturalSize, newSrc) {
     // current is placeholder
     if (badImageSet.has(currentSrc)) return true
+    if (badImageSet.has(newSrc)) return false
 
     const baseSize = bitSize || naturalSize
     if (baseSize === 0) {
