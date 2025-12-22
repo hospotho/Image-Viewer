@@ -591,7 +591,10 @@ window.ImageViewerUtils = (function () {
         const topA = aRootList[aRootList.length - i]
         const topB = bRootList[bRootList.length - i]
         if (topA !== topB) {
-          return topA.compareDocumentPosition(topB) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+          const comparison = topA.compareDocumentPosition(topB)
+          // top node no longer exist
+          if (comparison & Node.DOCUMENT_POSITION_DISCONNECTED) return 0
+          return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
         }
       }
       // must have same root, should never happen
