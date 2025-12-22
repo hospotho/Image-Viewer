@@ -606,13 +606,14 @@ window.ImageViewerUtils = (function () {
       const aId = getNodeId(a)
       const bId = getNodeId(b)
       if (aId === bId) return 0
+      // always use smaller key
       if (aId > bId) {
         const key = (bId << 16) + aId
         const cache = rootPositionCache.get(key)
-        if (cache !== undefined) return cache === 0 ? 0 : cache * -1
+        if (cache !== undefined) return cache * -1
         const result = compareRootPosition(b, a)
         rootPositionCache.set(key, result)
-        return result === 0 ? 0 : result * -1
+        return result * -1
       }
       const key = (aId << 16) + bId
       const cache = rootPositionCache.get(key)
@@ -626,10 +627,12 @@ window.ImageViewerUtils = (function () {
     function compareNodePosition(a, b) {
       // iframe image
       if (a === b) return 0
+      // normal node
       const comparison = a.compareDocumentPosition(b)
       if (!(comparison & Node.DOCUMENT_POSITION_DISCONNECTED)) {
         return comparison & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
       }
+      // node in shadow dom
       if (cachedGetRootNode(a, true) === document && cachedGetRootNode(b, true) === document) {
         return cachedCompareRootPosition(a, b)
       }
@@ -642,13 +645,14 @@ window.ImageViewerUtils = (function () {
       const aId = getNodeId(a)
       const bId = getNodeId(b)
       if (aId === bId) return 0
+      // always use smaller key
       if (aId > bId) {
         const key = (bId << 16) + aId
         const cache = nodePositionCache.get(key)
-        if (cache !== undefined) return cache === 0 ? 0 : cache * -1
+        if (cache !== undefined) return cache * -1
         const result = compareNodePosition(b, a)
         nodePositionCache.set(key, result)
-        return result === 0 ? 0 : result * -1
+        return result * -1
       }
       const key = (aId << 16) + bId
       const cache = nodePositionCache.get(key)
