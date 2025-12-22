@@ -605,12 +605,20 @@ window.ImageViewerUtils = (function () {
     return (a, b) => {
       const aId = getNodeId(a)
       const bId = getNodeId(b)
-      const cache = rootPositionCache.get((aId << 16) + bId)
+      if (aId === bId) return 0
+      if (aId > bId) {
+        const key = (bId << 16) + aId
+        const cache = rootPositionCache.get(key)
+        if (cache !== undefined) return cache === 0 ? 0 : cache * -1
+        const result = compareRootPosition(b, a)
+        rootPositionCache.set(key, result)
+        return result === 0 ? 0 : result * -1
+      }
+      const key = (aId << 16) + bId
+      const cache = rootPositionCache.get(key)
       if (cache !== undefined) return cache
-      const reverseCache = rootPositionCache.get((bId << 16) + aId)
-      if (reverseCache !== undefined) return reverseCache * -1
       const result = compareRootPosition(a, b)
-      rootPositionCache.set((aId << 16) + bId, result)
+      rootPositionCache.set(key, result)
       return result
     }
   })()
@@ -633,12 +641,20 @@ window.ImageViewerUtils = (function () {
     return (a, b) => {
       const aId = getNodeId(a)
       const bId = getNodeId(b)
-      const cache = nodePositionCache.get((aId << 16) + bId)
+      if (aId === bId) return 0
+      if (aId > bId) {
+        const key = (bId << 16) + aId
+        const cache = nodePositionCache.get(key)
+        if (cache !== undefined) return cache === 0 ? 0 : cache * -1
+        const result = compareNodePosition(b, a)
+        nodePositionCache.set(key, result)
+        return result === 0 ? 0 : result * -1
+      }
+      const key = (aId << 16) + bId
+      const cache = nodePositionCache.get(key)
       if (cache !== undefined) return cache
-      const reverseCache = nodePositionCache.get((bId << 16) + aId)
-      if (reverseCache !== undefined) return reverseCache * -1
       const result = compareNodePosition(a, b)
-      nodePositionCache.set((aId << 16) + bId, result)
+      nodePositionCache.set(key, result)
       return result
     }
   })()
