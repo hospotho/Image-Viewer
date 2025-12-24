@@ -22,14 +22,14 @@ If you like this extension, you can [buy me a coffee](https://ko-fi.com/tonymilk
 
 [Web Demo](https://hospotho.github.io/Image-Viewer/) (Does not include some extension-only features)
 
-You can install release version from [Chrome Web Store](https://chrome.google.com/webstore/detail/image-viewer/ghdcoodfcolpdebbdhbgkbodbjololfl) or [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/syrup-image-viewer/) development version follow steps below:
+You can install release version from [Chrome Web Store](https://chrome.google.com/webstore/detail/image-viewer/ghdcoodfcolpdebbdhbgkbodbjololfl) and [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/syrup-image-viewer/). For development version, follow steps below:
 
 1. Download the source code and place it anywhere you want.
 2. Open your browser and go to `chrome://extensions`.
 3. Enable Developer Mode.
 4. Click the "Load Unpacked" button and select the folder with the source code.
 
-Note: Any tabs opened before the installation require a reload.
+Note: Tabs opened before installation require a reload to use the extension on them.
 
 ## How to use
 
@@ -37,9 +37,9 @@ After adding this extension to your browser, it is recommended to pin it to the 
 
 For image tabs, Image Viewer will be activate automatically.
 
-For normal websites, you can activate Image Viewer by choose this extension from the right-click menu, click its icon on the toolbar or use keyboard hotkey (default <kbd>Alt</kbd>+<kbd>1</kbd>).
+For normal websites, you can activate Image Viewer by click its icon on the toolbar, choose this extension from the right-click menu or use keyboard hotkey (default <kbd>Alt</kbd>+<kbd>1</kbd>).
 
-For additional options, right-click the extension icon on the toolbar. You can start the Image Viewer with disabled size filter or start with the last picked image (use it when the right-click menu is disabled by the website).
+For additional options, right-click the extension icon on the toolbar. eg: activate Image Viewer with disabled size filter, activate with the last picked image (use it when the right-click menu is disabled by the website).
 
 <table>
   <tr>
@@ -147,7 +147,7 @@ For additional options, right-click the extension icon on the toolbar. You can s
 
 ## Browser support
 
-The entire project was written in Vanilla JavaScript with extension API supported by Chromium-based browsers. It should also work on Firefox, but it has not been tested yet.
+The entire project was written in Vanilla JavaScript with extension API supported by Chromium-based browsers and Firefox.
 
 The standalone `image-viewer.js` should work on all modern browsers, and you can integrated into your own website with own collect image script.
 
