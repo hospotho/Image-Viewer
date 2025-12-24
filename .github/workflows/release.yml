@@ -50,14 +50,14 @@ jobs:
 
           # zip files
           cd release-build
-          zip -r "../image-viewer-v${{ steps.get_version.outputs.version }}.zip" .
+          zip -r "../image-viewer-${{ steps.get_version.outputs.version }}.zip" .
           cd ..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.get_version.outputs.version }}-${{ steps.get_version.outputs.short_hash }}
-          path: image-viewer-v${{ steps.get_version.outputs.version }}.zip
+          name: image-viewer-${{ steps.get_version.outputs.version }}
+          path: ./release-build/*
           retention-days: 5
 
       - name: Create release
@@ -66,7 +66,7 @@ jobs:
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
           release_name: v${{ steps.get_version.outputs.version }}
-          files: image-viewer-v${{ steps.get_version.outputs.version }}.zip
+          files: image-viewer-${{ steps.get_version.outputs.version }}.zip
           draft: true
           prerelease: false
           body: |
