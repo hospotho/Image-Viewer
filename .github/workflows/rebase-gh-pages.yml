@@ -1,0 +1,29 @@
+name: Monthly gh-pages rebase
+
+on:
+  schedule:
+    - cron: '0 0 1 * *' # first day of every month
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git Identity
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Rebase gh-pages to master
+        run: |
+          git checkout gh-pages
+          git rebase origin/master
+          git push origin gh-pages --force
