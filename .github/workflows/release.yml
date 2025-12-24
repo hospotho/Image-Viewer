@@ -20,7 +20,7 @@ jobs:
         run: |
           # get hash and version number
           SHORT_HASH=$(git rev-parse --short HEAD)
-          VERSION=$(git log --pretty=format:"%s" -1 | grep -oP "\d+\.\d+(\.\d+)?")
+          VERSION=$(git log --pretty=format:"%s" -1 | grep -oP "\d+\.\d+(\.\d+)?" || true)
 
           # set output
           echo "short_hash=$SHORT_HASH" >> $GITHUB_OUTPUT
@@ -40,7 +40,7 @@ jobs:
           cp -r ./css ./release-build/
           cp -r ./icon ./release-build/
           cp -r ./page ./release-build/
-          cp -r ./script ./release-build/
+          cp -r ./scripts ./release-build/
           cp background.js ./release-build/
           cp image-viewer.js ./release-build/
           cp license ./release-build/
