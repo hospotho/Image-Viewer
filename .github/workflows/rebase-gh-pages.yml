@@ -1,4 +1,4 @@
-name: Monthly gh-pages rebase
+name: monthly gh-pages rebase
 
 on:
   schedule:
