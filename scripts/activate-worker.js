@@ -44,27 +44,35 @@
     const lower = className.toLowerCase()
     return lower.includes('lazy') || lower.includes('loading')
   }
-  function processLazyPlaceholder() {
+  async function processLazyPlaceholder() {
     if (badImageSet.has(location.href)) return
     badImageSet.add(location.href)
 
-    const lazySrcList = [...document.getElementsByTagName('img')]
-      .filter(image => image.src && (image.naturalWidth + image.naturalHeight < 16 || image.src.endsWith('.gif') || isLazyClass(image.className)))
-      .map(image => image.currentSrc.replace(/^https?:/, location.protocol))
-    if (lazySrcList.length === 0) return
+    // wait placeholder load complete
+    await new Promise(resolve => setTimeout(resolve, 500))
 
-    const countMap = {}
-    for (const src of lazySrcList) {
-      if (countMap[src] === undefined) {
-        countMap[src] = 1
-      } else {
-        countMap[src]++
-      }
+    // calculate lazy score
+    const srcScoreMap = new Map()
+    for (const img of document.querySelectorAll('img[src]')) {
+      const src = img.currentSrc.replace(/^https?:/, location.protocol)
+
+      const smallImage = img.complete && img.naturalWidth + img.naturalHeight < 16 ? 1 : 0
+      const gifImage = img.src.endsWith('.gif') ? 1 : 0
+      const repeated = srcScoreMap.has(src) ? 1 : 0
+      const imageScore = smallImage + gifImage + repeated
+
+      const lazyClass = isLazyClass(img.className) ? 1 : 0
+      const lazyScore = lazyClass ? 1 + 2 * imageScore : imageScore
+      if (lazyScore === 0) continue
+
+      const current = srcScoreMap.get(src) || 0
+      srcScoreMap.set(src, current + lazyScore)
     }
 
-    for (const src in countMap) {
-      if (countMap[src] >= 5) {
-        console.log(`Found lazy src appear ${countMap[src]} times ${src}`)
+    // update bad image
+    for (const [src, score] of srcScoreMap) {
+      if (score >= 4) {
+        console.log(`Found src with ${score} lazy score ${src}`)
         srcBitSizeMap.set(src, -1)
         srcRealSizeMap.set(src, -1)
         badImageSet.add(src)
