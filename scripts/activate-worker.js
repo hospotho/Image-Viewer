@@ -29,10 +29,10 @@
   }
 
   // image cache
-  window.badImageSet = new Set(['', 'about:blank'])
-  window.corsHostSet = new Set()
-  window.srcBitSizeMap = new Map()
-  window.srcRealSizeMap = new Map()
+  window.badImageSet ??= new Set(['', 'about:blank'])
+  window.corsHostSet ??= new Set()
+  window.srcBitSizeMap ??= new Map()
+  window.srcRealSizeMap ??= new Map()
   const badImageSet = window.badImageSet
   const corsHostSet = window.corsHostSet
   const srcBitSizeMap = window.srcBitSizeMap
