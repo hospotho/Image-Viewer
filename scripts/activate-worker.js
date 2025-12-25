@@ -7,10 +7,6 @@
     }
   }
 
-  // init bad image set
-  window.badImageSet ??= new Set(['', 'about:blank'])
-  const badImageSet = window.badImageSet
-
   // init hover check
   const options = window.ImageViewerOption
   const domainList = []
@@ -32,10 +28,15 @@
     document.head.appendChild(styleSheet)
   }
 
-  // image size
-  const srcBitSizeMap = new Map()
-  const srcRealSizeMap = new Map()
-  const corsHostSet = new Set()
+  // image cache
+  window.badImageSet = new Set(['', 'about:blank'])
+  window.corsHostSet = new Set()
+  window.srcBitSizeMap = new Map()
+  window.srcRealSizeMap = new Map()
+  const badImageSet = window.badImageSet
+  const corsHostSet = window.corsHostSet
+  const srcBitSizeMap = window.srcBitSizeMap
+  const srcRealSizeMap = window.srcRealSizeMap
   const argsRegex = /(.*?[=.](?:jpeg|jpg|png|gif|webp|bmp|tiff|avif))(?!\/)/i
 
   function isLazyClass(className) {

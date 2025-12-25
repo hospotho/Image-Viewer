@@ -113,18 +113,17 @@ window.ImageViewerUtils = (function () {
   const origin = location.origin + '/'
   const symbol = Symbol('check')
   const signal = Promise.resolve(symbol)
+  const pendingBadImageMap = new Map()
 
   // image cache
-  window.badImageSet ??= new Set(['', 'about:blank'])
   window.backupImageList = []
-  const pseudoImageDataList = []
   const badImageSet = window.badImageSet
-  const pendingBadImageMap = new Map()
-  const corsHostSet = new Set()
-  const srcBitSizeMap = new Map()
-  const srcRealSizeMap = new Map()
+  const corsHostSet = window.corsHostSet
+  const srcBitSizeMap = window.srcBitSizeMap
+  const srcRealSizeMap = window.srcRealSizeMap
 
   // unlazy state
+  const pseudoImageDataList = []
   let lastHref = location.href
   let disableImageUnlazy = false
   let unlazyFlag = false
