@@ -1837,9 +1837,9 @@ window.ImageViewer = (function () {
       moveCount++
 
       const totalTime = performance.now() - startTime
-      lastDecodeTime = Math.max(lastDecodeTime * smoothThrottleRatio, totalTime) - throttlePeriod
+      throttleTimestamp = Date.now() + throttlePeriod - totalTime
+      lastDecodeTime = Math.max(lastDecodeTime * smoothThrottleRatio, totalTime)
       resetDecodeTimeout = setTimeout(() => (lastDecodeTime = 0), 1500)
-      throttleTimestamp = Date.now() + throttlePeriod
       moveLock = false
     }
 
