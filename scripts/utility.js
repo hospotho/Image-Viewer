@@ -1296,11 +1296,11 @@ window.ImageViewerUtils = (function () {
     srcBitSizeMap.set(src, promise)
     return promise
   }
-  async function getImageRealSize(src) {
+  async function getImageRealSize(src, highPriority = false) {
     const cache = srcRealSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    const release = await semaphore.acquire()
+    const release = await semaphore.acquire(highPriority)
     const promise = new Promise(_resolve => {
       const resolve = size => {
         srcRealSizeMap.set(src, size)
@@ -1904,7 +1904,7 @@ window.ImageViewerUtils = (function () {
     return [width, height]
   }
   async function checkBackgroundSize(node, url) {
-    const realSize = await getImageRealSize(url)
+    const realSize = await getImageRealSize(url, true) // high priority
     const {width, height} = node.getBoundingClientRect()
     node.removeAttribute('no-bg')
     node.setAttribute('iv-bg', url)
