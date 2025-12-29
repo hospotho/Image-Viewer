@@ -1809,6 +1809,7 @@ window.ImageViewer = (function () {
 
     // filter navigation call during long paint
     let moveLock = false
+    let lastCompleteTime = 0
     let lastDecodeTime = 0
     let resetDecodeTimeout = 0
 
@@ -1816,16 +1817,20 @@ window.ImageViewer = (function () {
       if (moveLock) return
       moveLock = true
 
-      // compensate last decode time
-      clearTimeout(resetDecodeTimeout)
-      if (lastDecodeTime > 0) await new Promise(resolve => setTimeout(resolve, lastDecodeTime))
+      // smoothen image display time
+      resetTimeout(resetDecodeTimeout)
+      const throttleDelay = Math.max(lastDecodeTime, lastCompleteTime + throttlePeriod - performance.now())
+      const throttlePromise = new Promise(resolve => setTimeout(resolve, throttleDelay))
 
-      // wait gpu decode next image
+      // wait next image decode
       const startTime = performance.now()
       const currentListItem = imageListNode.querySelector('li.current')
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
       const relateImage = relateListItem.querySelector('img')
       if (relateImage.complete) await relateImage.decode().catch(() => {})
+
+      const renderTime = performance.now() - startTime
+      await throttlePromise
 
       // update dom
       currentListItem?.classList.remove('current')
@@ -1836,9 +1841,10 @@ window.ImageViewer = (function () {
       infoPopup.dispatchEvent(updateEvent)
       moveCount++
 
-      const totalTime = performance.now() - startTime
-      throttleTimestamp = Date.now() + throttlePeriod - totalTime
-      lastDecodeTime = Math.max(lastDecodeTime * smoothThrottleRatio, totalTime)
+      // compensate for render
+      throttleTimestamp = Date.now() + throttlePeriod - renderTime
+      lastCompleteTime = performance.now()
+      lastDecodeTime = Math.max(lastDecodeTime, renderTime) * smoothThrottleRatio
       resetDecodeTimeout = setTimeout(() => (lastDecodeTime = 0), 1500)
       moveLock = false
     }
