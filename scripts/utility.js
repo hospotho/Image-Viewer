@@ -1935,7 +1935,7 @@ window.ImageViewerUtils = (function () {
     }
 
     const uncheckedNodeList = deepQuerySelectorAll(document.body, '*:not([no-bg])')
-    if (!document.body.hasAttribute('no-bg')) uncheckedNodeList.push(document.body)
+    if (!document.body.hasAttribute('no-bg')) uncheckedNodeList.unshift(document.body)
     for (const node of uncheckedNodeList) {
       const attrUrl = node.getAttribute('iv-bg')
       if (attrUrl !== null) {
@@ -1999,7 +1999,7 @@ window.ImageViewerUtils = (function () {
     }
 
     const uncheckedNodeList = deepQuerySelectorAll(document.body, '*:not([no-bg])')
-    if (!document.body.hasAttribute('no-bg')) uncheckedNodeList.push(document.body)
+    if (!document.body.hasAttribute('no-bg')) uncheckedNodeList.unshift(document.body)
     for (const node of uncheckedNodeList) {
       const [width, height] = getNodeSize(node)
       if (width < minWidth || height < minHeight) continue
