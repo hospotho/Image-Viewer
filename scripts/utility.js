@@ -730,7 +730,10 @@ window.ImageViewerUtils = (function () {
     const imageCountList = []
     for (const wrapper of wrapperList) {
       // ad may use same wrapper and adblock set it to display: none
-      if (wrapper.offsetParent === null && wrapper.style.position !== 'fixed') continue
+      if (wrapper.offsetParent === null) {
+        const style = getComputedStyle(wrapper)
+        if (style.display !== 'contents' && style.position !== 'fixed') continue
+      }
 
       const imgList = wrapper.querySelectorAll('img')
       const imageSet = new Set([...imgList].map(img => getFilename(img.src)))
