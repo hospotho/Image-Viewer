@@ -1801,8 +1801,8 @@ window.ImageViewer = (function () {
     const throttlePeriod = options.throttlePeriod ?? 80
     const smoothThrottleRatio = 0.75
 
-    let debounceTimeout = 0
     let debounceFlag = false
+    let debounceTimeout = 0
     let throttleTimestamp = Date.now()
     let autoNavigateFlag = 0
     let moveCount = 0
@@ -1818,7 +1818,7 @@ window.ImageViewer = (function () {
       moveLock = true
 
       // smoothen image display time
-      resetTimeout(resetDecodeTimeout)
+      clearTimeout(resetDecodeTimeout)
       const throttleDelay = Math.max(lastDecodeTime, lastCompleteTime + throttlePeriod - performance.now())
       const throttlePromise = new Promise(resolve => setTimeout(resolve, throttleDelay))
 
@@ -1849,9 +1849,9 @@ window.ImageViewer = (function () {
       moveLock = false
     }
 
-    function resetTimeout() {
-      clearTimeout(debounceTimeout)
+    function resetDebounce() {
       debounceFlag = false
+      clearTimeout(debounceTimeout)
     }
     function prevItem(repeat = false) {
       const currentIndex = Number(current.textContent) - 1
@@ -1860,7 +1860,7 @@ window.ImageViewer = (function () {
       if (!repeat) {
         lastDecodeTime = 0
         clearTimeout(resetDecodeTimeout)
-        resetTimeout()
+        resetDebounce()
         moveToNode(prevIndex)
         return
       }
@@ -1871,7 +1871,7 @@ window.ImageViewer = (function () {
         debounceTimeout = setTimeout(prevItem, delay)
         debounceFlag = true
       } else if (Date.now() > throttleTimestamp) {
-        resetTimeout()
+        resetDebounce()
         moveToNode(prevIndex)
       }
     }
@@ -1882,7 +1882,7 @@ window.ImageViewer = (function () {
       if (!repeat) {
         lastDecodeTime = 0
         clearTimeout(resetDecodeTimeout)
-        resetTimeout()
+        resetDebounce()
         moveToNode(nextIndex)
         return
       }
@@ -1893,7 +1893,7 @@ window.ImageViewer = (function () {
         debounceTimeout = setTimeout(nextItem, delay)
         debounceFlag = true
       } else if (Date.now() > throttleTimestamp) {
-        resetTimeout()
+        resetDebounce()
         moveToNode(nextIndex)
       }
     }
