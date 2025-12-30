@@ -1850,6 +1850,12 @@ window.ImageViewer = (function () {
       moveCount++
     }
 
+    function resetThrottle() {
+      throttleTimestamp = 0
+      lastCompleteTime = 0
+      lastDecodeTime = 0
+      clearTimeout(resetDecodeTimeout)
+    }
     function resetDebounce() {
       debounceFlag = false
       clearTimeout(debounceTimeout)
@@ -1859,8 +1865,7 @@ window.ImageViewer = (function () {
       const imageListLength = Number(total.textContent)
       const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
       if (!repeat) {
-        lastDecodeTime = 0
-        clearTimeout(resetDecodeTimeout)
+        resetThrottle()
         resetDebounce()
         moveToNode(prevIndex)
         return
@@ -1881,8 +1886,7 @@ window.ImageViewer = (function () {
       const imageListLength = Number(total.textContent)
       const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
       if (!repeat) {
-        lastDecodeTime = 0
-        clearTimeout(resetDecodeTimeout)
+        resetThrottle()
         resetDebounce()
         moveToNode(nextIndex)
         return
@@ -1931,6 +1935,7 @@ window.ImageViewer = (function () {
         if (moveLock) return
         const currIndex = Number(current.textContent) - 1
         const newIndex = action === 1 ? Math.min(currIndex + 10, Number(total.textContent) - 1) : Math.max(currIndex - 10, 0)
+        resetThrottle()
         moveToNode(newIndex)
       }
     }
@@ -1961,6 +1966,7 @@ window.ImageViewer = (function () {
         const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
         if (currIndex === newIndex) break
 
+        resetThrottle()
         await moveToNode(newIndex)
         lastMoveCount = moveCount
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
