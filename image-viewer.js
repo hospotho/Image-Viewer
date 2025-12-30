@@ -41,6 +41,7 @@ window.ImageViewer = (function () {
   }
 
   async function getFPS(tick = 10) {
+    await new Promise(resolve => requestIdleCallback(resolve))
     const timeList = Array(tick)
     for (let i = 0; i < tick; i++) timeList[i] = await new Promise(resolve => requestAnimationFrame(resolve))
     const intervalList = timeList.slice(1).map((t, i) => t - timeList[i])
