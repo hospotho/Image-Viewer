@@ -1801,17 +1801,18 @@ window.ImageViewer = (function () {
     const throttlePeriod = options.throttlePeriod ?? 80
     const smoothThrottleRatio = 0.75
 
+    // debounce and throttle
     let debounceFlag = false
     let debounceTimeout = 0
-    let throttleTimestamp = Date.now()
-    let autoNavigateFlag = 0
-    let moveCount = 0
-
-    // filter navigation call during long paint
-    let moveLock = false
+    let throttleTimestamp = 0
     let lastCompleteTime = 0
     let lastDecodeTime = 0
     let resetDecodeTimeout = 0
+
+    // navigation lock
+    let moveLock = false
+    let moveCount = 0
+    let autoNavigateFlag = 0
 
     async function moveToNode(index) {
       if (moveLock) return
@@ -1839,7 +1840,6 @@ window.ImageViewer = (function () {
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
       infoPopup.dispatchEvent(updateEvent)
-      moveCount++
 
       // compensate for render
       throttleTimestamp = Date.now() + throttlePeriod - renderTime
@@ -1847,6 +1847,7 @@ window.ImageViewer = (function () {
       lastDecodeTime = Math.max(lastDecodeTime, renderTime) * smoothThrottleRatio
       resetDecodeTimeout = setTimeout(() => (lastDecodeTime = 0), 1500)
       moveLock = false
+      moveCount++
     }
 
     function resetDebounce() {
