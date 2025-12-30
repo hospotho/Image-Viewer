@@ -822,19 +822,19 @@ window.ImageViewer = (function () {
     viewer.tabIndex = 0
 
     // init i18n
-    const i18n = {}
+    const i18n = {
+      widthText: 'Width',
+      heightText: 'Height',
+      sourceText: 'Source',
+      sizeText: 'Size',
+      typeText: 'Type'
+    }
     if (chrome.i18n?.getMessage) {
-      i18n.widthText = chrome.i18n.getMessage('width') || 'Width'
-      i18n.heightText = chrome.i18n.getMessage('height') || 'Height'
-      i18n.sourceText = chrome.i18n.getMessage('image_source') || 'Source'
-      i18n.sizeText = chrome.i18n.getMessage('image_size') || 'Size'
-      i18n.typeText = chrome.i18n.getMessage('image_type') || 'Type'
-    } else {
-      i18n.widthText = 'Width'
-      i18n.heightText = 'Height'
-      i18n.sourceText = 'Source'
-      i18n.sizeText = 'Size'
-      i18n.typeText = 'Type'
+      i18n.widthText = chrome.i18n.getMessage('width')
+      i18n.heightText = chrome.i18n.getMessage('height')
+      i18n.sourceText = chrome.i18n.getMessage('image_source')
+      i18n.sizeText = chrome.i18n.getMessage('image_size')
+      i18n.typeText = chrome.i18n.getMessage('image_type')
     }
     viewer.innerHTML = frame(i18n)
 
