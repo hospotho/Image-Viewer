@@ -1789,12 +1789,15 @@ window.ImageViewer = (function () {
 
   function addImageListEvent(options) {
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
+    const controlBar = shadowRoot.querySelector('#iv-control')
+    const closeButton = shadowRoot.querySelector('#iv-control-close')
+    const infoButton = shadowRoot.querySelector('#iv-control-info')
+    const infoPopup = shadowRoot.querySelector('#iv-info-popup')
+
     const current = shadowRoot.querySelector('#iv-counter-current')
     const total = shadowRoot.querySelector('#iv-counter-total')
-
     const infoWidth = shadowRoot.querySelector('#iv-info-width')
     const infoHeight = shadowRoot.querySelector('#iv-info-height')
-    const infoPopup = shadowRoot.querySelector('#iv-info-popup')
     const updateEvent = new CustomEvent('update-info')
 
     const debouncePeriod = options.debouncePeriod ?? 1500
@@ -1980,15 +1983,13 @@ window.ImageViewer = (function () {
     shadowRoot.querySelector('#iv-control-prev').addEventListener('click', prevItem)
     shadowRoot.querySelector('#iv-control-next').addEventListener('click', nextItem)
     // mouse wheel
-    const controlBar = shadowRoot.querySelector('#iv-control')
-    const infoButton = shadowRoot.querySelector('#iv-control-info')
-    const closeButton = shadowRoot.querySelector('#iv-control-close')
-    const scrollableElements = [controlBar, infoPopup, infoButton, closeButton]
+    const scrollableElements = [controlBar, closeButton, infoButton, infoPopup]
     for (const dom of scrollableElements) {
       dom.addEventListener(
         'wheel',
         e => {
           e.preventDefault()
+          if (moveLock) return
           e.deltaY > 0 ? nextItem() : prevItem()
         },
         {passive: false}
