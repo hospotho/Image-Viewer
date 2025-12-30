@@ -20,7 +20,9 @@
   const options = window.ImageViewerOption
   options.closeButton = true
 
-  const anchorList = [...document.getElementsByTagName('a')].filter(a => !a.href.endsWith('/'))
+  // natural sort
+  const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'})
+  const anchorList = [...document.getElementsByTagName('a')].filter(a => !a.href.endsWith('/')).sort(collator.compare)
   const isImageList = await safeSendMessage({msg: 'is_file_image', urlList: anchorList.map(a => a.href)})
   const sizeList = await Promise.all(anchorList.map((a, i) => isImageList[i] && ImageViewerUtils.getImageRealSize(a.href)))
 
