@@ -1812,7 +1812,7 @@ window.ImageViewer = (function () {
     // navigation lock
     let moveLock = false
     let moveCount = 0
-    let autoNavigateFlag = 0
+    let autoNavigateState = 0
 
     async function moveToNode(index) {
       if (moveLock) return
@@ -1936,26 +1936,26 @@ window.ImageViewer = (function () {
     }
     const autoNavigation = async e => {
       if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || !e.shiftKey) {
-        autoNavigateFlag = 0
+        autoNavigateState = 0
         return
       }
       if (e.key === 'Shift') return
       const action = keyMap[e.key]
       if (action === undefined || e.key.length === 1) {
-        autoNavigateFlag = 0
+        autoNavigateState = 0
         return
       }
-      // {0,1} => {0,2} => {-1,1}
-      const newFlag = action * 2 - 1
-      if (autoNavigateFlag === newFlag) return
+      // -1 or 1
+      const newState = action * 2 - 1
+      if (autoNavigateState === newState) return
 
-      autoNavigateFlag = newFlag
+      autoNavigateState = newState
       e.preventDefault()
 
       let lastMoveCount = moveCount
       while (document.visibilityState === 'visible') {
         // interrupt by user
-        if (autoNavigateFlag !== newFlag || lastMoveCount !== moveCount) break
+        if (autoNavigateState !== newState || lastMoveCount !== moveCount) break
 
         const currIndex = Number(current.textContent) - 1
         const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
@@ -1965,7 +1965,7 @@ window.ImageViewer = (function () {
         lastMoveCount = moveCount
         await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
       }
-      autoNavigateFlag = 0
+      autoNavigateState = 0
     }
     keydownHandlerList.push(normalNavigation)
     keydownHandlerList.push(fastNavigation)
