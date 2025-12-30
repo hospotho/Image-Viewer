@@ -393,6 +393,7 @@ function addMessageHandler() {
           const frameList = await chrome.webNavigation.getAllFrames({tabId: sender.tab.id})
           if (frameList === null || frameList.length < 2) {
             sendResponse([])
+            return
           }
           const iframeIdList = frameList.slice(1).map(frame => frame.frameId)
           const func = async option => await window.ImageViewerExtractor?.extractImage(option)
