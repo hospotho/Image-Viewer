@@ -1999,30 +1999,8 @@ window.ImageViewer = (function () {
   }
 
   function updateImageList(newList, options) {
-    function tryClear() {
-      // failed update will became incorrect insertion
-      const invalidImageList = imageDataList.length > newList.length || imgList.length > imageDataList.length
-      if (invalidImageList) {
-        const current = shadowRoot.querySelector('li.current img')
-        clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
-        clearDom = imageDataList[clearIndex]?.dom || null
-        clearSrc = current.src
-        lastTransform = getTransform(current)
-
-        imageDataList.length = 0
-        const imageListNode = shadowRoot.querySelector('#iv-image-list')
-        imageListNode.innerHTML = ''
-        buildImageList(newList, options)
-        return true
-      } else {
-        // new first image inserted
-        clearIndex = clearIndex === 0 ? 0 : -1
-        clearDom = null
-        clearSrc = ''
-        return false
-      }
-    }
     function tryUpdate() {
+      const imgList = shadowRoot.querySelectorAll('img')
       const action = (i, src) => {
         currentUrlList[i] = src
         imgList[i].src = '' // clear image
@@ -2130,13 +2108,33 @@ window.ImageViewer = (function () {
     //     }
     //   }
     // }
+    function tryClear() {
+      // failed update will became incorrect insertion
+      const imgList = shadowRoot.querySelectorAll('img')
+      const invalidImageList = imageDataList.length > newList.length || imgList.length > imageDataList.length
+      if (invalidImageList) {
+        const current = shadowRoot.querySelector('li.current img')
+        clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
+        clearDom = imageDataList[clearIndex]?.dom || null
+        clearSrc = current.src
+        lastTransform = getTransform(current)
 
-    const imgList = [...shadowRoot.querySelectorAll('img')]
-    const cleared = tryClear()
-    if (cleared) return
+        imageDataList.length = 0
+        const imageListNode = shadowRoot.querySelector('#iv-image-list')
+        imageListNode.innerHTML = ''
+        buildImageList(newList, options)
+        return true
+      } else {
+        // new first image inserted
+        clearIndex = clearIndex === 0 ? 0 : -1
+        clearDom = null
+        clearSrc = ''
+        return false
+      }
+    }
 
     // init update check cache
-    const currentUrlList = imgList.map(data => data.src)
+    const currentUrlList = imageDataList.map(data => data.src)
     const newDomDataMap = new Map()
     const newUrlDataMap = new Map()
     const newFilenameDataMap = new Map()
