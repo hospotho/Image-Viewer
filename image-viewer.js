@@ -1840,12 +1840,12 @@ window.ImageViewer = (function () {
       img.classList.add('loaded')
       img.classList.remove('loading')
     }
-    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not(.resized)'}`)
+    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'}`)
     for (const li of liList) {
       const img = li.firstChild
       if (img.naturalWidth) action(img)
       else img.addEventListener('load', () => action(img), {once: true})
-      li.classList.add('resized')
+      li.setAttribute('resized', '')
     }
     if (reset) {
       const event = new CustomEvent('reset-transform')
@@ -1995,8 +1995,8 @@ window.ImageViewer = (function () {
       })
     }
 
-    for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not(.ready)')) {
-      li.classList.add('ready')
+    for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not([ready])')) {
+      li.setAttribute('ready', '')
       addTransformHandler(li)
     }
   }
@@ -2008,7 +2008,7 @@ window.ImageViewer = (function () {
         currentUrlList[i] = src
         imgList[i].src = '' // clear image
         imgList[i].src = src
-        imgList[i].parentElement.classList.remove('resized')
+        imgList[i].parentElement.removeAttribute('resized')
       }
       for (let i = 0; i < currentUrlList.length; i++) {
         const src = currentUrlList[i]
