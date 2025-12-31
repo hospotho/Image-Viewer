@@ -884,8 +884,8 @@ window.ImageViewerUtils = (function () {
     if (!isImageViewerExist()) return
 
     let fresh = true
-    const imageCount = ImageViewer('get_image_list').length
-    const haveNewImage = () => fresh || (fresh = imageCount !== ImageViewer('get_image_list').length)
+    const imageCount = ImageViewer('get_image_count')
+    const haveNewImage = () => fresh || (fresh = imageCount !== ImageViewer('get_image_count'))
     setTimeout(() => (fresh = false), 5000)
 
     const container = getMainContainer()
@@ -894,7 +894,7 @@ window.ImageViewerUtils = (function () {
 
     const expectedCapacity = totalHeight / 400
     const waitScrollComplete = async () => {
-      const imageCount = ImageViewer('get_image_list').length
+      const imageCount = ImageViewer('get_image_count')
       if (imageCount < expectedCapacity) {
         await new Promise(resolve => setTimeout(resolve, 500))
         return
@@ -904,7 +904,7 @@ window.ImageViewerUtils = (function () {
         tempTop = container.scrollTop
         await new Promise(resolve => setTimeout(resolve, 50))
       }
-      const waitTime = ImageViewer('get_image_list').length / 10
+      const waitTime = ImageViewer('get_image_count') / 10
       await new Promise(resolve => setTimeout(resolve, waitTime))
     }
 
@@ -1002,9 +1002,9 @@ window.ImageViewerUtils = (function () {
 
     // extra check for uncommon case
     // eg. lazy background image
-    const imageListLength = ImageViewer('get_image_list').length
+    const imageListLength = ImageViewer('get_image_count')
     setTimeout(() => {
-      if (!domChanged && imageListLength !== ImageViewer('get_image_list').length) {
+      if (!domChanged && imageListLength !== ImageViewer('get_image_count')) {
         slowScrollThoughDocument(currentX, currentY)
       }
     }, 2000)
@@ -1075,11 +1075,11 @@ window.ImageViewerUtils = (function () {
         // wait image collection settle
         let notStarted = true
         let notComplete = true
-        let currentImageCount = ImageViewer('get_image_list').length
+        let currentImageCount = ImageViewer('get_image_count')
         let completeCount = 0
         while (notStarted || notComplete) {
           await new Promise(resolve => (scrollRelease = resolve))
-          const newImageCount = ImageViewer('get_image_list').length
+          const newImageCount = ImageViewer('get_image_count')
           notStarted = lastImageCount === currentImageCount
           notComplete = currentImageCount !== newImageCount
           currentImageCount = newImageCount
@@ -1139,7 +1139,7 @@ window.ImageViewerUtils = (function () {
     const container = getMainContainer()
     const startX = container.scrollLeft
     const startY = container.scrollTop
-    const imageListLength = ImageViewer('get_image_list').length
+    const imageListLength = ImageViewer('get_image_count')
 
     const {isStopped, timer} = startAutoScroll()
 
@@ -1152,7 +1152,7 @@ window.ImageViewerUtils = (function () {
 
     // help auto scroll scroll to bottom
     setTimeout(() => {
-      if (isImageViewerExist() && (!existNewDom || imageListLength === ImageViewer('get_image_list').length)) {
+      if (isImageViewerExist() && (!existNewDom || imageListLength === ImageViewer('get_image_count'))) {
         const container = getMainContainer()
         const totalHeight = container.scrollHeight
         container.scrollTo(startX, totalHeight)

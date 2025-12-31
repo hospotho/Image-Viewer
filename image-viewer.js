@@ -2217,8 +2217,10 @@ window.ImageViewer = (function () {
         return lastHref
       }
       case 'get_image_list': {
-        const currentImageList = shadowRoot.querySelectorAll('img')
-        return Array.from(currentImageList)
+        return imageDataList
+      }
+      case 'get_image_count': {
+        return imageDataList.length
       }
       case 'get_image_failure_count': {
         return imageFailureCountMap
