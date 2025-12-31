@@ -2343,6 +2343,25 @@ window.ImageViewerUtils = (function () {
     },
 
     searchImageInfoIndex: function (data, imageList) {
+      if (imageList.length === 0) return -1
+
+      // binary search on document order
+      const root = data.dom && cachedGetRootNode(data.dom, true)
+      if (root === document) {
+        const search = (left, right) => {
+          // diff dom maybe share same image
+          if (left > right) return -1
+          const mid = Math.floor((left + right) / 2)
+          if (imageList[mid].dom === data.dom) return mid
+          // abort if weak ordering
+          const compare = cachedCompareNodePosition(imageList[mid].dom, data.dom)
+          return compare === 0 ? -1 : compare < 0 ? search(mid + 1, right) : search(left, mid - 1)
+        }
+        const index = search(0, imageList.length - 1)
+        if (index !== -1) return index
+      }
+
+      // full search
       if (data.dom) data.src = getDomUrl(data.dom)
       const searcher = createImageIndexSearcher(imageList)
       const index = searcher.searchIndex(data)
