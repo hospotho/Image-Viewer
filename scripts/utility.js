@@ -2215,14 +2215,14 @@ window.ImageViewerUtils = (function () {
         combinedDataList[vacancyIndex++] = newList[leftIndex++]
       }
     }
+
+    combinedDataList.length = vacancyIndex
     return combinedDataList
   }
   function clearCombinedDataList(combinedDataList, newList) {
-    const finalList = combinedDataList.filter(Boolean)
-
     const imageUrlSet = new Set()
     const uniqueFinalList = []
-    for (const data of finalList) {
+    for (const data of combinedDataList) {
       const url = data.src
       if (!imageUrlSet.has(url)) {
         imageUrlSet.add(url)
