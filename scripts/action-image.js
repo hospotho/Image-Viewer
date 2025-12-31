@@ -36,20 +36,21 @@
 
   const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
-  window.backupImageList = Array.from(combinedImageList)
 
   // find picked image index
   const targetData = {src: srcUrl, dom: dom}
-  options.index = ImageViewerUtils.searchImageInfoIndex(targetData, window.backupImageList)
+  options.index = ImageViewerUtils.searchImageInfoIndex(targetData, combinedImageList)
   if (dom && options.index === -1) {
-    window.backupImageList.push(targetData)
-    ImageViewerUtils.sortImageDataList(window.backupImageList)
-    options.index = ImageViewerUtils.searchImageInfoIndex(targetData, window.backupImageList)
+    combinedImageList.push(targetData)
+    ImageViewerUtils.sortImageDataList(combinedImageList)
+    options.index = ImageViewerUtils.searchImageInfoIndex(targetData, combinedImageList)
     console.log('Add picked image to list')
   }
 
   // build image viewer
-  ImageViewer(window.backupImageList, options)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  ImageViewer(combinedImageList, options)
+  window.backupImageList = combinedImageList
 
   // auto update
   let updateRelease = () => {}
@@ -63,21 +64,6 @@
   updateObserver.observe(document.body, {childList: true, subtree: true})
 
   while (document.body.classList.contains('iv-attached')) {
-    // update image viewer
-    if (dom?.tagName === 'IMG') {
-      ImageViewerUtils.updateWrapperSize(dom, domSize, options)
-    }
-    const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
-    const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
-    const currentImageList = ImageViewer('get_image_list')
-
-    if (!document.body.classList.contains('iv-attached')) return
-    if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
-      updatePeriod = 100
-      window.backupImageList = Array.from(combinedImageList)
-      ImageViewer(combinedImageList, options)
-    }
-
     // wait website update
     await new Promise(resolve => {
       setTimeout(resolve, updatePeriod)
@@ -89,6 +75,24 @@
     while (document.visibilityState !== 'visible') {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
+
+    // update image viewer
+    if (dom?.tagName === 'IMG') {
+      ImageViewerUtils.updateWrapperSize(dom, domSize, options)
+    }
+    const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
+    const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
+    const currentImageList = ImageViewer('get_image_list')
+
+    if (!document.body.classList.contains('iv-attached')) return
+    if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
+      await new Promise(resolve => setTimeout(resolve, 0))
+      ImageViewer(combinedImageList, options)
+      window.backupImageList = combinedImageList
+      updatePeriod = 100
+    }
   }
+
+  // cleanup
   updateObserver.disconnect()
 })()

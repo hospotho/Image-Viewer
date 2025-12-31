@@ -23,9 +23,10 @@
 
   const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
-  window.backupImageList = Array.from(combinedImageList)
+  window.backupImageList = combinedImageList
 
   // build image viewer
+  await new Promise(resolve => setTimeout(resolve, 0))
   ImageViewer(window.backupImageList, options)
 
   // auto update
@@ -40,18 +41,6 @@
   updateObserver.observe(document.body, {childList: true, subtree: true})
 
   while (document.body.classList.contains('iv-attached')) {
-    // update image viewer
-    const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
-    const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
-    const currentImageList = ImageViewer('get_image_list')
-
-    if (!document.body.classList.contains('iv-attached')) return
-    if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
-      updatePeriod = 100
-      window.backupImageList = Array.from(combinedImageList)
-      ImageViewer(combinedImageList, options)
-    }
-
     // wait website update
     await new Promise(resolve => {
       setTimeout(resolve, updatePeriod)
@@ -63,6 +52,21 @@
     while (document.visibilityState !== 'visible') {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
+
+    // update image viewer
+    const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
+    const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
+    const currentImageList = ImageViewer('get_image_list')
+
+    if (!document.body.classList.contains('iv-attached')) return
+    if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
+      await new Promise(resolve => setTimeout(resolve, 0))
+      ImageViewer(combinedImageList, options)
+      window.backupImageList = combinedImageList
+      updatePeriod = 100
+    }
   }
+
+  // cleanup
   updateObserver.disconnect()
 })()
