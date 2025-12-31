@@ -2326,13 +2326,6 @@ window.ImageViewerUtils = (function () {
       return orderedCanvasList
     },
 
-    searchImageInfoIndex: function (data, imageList) {
-      if (data.dom) data.src = getDomUrl(data.dom)
-      const searcher = createImageIndexSearcher(imageList)
-      const index = searcher.searchIndex(data)
-      return index
-    },
-
     combineImageList: function (newList, oldList) {
       const imageFailureCountMap = ImageViewer('get_image_failure_count')
       oldList = oldList.filter(data => !badImageSet.has(data.src) && (imageFailureCountMap.get(data.src) ?? 0) < 3)
@@ -2349,13 +2342,20 @@ window.ImageViewerUtils = (function () {
       return sortImageDataList(uniqueFinalList)
     },
 
+    searchImageInfoIndex: function (data, imageList) {
+      if (data.dom) data.src = getDomUrl(data.dom)
+      const searcher = createImageIndexSearcher(imageList)
+      const index = searcher.searchIndex(data)
+      return index
+    },
+
     isStrLengthEqual: function (newList, oldList) {
       const newListStringLength = newList.map(data => data.src.length).reduce((a, b) => a + b, 0)
       const oldListStringLength = oldList.map(data => data.src.length).reduce((a, b) => a + b, 0)
       return newListStringLength === oldListStringLength
     },
 
-    getMainContainer: getMainContainer,
+    sortImageDataList: sortImageDataList,
 
     getRawUrl: getRawUrl,
 

@@ -39,10 +39,12 @@
   window.backupImageList = Array.from(combinedImageList)
 
   // find picked image index
-  options.index = ImageViewerUtils.searchImageInfoIndex({src: srcUrl, dom: dom}, window.backupImageList)
+  const targetData = {src: srcUrl, dom: dom}
+  options.index = ImageViewerUtils.searchImageInfoIndex(targetData, window.backupImageList)
   if (dom && options.index === -1) {
-    window.backupImageList = ImageViewerUtils.combineImageList([{src: srcUrl, dom: dom}], window.backupImageList)
-    options.index = ImageViewerUtils.searchImageInfoIndex({src: srcUrl, dom: dom}, window.backupImageList)
+    window.backupImageList.push(targetData)
+    ImageViewerUtils.sortImageDataList(window.backupImageList)
+    options.index = ImageViewerUtils.searchImageInfoIndex(targetData, window.backupImageList)
     console.log('Add picked image to list')
   }
 
