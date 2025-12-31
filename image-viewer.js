@@ -325,8 +325,7 @@ window.ImageViewer = (function () {
     return null
   }
   function searchNearestPageImgNode(img) {
-    const imgList = [...shadowRoot.querySelectorAll('img')]
-    const imgUrlList = imgList.map(img => img.src)
+    const imgUrlList = imageDataList.map(img => img.src)
     const imgFilenameList = imgUrlList.map(src => getFilename(src))
 
     const pageImgList = [...document.getElementsByTagName('img')].filter(img => img.clientWidth > 0 && img.clientHeight > 0)
@@ -871,7 +870,7 @@ window.ImageViewer = (function () {
 
   function initImageList(options) {
     function updateCounter() {
-      const list = [...shadowRoot.querySelectorAll('#iv-image-list li')]
+      const list = imageListNode.children
       const length = list.length
       if (length === 0) {
         closeImageViewer()
@@ -879,7 +878,7 @@ window.ImageViewer = (function () {
       }
 
       const current = shadowRoot.querySelector('li.current')
-      const currIndex = list.indexOf(current)
+      const currIndex = Array.prototype.indexOf.call(list, current)
 
       counterTotal.textContent = length
       counterCurrent.textContent = currIndex + 1
@@ -917,14 +916,15 @@ window.ImageViewer = (function () {
       }
     }
 
-    const liList = [...shadowRoot.querySelectorAll('#iv-image-list li')]
+    const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const current = shadowRoot.querySelector('#iv-image-list li.current')
+    const liList = imageListNode.children
     const base = current || liList[getBaseIndex(options)]
     const baseImg = base.firstChild
     base.classList.add('current')
 
     const targetDom = clearDom || lastDom
-    const baseIndex = liList.indexOf(base)
+    const baseIndex = Array.prototype.indexOf.call(liList, base)
     if (lastTransform && targetDom === imageDataList[baseIndex]?.dom) {
       baseImg.style.transition = 'none'
       applyTransform(baseImg, ...lastTransform)
@@ -2030,7 +2030,7 @@ window.ImageViewer = (function () {
     }
     function tryInsert() {
       function insertImageNode(node, index) {
-        const list = shadowRoot.querySelectorAll('#iv-image-list li')
+        const list = imageListNode.children
         if (index === list.length) {
           imageListNode.appendChild(node)
         } else {
@@ -2076,7 +2076,7 @@ window.ImageViewer = (function () {
       }
       // first image changed
       if (!firstImageChanged) return
-      const imgList = [...shadowRoot.querySelectorAll('#iv-image-list li img')]
+      const imgList = [...shadowRoot.querySelectorAll('img')]
       const oldFirstSrc = imageDataList[0].src
       const newFirstIndex = imgList.findIndex(node => node.src === oldFirstSrc)
       for (let i = 0; i < newFirstIndex; i++) {
