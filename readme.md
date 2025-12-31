@@ -37,7 +37,7 @@ After adding this extension to your browser, it is recommended to pin it to the 
 
 For image tabs, Image Viewer will be activate automatically.
 
-For normal websites, you can activate Image Viewer by click its icon on the toolbar, choose this extension from the right-click menu or use keyboard hotkey (default <kbd>Alt</kbd>+<kbd>1</kbd>).
+For normal websites and local folders, you can activate Image Viewer by click its icon on the toolbar, choose this extension from the right-click menu or use keyboard hotkey (default <kbd>Alt</kbd>+<kbd>1</kbd>).
 
 For additional options, right-click the extension icon on the toolbar. eg: activate Image Viewer with disabled size filter, activate with the last picked image (use it when the right-click menu is disabled by the website).
 
