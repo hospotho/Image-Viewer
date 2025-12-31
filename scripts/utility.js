@@ -1601,7 +1601,7 @@ window.ImageViewerUtils = (function () {
     if (!unlazyFlag) {
       unlazyFlag = true
       console.log('First unlazy complete')
-      clearWindowBackup(options.svgFilter)
+      if (window.backupImageList.length) clearWindowBackup(options.svgFilter)
     }
   }
 
