@@ -2118,13 +2118,13 @@ window.ImageViewerUtils = (function () {
       const rawIndex = srcIndexMap.get(getRawUrl(src))
       return rawIndex !== undefined ? rawIndex : -1
     }
-    function updateCache(dataList) {
-      for (let i = lastLength; i < dataList.length; i++) {
+    function updateCache(dataList, currLength) {
+      for (let i = lastLength; i < currLength; i++) {
         const {src, dom} = dataList[i]
         srcIndexMap.set(src, i)
         if (dom.tagName !== 'IFRAME') domIndexMap.set(dom, i)
       }
-      lastLength = dataList.length
+      lastLength = currLength
     }
 
     // assumes previous src unchange
@@ -2194,7 +2194,7 @@ window.ImageViewerUtils = (function () {
       }
       rightIndex = leftIndex
       oldArrayLastIndex++
-      combinedSearcher.updateCache(combinedDataList.slice(0, vacancyIndex))
+      combinedSearcher.updateCache(combinedDataList, vacancyIndex)
     }
 
     // fill list with remained oldList
