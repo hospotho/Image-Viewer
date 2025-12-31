@@ -854,141 +854,6 @@ window.ImageViewer = (function () {
     document.body.classList.add('iv-attached')
   }
 
-  function buildImageList(imageList) {
-    const _imageList = shadowRoot.querySelector('#iv-image-list')
-    const fragment = document.createDocumentFragment()
-    fragment.append(...imageList.map(buildImageNode))
-    _imageList.appendChild(fragment)
-
-    lastHref = location.href
-    lastUpdateTime = Date.now()
-    imageDataList = Array.from(imageList)
-
-    if (imageList.length === 1) return
-    shadowRoot.querySelector('#iv-index').style.display = 'flex'
-    shadowRoot.querySelector('#iv-counter-total').textContent = imageList.length
-  }
-
-  function initImageList(options) {
-    function updateCounter() {
-      const list = imageListNode.children
-      const length = list.length
-      if (length === 0) {
-        closeImageViewer()
-        return
-      }
-
-      const current = shadowRoot.querySelector('li.current')
-      const currIndex = Array.prototype.indexOf.call(list, current)
-
-      counterTotal.textContent = length
-      counterCurrent.textContent = currIndex + 1
-    }
-    function removeFailedImg() {
-      const action = img => {
-        // update counter
-        const src = img.src
-        const lastCount = imageFailureCountMap.get(src) || 0
-        imageFailureCountMap.set(src, lastCount + 1)
-        if (lastCount < 3) {
-          fetch(src, {cache: 'reload'}).catch(() => {})
-          img.src = src
-          return
-        }
-        console.log(`Removing failed img: ${src}`)
-        // update data list
-        const index = imageDataList.findIndex(data => data.src === src)
-        if (index !== -1) imageDataList.splice(index, 1)
-        // set new current
-        const target = img.parentNode
-        if (target.classList.contains('current')) {
-          const newCurrent = target.previousElementSibling || target.nextElementSibling
-          newCurrent?.classList.add('current')
-        }
-        // remove img container
-        target.remove()
-        updateCounter()
-      }
-
-      for (const img of shadowRoot.querySelectorAll('img:not(.loaded, .loading)')) {
-        img.classList.add('loading')
-        img.addEventListener('error', () => action(img))
-        if (img.complete && img.naturalWidth === 0) action(img)
-      }
-    }
-
-    const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    const current = shadowRoot.querySelector('#iv-image-list li.current')
-    const liList = imageListNode.children
-    const base = current || liList[getBaseIndex(options)]
-    const baseImg = base.firstChild
-    base.classList.add('current')
-
-    const targetDom = clearDom || lastDom
-    const baseIndex = Array.prototype.indexOf.call(liList, base)
-    if (lastTransform && targetDom === imageDataList[baseIndex]?.dom) {
-      baseImg.style.transition = 'none'
-      applyTransform(baseImg, ...lastTransform)
-      lastTransform = null
-    }
-
-    const counterTotal = shadowRoot.querySelector('#iv-counter-total')
-    const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
-    updateCounter()
-
-    let completeFlag = false
-    if (baseImg.complete) {
-      shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
-      shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
-    }
-    baseImg.addEventListener(
-      'load',
-      () => {
-        baseImg.style.transition = ''
-        // prevent image loading flash
-        if (!options.closeButton) {
-          const viewer = shadowRoot.querySelector('#image-viewer')
-          viewer.style.removeProperty('opacity')
-        }
-        if (base.classList.contains('current')) {
-          shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
-          shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
-        }
-        if (!completeFlag) removeFailedImg()
-        completeFlag = true
-      },
-      {once: true}
-    )
-    setTimeout(() => {
-      if (!completeFlag) removeFailedImg()
-      completeFlag = true
-    }, 3000)
-  }
-
-  function fitImage(options, reset = true) {
-    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
-    const action = img => {
-      const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
-      img.width = w
-      img.height = h
-      img.classList.add('loaded')
-      img.classList.remove('loading')
-    }
-    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not(.resized)'}`)
-    for (const li of liList) {
-      const img = li.firstChild
-      if (img.naturalWidth) action(img)
-      else img.addEventListener('load', () => action(img), {once: true})
-      li.classList.add('resized')
-    }
-    if (reset) {
-      const event = new CustomEvent('reset-transform')
-      for (const li of liList) {
-        li.dispatchEvent(event)
-      }
-    }
-  }
-
   function addFrameEvent(options) {
     const viewer = shadowRoot.querySelector('#image-viewer')
     function initKeydownHandler() {
@@ -1643,152 +1508,6 @@ window.ImageViewer = (function () {
     }
   }
 
-  function addImageEvent(options) {
-    // transform function
-    function updateZoom(img, deltaZoom, zoomCount) {
-      let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
-      scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
-      scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
-      // recalculate displacement for zooming at the center of the viewpoint
-      moveX = moveX * options.zoomRatio ** deltaZoom
-      moveY = moveY * options.zoomRatio ** deltaZoom
-      applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
-    }
-    function updateRotate(img, deltaRotate, rotateCount) {
-      let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
-      const mirror = Math.sign(scaleX) * Math.sign(scaleY)
-      rotate = mirror * options.rotateDeg * rotateCount
-      // recalculate displacement for rotation around the center of the viewpoint
-      const radial = Math.sqrt(moveX ** 2 + moveY ** 2)
-      const deltaRadian = ((options.rotateDeg * deltaRotate) / 180) * Math.PI
-      const newRadian = Math.atan2(moveY, moveX) + deltaRadian
-      moveX = radial * Math.cos(newRadian)
-      moveY = radial * Math.sin(newRadian)
-      applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
-    }
-    function updateDisplacement(img, deltaX, deltaY) {
-      let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
-      moveX += deltaX
-      moveY += deltaY
-      applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
-    }
-
-    function addTransformHandler(li) {
-      const img = li.firstChild
-      let mirror = false
-      let zoomCount = 0
-      let rotateCount = 0
-      if (li.classList.contains('current')) {
-        const [scaleX, , rotate, ,] = getTransform(img)
-        zoomCount = Math.round(Math.log(scaleX) / Math.log(options.zoomRatio))
-        rotateCount = rotate / options.rotateDeg
-      }
-
-      // zoom & rotate
-      li.addEventListener(
-        'wheel',
-        e => {
-          e.preventDefault()
-          if (!e.altKey && !e.getModifierState('AltGraph')) {
-            img.style.transition = ''
-            const deltaZoom = e.deltaY > 0 ? -1 : 1
-            zoomCount += deltaZoom
-            updateZoom(img, deltaZoom, zoomCount)
-          } else {
-            // transition cause flash when large offset
-            const [, , , moveX, moveY] = getTransform(img)
-            const offset = Math.sqrt(moveX ** 2 + moveY ** 2)
-            img.style.transition = offset > 350 ? 'none' : ''
-            const deltaRotate = e.deltaY > 0 ? 1 : -1
-            rotateCount += mirror ? -deltaRotate : deltaRotate
-            updateRotate(img, deltaRotate, rotateCount)
-          }
-        },
-        {passive: false}
-      )
-
-      // mirror-reflect
-      li.addEventListener('click', e => {
-        if (!e.altKey && !e.getModifierState('AltGraph')) return
-        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
-        mirror = !mirror
-        applyTransform(img, -scaleX, scaleY, -rotate, -moveX, moveY)
-      })
-
-      // dragging
-      let dragFlag = false
-      let finalDragTimeout = 0
-      const lastPos = {x: 0, y: 0}
-      li.addEventListener('mousedown', e => {
-        e.preventDefault()
-        dragFlag = true
-        lastPos.x = e.clientX
-        lastPos.y = e.clientY
-      })
-      li.addEventListener('mousemove', e => {
-        if (!dragFlag) return
-        const deltaX = e.clientX - lastPos.x
-        const deltaY = e.clientY - lastPos.y
-        lastPos.x = e.clientX
-        lastPos.y = e.clientY
-        // reset transition
-        clearTimeout(finalDragTimeout)
-        finalDragTimeout = setTimeout(() => (img.style.transition = ''), 30)
-        img.style.transition = 'none'
-        updateDisplacement(img, deltaX, deltaY, rotateCount)
-      })
-      li.addEventListener('mouseup', () => (dragFlag = false))
-
-      // reset
-      const reset = async () => {
-        zoomCount = 0
-        rotateCount = 0
-        // normalize rotation
-        img.style.transition = 'none'
-        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
-        applyTransform(img, scaleX, scaleY, rotate % 360, moveX, moveY)
-        await new Promise(resolve => setTimeout(resolve, 20))
-        // reset
-        img.style.transition = ''
-        applyTransform(img, 1, 1, 0, 0, 0)
-      }
-      li.addEventListener('dblclick', reset)
-      // custom event
-      li.addEventListener('reset-transform', reset)
-
-      // handle hotkey
-      li.addEventListener('hotkey', e => {
-        const {type, action} = e.detail
-        switch (type) {
-          case 'zoom': {
-            const deltaZoom = action === 1 ? -1 : 1
-            zoomCount += deltaZoom
-            updateZoom(img, deltaZoom, zoomCount)
-            break
-          }
-          case 'rotate': {
-            const deltaRotate = action === 3 ? 1 : -1
-            rotateCount += mirror ? -deltaRotate : deltaRotate
-            updateRotate(img, deltaRotate, rotateCount)
-            break
-          }
-          case 'move': {
-            const displacement = action % 2 === 1 ? 50 : -50
-            action > 1 ? updateDisplacement(img, displacement, 0) : updateDisplacement(img, 0, displacement)
-            break
-          }
-          default:
-            break
-        }
-      })
-    }
-
-    for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not(.ready)')) {
-      li.classList.add('ready')
-      addTransformHandler(li)
-    }
-  }
-
   function addImageListEvent(options) {
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const controlBar = shadowRoot.querySelector('#iv-control')
@@ -1996,6 +1715,289 @@ window.ImageViewer = (function () {
         },
         {passive: false}
       )
+    }
+  }
+
+  function buildImageList(imageList) {
+    const _imageList = shadowRoot.querySelector('#iv-image-list')
+    const fragment = document.createDocumentFragment()
+    for (const image of imageList) {
+      fragment.append(buildImageNode(image))
+    }
+    _imageList.appendChild(fragment)
+
+    lastHref = location.href
+    lastUpdateTime = Date.now()
+    imageDataList = Array.from(imageList)
+
+    if (imageList.length === 1) return
+    shadowRoot.querySelector('#iv-index').style.display = 'flex'
+    shadowRoot.querySelector('#iv-counter-total').textContent = imageList.length
+  }
+
+  function initImageList(options) {
+    function updateCounter() {
+      const list = imageListNode.children
+      const length = list.length
+      if (length === 0) {
+        closeImageViewer()
+        return
+      }
+
+      const current = shadowRoot.querySelector('li.current')
+      const currIndex = Array.prototype.indexOf.call(list, current)
+
+      counterTotal.textContent = length
+      counterCurrent.textContent = currIndex + 1
+    }
+    function removeFailedImg() {
+      const action = img => {
+        // update counter
+        const src = img.src
+        const lastCount = imageFailureCountMap.get(src) || 0
+        imageFailureCountMap.set(src, lastCount + 1)
+        if (lastCount < 3) {
+          fetch(src, {cache: 'reload'}).catch(() => {})
+          img.src = src
+          return
+        }
+        console.log(`Removing failed img: ${src}`)
+        // update data list
+        const index = imageDataList.findIndex(data => data.src === src)
+        if (index !== -1) imageDataList.splice(index, 1)
+        // set new current
+        const target = img.parentNode
+        if (target.classList.contains('current')) {
+          const newCurrent = target.previousElementSibling || target.nextElementSibling
+          newCurrent?.classList.add('current')
+        }
+        // remove img container
+        target.remove()
+        updateCounter()
+      }
+
+      for (const img of shadowRoot.querySelectorAll('img:not(.loaded, .loading)')) {
+        img.classList.add('loading')
+        img.addEventListener('error', () => action(img))
+        if (img.complete && img.naturalWidth === 0) action(img)
+      }
+    }
+
+    const imageListNode = shadowRoot.querySelector('#iv-image-list')
+    const current = shadowRoot.querySelector('#iv-image-list li.current')
+    const liList = imageListNode.children
+    const base = current || liList[getBaseIndex(options)]
+    const baseImg = base.firstChild
+    base.classList.add('current')
+
+    const targetDom = clearDom || lastDom
+    const baseIndex = Array.prototype.indexOf.call(liList, base)
+    if (lastTransform && targetDom === imageDataList[baseIndex]?.dom) {
+      baseImg.style.transition = 'none'
+      applyTransform(baseImg, ...lastTransform)
+      lastTransform = null
+    }
+
+    const counterTotal = shadowRoot.querySelector('#iv-counter-total')
+    const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+    updateCounter()
+
+    let completeFlag = false
+    if (baseImg.complete) {
+      shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
+      shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
+    }
+    baseImg.addEventListener(
+      'load',
+      () => {
+        baseImg.style.transition = ''
+        // prevent image loading flash
+        if (!options.closeButton) {
+          const viewer = shadowRoot.querySelector('#image-viewer')
+          viewer.style.removeProperty('opacity')
+        }
+        if (base.classList.contains('current')) {
+          shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
+          shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
+        }
+        if (!completeFlag) removeFailedImg()
+        completeFlag = true
+      },
+      {once: true}
+    )
+    setTimeout(() => {
+      if (!completeFlag) removeFailedImg()
+      completeFlag = true
+    }, 3000)
+  }
+
+  function fitImage(options, reset = true) {
+    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
+    const action = img => {
+      const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
+      img.width = w
+      img.height = h
+      img.classList.add('loaded')
+      img.classList.remove('loading')
+    }
+    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not(.resized)'}`)
+    for (const li of liList) {
+      const img = li.firstChild
+      if (img.naturalWidth) action(img)
+      else img.addEventListener('load', () => action(img), {once: true})
+      li.classList.add('resized')
+    }
+    if (reset) {
+      const event = new CustomEvent('reset-transform')
+      for (const li of liList) {
+        li.dispatchEvent(event)
+      }
+    }
+  }
+
+  function addImageEvent(options) {
+    // transform function
+    function updateZoom(img, deltaZoom, zoomCount) {
+      let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
+      scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
+      scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
+      // recalculate displacement for zooming at the center of the viewpoint
+      moveX = moveX * options.zoomRatio ** deltaZoom
+      moveY = moveY * options.zoomRatio ** deltaZoom
+      applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
+    }
+    function updateRotate(img, deltaRotate, rotateCount) {
+      let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
+      const mirror = Math.sign(scaleX) * Math.sign(scaleY)
+      rotate = mirror * options.rotateDeg * rotateCount
+      // recalculate displacement for rotation around the center of the viewpoint
+      const radial = Math.sqrt(moveX ** 2 + moveY ** 2)
+      const deltaRadian = ((options.rotateDeg * deltaRotate) / 180) * Math.PI
+      const newRadian = Math.atan2(moveY, moveX) + deltaRadian
+      moveX = radial * Math.cos(newRadian)
+      moveY = radial * Math.sin(newRadian)
+      applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
+    }
+    function updateDisplacement(img, deltaX, deltaY) {
+      let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
+      moveX += deltaX
+      moveY += deltaY
+      applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
+    }
+
+    function addTransformHandler(li) {
+      const img = li.firstChild
+      let mirror = false
+      let zoomCount = 0
+      let rotateCount = 0
+      if (li.classList.contains('current')) {
+        const [scaleX, , rotate, ,] = getTransform(img)
+        zoomCount = Math.round(Math.log(scaleX) / Math.log(options.zoomRatio))
+        rotateCount = rotate / options.rotateDeg
+      }
+
+      // zoom & rotate
+      li.addEventListener(
+        'wheel',
+        e => {
+          e.preventDefault()
+          if (!e.altKey && !e.getModifierState('AltGraph')) {
+            img.style.transition = ''
+            const deltaZoom = e.deltaY > 0 ? -1 : 1
+            zoomCount += deltaZoom
+            updateZoom(img, deltaZoom, zoomCount)
+          } else {
+            // transition cause flash when large offset
+            const [, , , moveX, moveY] = getTransform(img)
+            const offset = Math.sqrt(moveX ** 2 + moveY ** 2)
+            img.style.transition = offset > 350 ? 'none' : ''
+            const deltaRotate = e.deltaY > 0 ? 1 : -1
+            rotateCount += mirror ? -deltaRotate : deltaRotate
+            updateRotate(img, deltaRotate, rotateCount)
+          }
+        },
+        {passive: false}
+      )
+
+      // mirror-reflect
+      li.addEventListener('click', e => {
+        if (!e.altKey && !e.getModifierState('AltGraph')) return
+        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
+        mirror = !mirror
+        applyTransform(img, -scaleX, scaleY, -rotate, -moveX, moveY)
+      })
+
+      // dragging
+      let dragFlag = false
+      let finalDragTimeout = 0
+      const lastPos = {x: 0, y: 0}
+      li.addEventListener('mousedown', e => {
+        e.preventDefault()
+        dragFlag = true
+        lastPos.x = e.clientX
+        lastPos.y = e.clientY
+      })
+      li.addEventListener('mousemove', e => {
+        if (!dragFlag) return
+        const deltaX = e.clientX - lastPos.x
+        const deltaY = e.clientY - lastPos.y
+        lastPos.x = e.clientX
+        lastPos.y = e.clientY
+        // reset transition
+        clearTimeout(finalDragTimeout)
+        finalDragTimeout = setTimeout(() => (img.style.transition = ''), 30)
+        img.style.transition = 'none'
+        updateDisplacement(img, deltaX, deltaY, rotateCount)
+      })
+      li.addEventListener('mouseup', () => (dragFlag = false))
+
+      // reset
+      const reset = async () => {
+        zoomCount = 0
+        rotateCount = 0
+        // normalize rotation
+        img.style.transition = 'none'
+        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
+        applyTransform(img, scaleX, scaleY, rotate % 360, moveX, moveY)
+        await new Promise(resolve => setTimeout(resolve, 20))
+        // reset
+        img.style.transition = ''
+        applyTransform(img, 1, 1, 0, 0, 0)
+      }
+      li.addEventListener('dblclick', reset)
+      // custom event
+      li.addEventListener('reset-transform', reset)
+
+      // handle hotkey
+      li.addEventListener('hotkey', e => {
+        const {type, action} = e.detail
+        switch (type) {
+          case 'zoom': {
+            const deltaZoom = action === 1 ? -1 : 1
+            zoomCount += deltaZoom
+            updateZoom(img, deltaZoom, zoomCount)
+            break
+          }
+          case 'rotate': {
+            const deltaRotate = action === 3 ? 1 : -1
+            rotateCount += mirror ? -deltaRotate : deltaRotate
+            updateRotate(img, deltaRotate, rotateCount)
+            break
+          }
+          case 'move': {
+            const displacement = action % 2 === 1 ? 50 : -50
+            action > 1 ? updateDisplacement(img, displacement, 0) : updateDisplacement(img, 0, displacement)
+            break
+          }
+          default:
+            break
+        }
+      })
+    }
+
+    for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not(.ready)')) {
+      li.classList.add('ready')
+      addTransformHandler(li)
     }
   }
 
@@ -2252,12 +2254,12 @@ window.ImageViewer = (function () {
 
     if (!document.body.classList.contains('iv-attached')) {
       buildApp(options)
+      addFrameEvent(options)
+      addImageListEvent(options)
       buildImageList(imageList)
       initImageList(options)
       fitImage(options, false)
-      addFrameEvent(options)
       addImageEvent(options)
-      addImageListEvent(options)
       console.log('Image viewer initialized')
     } else {
       updateImageList(imageList, options)
