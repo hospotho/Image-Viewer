@@ -2136,7 +2136,7 @@ window.ImageViewerUtils = (function () {
     let lastLength = 0
     const srcIndexMap = new Map()
     const domIndexMap = new Map()
-    updateCache(dataList)
+    updateCache(dataList, dataList.length)
 
     return {
       searchIndex: searchIndex,
