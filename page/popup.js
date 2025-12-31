@@ -2,6 +2,16 @@
   'use strict'
 
   const rawText = `
+1.46 [2026-01-01]:
+Major Update
+1. Added predictive image decoding to reduce lag.
+2. Added natural sort in folder mode, images are now ordered as expected
+3. Improved image mode, picked images are now inserted at the correct position instead of the beginning.
+4. Improved placeholder image checking.
+5. Fixed auto scroll behavior, scrolling will correctly stop when closing the image viewer.
+6. Added GitHub workflow for automated dev version releases.
+7. Other bug fixes and improvements.
+
 1.45 [2025-12-14]:
 Major Update
 1. Added smooth throttling for image navigation when rendering lag occurs.
