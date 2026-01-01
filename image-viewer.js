@@ -1893,11 +1893,6 @@ window.ImageViewer = (function () {
       let mirror = false
       let zoomCount = 0
       let rotateCount = 0
-      if (li.classList.contains('current')) {
-        const [scaleX, , rotate, ,] = getTransform(img)
-        zoomCount = Math.round(Math.log(scaleX) / Math.log(options.zoomRatio))
-        rotateCount = rotate / options.rotateDeg
-      }
 
       // zoom & rotate
       li.addEventListener(
@@ -1992,15 +1987,26 @@ window.ImageViewer = (function () {
             action > 1 ? updateDisplacement(img, displacement, 0) : updateDisplacement(img, 0, displacement)
             break
           }
+          case 'restore': {
+            const [scaleX, , rotate, ,] = getTransform(img)
+            zoomCount = Math.round(Math.log(scaleX) / Math.log(options.zoomRatio))
+            rotateCount = rotate / options.rotateDeg
+            break
+          }
           default:
             break
         }
       })
     }
 
+    const current = shadowRoot.querySelector('#iv-image-list li.current:not([ready])')
     for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not([ready])')) {
       li.setAttribute('ready', '')
       addTransformHandler(li)
+    }
+    if (current) {
+      const event = new CustomEvent('hotkey', {detail: {type: 'restore'}})
+      current.dispatchEvent(event)
     }
   }
 
