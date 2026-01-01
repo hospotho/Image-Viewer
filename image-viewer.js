@@ -2,6 +2,7 @@ window.ImageViewer = (function () {
   'use strict'
 
   let shadowRoot = null
+  let initializing = false
   let lastHref = location.href
   let lastUpdateTime = 0
   let imageDataList = []
@@ -67,7 +68,7 @@ window.ImageViewer = (function () {
     applyTransform(imgTemplate, 1, 1, 0, 0, 0)
     liTemplate.appendChild(imgTemplate)
 
-    return data => {
+    return (data, delay = false) => {
       const li = liTemplate.cloneNode(true)
       const img = li.firstChild
       const dom = data.dom
@@ -81,7 +82,7 @@ window.ImageViewer = (function () {
         img.setAttribute('data-iframe-src', dom.src)
         img.referrerPolicy = 'no-referrer'
       }
-      img.src = data.src
+      if (!delay) img.src = data.src
       return li
     }
   })()
@@ -1721,21 +1722,67 @@ window.ImageViewer = (function () {
     }
   }
 
-  function buildImageList(imageList) {
-    const _imageList = shadowRoot.querySelector('#iv-image-list')
-    const fragment = document.createDocumentFragment()
-    for (const image of imageList) {
-      fragment.append(buildImageNode(image))
-    }
-    _imageList.appendChild(fragment)
-
+  function buildImageList(dataList, options) {
     lastHref = location.href
     lastUpdateTime = Date.now()
-    imageDataList = Array.from(imageList)
+    imageDataList = Array.from(dataList)
+    if (dataList.length > 1) {
+      shadowRoot.querySelector('#iv-index').style.display = 'flex'
+      shadowRoot.querySelector('#iv-counter-total').textContent = dataList.length
+    }
 
-    if (imageList.length === 1) return
-    shadowRoot.querySelector('#iv-index').style.display = 'flex'
-    shadowRoot.querySelector('#iv-counter-total').textContent = imageList.length
+    const imageList = shadowRoot.querySelector('#iv-image-list')
+    const fragment = document.createDocumentFragment()
+
+    // build all image node at once when the list is small
+    if (dataList.length <= 100) {
+      for (const data of dataList) {
+        fragment.append(buildImageNode(data))
+      }
+      imageList.appendChild(fragment)
+      return
+    }
+
+    const chunkSize = 50
+    const length = dataList.length
+    const baseIndex = getBaseIndex(options)
+
+    // load image src in chunks from center outward
+    const reverseFlag = baseIndex - chunkSize < 0 || baseIndex + chunkSize > length
+    const [left, right] = reverseFlag ? [(baseIndex + chunkSize) % length, (baseIndex - chunkSize + length) % length] : [baseIndex - chunkSize, baseIndex + chunkSize]
+    for (let i = 0; i < left; i++) {
+      fragment.append(buildImageNode(dataList[i], !reverseFlag))
+    }
+    for (let i = left; i <= right; i++) {
+      fragment.append(buildImageNode(dataList[i], reverseFlag))
+    }
+    for (let i = right + 1; i < length; i++) {
+      fragment.append(buildImageNode(dataList[i], !reverseFlag))
+    }
+    imageList.appendChild(fragment)
+
+    // delay set src to avoid block main thread
+    initializing = true
+    const action = async () => {
+      const liList = shadowRoot.querySelectorAll('#iv-image-list li')
+      let leftIndex = reverseFlag ? (left + length) % length : (right + 1 + length) % length
+      let rightIndex = reverseFlag ? (right + length) % length : (left - 1 + length) % length
+      while (initializing) {
+        await new Promise(resolve => setTimeout(resolve, 0))
+        let count = chunkSize
+        while (count-- > 0) {
+          liList[leftIndex].firstChild.src = dataList[leftIndex].src
+          liList[rightIndex].firstChild.src = dataList[rightIndex].src
+          if (leftIndex === rightIndex || (leftIndex + 1) % length === rightIndex) {
+            initializing = false
+            break
+          }
+          leftIndex = (leftIndex + 1) % length
+          rightIndex = (rightIndex - 1 + length) % length
+        }
+      }
+    }
+    action()
   }
 
   function initImageList(options) {
@@ -2052,7 +2099,7 @@ window.ImageViewer = (function () {
       const firstIndex = currentUrlIndexMap.get(firstData.src)
       if (firstIndex === undefined) {
         indexShift++
-        const node = buildImageNode(firstData, options)
+        const node = buildImageNode(firstData)
         newUrlInsertIndexMap.set(firstData.src, 0)
         insertImageNode(node, 0)
         updated = true
@@ -2068,7 +2115,7 @@ window.ImageViewer = (function () {
         if (index !== undefined) continue
 
         indexShift++
-        const node = buildImageNode(data, options)
+        const node = buildImageNode(data)
         const lastSrc = newList[i - 1].src
         // insert to known position
         const refIndex = currentUrlIndexMap.get(lastSrc) + indexShift || newUrlInsertIndexMap.get(lastSrc) + 1
@@ -2242,26 +2289,26 @@ window.ImageViewer = (function () {
   }
 
   //==========main function==========
-  function ImageViewer(imageList, options) {
+  function ImageViewer(imageDataList, options) {
     // command mode
     if (arguments.length === 1) {
       const command = arguments[0]
       return executeCommand(command)
     }
 
-    if (imageList.length === 0) return
+    if (imageDataList.length === 0 || initializing) return
 
     if (!document.body.classList.contains('iv-attached')) {
       buildApp(options)
       addFrameEvent(options)
       addImageListEvent(options)
-      buildImageList(imageList)
+      buildImageList(imageDataList, options)
       initImageList(options)
       fitImage(options, false)
       addImageEvent(options)
       console.log('Image viewer initialized')
     } else {
-      updateImageList(imageList, options)
+      updateImageList(imageDataList, options)
       initImageList(options)
       fitImage(options, false)
       addImageEvent(options)
