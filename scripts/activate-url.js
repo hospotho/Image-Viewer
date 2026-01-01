@@ -7,6 +7,15 @@
     }
   }
 
+  async function loadOptions() {
+    await safeSendMessage('get_options')
+    // Chrome may terminated service worker
+    while (!window.ImageViewerOption) {
+      await new Promise(resolve => setTimeout(resolve, 50))
+      await safeSendMessage('get_options')
+    }
+  }
+
   // image url mode
   function isImageContained(small, large) {
     const canvas1 = document.createElement('canvas')
@@ -136,14 +145,22 @@
   async function initImageViewer(image) {
     console.log('Start image mode')
 
+    // remove default image css
+    image.style = ''
+    image.style.margin = 'auto'
+    image.style.backgroundColor = 'rgb(0, 0, 0)'
+
+    await loadOptions()
+    await safeSendMessage('load_script')
+
     const options = window.ImageViewerOption
     options.closeButton = false
     options.minWidth = 0
     options.minHeight = 0
 
-    await safeSendMessage('load_script')
     const imageDate = {src: image.src, dom: image}
     ImageViewer([imageDate], options)
+
     if (image.src.startsWith('data')) return
 
     const attrList = getUnlazyAttrList(image)
@@ -180,18 +197,17 @@
       return
     }
 
-    await safeSendMessage('get_options')
-    // Chrome may terminated service worker
-    while (!window.ImageViewerOption) {
-      await new Promise(resolve => setTimeout(resolve, 50))
-      await safeSendMessage('get_options')
-    }
-
     try {
       const image = document.querySelector(`img[src='${location.href}']`)
       const found = image && (image.parentElement === document.body || (await fetch(location.href).then(res => res.headers.get('Content-Type')?.startsWith('image/'))))
-      found ? initImageViewer(image) : safeSendMessage('load_worker')
+      if (found) {
+        initImageViewer(image)
+        return
+      }
     } catch (error) {}
+
+    await loadOptions()
+    safeSendMessage('load_worker')
   }
 
   if (document.visibilityState === 'visible') {
