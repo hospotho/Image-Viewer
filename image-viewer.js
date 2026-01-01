@@ -18,6 +18,7 @@ window.ImageViewer = (function () {
   let lastTransform = null
 
   const keydownHandlerList = []
+  const resizeHandlerList = []
 
   //==========utility==========
   function closeImageViewer() {
@@ -34,6 +35,7 @@ window.ImageViewer = (function () {
     lastSrc = current?.src || ''
     lastTransform = current ? getTransform(current) : null
     keydownHandlerList.length = 0
+    resizeHandlerList.length = 0
 
     const viewer = shadowRoot.querySelector('#image-viewer')
     viewer.addEventListener('transitionend', () => root.remove())
@@ -860,7 +862,7 @@ window.ImageViewer = (function () {
 
   function addFrameEvent(options) {
     const viewer = shadowRoot.querySelector('#image-viewer')
-    function initKeydownHandler() {
+    function initWindowEventHandler() {
       if (document.body.classList.contains('iv-ready')) return
       document.body.classList.add('iv-ready')
 
@@ -885,6 +887,7 @@ window.ImageViewer = (function () {
         },
         true
       )
+      window.addEventListener('resize', () => resizeHandlerList.forEach(func => func()))
     }
     function addChangeBackgroundHotkey() {
       const backgroundList = [
@@ -1279,7 +1282,7 @@ window.ImageViewer = (function () {
           fitImage(options)
         })
       }
-      window.addEventListener('resize', () => fitImage(options))
+      resizeHandlerList.push(() => fitImage(options))
     }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
@@ -1495,7 +1498,7 @@ window.ImageViewer = (function () {
       keydownHandlerList.push(e => e.stopPropagation())
     }
 
-    initKeydownHandler()
+    initWindowEventHandler()
     addChangeBackgroundHotkey()
     addTransformationHotkey()
     addDownloadHotkey()
