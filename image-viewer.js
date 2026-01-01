@@ -1804,7 +1804,7 @@ window.ImageViewer = (function () {
       counterTotal.textContent = length
       counterCurrent.textContent = currIndex + 1
     }
-    function removeFailedImg() {
+    async function removeFailedImg() {
       const action = img => {
         // update counter
         const src = img.src
@@ -1830,9 +1830,19 @@ window.ImageViewer = (function () {
         updateCounter()
       }
 
-      for (const img of shadowRoot.querySelectorAll('img:not(.loaded, .loading)')) {
-        img.classList.add('loading')
-        if (img.src && img.complete && img.naturalWidth === 0) action(img)
+      // delay check image fail to avoid block main thread
+      while (true) {
+        for (const img of shadowRoot.querySelectorAll('img[src]:not([checked])')) {
+          img.setAttribute('checked', '')
+          if (img.complete && img.naturalWidth === 0) action(img)
+          else img.addEventListener('error', () => action(img))
+        }
+        if (!initializing) break
+        await new Promise(resolve => setTimeout(resolve, 1))
+      }
+      for (const img of shadowRoot.querySelectorAll('img:not([checked])')) {
+        img.setAttribute('checked', '')
+        if (img.complete && img.naturalWidth === 0) action(img)
         else img.addEventListener('error', () => action(img))
       }
     }
@@ -1882,7 +1892,6 @@ window.ImageViewer = (function () {
       img.width = w
       img.height = h
       img.classList.add('loaded')
-      img.classList.remove('loading')
     }
     const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'}`)
     for (const li of liList) {
