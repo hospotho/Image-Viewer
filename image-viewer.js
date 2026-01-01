@@ -1493,7 +1493,6 @@ window.ImageViewer = (function () {
         viewer.addEventListener(event, e => e.stopPropagation(), {passive: true})
       }
       keydownHandlerList.push(e => e.stopPropagation())
-      viewer.focus()
     }
 
     initKeydownHandler()
@@ -1730,6 +1729,8 @@ window.ImageViewer = (function () {
       shadowRoot.querySelector('#iv-index').style.display = 'flex'
       shadowRoot.querySelector('#iv-counter-total').textContent = dataList.length
     }
+    // trigger style recalculation
+    shadowRoot.querySelector('#image-viewer').focus()
 
     const imageList = shadowRoot.querySelector('#iv-image-list')
     const fragment = document.createDocumentFragment()
@@ -1768,8 +1769,8 @@ window.ImageViewer = (function () {
       let leftIndex = reverseFlag ? (left + length) % length : (right + 1 + length) % length
       let rightIndex = reverseFlag ? (right + length) % length : (left - 1 + length) % length
       while (initializing) {
-        await new Promise(resolve => setTimeout(resolve, 0))
-        let count = chunkSize
+        await new Promise(resolve => setTimeout(resolve, 1))
+        let count = chunkSize * 2
         while (count-- > 0) {
           liList[leftIndex].firstChild.src = dataList[leftIndex].src
           liList[rightIndex].firstChild.src = dataList[rightIndex].src
@@ -2303,10 +2304,15 @@ window.ImageViewer = (function () {
       addFrameEvent(options)
       addImageListEvent(options)
       buildImageList(imageDataList, options)
-      initImageList(options)
-      fitImage(options, false)
-      addImageEvent(options)
-      console.log('Image viewer initialized')
+      const action = () => {
+        initImageList(options)
+        fitImage(options, false)
+        addImageEvent(options)
+        console.log('Image viewer initialized')
+      }
+      // release priority to prevent blocking
+      if (imageDataList.length <= 100) action()
+      else setTimeout(action, 0)
     } else {
       updateImageList(imageDataList, options)
       initImageList(options)
