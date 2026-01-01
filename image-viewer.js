@@ -2162,14 +2162,14 @@ window.ImageViewer = (function () {
     // fork and uncomment if you need it
     // tryRemove()
 
-    imageDataList = Array.from(newList)
     lastUpdateTime = Date.now()
+    imageDataList = Array.from(newList)
 
-    if (options.closeButton) {
-      shadowRoot.querySelector('#iv-index').style.display = 'flex'
-      shadowRoot.querySelector('#iv-counter-total').textContent = imageDataList.length
-    }
     if (updated) {
+      if (options.closeButton) {
+        shadowRoot.querySelector('#iv-index').style.display = 'flex'
+        shadowRoot.querySelector('#iv-counter-total').textContent = imageDataList.length
+      }
       if (tryClear()) console.log('Image list has been rebuilt')
       else console.log('Image viewer updated')
     }
