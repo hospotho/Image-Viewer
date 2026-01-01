@@ -2041,7 +2041,7 @@ window.ImageViewer = (function () {
     }
 
     const current = shadowRoot.querySelector('#iv-image-list li.current:not([ready])')
-    for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not([ready])')) {
+    for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not([ready]):has(img.loaded)')) {
       li.setAttribute('ready', '')
       addTransformHandler(li)
     }
@@ -2049,6 +2049,24 @@ window.ImageViewer = (function () {
       const event = new CustomEvent('hotkey', {detail: {type: 'restore'}})
       current.dispatchEvent(event)
     }
+
+    // delay add image event to avoid block main thread
+    const action = async () => {
+      while (true) {
+        await new Promise(resolve => setTimeout(resolve, 1))
+        const waitList = shadowRoot.querySelectorAll('#iv-image-list li:not([ready]):has(img.loaded)')
+        for (const li of waitList) {
+          li.setAttribute('ready', '')
+          addTransformHandler(li)
+        }
+        if (!initializing) break
+      }
+      for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not([ready])')) {
+        li.setAttribute('ready', '')
+        addTransformHandler(li)
+      }
+    }
+    action()
   }
 
   function updateImageList(newList, options) {
