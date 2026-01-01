@@ -332,7 +332,7 @@
       return null
     }
 
-    const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank' && !badImageSet.has(imageInfo[0])
+    const isImageInfoValid = imageInfo => imageInfo !== null && imageInfo[0] !== '' && imageInfo[0] !== 'about:blank' && srcBitSizeMap.get(imageInfo[0]) !== -1
     const isNewImageInfoBetter = async (newInfo, oldInfo, mouseX, mouseY) => {
       if (oldInfo === null) return true
       // data url
