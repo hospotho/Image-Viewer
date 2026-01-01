@@ -8,6 +8,8 @@
   }
 
   if (typeof ImageViewerUtils !== 'object') {
+    // url mode
+    if (typeof ImageViewer === 'function') return
     await safeSendMessage('load_utility')
   }
 
