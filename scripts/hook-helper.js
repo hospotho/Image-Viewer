@@ -22,12 +22,14 @@
   }
 
   async function action() {
+    const requestList = document.querySelectorAll('div[id^="iv-request-"]')
+    if (requestList.length === 0) return
     // wake up background
     while (true) {
       if (await safeSendMessage({msg: 'ping'})) break
       await new Promise(resolve => setTimeout(resolve, 50))
     }
-    document.querySelectorAll('div[id^="iv-request-"]').forEach(processDomRequest)
+    requestList.forEach(processDomRequest)
   }
 
   window.addEventListener('load', async () => {
