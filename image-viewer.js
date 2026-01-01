@@ -61,27 +61,30 @@ window.ImageViewer = (function () {
     return [Number(scale[0]) || 1, Number(scale[1]) || Math.abs(Number(scale[0])) || 1, Number(rotate) || 0, Number(moveX[0]) || 0, Number(moveX[1]) || 0]
   }
 
-  function buildImageNode(data) {
-    const li = document.createElement('li')
-    const img = document.createElement('img')
-    li.appendChild(img)
+  const buildImageNode = (function () {
+    const liTemplate = document.createElement('li')
+    const imgTemplate = document.createElement('img')
+    applyTransform(imgTemplate, 1, 1, 0, 0, 0)
+    liTemplate.appendChild(imgTemplate)
 
-    const dom = data.dom
-    if (dom.alt) img.alt = dom.alt
-    if (dom.crossOrigin) img.crossOrigin = dom.crossOrigin
-    // chrome bug ref: https://issues.chromium.org/issues/327707429
-    // if (dom.referrerPolicy) img.referrerPolicy = dom.referrerPolicy
-    const referrerPolicy = dom.getAttribute('referrerpolicy')
-    if (referrerPolicy) img.referrerPolicy = referrerPolicy
-    if (dom.tagName === 'IFRAME') {
-      img.setAttribute('data-iframe-src', dom.src)
-      img.referrerPolicy = 'no-referrer'
+    return data => {
+      const li = liTemplate.cloneNode(true)
+      const img = li.firstChild
+      const dom = data.dom
+      if (dom.alt) img.alt = dom.alt
+      if (dom.crossOrigin) img.crossOrigin = dom.crossOrigin
+      // chrome bug ref: https://issues.chromium.org/issues/327707429
+      // if (dom.referrerPolicy) img.referrerPolicy = dom.referrerPolicy
+      const referrerPolicy = dom.getAttribute('referrerpolicy')
+      if (referrerPolicy) img.referrerPolicy = referrerPolicy
+      if (dom.tagName === 'IFRAME') {
+        img.setAttribute('data-iframe-src', dom.src)
+        img.referrerPolicy = 'no-referrer'
+      }
+      img.src = data.src
+      return li
     }
-    applyTransform(img, 1, 1, 0, 0, 0)
-    img.src = data.src
-
-    return li
-  }
+  })()
 
   const getRawUrl = (function () {
     const getRawUrl = window.ImageViewerUtils?.getRawUrl
