@@ -1781,8 +1781,8 @@ window.ImageViewer = (function () {
 
       for (const img of shadowRoot.querySelectorAll('img:not(.loaded, .loading)')) {
         img.classList.add('loading')
-        img.addEventListener('error', () => action(img))
-        if (img.complete && img.naturalWidth === 0) action(img)
+        if (img.src && img.complete && img.naturalWidth === 0) action(img)
+        else img.addEventListener('error', () => action(img))
       }
     }
 
@@ -1804,34 +1804,24 @@ window.ImageViewer = (function () {
     const counterTotal = shadowRoot.querySelector('#iv-counter-total')
     const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
     updateCounter()
+    setTimeout(() => removeFailedImg, 3000)
 
-    let completeFlag = false
-    if (baseImg.complete) {
-      shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
-      shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
+    // update viewer when base image complete
+    const action = () => {
+      baseImg.style.transition = ''
+      // prevent image loading flash
+      if (!options.closeButton) {
+        const viewer = shadowRoot.querySelector('#image-viewer')
+        viewer.style.removeProperty('opacity')
+      }
+      if (base.classList.contains('current')) {
+        shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
+        shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
+      }
+      removeFailedImg()
     }
-    baseImg.addEventListener(
-      'load',
-      () => {
-        baseImg.style.transition = ''
-        // prevent image loading flash
-        if (!options.closeButton) {
-          const viewer = shadowRoot.querySelector('#image-viewer')
-          viewer.style.removeProperty('opacity')
-        }
-        if (base.classList.contains('current')) {
-          shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
-          shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
-        }
-        if (!completeFlag) removeFailedImg()
-        completeFlag = true
-      },
-      {once: true}
-    )
-    setTimeout(() => {
-      if (!completeFlag) removeFailedImg()
-      completeFlag = true
-    }, 3000)
+    if (baseImg.complete) action()
+    else baseImg.addEventListener('load', action, {once: true})
   }
 
   function fitImage(options, reset = true) {
