@@ -38,6 +38,7 @@
 
   const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
+  window.backupImageList = combinedImageList
 
   // find picked image index
   const targetData = {src: srcUrl, dom: dom}
@@ -52,7 +53,6 @@
   // build image viewer
   await new Promise(resolve => setTimeout(resolve, 0))
   ImageViewer(combinedImageList, options)
-  window.backupImageList = combinedImageList
 
   // auto update
   let updateRelease = () => {}
@@ -84,13 +84,13 @@
     }
     const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
     const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
-    const currentImageList = ImageViewer('get_image_list')
-
+    window.backupImageList = combinedImageList
     if (!document.body.classList.contains('iv-attached')) return
+
+    const currentImageList = ImageViewer('get_image_list')
     if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
       await new Promise(resolve => setTimeout(resolve, 0))
       ImageViewer(combinedImageList, options)
-      window.backupImageList = combinedImageList
       updatePeriod = 100
     }
   }
