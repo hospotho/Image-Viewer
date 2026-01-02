@@ -1561,6 +1561,7 @@ window.ImageViewer = (function () {
       if (relateImage.complete) await relateImage.decode().catch(() => {})
 
       const renderTime = performance.now() - startTime
+      const decodeTime = Math.min(500, renderTime)
       await throttlePromise
 
       // update dom
@@ -1572,9 +1573,9 @@ window.ImageViewer = (function () {
       infoPopup.dispatchEvent(updateEvent)
 
       // compensate for render
-      throttleTimestamp = Date.now() + throttlePeriod - renderTime
+      throttleTimestamp = Date.now() + throttlePeriod - decodeTime
       lastCompleteTime = performance.now()
-      lastDecodeTime = Math.max(lastDecodeTime, renderTime) * smoothThrottleRatio
+      lastDecodeTime = Math.max(lastDecodeTime, decodeTime) * smoothThrottleRatio
       resetDecodeTimeout = setTimeout(() => (lastDecodeTime = 0), 1500)
       moveLock = false
       moveCount++
