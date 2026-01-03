@@ -59,7 +59,7 @@
     const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
     const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
     window.backupImageList = combinedImageList
-    if (!document.body.classList.contains('iv-attached')) return
+    if (!document.body.classList.contains('iv-attached')) break
 
     const currentImageList = ImageViewer('get_image_list')
     if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
