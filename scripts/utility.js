@@ -175,13 +175,12 @@ window.ImageViewerUtils = (function () {
     lastHref = location.href
 
     // check image update
-    const viewerExist = isImageViewerExist()
     const {promise, resolve} = Promise.withResolvers()
-    const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
+    const backupImageSrc = new Set(window.backupImageList.map(data => getRawUrl(data.src)))
     const checkImageUpdate = () => {
-      const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
+      const allImageSrc = new Set(getImageListWithoutFilter().map(data => getRawUrl(data.src)))
       if (allImageSrc.intersection(backupImageSrc).size < 5) {
-        if (viewerExist) ImageViewer('close_image_viewer')
+        ImageViewer('close_image_viewer')
         resolve()
       }
     }
