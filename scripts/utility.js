@@ -186,7 +186,7 @@ window.ImageViewerUtils = (function () {
     }
 
     // setup observer
-    let timeout = 0
+    let timeout = setTimeout(checkImageUpdate, 100)
     const currentHref = location.href
     const observer = new MutationObserver(() => {
       clearTimeout(timeout)
