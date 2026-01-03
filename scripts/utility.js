@@ -1574,14 +1574,23 @@ window.ImageViewerUtils = (function () {
 
     let allComplete = false
     const asyncList = []
-    while (!allComplete) {
+    while (true) {
       const [complete, taskList] = unlazyImage(minWidth, minHeight)
       asyncList.push(...taskList)
-      allComplete = complete && (await waitPromiseComplete(Promise.all(asyncList), 0))
+      allComplete = complete && (await waitPromiseComplete(Promise.allSettled(asyncList), 0))
+      if (allComplete) break
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
-    const resultList = (await Promise.all(asyncList)).filter(result => result.length > 0)
+    const resultList = []
+    for (const result of await Promise.allSettled(asyncList)) {
+      if (result.status === 'fulfilled') {
+        resultList.push(result.value)
+      } else {
+        console.error(result.reason)
+      }
+    }
+
     const lazyList = resultList.flat()
     if (lazyList.length > resultList.length) console.log('Multiple unlazy attributes found')
     const attrCount = {}
