@@ -23,7 +23,7 @@ window.ImageViewer = (function () {
   //==========utility==========
   function closeImageViewer() {
     const root = shadowRoot.host
-    if (!root) return
+    if (!root || !document.body.classList.contains('iv-attached')) return
 
     document.body.classList.remove('iv-attached')
     clearIndex = -1
