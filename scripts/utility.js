@@ -1721,8 +1721,8 @@ window.ImageViewerUtils = (function () {
   function startUnlazy(options) {
     // check still on same page
     if (ImageViewer('get_href') !== location.href) {
-      const backupImageSrc = new Set(window.backupImageList.map(data => data.src))
-      const allImageSrc = new Set(getImageListWithoutFilter().map(data => data.src))
+      const backupImageSrc = new Set(window.backupImageList.map(data => getRawUrl(data.src)))
+      const allImageSrc = new Set(getImageListWithoutFilter().map(data => getRawUrl(data.src)))
       if (allImageSrc.intersection(backupImageSrc).size < 5) {
         unlazyFlag = false
         scrollUnlazyFlag = false
