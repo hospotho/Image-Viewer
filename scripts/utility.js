@@ -295,8 +295,8 @@ window.ImageViewerUtils = (function () {
         .split('&')
         .filter(t => cachedExtensionMatch(t))
         .join('&')
-      const imgSearch = searchList ? '?' + searchList : ''
-      const rawSearch = baseURI + imgSearch
+      const imgSearch = searchList.length === 0 ? '' : '?' + searchList
+      const rawSearch = cachedDeepDecode(baseURI + imgSearch)
 
       const extensionMatch = cachedExtensionMatch(rawSearch)
       urlSearchCache.set(src, extensionMatch)
@@ -366,11 +366,10 @@ window.ImageViewerUtils = (function () {
     return src => {
       if (src.startsWith('data') || src.startsWith('blob')) return src
 
-      const cache = rawUrlCache.get(src)
-      if (cache !== undefined) return cache
-
       // always check decode
       src = cachedDeepDecode(src)
+      const cache = rawUrlCache.get(src)
+      if (cache !== undefined) return cache
 
       // invalid URL
       const url = cachedGetUrl(src, document.baseURI)
@@ -404,7 +403,7 @@ window.ImageViewerUtils = (function () {
       const extensionMatch = cachedExtensionMatch(fullPath)
       const rawExtensionUrl = extensionMatch?.[1]
       if (rawExtensionUrl && rawExtensionUrl !== fullPath) {
-        const rawExtensionFullUrl = url.origin + rawExtensionUrl
+        const rawExtensionFullUrl = cachedDeepDecode(url.origin + rawExtensionUrl)
         rawUrlCache.set(src, rawExtensionFullUrl)
         return rawExtensionFullUrl
       }
