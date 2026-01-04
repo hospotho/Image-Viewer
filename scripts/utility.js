@@ -126,9 +126,12 @@ window.ImageViewerUtils = (function () {
   const srcBitSizeMap = window.srcBitSizeMap
   const srcRealSizeMap = window.srcRealSizeMap
 
+  // page state
+  let lastHref = location.href
+  let loadCompletePromise = Promise.resolve(true)
+
   // unlazy state
   const pseudoImageDataList = []
-  let lastHref = location.href
   let disableImageUnlazy = false
   let unlazyFlag = false
   let lastUnlazyTask = null
@@ -174,27 +177,32 @@ window.ImageViewerUtils = (function () {
     if (lastHref === location.href) return
     lastHref = location.href
 
-    // check image update
     const {promise, resolve} = Promise.withResolvers()
+    loadCompletePromise = promise
+
+    // close if no longer same page
     const backupImageSrc = new Set(window.backupImageList.map(data => getRawUrl(data.src)))
     const checkImageUpdate = () => {
       const allImageSrc = new Set(getImageListWithoutFilter().map(data => getRawUrl(data.src)))
       if (allImageSrc.intersection(backupImageSrc).size < 5) {
         ImageViewer('close_image_viewer')
-        resolve()
+        resolve(true)
       }
     }
+    checkImageUpdate()
 
-    // setup observer
-    let timeout = setTimeout(checkImageUpdate, 100)
+    // dom may still loading
+    let timeout = 0
     const currentHref = location.href
     const observer = new MutationObserver(() => {
       clearTimeout(timeout)
-      if (currentHref !== location.href) resolve()
+      if (currentHref !== location.href) resolve(false)
       else timeout = setTimeout(checkImageUpdate, 100)
     })
     observer.observe(document.body, {childList: true, subtree: true})
     await waitPromiseComplete(promise, 2000)
+
+    resolve(true)
     observer.disconnect()
   })
   hrefObserver.observe(document.body, {childList: true, subtree: true})
@@ -1728,7 +1736,7 @@ window.ImageViewerUtils = (function () {
     return race
   }
   function startUnlazy(options) {
-    // check still on same page
+    // reset if no longer same page
     if (ImageViewer('get_href') !== location.href) {
       const backupImageSrc = new Set(window.backupImageList.map(data => getRawUrl(data.src)))
       const allImageSrc = new Set(getImageListWithoutFilter().map(data => getRawUrl(data.src)))
@@ -2381,6 +2389,16 @@ window.ImageViewerUtils = (function () {
       const searcher = createImageIndexSearcher(imageList)
       const index = searcher.searchIndex(data)
       return index
+    },
+
+    isViewerExpired: async function () {
+      if (!isImageViewerExist()) return true
+      // wait page load complete
+      while (true) {
+        if (await loadCompletePromise) break
+        console.log('Waiting for page load')
+      }
+      return !isImageViewerExist()
     },
 
     isStrLengthEqual: function (newList, oldList) {

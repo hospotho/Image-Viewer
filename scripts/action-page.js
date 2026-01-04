@@ -55,6 +55,9 @@
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
+    const expired = await ImageViewerUtils.isViewerExpired()
+    if (expired) break
+
     // update image viewer
     const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
     const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)

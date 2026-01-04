@@ -78,6 +78,9 @@
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
+    const expired = await ImageViewerUtils.isViewerExpired()
+    if (expired) break
+
     // update image viewer
     if (dom?.tagName === 'IMG') {
       ImageViewerUtils.updateWrapperSize(dom, domSize, options)
