@@ -1724,17 +1724,14 @@ window.ImageViewer = (function () {
     shadowRoot.querySelector('#iv-control-prev').addEventListener('click', prevItem)
     shadowRoot.querySelector('#iv-control-next').addEventListener('click', nextItem)
     // mouse wheel
+    const wheelNavigation = e => {
+      e.preventDefault()
+      if (moveLock) return
+      e.deltaY > 0 ? nextItem() : prevItem()
+    }
     const scrollableElements = [controlBar, closeButton, infoButton, infoPopup]
     for (const dom of scrollableElements) {
-      dom.addEventListener(
-        'wheel',
-        e => {
-          e.preventDefault()
-          if (moveLock) return
-          e.deltaY > 0 ? nextItem() : prevItem()
-        },
-        {passive: false}
-      )
+      dom.addEventListener('wheel', wheelNavigation, {passive: false})
     }
   }
 
