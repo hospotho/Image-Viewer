@@ -1709,6 +1709,38 @@ window.ImageViewerUtils = (function () {
       if (href) checkPseudoElement(href)
     }
   }
+  function checkVideoFirstFrame(_video) {
+    const canvas = document.createElement('canvas')
+    const video = document.createElement('video')
+    video.muted = true
+    video.crossOrigin = 'anonymous'
+    video.preload = 'auto'
+
+    const init = () => {
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      video.currentTime = 0
+    }
+    const check = () => {
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(video, 0, 0)
+      video.pause()
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob)
+        _video.setAttribute('poster', url)
+      })
+    }
+    video.addEventListener('loadedmetadata', init, {once: true})
+    video.addEventListener('seeked', check, {once: true})
+    video.src = _video.src
+  }
+  function checkVideo() {
+    const videoList = deepQuerySelectorAll(document.body, 'video:not([poster])')
+    for (const video of videoList) {
+      if (!video.src) continue
+      checkVideoFirstFrame(video)
+    }
+  }
   function getDomainSetting(rawDomainList) {
     const domainList = []
     const regexList = []
@@ -1753,6 +1785,7 @@ window.ImageViewerUtils = (function () {
       processLazyPlaceholder()
       fakeUserHover()
       checkPseudoCss()
+      checkVideo()
       enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
       disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
     }
