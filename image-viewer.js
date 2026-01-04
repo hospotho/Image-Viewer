@@ -1625,7 +1625,12 @@ window.ImageViewer = (function () {
       }
 
       // wait for new image insert
-      if (currentIndex === insertIndex) return
+      if (currentIndex === insertIndex) {
+        // smoothen throttle time
+        lastDecodeTime = Math.min(Math.max(performance.now() - lastCompleteTime, lastDecodeTime), 500)
+        return
+      }
+      // wait for new image load complete
       if (nextIndex <= insertIndex) {
         const img = imageListNode.children[nextIndex].firstChild
         if (!img.complete) return
