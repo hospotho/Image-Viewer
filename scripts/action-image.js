@@ -38,7 +38,6 @@
 
   const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
-  window.backupImageList = combinedImageList
 
   // find picked image index
   const targetData = {src: srcUrl, dom: dom}
@@ -53,13 +52,14 @@
   // build image viewer
   await new Promise(resolve => setTimeout(resolve, 0))
   ImageViewer(combinedImageList, options)
+  window.backupImageList = combinedImageList
 
   // auto update
   let updateRelease = () => {}
   let updatePeriod = 500
   const multiplier = 1.2
 
-  const updateObserver = new MutationObserver(async () => {
+  const updateObserver = new MutationObserver(() => {
     updatePeriod = 100
     updateRelease()
   })
@@ -84,13 +84,13 @@
     }
     const orderedImageList = await ImageViewerUtils.getOrderedImageList(options)
     const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
-    window.backupImageList = combinedImageList
     if (!document.body.classList.contains('iv-attached')) break
 
     const currentImageList = ImageViewer('get_image_list')
     if (combinedImageList.length > currentImageList.length || !ImageViewerUtils.isStrLengthEqual(combinedImageList, currentImageList)) {
       await new Promise(resolve => setTimeout(resolve, 0))
       ImageViewer(combinedImageList, options)
+      window.backupImageList = combinedImageList
       updatePeriod = 100
     }
   }
