@@ -9,6 +9,7 @@ window.ImageViewer = (function () {
   const imageFailureCountMap = new Map()
 
   let fps = getFPS().then(result => (fps = result)) && 60
+  let insertIndex = -1
   let clearIndex = -1
   let clearDom = null
   let clearSrc = ''
@@ -24,8 +25,9 @@ window.ImageViewer = (function () {
   function closeImageViewer() {
     const root = shadowRoot.host
     if (!root || !document.body.classList.contains('iv-attached')) return
-
     document.body.classList.remove('iv-attached')
+
+    insertIndex = -1
     clearIndex = -1
     clearDom = null
     clearSrc = ''
@@ -1622,6 +1624,13 @@ window.ImageViewer = (function () {
         return
       }
 
+      // wait for new image insert
+      if (currentIndex === insertIndex) return
+      if (nextIndex <= insertIndex) {
+        const img = imageListNode.children[nextIndex].firstChild
+        if (!img.complete) return
+      }
+
       if (nextIndex === 0) {
         if (debounceFlag) return
         const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
@@ -2140,6 +2149,7 @@ window.ImageViewer = (function () {
         }
       }
       // process remaining list
+      let lastIndex = -1
       for (let i = 1; i < newList.length; i++) {
         const data = newList[i]
         const index = currentUrlIndexMap.get(data.src)
@@ -2152,7 +2162,14 @@ window.ImageViewer = (function () {
         const refIndex = currentUrlIndexMap.get(lastSrc) + indexShift || newUrlInsertIndexMap.get(lastSrc) + 1
         newUrlInsertIndexMap.set(data.src, refIndex)
         insertImageNode(node, refIndex)
+        lastIndex = refIndex
         updated = true
+      }
+      // update insert index for navigation lock
+      if (lastIndex !== -1 && (lastIndex - insertIndex <= 10 || insertIndex === -1)) {
+        insertIndex = lastIndex
+        const resetTime = Math.min(Math.max(Date.now() - lastUpdateTime, 2000), 5000)
+        setTimeout(() => (insertIndex = insertIndex === lastIndex ? -1 : insertIndex), resetTime)
       }
       // first image changed
       if (!firstImageChanged) return
