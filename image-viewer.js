@@ -2307,6 +2307,13 @@ window.ImageViewer = (function () {
       }
       case 'reset_image_list': {
         imageDataList = []
+        clearIndex = -1
+        clearDom = null
+        clearSrc = ''
+        lastIndex = -1
+        lastDom = null
+        lastSrc = ''
+        lastTransform = null
         return
       }
       case 'close_image_viewer': {
