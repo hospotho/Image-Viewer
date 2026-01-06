@@ -209,22 +209,21 @@ window.ImageViewerUtils = (function () {
 
   // init observer for unlazy image being modify
   const unlazyObserver = new MutationObserver(mutationsList => {
-    const modifiedSet = new Set()
-    for (const mutation of mutationsList) {
-      const element = mutation.target
-      if (element.hasAttribute('iv-observing')) continue
-      if (element.hasAttribute('iv-image') && !element.hasAttribute('iv-checking')) {
-        modifiedSet.add(element)
-      }
+    const modifiedList = []
+    for (const {target, attributeName} of mutationsList) {
+      if (target.tagName !== 'IMG' || target.hasAttribute('iv-observing') || target.hasAttribute('iv-checking') || target.hasAttribute('iv-dynamic') || !target.hasAttribute('iv-image')) continue
+      modifiedList.push([target, attributeName])
     }
-    modifiedSet.forEach(async img => {
+    modifiedList.forEach(async ([img, attributeName]) => {
       while (!img.complete) {
         await new Promise(resolve => setTimeout(resolve, 50))
       }
-      const attrList = getUnlazyAttrList(img)
-      if (attrList.length === 0) return
       img.setAttribute('iv-observing', '')
-      await checkImageAttr(img, attrList)
+      const currentSrc = img[attributeName]
+      const attrList = getUnlazyAttrList(img)
+      if (attrList.length !== 0) await checkImageAttr(img, attrList)
+      // maybe dynamic image tile, collect all image
+      if (img.src === currentSrc) img.setAttribute('iv-dynamic', '')
       img.removeAttribute('iv-observing')
     })
   })
@@ -2195,7 +2194,7 @@ window.ImageViewerUtils = (function () {
       for (let i = lastLength; i < currLength; i++) {
         const {src, dom} = dataList[i]
         srcIndexMap.set(src, i)
-        if (dom.tagName !== 'IFRAME') domIndexMap.set(dom, i)
+        if (dom.tagName !== 'IFRAME' && !dom.hasAttribute('iv-dynamic')) domIndexMap.set(dom, i)
       }
       lastLength = currLength
     }
@@ -2300,7 +2299,7 @@ window.ImageViewerUtils = (function () {
 
     const newSrcDomMap = new Map()
     for (const {src, dom} of newList) {
-      if (dom.tagName !== 'IFRAME') {
+      if (dom.tagName !== 'IFRAME' && !dom.hasAttribute('iv-dynamic')) {
         newSrcDomMap.set(src, dom)
       }
     }

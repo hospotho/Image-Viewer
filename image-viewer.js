@@ -2243,7 +2243,7 @@ window.ImageViewer = (function () {
     const repeatFilename = new Set()
     for (const data of newList) {
       const {src, dom} = data
-      if (dom.tagName !== 'IFRAME') newDomDataMap.set(dom, data)
+      if (dom.tagName !== 'IFRAME' && !dom.hasAttribute('iv-dynamic')) newDomDataMap.set(dom, data)
       newUrlDataMap.set(src, data)
 
       const filename = getFilename(src)
