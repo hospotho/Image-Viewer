@@ -39,7 +39,7 @@
   })()
 
   // zip
-  function generateCRCTable() {
+  const crcTable = (() => {
     const crcTable = new Uint32Array(256)
     const polynomial = 0xedb88320 // CRC-32 polynomial
 
@@ -56,23 +56,20 @@
       crcTable[i] = crc
     }
     return crcTable
-  }
+  })()
   function calculateCRC32(data) {
-    const crcTable = generateCRCTable()
     let crc = 0xffffffff // Initial CRC value
-
     for (let i = 0; i < data.length; i++) {
       const byte = data[i]
       crc = (crc >>> 8) ^ crcTable[(crc ^ byte) & 0xff]
     }
-
     crc ^= 0xffffffff // Final XOR value
+
     const crcBytes = new Uint8Array(4)
     crcBytes[0] = (crc >> 24) & 0xff
     crcBytes[1] = (crc >> 16) & 0xff
     crcBytes[2] = (crc >> 8) & 0xff
     crcBytes[3] = crc & 0xff
-
     return crcBytes
   }
 
@@ -127,7 +124,6 @@
 
     return centralDirectoryEntry
   }
-
   function buildZip(localFileHeaderList) {
     const centralDirectoryList = []
     let centralOffset = 0
@@ -165,12 +161,10 @@
       zipFile.set(localFileHeader, offset)
       offset += localFileHeader.length
     }
-
     for (const centralDirectoryEntry of centralDirectoryList) {
       zipFile.set(centralDirectoryEntry, offset)
       offset += centralDirectoryEntry.length
     }
-
     zipFile.set(endOfCentralDirectoryRecord, offset)
 
     return zipFile
@@ -196,13 +190,13 @@
       if (part.includes('-')) {
         const [start, end] = part
           .split('-')
-          .map(n => Math.min(length, Math.max(1, Number(n))) - 1)
+          .map(n => Math.min(Math.max(Number(n), 1), length) - 1)
           .sort((a, b) => a - b)
         for (let i = start; i <= end; i++) {
           result[i] = true
         }
       } else {
-        const index = Math.min(length, Math.max(1, Number(part))) - 1
+        const index = Math.min(Math.max(Number(part), 1), length) - 1
         result[index] = true
       }
     }
@@ -223,42 +217,46 @@
       .catch(() => getCorsImageBinary(url))
       .finally(() => release())
   }
+  function getImageBinaryList(selectedUrlList) {
+    const length = selectedUrlList.length
+    const progress = new Array(length).fill(0)
+
+    const asyncList = []
+    for (let i = 0; i < length; i++) {
+      const [url, index] = selectedUrlList[i]
+      const promise = getImageBinary(url).then(data => [url, index, data])
+      promise.finally(() => (progress[i] = 1))
+      asyncList.push(promise)
+    }
+
+    const interval = setInterval(() => {
+      const total = progress.reduce((a, c) => a + c, 0)
+      console.log(`Downloading: ${total} / ${length}`)
+      if (total === length) {
+        clearInterval(interval)
+        console.log('Download complete.')
+      }
+    }, 3000)
+
+    return Promise.all(asyncList)
+  }
 
   // main
   async function main() {
     const imageList = ImageViewer('get_image_list')
     if (imageList.length === 0) return
 
-    const imageUrlList = imageList.map(img => img.src)
-    const selectionRange = getUserSelection(imageUrlList.length)
+    const selectionRange = getUserSelection(imageList.length)
     if (selectionRange === null) return
 
-    const selectedUrlList = imageUrlList.map((v, i) => [v, i]).filter(item => selectionRange[item[1]])
+    const selectedUrlList = imageList.map((img, i) => selectionRange[i] && [img.src, i]).filter(Boolean)
     if (selectedUrlList.length === 0) return
 
-    const asyncList = []
-    const progress = new Array(selectedUrlList.length).fill(0)
-    for (let i = 0; i < selectedUrlList.length; i++) {
-      const [url, index] = selectedUrlList[i]
-      asyncList[i] = getImageBinary(url)
-        .then(data => [data, index])
-        .finally(() => (progress[i] = 1))
-    }
-
-    const interval = setInterval(() => {
-      const total = progress.reduce((a, c) => a + c, 0)
-      console.log(`Downloading: ${total} / ${selectedUrlList.length}`)
-      if (total === selectedUrlList.length) {
-        clearInterval(interval)
-        console.log('Download complete.')
-      }
-    }, 3000)
-    const imageBinaryList = await Promise.all(asyncList)
+    const imageBinaryList = await getImageBinaryList(selectedUrlList)
 
     const localFileHeaderList = []
-    for (const [data, index] of imageBinaryList) {
+    for (const [url, index, data] of imageBinaryList) {
       const indexString = ('0000' + (index + 1)).slice(-5)
-      const url = imageUrlList[index]
       const name = url.startsWith('data') ? '' : '_' + url.split('?')[0].split('/').at(-1)
       const extension = name.includes('.') ? '' : '.jpg'
       const filename = indexString + name + extension
