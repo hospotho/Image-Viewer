@@ -7,6 +7,37 @@
     }
   }
 
+  const semaphore = (() => {
+    // parallel fetch
+    let activeCount = 0
+    const maxConcurrent = 32
+    const queue = []
+    return {
+      acquire: function () {
+        let executed = false
+        const release = () => {
+          if (executed) return
+          executed = true
+          activeCount--
+          const grantAccess = queue.shift()
+          if (grantAccess) grantAccess()
+        }
+
+        if (activeCount < maxConcurrent) {
+          activeCount++
+          return Promise.resolve(release)
+        }
+        const {promise, resolve} = Promise.withResolvers()
+        const grantAccess = () => {
+          activeCount++
+          resolve(release)
+        }
+        queue.push(grantAccess)
+        return promise
+      }
+    }
+  })()
+
   // zip
   function generateCRCTable() {
     const crcTable = new Uint32Array(256)
@@ -178,16 +209,19 @@
 
     return result
   }
-  function getImageBinary(url) {
+  async function getCorsImageBinary(url) {
+    const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: url})
+    return fetch(dataUrl)
+      .then(res => res.arrayBuffer())
+      .then(buffer => new Uint8Array(buffer))
+  }
+  async function getImageBinary(url) {
+    const release = await semaphore.acquire()
     return fetch(url)
-      .then(response => response.arrayBuffer())
-      .then(arrayBuffer => new Uint8Array(arrayBuffer))
-      .catch(async () => {
-        const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: url})
-        const res = await fetch(dataUrl)
-        const rawArray = await res.arrayBuffer()
-        return new Uint8Array(rawArray)
-      })
+      .then(res => res.arrayBuffer())
+      .then(buffer => new Uint8Array(buffer))
+      .catch(() => getCorsImageBinary(url))
+      .finally(() => release())
   }
 
   // main
