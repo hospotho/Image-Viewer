@@ -1608,7 +1608,9 @@ window.ImageViewer = (function () {
         const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
         debounceTimeout = setTimeout(prevItem, delay)
         debounceFlag = true
-      } else if (Date.now() > throttleTimestamp) {
+        return
+      }
+      if (Date.now() > throttleTimestamp) {
         resetDebounce()
         moveToNode(prevIndex)
       }
@@ -1624,6 +1626,13 @@ window.ImageViewer = (function () {
         return
       }
 
+      if (nextIndex === 0) {
+        if (debounceFlag) return
+        const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
+        debounceTimeout = setTimeout(nextItem, delay)
+        debounceFlag = true
+        return
+      }
       // wait for new image insert
       if (currentIndex === insertIndex) {
         // smoothen throttle time
@@ -1635,13 +1644,7 @@ window.ImageViewer = (function () {
         const img = imageListNode.children[nextIndex].firstChild
         if (!img.complete) return
       }
-
-      if (nextIndex === 0) {
-        if (debounceFlag) return
-        const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
-        debounceTimeout = setTimeout(nextItem, delay)
-        debounceFlag = true
-      } else if (Date.now() > throttleTimestamp) {
+      if (Date.now() > throttleTimestamp) {
         resetDebounce()
         moveToNode(nextIndex)
       }
