@@ -23,8 +23,7 @@
   // natural sort
   const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'})
   const anchorList = [...document.getElementsByTagName('a')].filter(a => !a.href.endsWith('/')).sort(collator.compare)
-  const isImageList = await safeSendMessage({msg: 'is_file_image', urlList: anchorList.map(a => a.href)})
-  const sizeList = await Promise.all(anchorList.map((a, i) => isImageList[i] && ImageViewerUtils.getImageRealSize(a.href)))
+  const sizeList = await Promise.all(anchorList.map(a => ImageViewerUtils.getImageRealSize(a.href)))
 
   const imageDataList = []
   const minSize = Math.min(options.minWidth, options.minHeight)

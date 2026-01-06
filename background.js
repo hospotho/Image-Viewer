@@ -4,7 +4,6 @@ const srcLocalRealSizeMap = new Map()
 const srcLocalRealSizeResolveMap = new Map()
 const srcLocalUrlMap = new Map()
 const redirectUrlMap = new Map()
-const isFileImageMap = new Map()
 const tabSubtreeMap = new Map()
 const semaphore = (() => {
   // parallel fetch
@@ -189,15 +188,6 @@ async function getRedirectUrl(url) {
 
   redirectUrlMap.set(url, url)
   return url
-}
-async function isFileImage(url) {
-  const cache = isFileImageMap.get(url)
-  if (cache !== undefined) return cache
-
-  const res = await fetch(url, {method: 'HEAD'})
-  const result = res.headers.get('Content-Type')?.startsWith('image') ? 1 : 0
-  isFileImageMap.set(url, result)
-  return result
 }
 async function openNewTab(senderTab, url) {
   const subtree = tabSubtreeMap.get(senderTab.id)
@@ -454,13 +444,6 @@ function addMessageHandler() {
       case 'get_redirect': {
         ;(async () => {
           const resultList = await Promise.all(request.data.map(getRedirectUrl))
-          sendResponse(resultList)
-        })()
-        return true
-      }
-      case 'is_file_image': {
-        ;(async () => {
-          const resultList = await Promise.all(request.urlList.map(isFileImage))
           sendResponse(resultList)
         })()
         return true
