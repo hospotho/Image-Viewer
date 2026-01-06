@@ -9,7 +9,7 @@
 
   async function loadOptions() {
     await safeSendMessage('get_options')
-    // Chrome may terminated service worker
+    // chrome may terminated service worker
     while (!window.ImageViewerOption) {
       await new Promise(resolve => setTimeout(resolve, 50))
       await safeSendMessage('get_options')
