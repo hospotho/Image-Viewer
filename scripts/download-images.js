@@ -236,7 +236,24 @@
     const selectedUrlList = imageUrlList.map((v, i) => [v, i]).filter(item => selectionRange[item[1]])
     if (selectedUrlList.length === 0) return
 
-    const imageBinaryList = await Promise.all(selectedUrlList.map(async item => [await getImageBinary(item[0]), item[1]]))
+    const asyncList = []
+    const progress = new Array(selectedUrlList.length).fill(0)
+    for (let i = 0; i < selectedUrlList.length; i++) {
+      const [url, index] = selectedUrlList[i]
+      asyncList[i] = getImageBinary(url)
+        .then(data => [data, index])
+        .finally(() => (progress[i] = 1))
+    }
+
+    const interval = setInterval(() => {
+      const total = progress.reduce((a, c) => a + c, 0)
+      console.log(`Downloading: ${total} / ${selectedUrlList.length}`)
+      if (total === selectedUrlList.length) {
+        clearInterval(interval)
+        console.log('Download complete.')
+      }
+    }, 3000)
+    const imageBinaryList = await Promise.all(asyncList)
 
     const localFileHeaderList = []
     for (const [data, index] of imageBinaryList) {
