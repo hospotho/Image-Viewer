@@ -2167,11 +2167,12 @@ window.ImageViewer = (function () {
         const refIndex = currentUrlIndexMap.get(lastSrc) + indexShift || newUrlInsertIndexMap.get(lastSrc) + 1
         newUrlInsertIndexMap.set(data.src, refIndex)
         insertImageNode(node, refIndex)
-        lastIndex = refIndex
+        // only first consecutive insert
+        lastIndex = lastIndex === -1 || lastIndex + 1 === refIndex ? refIndex : lastIndex
         updated = true
       }
       // update insert index for navigation lock
-      if (lastIndex !== -1 && (lastIndex - insertIndex <= 10 || insertIndex === -1)) {
+      if (lastIndex > insertIndex) {
         insertIndex = lastIndex
         const resetTime = Math.min(Math.max(Date.now() - lastUpdateTime, 2000), 5000)
         setTimeout(() => (insertIndex = insertIndex === lastIndex ? -1 : insertIndex), resetTime)
