@@ -1636,7 +1636,7 @@ window.ImageViewer = (function () {
       // wait for new image insert
       if (currentIndex === insertIndex) {
         // smoothen throttle time
-        lastDecodeTime = Math.min(Math.max(performance.now() - lastCompleteTime, lastDecodeTime), 500)
+        lastDecodeTime = Math.min(Math.max(performance.now() - lastCompleteTime, lastDecodeTime), 200)
         return
       }
       // wait for new image load complete
