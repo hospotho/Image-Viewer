@@ -39,13 +39,15 @@
   const combinedImageList = ImageViewerUtils.combineImageList(orderedImageList, window.backupImageList)
 
   // find picked image index
-  const targetData = {src: srcUrl, dom: dom}
-  options.index = ImageViewerUtils.searchImageInfoIndex(targetData, combinedImageList)
-  if (dom && options.index === -1) {
-    combinedImageList.push(targetData)
-    ImageViewerUtils.sortImageDataList(combinedImageList)
+  if (srcUrl || dom) {
+    const targetData = {src: srcUrl, dom: dom}
     options.index = ImageViewerUtils.searchImageInfoIndex(targetData, combinedImageList)
-    console.log('Add picked image to list')
+    if (dom && options.index === -1) {
+      combinedImageList.push(targetData)
+      ImageViewerUtils.sortImageDataList(combinedImageList)
+      options.index = ImageViewerUtils.searchImageInfoIndex(targetData, combinedImageList)
+      console.log('Add picked image to list')
+    }
   }
 
   // build image viewer
