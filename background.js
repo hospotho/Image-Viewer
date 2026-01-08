@@ -360,7 +360,7 @@ function addMessageHandler() {
         if (lastImageNodeInfoID === sender.tab.id) {
           sendResponse(lastImageNodeInfo)
         } else {
-          sendResponse(['', 0])
+          sendResponse(['', Number.MAX_SAFE_INTEGER])
         }
         return
       }

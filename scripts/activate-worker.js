@@ -533,6 +533,7 @@
       const imageNodeInfo = await getImageNodeInfo(e.clientX, e.clientY)
       if (imageNodeInfo === null) {
         markingDom(null)
+        safeSendMessage({msg: 'update_info', data: ['', Number.MAX_SAFE_INTEGER]})
         return
       }
       markingDom(imageNodeInfo[2])

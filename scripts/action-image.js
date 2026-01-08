@@ -19,18 +19,17 @@
   const options = window.ImageViewerOption
   options.closeButton = true
 
+  for (let i = 0; i < 10; i++) {
+    if (window.ImageViewerLastDom !== undefined) break
+    await new Promise(resolve => setTimeout(resolve, 10))
+  }
+
   // update image size filter
   const nodeInfo = await safeSendMessage('get_info')
   const [srcUrl, nodeSize] = nodeInfo
-  if (nodeSize) {
-    options.minWidth = Math.min(nodeSize, options.minWidth)
-    options.minHeight = Math.min(nodeSize, options.minHeight)
-  }
+  options.minWidth = Math.min(nodeSize, options.minWidth)
+  options.minHeight = Math.min(nodeSize, options.minHeight)
 
-  for (let i = 0; i < 10; i++) {
-    if (window.ImageViewerLastDom !== undefined) break
-    await new Promise(resolve => setTimeout(resolve, 20))
-  }
   const dom = window.ImageViewerLastDom
   const domRect = dom?.getBoundingClientRect()
   const domSize = domRect ? [domRect.width, domRect.height] : [0, 0]
