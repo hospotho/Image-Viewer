@@ -1675,6 +1675,7 @@ window.ImageViewerUtils = (function () {
     const cssText = await res.text()
 
     const matchList = cssText
+      .replaceAll(/@import[\S\s]*?;/g, '')
       .replaceAll(/[\r\n]/g, '')
       .replaceAll(/\/\*.*?\*\//g, '')
       .replaceAll(/ +/g, ' ')
@@ -1711,8 +1712,16 @@ window.ImageViewerUtils = (function () {
   function checkPseudoCss() {
     pseudoImageDataList.length = 0
     for (const sheet of document.styleSheets) {
-      const href = sheet.href
-      if (href) checkPseudoElement(href)
+      try {
+        const href = sheet.href
+        if (href) checkPseudoElement(href)
+        for (const rule of sheet.cssRules) {
+          if (rule instanceof CSSImportRule) {
+            const importHref = rule.href
+            if (importHref) checkPseudoElement(importHref)
+          }
+        }
+      } catch (e) {}
     }
   }
   function checkVideoFirstFrame(_video) {
