@@ -1675,17 +1675,19 @@ window.ImageViewerUtils = (function () {
     const cssText = await res.text()
 
     const matchList = cssText
-      .replaceAll(/[\r\n ]/g, '')
+      .replaceAll(/[\r\n]/g, '')
       .replaceAll(/\/\*.*?\*\//g, '')
+      .replaceAll(/ +/g, ' ')
       .split('}')
       .map(str => (str.startsWith('@') ? str.split('{')[1] : str))
-      .map(str => str.match(/:(?:before|after).+background-image:url\((.+)\)/))
+      .map(str => str.match(/:(?:before|after).+background-image: *url\((.+)\)/))
       .filter(Boolean)
 
     for (const match of matchList) {
       const rawSelector = match.input
         .split('{')[0]
         .split(',')
+        .map(s => s.trim())
         .filter(s => s.includes(':'))[0]
       const index = rawSelector.lastIndexOf(':')
       // maybe single-colon in css2
