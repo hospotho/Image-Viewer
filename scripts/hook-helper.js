@@ -7,6 +7,8 @@
     }
   }
 
+  if (document.contentType !== 'text/html') return
+
   async function processDomRequest(node) {
     if (node.hasAttribute('iv-processed')) return
     node.setAttribute('iv-processed', '')
