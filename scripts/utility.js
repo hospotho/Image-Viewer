@@ -458,7 +458,7 @@ window.ImageViewerUtils = (function () {
       const pathname = dotIndex !== -1 && dotIndex > slashIndex ? url.pathname.slice(0, dotIndex) : url.pathname
       const query = url.search
         .split('&')
-        .filter(attr => attr.split('=').at(-1).length > 6)
+        .filter(attr => attr.slice(attr.indexOf('=') + 1).length > 6)
         .reduce((last, curr) => (curr.length > last.length ? curr : last), '')
       const pathId = pathname + query
       pathIdCache.set(src, pathId)
