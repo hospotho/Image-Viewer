@@ -677,7 +677,7 @@ window.ImageViewerUtils = (function () {
     for (let i = 0; i < widthList.length; i++) {
       const width = widthList[i]
       const height = heightList[i]
-      refSizeList.push(width > height ? [width, height] : [height, width])
+      refSizeList.push([width, height])
     }
     // sort by area
     refSizeList.sort((a, b) => b[0] * b[1] - a[0] * a[1])
@@ -748,6 +748,11 @@ window.ImageViewerUtils = (function () {
       const widthList = []
       const heightList = []
       for (const img of imgList) {
+        if (!img.complete || img.naturalWidth === 0) {
+          widthList.push(Number.MAX_SAFE_INTEGER)
+          heightList.push(Number.MAX_SAFE_INTEGER)
+          continue
+        }
         const rect = img.getBoundingClientRect()
         const width = img.naturalWidth > 15 ? Math.min(rect.width, img.naturalWidth) : rect.width
         const height = img.naturalHeight > 15 ? Math.min(rect.height, img.naturalHeight) : rect.height
