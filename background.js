@@ -39,6 +39,7 @@ const srcLocalRealSizeResolveMap = new Map()
 const srcLocalUrlMap = new Map()
 const redirectUrlMap = new Map()
 const tabSubtreeMap = new Map()
+let offscreenPromise = null
 
 // utility function
 const i18n = tag => chrome.i18n.getMessage(tag)
@@ -193,6 +194,27 @@ async function getRedirectUrl(url) {
 
   redirectUrlMap.set(url, url)
   return url
+}
+async function getFrameFromOffscreen(url) {
+  const existingContexts = await chrome.runtime.getContexts({contextTypes: ['OFFSCREEN_DOCUMENT']})
+  if (existingContexts.length === 0) {
+    if (offscreenPromise) await offscreenPromise
+    else {
+      offscreenPromise = chrome.offscreen.createDocument({
+        url: '/page/offscreen.html',
+        reasons: ['DOM_PARSER'],
+        justification: 'Parse video to get first frame'
+      })
+      await offscreenPromise
+      offscreenPromise = null
+    }
+  }
+
+  const release = await semaphore.acquire()
+  const dataUrl = await chrome.runtime.sendMessage({type: 'get_first_frame', url: url})
+  release()
+
+  return dataUrl
 }
 async function openNewTab(senderTab, url) {
   const subtree = tabSubtreeMap.get(senderTab.id)
@@ -507,6 +529,13 @@ function addMessageHandler() {
           })
           const mime = res.headers.get('content-type').split(';')[0] || 'image/jpeg'
           sendResponse([dataUrl, mime])
+        })()
+        return true
+      }
+      case 'request_first_frame': {
+        ;(async () => {
+          const dataUrl = await getFrameFromOffscreen(request.url)
+          sendResponse(dataUrl, false)
         })()
         return true
       }

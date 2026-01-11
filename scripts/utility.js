@@ -1750,7 +1750,7 @@ window.ImageViewerUtils = (function () {
       video.pause()
       canvas.toBlob(blob => {
         const url = URL.createObjectURL(blob)
-        _video.setAttribute('poster', url)
+        _video.poster = url
       })
     }
     video.addEventListener('loadedmetadata', init, {once: true})
@@ -1761,7 +1761,13 @@ window.ImageViewerUtils = (function () {
     const videoList = deepQuerySelectorAll(document.body, 'video:not([poster])')
     for (const video of videoList) {
       if (!video.src) continue
-      checkVideoFirstFrame(video)
+      // check cors
+      fetch(video.src)
+        .then(() => checkVideoFirstFrame(video))
+        .catch(async () => {
+          const dataUrl = await safeSendMessage({msg: 'request_first_frame', url: video.src})
+          video.poster = dataUrl
+        })
     }
   }
   function getDomainSetting(rawDomainList) {

@@ -8,7 +8,7 @@
     "16": "/icon/icon16.png",
     "128": "/icon/icon128.png"
   },
-  "permissions": ["storage", "contextMenus", "scripting", "webNavigation"],
+  "permissions": ["storage", "contextMenus", "scripting", "offscreen", "webNavigation"],
   "host_permissions": ["*://*/*", "file:///*"],
   "background": {
     "scripts": ["background.js"],
