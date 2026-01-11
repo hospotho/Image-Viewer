@@ -1,10 +1,6 @@
-// utility function
-const srcBitSizeMap = new Map()
-const srcLocalRealSizeMap = new Map()
-const srcLocalRealSizeResolveMap = new Map()
-const srcLocalUrlMap = new Map()
-const redirectUrlMap = new Map()
-const tabSubtreeMap = new Map()
+'use strict'
+
+// parallel fetch
 const semaphore = (() => {
   // parallel fetch
   let activeCount = 0
@@ -36,6 +32,15 @@ const semaphore = (() => {
   }
 })()
 
+// data cache
+const srcBitSizeMap = new Map()
+const srcLocalRealSizeMap = new Map()
+const srcLocalRealSizeResolveMap = new Map()
+const srcLocalUrlMap = new Map()
+const redirectUrlMap = new Map()
+const tabSubtreeMap = new Map()
+
+// utility function
 const i18n = tag => chrome.i18n.getMessage(tag)
 const oldExecuteScript = chrome.scripting.executeScript
 chrome.scripting.executeScript = async function () {
