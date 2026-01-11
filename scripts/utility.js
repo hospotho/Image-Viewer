@@ -1669,59 +1669,67 @@ window.ImageViewerUtils = (function () {
       image.dispatchEvent(leaveEvent)
     }
   }
-  async function checkPseudoElement(href) {
-    const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: href})
-    const res = await fetch(dataUrl)
-    const cssText = await res.text()
+  async function checkPseudoRule(rule) {
+    const bg = rule.style.backgroundImage
+    if (!bg.startsWith('url(')) return
 
-    const matchList = cssText
-      .replaceAll(/@import[\S\s]*?;/g, '')
-      .replaceAll(/[\r\n]/g, '')
-      .replaceAll(/\/\*.*?\*\//g, '')
-      .replaceAll(/ +/g, ' ')
-      .split('}')
-      .map(str => (str.startsWith('@') ? str.split('{')[1] : str))
-      .map(str => str.match(/:(?:before|after).+background-image: *url\((.+)\)/))
-      .filter(Boolean)
-
-    for (const match of matchList) {
-      const rawSelector = match.input
-        .split('{')[0]
-        .split(',')
-        .map(s => s.trim())
-        .filter(s => s.includes(':'))[0]
+    const url = bg.slice(4, -1).replaceAll(/['"]/g, '')
+    const selectors = rule.selectorText.split(',').map(s => s.trim())
+    for (const rawSelector of selectors) {
       const index = rawSelector.lastIndexOf(':')
+      if (index === -1) continue
+
       // maybe single-colon in css2
       const offset = rawSelector[index - 1] === ':' ? 1 : 0
-      const selector = rawSelector.substring(0, index - offset)
-      const position = rawSelector.substring(index + 1)
+      const selector = rawSelector.substring(0, index - offset).trim()
       const domList = selector.endsWith('>') ? document.querySelectorAll(selector + '*') : document.querySelectorAll(selector)
       if (domList.length === 0) continue
 
-      const dom = domList[0]
-      const pseudoCss = window.getComputedStyle(dom, `::${position}`)
-      if (pseudoCss.content === 'none') continue
+      const position = rawSelector.substring(index + 1)
+      for (const dom of domList) {
+        const pseudoCss = window.getComputedStyle(dom, `::${position}`)
+        if (pseudoCss.content === 'none') continue
 
-      const url = match[1]
-      const realSize = await getImageRealSize(url)
-      const width = Math.min(realSize, Number(pseudoCss.width.slice(0, -2)))
-      const height = Math.min(realSize, Number(pseudoCss.height.slice(0, -2)))
-      pseudoImageDataList.push([url, dom, width, height])
+        const realSize = await getImageRealSize(url)
+        const width = Math.min(realSize, Number(pseudoCss.width.slice(0, -2)))
+        const height = Math.min(realSize, Number(pseudoCss.height.slice(0, -2)))
+        pseudoImageDataList.push([url, dom, width, height])
+      }
     }
   }
-  function checkPseudoCss() {
-    pseudoImageDataList.length = 0
+  async function checkPseudoRules(rules) {
+    for (const rule of rules) {
+      if (rule.styleSheet) {
+        await checkPseudoCss(rule.styleSheet)
+      } else if (rule.cssRules?.length > 0) {
+        await checkPseudoRules(rule.cssRules)
+      } else if (rule.selectorText && /::?(before|after)/.test(rule.selectorText)) {
+        await checkPseudoRule(rule)
+      }
+    }
+  }
+  async function checkPseudoCss(sheet) {
+    try {
+      const rules = sheet.cssRules
+      await checkPseudoRules(rules)
+    } catch (e) {
+      const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: sheet.href})
+      const res = await fetch(dataUrl)
+      const cssText = await res.text()
+
+      // skip rewrite, intended to fail on relative url
+      const tempStyle = document.createElement('style')
+      tempStyle.textContent = cssText
+      document.body.appendChild(tempStyle)
+
+      const rules = tempStyle.sheet.cssRules
+      await checkPseudoRules(rules)
+      document.body.removeChild(tempStyle)
+    }
+  }
+  function checkPseudoElement() {
     for (const sheet of document.styleSheets) {
-      try {
-        const href = sheet.href
-        if (href) checkPseudoElement(href)
-        for (const rule of sheet.cssRules) {
-          if (rule instanceof CSSImportRule) {
-            const importHref = rule.href
-            if (importHref) checkPseudoElement(importHref)
-          }
-        }
-      } catch (e) {}
+      checkPseudoCss(sheet)
     }
   }
   function checkVideoFirstFrame(_video) {
@@ -1799,7 +1807,7 @@ window.ImageViewerUtils = (function () {
     if (lastUnlazyTask === null) {
       processLazyPlaceholder()
       fakeUserHover()
-      checkPseudoCss()
+      checkPseudoElement()
       checkVideo()
       enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
       disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
