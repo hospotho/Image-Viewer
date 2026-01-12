@@ -1669,7 +1669,7 @@ window.ImageViewerUtils = (function () {
       image.dispatchEvent(leaveEvent)
     }
   }
-  async function checkPseudoRule(rule) {
+  function checkPseudoRule(rule) {
     const bg = rule.style.backgroundImage
     if (!bg.startsWith('url(')) return
 
@@ -1689,29 +1689,26 @@ window.ImageViewerUtils = (function () {
       for (const dom of domList) {
         const pseudoCss = window.getComputedStyle(dom, `::${position}`)
         if (pseudoCss.content === 'none') continue
-
-        const realSize = await getImageRealSize(url)
-        const width = Math.min(realSize, Number(pseudoCss.width.slice(0, -2)))
-        const height = Math.min(realSize, Number(pseudoCss.height.slice(0, -2)))
-        pseudoImageDataList.push([url, dom, width, height])
+        getImageRealSize(url).then(realSize => {
+          const width = Math.min(realSize, Number(pseudoCss.width.slice(0, -2)))
+          const height = Math.min(realSize, Number(pseudoCss.height.slice(0, -2)))
+          pseudoImageDataList.push([url, dom, width, height])
+        })
       }
     }
   }
-  async function checkPseudoRules(rules) {
+  function checkPseudoRules(rules) {
     for (const rule of rules) {
-      if (rule.styleSheet) {
-        await checkPseudoCss(rule.styleSheet)
-      } else if (rule.cssRules?.length > 0) {
-        await checkPseudoRules(rule.cssRules)
-      } else if (rule.selectorText && /::?(before|after)/.test(rule.selectorText)) {
-        await checkPseudoRule(rule)
-      }
+      if (rule.styleSheet) checkPseudoCss(rule.styleSheet)
+      else if (rule.cssRules?.length > 0) checkPseudoRules(rule.cssRules)
+      else if (rule.selectorText && /::?(before|after)/.test(rule.selectorText)) checkPseudoRule(rule)
     }
   }
   async function checkPseudoCss(sheet) {
     try {
+      // check cors
       const rules = sheet.cssRules
-      await checkPseudoRules(rules)
+      checkPseudoRules(rules)
     } catch (e) {
       const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: sheet.href})
       const res = await fetch(dataUrl)
@@ -1723,7 +1720,7 @@ window.ImageViewerUtils = (function () {
       document.body.appendChild(tempStyle)
 
       const rules = tempStyle.sheet.cssRules
-      await checkPseudoRules(rules)
+      checkPseudoRules(rules)
       document.body.removeChild(tempStyle)
     }
   }
