@@ -2,6 +2,18 @@
   'use strict'
 
   const rawText = `
+1.47 [2026-01-16]:
+Major Update
+1. Added video first frame check when no poster image is available.
+2. Added chunked loading support when initializing the image viewer.
+3. Added insert throttling with automatic pause when crossing update boundaries.
+  // useful for sites like Reddit where some images are after the main container
+  // or when using custom scripts that insert new images in the middle of the page
+4. Added default CSS cleanup in image tab mode to prevent white flash.
+5. Added fetch control in download mode to prevent request bursts.
+6. Improved Folder mode to reduce initial time.
+7. Other bug fixes and improvements.
+
 1.46 [2026-01-01]:
 Major Update
 1. Added predictive image decoding to reduce lag.
