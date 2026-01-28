@@ -1471,11 +1471,6 @@ window.ImageViewerUtils = (function () {
     attrList.push({name: 'no query', url: origin + pathname})
   }
   function getUnlazyAttrList(img) {
-    if (img.currentSrc && img.currentSrc !== img.src) {
-      badImageSet.add(img.src)
-      img.src = img.currentSrc
-    }
-
     const src = img.currentSrc || img.src
     const rawUrl = getRawUrl(src)
     const attrList = []
