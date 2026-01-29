@@ -77,6 +77,12 @@
   "hover_disable_list": {
     "message": "停用懸停檢查"
   },
+  "image_cache_desc": {
+    "message": "一些單頁應用（SPA）不會改變URL但會動態載入新圖片<br>如果希望為這些網站禁用圖片快取以確保最新的圖片清單，請在此處添加域名"
+  },
+  "image_cache_disable_list": {
+    "message": "禁用圖片快取"
+  },
   "image_size": {
     "message": "尺寸"
   },

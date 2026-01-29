@@ -77,6 +77,12 @@
   "hover_disable_list": {
     "message": "ホバーチェックを無効にする"
   },
+  "image_cache_desc": {
+    "message": "一部のSPA（シングルページアプリケーション）はURLを変更せずに新しい画像を動的に読み込みます<br>これらのウェブサイトの画像キャッシュを無効にして最新の画像リストを確保したい場合は、ここにドメインを追加してください"
+  },
+  "image_cache_disable_list": {
+    "message": "画像キャッシュを無効にする"
+  },
   "image_size": {
     "message": "サイズ"
   },

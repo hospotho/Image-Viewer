@@ -77,6 +77,12 @@
   "hover_disable_list": {
     "message": "禁用悬停检查"
   },
+  "image_cache_desc": {
+    "message": "一些单页应用（SPA）不会改变URL但会动态加载新图片<br>如果希望为这些网站禁用图片缓存以确保最新的图片列表，请在此处添加域名"
+  },
+  "image_cache_disable_list": {
+    "message": "禁用图片缓存"
+  },
   "image_size": {
     "message": "尺寸"
   },

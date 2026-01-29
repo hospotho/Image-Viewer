@@ -77,6 +77,12 @@
   "hover_disable_list": {
     "message": "Disable Hover Check"
   },
+  "image_cache_desc": {
+    "message": "Some SPAs (Single Page Applications) don't change URLs but load new images dynamically.<br>Add domains here if you want to disable image caching for those websites to ensure fresh image lists."
+  },
+  "image_cache_disable_list": {
+    "message": "Disable Image Cache"
+  },
   "image_size": {
     "message": "Size"
   },
