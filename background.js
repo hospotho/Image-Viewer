@@ -254,7 +254,8 @@ const defaultOptions = {
   functionHotkey: ['Shift + R', 'Shift + D'],
   hoverCheckDisableList: [],
   autoScrollEnableList: ['x.com', 'www.instagram.com', 'www.facebook.com'],
-  imageUnlazyDisableList: []
+  imageUnlazyDisableList: [],
+  imageCacheDisableList: []
 }
 
 let currOptions = defaultOptions

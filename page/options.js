@@ -24,6 +24,7 @@
   const hoverCheck = document.querySelector('textarea#hoverCheckDisableList')
   const autoScroll = document.querySelector('textarea#autoScrollEnableList')
   const imageUnlazy = document.querySelector('textarea#imageUnlazyDisableList')
+  const imageCache = document.querySelector('textarea#imageCacheDisableList')
 
   const defaultOptions = {
     fitMode: 'both',
@@ -40,7 +41,8 @@
     functionHotkey: ['Shift + R', 'Shift + D'],
     hoverCheckDisableList: [],
     autoScrollEnableList: ['x.com', 'www.instagram.com', 'www.facebook.com'],
-    imageUnlazyDisableList: []
+    imageUnlazyDisableList: [],
+    imageCacheDisableList: []
   }
 
   //==========utility==========
@@ -150,6 +152,7 @@
       hoverCheck.value = options.hoverCheckDisableList.join('\n')
       autoScroll.value = options.autoScrollEnableList.join('\n')
       imageUnlazy.value = options.imageUnlazyDisableList.join('\n')
+      imageCache.value = options.imageCacheDisableList.join('\n')
     } catch (e) {
       resetDefaultOptions()
       setValue(defaultOptions)
@@ -221,9 +224,11 @@
       const hoverCheckDisableList = hoverCheck.value.split('\n')
       const autoScrollEnableList = autoScroll.value.split('\n')
       const imageUnlazyDisableList = imageUnlazy.value.split('\n')
+      const imageCacheDisableList = imageCache.value.split('\n')
       options.hoverCheckDisableList = hoverCheckDisableList
       options.autoScrollEnableList = autoScrollEnableList
       options.imageUnlazyDisableList = imageUnlazyDisableList
+      options.imageCacheDisableList = imageCacheDisableList
 
       chrome.storage.sync.set({options: options}, () => {
         if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')

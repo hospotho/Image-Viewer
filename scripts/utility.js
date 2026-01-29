@@ -115,6 +115,11 @@ window.ImageViewerUtils = (function () {
   const signal = Promise.resolve(symbol)
   const pendingBadImageMap = new Map()
 
+  // domain settings
+  let enableAutoScroll = false
+  let disableImageUnlazy = false
+  let disableImageCache = false
+
   // image cache
   window.backupImageList = []
   window.badImageSet ??= new Set(['', 'about:blank'])
@@ -132,7 +137,6 @@ window.ImageViewerUtils = (function () {
 
   // unlazy state
   const pseudoImageDataList = []
-  let disableImageUnlazy = false
   let unlazyFlag = false
   let lastUnlazyTask = null
   let lastIframeCanvasTask = null
@@ -140,7 +144,6 @@ window.ImageViewerUtils = (function () {
 
   // scroll state
   let viewerMoveToFlag = false
-  let enableAutoScroll = false
   let scrollUnlazyFlag = false
   let autoScrollFlag = false
   let scrollRelease = () => {}
@@ -1809,6 +1812,11 @@ window.ImageViewerUtils = (function () {
       checkVideo()
       enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
       disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
+      disableImageCache = getDomainSetting(options.imageCacheDisableList)
+    }
+    // empty image cache
+    if (disableImageCache) {
+      window.backupImageList = []
     }
     // skip unlazy
     if (disableImageUnlazy) {

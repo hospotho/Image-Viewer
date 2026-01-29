@@ -231,6 +231,17 @@
           </li>
           <br />
           <li>
+            <label for="imageCacheDisableList" style="width: auto"><span data-i18n="image_cache_disable_list">Disable Image Cache</span>:</label><br />
+            <textarea id="imageCacheDisableList" rows="8" cols="40"></textarea><br />
+          </li>
+          <li id="imageCacheDesc">
+            <span data-i18n="image_cache_desc">
+              Some SPAs (Single Page Applications) don't change URLs but load new images dynamically.<br />
+              Add domains here if you want to disable image caching for those websites to ensure fresh image lists.
+            </span>
+          </li>
+          <br />
+          <li>
             <span data-i18n="domain_settings_example">Example setting (support regex):<br />example.com<br />sub.example.com<br />another.com<br />/^https.*regex\.com/</span>
           </li>
         </ul>
