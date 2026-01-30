@@ -160,6 +160,20 @@
     }
   }
 
+  function getStringifyOptions(options) {
+    options.version = chrome.runtime.getManifest().version
+    options.exportDate = new Date().toISOString()
+
+    const orderedOptions = {}
+    const orderedKeys = Object.keys(defaultOptions).concat(['version', 'exportDate'])
+    for (const key of orderedKeys) {
+      if (key in options) {
+        orderedOptions[key] = options[key]
+      }
+    }
+    return JSON.stringify(orderedOptions, orderedKeys, 2)
+  }
+
   //==========main==========
   function checkUpdate(options) {
     const newOptionList = Object.keys(defaultOptions).filter(key => !(key in options))
