@@ -20,6 +20,9 @@
   "auto_scroll_enable_list": {
     "message": "自動スクロールを有効にする"
   },
+  "copy": {
+    "message": "コピー"
+  },
   "custom_search": {
     "message": "カスタム"
   },
@@ -43,6 +46,9 @@
   },
   "download_hotkey": {
     "message": "集めた写真をダウンロード"
+  },
+  "export": {
+    "message": "エクスポート"
   },
   "fit_with_original_size": {
     "message": "画像の元のサイズ"
@@ -97,6 +103,15 @@
   },
   "image_unlazy_disable_list": {
     "message": "遅延読み込み解除を無効にする"
+  },
+  "import": {
+    "message": "インポート"
+  },
+  "import_failed_invalid_json": {
+    "message": "インポート失敗：無効なJSON形式"
+  },
+  "import_success": {
+    "message": "設定のインポートに成功しました"
   },
   "kofi_link": {
     "message": "Support me"

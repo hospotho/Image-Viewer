@@ -20,6 +20,9 @@
   "auto_scroll_enable_list": {
     "message": "Enable Auto Scroll"
   },
+  "copy": {
+    "message": "Copy"
+  },
   "custom_search": {
     "message": "Custom"
   },
@@ -43,6 +46,9 @@
   },
   "download_hotkey": {
     "message": "Download collected images"
+  },
+  "export": {
+    "message": "Export"
   },
   "fit_with_original_size": {
     "message": "Original size"
@@ -97,6 +103,15 @@
   },
   "image_unlazy_disable_list": {
     "message": "Disable Image Unlazy"
+  },
+  "import": {
+    "message": "Import"
+  },
+  "import_failed_invalid_json": {
+    "message": "Import failed: Invalid JSON format"
+  },
+  "import_success": {
+    "message": "Settings imported successfully"
   },
   "kofi_link": {
     "message": "Support me"

@@ -20,6 +20,9 @@
   "auto_scroll_enable_list": {
     "message": "啟用自動捲動"
   },
+  "copy": {
+    "message": "複製"
+  },
   "custom_search": {
     "message": "自定"
   },
@@ -43,6 +46,9 @@
   },
   "download_hotkey": {
     "message": "下載已收集的圖片"
+  },
+  "export": {
+    "message": "匯出"
   },
   "fit_with_original_size": {
     "message": "圖像原本的大小"
@@ -97,6 +103,15 @@
   },
   "image_unlazy_disable_list": {
     "message": "禁用反延遲載入"
+  },
+  "import": {
+    "message": "匯入"
+  },
+  "import_failed_invalid_json": {
+    "message": "匯入失敗：無效的JSON格式"
+  },
+  "import_success": {
+    "message": "設定匯入成功"
   },
   "kofi_link": {
     "message": "Support me"
