@@ -55,11 +55,11 @@ ul {
   list-style-type: none;
 }
 
+#optionForm li.desc {
+  font-size: 13px;
+}
 .option-list > li:not(:last-child) {
   margin-bottom: 10px;
-}
-#option-form li.desc {
-  font-size: 13px;
 }
 
 label {
@@ -80,4 +80,46 @@ li#debounceDesc,
 li#throttleDesc,
 li#autoDesc {
   display: none;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px 20px 15px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+}
+
+h2#modalTitle {
+  margin: 0px 0px 10px 0px;
+}
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 0.8;
+  cursor: pointer;
+}
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+}
+
+#importTextarea {
+  width: 100%;
+  height: 300px;
+  font-family: monospace;
 }

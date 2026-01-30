@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -38,7 +38,7 @@
       </div>
     </nav>
 
-    <form id="option-form">
+    <form id="optionForm">
       <fieldset>
         <ul class="option-list">
           <li>
@@ -249,6 +249,18 @@
     </form>
     <button id="save" data-i18n="save" type="button">save</button>
     <button id="reset" data-i18n="reset" type="button">reset</button>
+    <button id="export" data-i18n="export" type="button">Export Options</button>
+    <button id="import" data-i18n="import" type="button">Import Options</button>
+
+    <div id="optionsModal" class="modal">
+      <div class="modal-content">
+        <span id="closeModal" class="close">&times;</span>
+        <h2 id="modalTitle" data-i18n="import_options">Import Options</h2>
+        <textarea id="importTextarea" rows="15" cols="60" placeholder="Paste JSON settings here for import"></textarea>
+        <br />
+        <button id="modalAction" data-i18n="import" type="button">Import</button>
+      </div>
+    </div>
     <script type="text/javascript" src="/page/options.js"></script>
   </body>
 </html>

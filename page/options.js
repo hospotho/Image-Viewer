@@ -26,6 +26,11 @@
   const imageUnlazy = document.querySelector('textarea#imageUnlazyDisableList')
   const imageCache = document.querySelector('textarea#imageCacheDisableList')
 
+  const modal = document.querySelector('div#optionsModal')
+  const modalTitle = document.querySelector('h2#modalTitle')
+  const modalButton = document.querySelector('button#modalAction')
+  const optionsInput = document.querySelector('textarea#importTextarea')
+
   const defaultOptions = {
     fitMode: 'both',
     zoomRatio: 1.2,
@@ -226,6 +231,15 @@
     }
 
     document.querySelector('button#addNewCustom').addEventListener('click', addNewCustom)
+
+    document.getElementById('closeModal').addEventListener('click', () => {
+      modal.style.display = 'none'
+    })
+    window.addEventListener('click', event => {
+      if (event.target === modal) {
+        modal.style.display = 'none'
+      }
+    })
   }
 
   function initFormButton() {
@@ -277,6 +291,54 @@
     })
   }
 
+  function initModal() {
+    document.querySelector('button#export').addEventListener('click', async () => {
+      const {options} = await chrome.storage.sync.get('options')
+      modal.style.display = 'block'
+      modalTitle.textContent = chrome.i18n.getMessage('export')
+      modalButton.textContent = chrome.i18n.getMessage('copy')
+      modalButton.dataset.mode = 'copy'
+      optionsInput.value = getStringifyOptions(options)
+    })
+
+    document.querySelector('button#import').addEventListener('click', () => {
+      modal.style.display = 'block'
+      modalTitle.textContent = chrome.i18n.getMessage('import')
+      modalButton.textContent = chrome.i18n.getMessage('import')
+      modalButton.dataset.mode = 'import'
+      optionsInput.value = ''
+    })
+
+    modalButton.addEventListener('click', () => {
+      const mode = modalButton.dataset.mode
+      if (mode === 'copy') {
+        navigator.clipboard.writeText(optionsInput.value)
+      } else if (mode === 'import') {
+        let importData = null
+        try {
+          importData = JSON.parse(optionsInput.value)
+        } catch (error) {}
+        if (importData === null) {
+          alert(chrome.i18n.getMessage('import_failed_invalid_json'))
+          return
+        }
+
+        const options = structuredClone(defaultOptions)
+        for (const key in defaultOptions) {
+          if (key in importData) {
+            options[key] = importData[key]
+          }
+        }
+        chrome.storage.sync.set({options: options}, () => {
+          if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
+          optionsInput.value = getStringifyOptions(options)
+          setValue(options)
+          alert(chrome.i18n.getMessage('import_success'))
+        })
+      }
+    })
+  }
+
   async function init() {
     i18n()
     const {options} = await chrome.storage.sync.get('options')
@@ -284,6 +346,7 @@
     setValue(options)
     initFormEvent()
     initFormButton()
+    initModal()
   }
 
   init()
