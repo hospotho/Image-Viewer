@@ -161,6 +161,26 @@
   }
 
   //==========main==========
+  function checkUpdate(options) {
+    const newOptionList = Object.keys(defaultOptions).filter(key => !(key in options))
+    if (newOptionList.length === 0) return
+
+    const message = newOptionList
+      .map(key => key.replace(/([A-Z])/g, '_$1').toLowerCase())
+      .map(tag => chrome.i18n.getMessage(tag) || tag)
+      .join('\n')
+    alert(chrome.i18n.getMessage('new_option') + ':\n' + message)
+
+    // sync with default options
+    for (const key of newOptionList) {
+      options[key] = defaultOptions[key]
+    }
+    chrome.storage.sync.set({options: options}, () => {
+      if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
+      console.log(options)
+    })
+  }
+
   function initFormEvent() {
     zoom.addEventListener('input', () => {
       document.querySelector('span#zoomDisplay').textContent = zoom.value
@@ -240,25 +260,6 @@
     document.querySelector('button#reset').addEventListener('click', () => {
       setValue(defaultOptions)
       resetDefaultOptions()
-    })
-  }
-
-  function checkUpdate(options) {
-    const newOptionList = Object.keys(defaultOptions).filter(key => key in options === false)
-    if (newOptionList.length === 0) return
-    const message = newOptionList
-      .map(key => key.replace(/([A-Z])/g, '_$1').toLowerCase())
-      .map(tag => chrome.i18n.getMessage(tag) || tag)
-      .join('\n')
-    alert(chrome.i18n.getMessage('new_option') + ':\n' + message)
-
-    // sync with default options
-    for (const key of newOptionList) {
-      options[key] = defaultOptions[key]
-    }
-    chrome.storage.sync.set({options: options}, () => {
-      if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
-      console.log(options)
     })
   }
 
