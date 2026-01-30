@@ -1,8 +1,8 @@
 {
   "devDependencies": {
     "@types/chrome": "^0.0.266",
-    "eslint": "^8.57.0",
-    "eslint-config-standard": "^17.1.0",
+    "eslint": "^9.39.2",
+    "eslint-config-standard": "^15.0.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.6.0"
