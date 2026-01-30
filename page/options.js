@@ -269,14 +269,15 @@
 
       options.functionHotkey = [scrollHotkey.value, downloadHotkey.value]
 
-      const hoverCheckDisableList = hoverCheck.value.split('\n')
-      const autoScrollEnableList = autoScroll.value.split('\n')
-      const imageUnlazyDisableList = imageUnlazy.value.split('\n')
-      const imageCacheDisableList = imageCache.value.split('\n')
-      options.hoverCheckDisableList = hoverCheckDisableList
-      options.autoScrollEnableList = autoScrollEnableList
-      options.imageUnlazyDisableList = imageUnlazyDisableList
-      options.imageCacheDisableList = imageCacheDisableList
+      const inputToArray = str =>
+        str
+          .split('\n')
+          .map(s => s.trim())
+          .filter(s => s !== '')
+      options.hoverCheckDisableList = inputToArray(hoverCheck.value)
+      options.autoScrollEnableList = inputToArray(autoScroll.value)
+      options.imageUnlazyDisableList = inputToArray(imageUnlazy.value)
+      options.imageCacheDisableList = inputToArray(imageCache.value)
 
       chrome.storage.sync.set({options: options}, () => {
         if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
