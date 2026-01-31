@@ -11,6 +11,7 @@
   const debounce = document.querySelector('input#debouncePeriod')
   const throttle = document.querySelector('input#throttlePeriod')
   const auto = document.querySelector('input#autoPeriod')
+  const panelTimeout = document.querySelector('input#panelTimeout')
 
   const google = document.querySelector('input#googleSearch')
   const yandex = document.querySelector('input#yandexSearch')
@@ -41,6 +42,7 @@
     debouncePeriod: 1500,
     throttlePeriod: 80,
     autoPeriod: 2000,
+    panelTimeout: 1500,
     searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + A', 'Shift + S', 'Ctrl + Shift + Q', ''],
     customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
     functionHotkey: ['Shift + R', 'Shift + D'],
@@ -129,6 +131,7 @@
       debounce.value = options.debouncePeriod
       throttle.value = options.throttlePeriod
       auto.value = options.autoPeriod
+      panelTimeout.value = options.panelTimeout
 
       google.value = options.searchHotkey[0]
       yandex.value = options.searchHotkey[1]
@@ -223,6 +226,10 @@
     auto.addEventListener('focus', () => (autoDesc.style = 'display: block; padding: 0px 0px 10px 10px;'))
     auto.addEventListener('focusout', () => (autoDesc.style = ''))
 
+    const panelDesc = document.querySelector('li#panelDesc')
+    panelTimeout.addEventListener('focus', () => (panelDesc.style = 'display: block; padding: 0px 0px 10px 10px;'))
+    panelTimeout.addEventListener('focusout', () => (panelDesc.style = ''))
+
     for (const input of document.querySelectorAll('input.hotkey')) {
       input.addEventListener('keydown', e => {
         e.preventDefault()
@@ -254,6 +261,7 @@
       options.debouncePeriod = Number(debounce.value)
       options.throttlePeriod = Number(throttle.value)
       options.autoPeriod = Number(auto.value)
+      options.panelTimeout = Number(panelTimeout.value)
 
       const hotkeyList = [google.value, yandex.value, sauceNAO.value, ascii2d.value, useAll.value]
       const customUrlList = []

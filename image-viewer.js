@@ -1159,17 +1159,20 @@ window.ImageViewer = (function () {
         }
       })
     }
-    function addControlPanelHideEvent() {
+    function addControlPanelHideEvent(options) {
       const controlPanel = shadowRoot.querySelector('#iv-control')
       const navigationButtonList = shadowRoot.querySelectorAll('#iv-index button')
       const controlButtonList = shadowRoot.querySelectorAll('#iv-control-buttons button')
       const buttonList = [...navigationButtonList, ...controlButtonList]
+      const panelTimeout = options.panelTimeout
 
       let displayTimeout = 0
       controlPanel.addEventListener('mouseenter', () => {
         controlPanel.classList.add('show')
         clearTimeout(displayTimeout)
-        displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), 1500)
+        if (panelTimeout !== 0) {
+          displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), panelTimeout)
+        }
       })
       controlPanel.addEventListener('mouseleave', () => {
         controlPanel.classList.remove('show')
@@ -1179,7 +1182,9 @@ window.ImageViewer = (function () {
         button.addEventListener('mouseenter', () => {
           controlPanel.classList.add('show')
           clearTimeout(displayTimeout)
-          displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), 1500)
+          if (panelTimeout !== 0) {
+            displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), panelTimeout)
+          }
         })
       }
     }
@@ -1504,7 +1509,7 @@ window.ImageViewer = (function () {
     addTransformationHotkey()
     addDownloadHotkey()
     addImageReverseSearchHotkey()
-    addControlPanelHideEvent()
+    addControlPanelHideEvent(options)
     addInfoPopupEvent()
     addFitButtonEvent()
     if (options.closeButton) {

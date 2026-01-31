@@ -249,6 +249,7 @@ const defaultOptions = {
   debouncePeriod: 1500,
   throttlePeriod: 80,
   autoPeriod: 2000,
+  panelTimeout: 1500,
   searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + A', 'Shift + S', 'Ctrl + Shift + Q', ''],
   customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
   functionHotkey: ['Shift + R', 'Shift + D'],

@@ -78,7 +78,8 @@ input.customSearchUrl {
 span#notFactor,
 li#debounceDesc,
 li#throttleDesc,
-li#autoDesc {
+li#autoDesc,
+li#panelDesc {
   display: none;
 }
 
