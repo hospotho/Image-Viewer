@@ -30,7 +30,7 @@
     "message": "Custom URL"
   },
   "debounce_desc": {
-    "message": "When you 'long press arrow key', Image Viewer will stay at the first/last image before goto other end.<br>A timer for this period will start counting and continue your action when it stops and is not interrupted.<br>Set debounce period to 0 if you don't want this behavior."
+    "message": "When you hold down an arrow key, Image Viewer will stay at the first/last image before going to other end.<br>When the delay ends, your action continues unless it’s interrupted.<br>Set debounce period to 0 if you don't want this behavior."
   },
   "debounce_period": {
     "message": "Debounce period"
@@ -39,7 +39,7 @@
     "message": "Default image fit"
   },
   "domain_settings_example": {
-    "message": "Example setting (support regex):<br>example.com<br>sub.example.com<br>another.com<br>/^https.*regex\\.com/"
+    "message": "Example setting (support regex):<br>example.com<br>sub.example.com<br>another.com<br>/.+\\.regex\\.com\\/path/"
   },
   "domain_specific": {
     "message": "Domain specific settings"
@@ -75,7 +75,7 @@
     "message": "Height"
   },
   "hotkey_notice": {
-    "message": "When more than one search using same hotkey, all search will be triggered, built-in hotkey like 'Ctrl + W' or 'Ctrl + T' will not be overridden.<br><br>When using custom search, '{imgSrc}' will be used to replace with real URL<br><br>Soft disable hotkey without Ctrl/Alt/Shift key, change its value in DevTools to save it."
+    "message": "When more than one search using same hotkey, all search will be triggered, built-in hotkey like 'Ctrl + W' or 'Ctrl + T' will not be overridden.<br><br>When using custom search, '{imgSrc}' will be used to replace with real URL<br><br>Soft disable hotkey without Ctrl/Alt/Shift key, import a modified settings to save it."
   },
   "hover_check_desc": {
     "message": "Image Viewer allows you to select images by right-clicking on them.<br>By default, it removes hover elements to select video thumbnails.<br>Add domains here if you want to keep the hover elements for those websites."
@@ -83,11 +83,11 @@
   "hover_disable_list": {
     "message": "Disable Hover Check"
   },
-  "image_cache_desc": {
-    "message": "Some SPAs (Single Page Applications) don't change URLs but load new images dynamically.<br>Add domains here if you want to disable image caching for those websites to ensure fresh image lists."
+  "image_backup_desc": {
+    "message": "Some SPA (Single Page Application) don't change URL when switching between pages.<br>Add domains here if you only want fresh images."
   },
-  "image_cache_disable_list": {
-    "message": "Disable Image Cache"
+  "image_backup_disable_list": {
+    "message": "Disable Image Backup"
   },
   "image_size": {
     "message": "Size"
@@ -99,7 +99,7 @@
     "message": "Type"
   },
   "image_unlazy_desc": {
-    "message": "Some web pages serve extremely large images through lazy loading (eg. r/EarthPorn).<br>Add domains here if you want to disable image unlazy for those websites."
+    "message": "Some web pages serve extremely large images through lazy loading (eg. Unsplash).<br>Add domains here if you want to disable image unlazy for those websites."
   },
   "image_unlazy_disable_list": {
     "message": "Disable Image Unlazy"
@@ -177,7 +177,7 @@
     "message": "Filter svg"
   },
   "throttle_desc": {
-    "message": "When you 'long press arrow key', Image Viewer will display each image approximate this period of time.<br>The default setting 80ms = 12.5fps (12.5 image per 1 second).<br>When throttle period was set to be close to 0, fps limit will only depending on you computer performance."
+    "message": "When you hold down an arrow key, Image Viewer cycles through images at approximately the specified interval.<br>The default setting 80ms = 12.5fps (12.5 image per 1 second).<br>When the throttle period is set near 0, the maximum frame rate is limited only by your computer's performance."
   },
   "throttle_period": {
     "message": "Throttle period"

@@ -24,10 +24,10 @@
     "message": "复制"
   },
   "custom_search": {
-    "message": "自定"
+    "message": "自定义"
   },
   "custom_search_url": {
-    "message": "自定URL"
+    "message": "自定义URL"
   },
   "debounce_desc": {
     "message": "长按箭头键时，Image Viewer会在越过最前/最后的图像前停留<br>当延时结束且未被其他操作中断，刚才的操作将会继续<br>设置延时时间为0以停止此行为"
@@ -39,10 +39,10 @@
     "message": "预设图像大小"
   },
   "domain_settings_example": {
-    "message": "示例设置（支持正则表达式）：<br>example.com<br>sub.example.com<br>another.com<br>/^https.*regex\\.com/"
+    "message": "示例设置(支持正则表达式)：<br>example.com<br>sub.example.com<br>another.com<br>/.+\\.regex\\.com\\/path/"
   },
   "domain_specific": {
-    "message": "网域特定设置"
+    "message": "域名特定设置"
   },
   "download_hotkey": {
     "message": "下载已收集的图片"
@@ -54,7 +54,7 @@
     "message": "图像原本的大小"
   },
   "fit_with_original_size_not_exceeds_window": {
-    "message": "图像原本的大小但不大於视窗"
+    "message": "图像原本的大小但不大于视窗"
   },
   "fit_with_window": {
     "message": "视窗大小"
@@ -63,7 +63,7 @@
     "message": "视窗高度"
   },
   "fit_with_window_width": {
-    "message": "视窗阔度"
+    "message": "视窗宽度"
   },
   "function_hotkey": {
     "message": "功能热键"
@@ -75,34 +75,34 @@
     "message": "高度"
   },
   "hotkey_notice": {
-    "message": "多个搜索使用相同的快捷键时，触发后会同时启动，既有快捷键如'Ctrl + W' 'Ctrl + T'等不会被覆盖<br><br>使用自定搜索引擎时，搜索图片的URL会置换'{imgSrc}'成真正的图像连结<br><br>软性禁止没有使用Ctrl/Alt/Shift的热键，在DevTools更改成需要的键以保存"
+    "message": "多个搜索使用相同的快捷键时，触发后会同时启动，既有快捷键如'Ctrl + W' 'Ctrl + T'等不会被覆盖<br><br>使用自定义搜索引擎时，搜索图片的URL会置换'{imgSrc}'成真正的图像连结<br><br>软性禁止没有使用Ctrl/Alt/Shift的热键，可通过导入修改后的设置来保存"
   },
   "hover_check_desc": {
-    "message": "Image Viewer允许您通过右键來选择图像<br>为了选择视频缩略图，默认情况下会删除悬停元素<br>如果要保留悬停元素，请在此处添加域名"
+    "message": "Image Viewer允许您通过右键來选择图像<br>为了选择视频缩略图，默认情况下会移除悬停元素<br>如果要選擇悬停元素，请在此处添加域名"
   },
   "hover_disable_list": {
     "message": "禁用悬停检查"
   },
-  "image_cache_desc": {
-    "message": "一些单页应用（SPA）不会改变URL但会动态加载新图片<br>如果希望为这些网站禁用图片缓存以确保最新的图片列表，请在此处添加域名"
+  "image_backup_desc": {
+    "message": "某些SPA(单页应用)在切换页面时不会更改URL<br>如果只想要最新的图片，请在此添加域名"
   },
-  "image_cache_disable_list": {
-    "message": "禁用图片缓存"
+  "image_backup_disable_list": {
+    "message": "禁用图片备份"
   },
   "image_size": {
     "message": "尺寸"
   },
   "image_source": {
-    "message": "來源"
+    "message": "来源"
   },
   "image_type": {
     "message": "类型"
   },
   "image_unlazy_desc": {
-    "message": "一些网页通过懒加载來加载非常大的图片（例：r/EarthPorn）<br>如果希望禁用懒加载解除，请在这里添加域名"
+    "message": "一些网页通过懒加载來加载非常大的图片(例：Unsplash)<br>如果希望禁用反懒加载，请在这里添加域名"
   },
   "image_unlazy_disable_list": {
-    "message": "禁用懒加载解除"
+    "message": "禁用反懒加载"
   },
   "import": {
     "message": "导入"
@@ -120,7 +120,7 @@
     "message": "最小高度"
   },
   "min_width": {
-    "message": "最小阔度"
+    "message": "最小宽度"
   },
   "new_option": {
     "message": "有新选项可用"
@@ -135,7 +135,7 @@
     "message": "设定 - Image Viewer"
   },
   "panel_desc": {
-    "message": "当光标悬停在控制面板上时，Image Viewer会在此时间后隐藏控制面板<br>将此设置为 0 以永远不隐藏控制面板"
+    "message": "当光标悬停在控制面板上时，Image Viewer会在此时间后隐藏控制面板<br>将此设置为0以永远不隐藏控制面板"
   },
   "panel_timeout": {
     "message": "控制面板逾时"
@@ -156,7 +156,7 @@
     "message": "保存"
   },
   "scroll_hotkey": {
-    "message": "启用主动式自动卷动"
+    "message": "启用主动式自动滚动"
   },
   "search_hotkey": {
     "message": "图像搜索热键"
@@ -198,9 +198,9 @@
     "message": "观看图片(最后右键的图片)"
   },
   "width": {
-    "message": "阔度"
+    "message": "宽度"
   },
   "zoom_ratio": {
-    "message": "缩放速度"
+    "message": "缩放倍率"
   }
 }

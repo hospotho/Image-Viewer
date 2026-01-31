@@ -103,29 +103,29 @@
         <ul class="option-list">
           <li>
             <label for="debouncePeriod"><span data-i18n="debounce_period">Debounce period</span>(ms):</label>
-            <input id="debouncePeriod" type="number" min="0" max="10000" step="100" />
+            <input id="debouncePeriod" type="number" min="0" step="100" />
           </li>
           <li id="debounceDesc">
             <span data-i18n="debounce_desc">
-              When you 'long press arrow key', Image viewer will stay at the first/last image before goto other end.<br />
-              A timer of this period will start counting and continue your action when it stop and not interrupted.<br />
+              When you hold down an arrow key, Image Viewer will stay at the first/last image before going to other end.<br />
+              When the delay ends, your action continues unless it’s interrupted.<br />
               Set debounce period to 0 if you don't want this behavior.
             </span>
           </li>
           <li>
             <label for="throttlePeriod"><span data-i18n="throttle_period">Throttle period</span>(ms):</label>
-            <input id="throttlePeriod" type="number" min="0" max="10000" step="5" />
+            <input id="throttlePeriod" type="number" min="0" step="5" />
           </li>
           <li id="throttleDesc">
             <span data-i18n="throttle_desc">
-              When you 'long press arrow key', Image viewer will display each image approximate this period of time.<br />
+              When you hold down an arrow key, Image Viewer cycles through images at approximately the specified interval.<br />
               The default setting 80ms = 12.5fps (12.5 image per 1 second).<br />
-              When throttle period was set to be close to 0, fps limit will only depending on you computer performance.
+              When the throttle period is set near 0, the maximum frame rate is limited only by your computer's performance.
             </span>
           </li>
           <li>
             <label for="autoPeriod"><span data-i18n="auto_period">Auto navigate period</span>(ms):</label>
-            <input id="autoPeriod" type="number" min="0" max="10000" step="5" />
+            <input id="autoPeriod" type="number" min="0" step="5" />
           </li>
           <li id="autoDesc">
             <span data-i18n="auto_desc">
@@ -182,10 +182,9 @@
           </li>
           <li>
             <span data-i18n="hotkey_notice">
-              Keyboard shortcut like 'Ctrl + W' will not be overridden.<br /><br />
-              When using custom search, '{imgSrc}' will be used to replace with real URL.<br /><br />
-              Soft disable hot key without Ctrl/Alt/Shift key.<br />
-              Change its value in DevTools to save it.
+              When more than one search using same hotkey, all search will be triggered, built-in hotkey like 'Ctrl + W' or 'Ctrl + T' will not be overridden.<br /><br />
+              When using custom search, '{imgSrc}' will be used to replace with real URL<br /><br />
+              Soft disable hotkey without Ctrl/Alt/Shift key, import a modified settings to save it.
             </span>
           </li>
         </ul>
@@ -235,39 +234,38 @@
           </li>
           <li id="imageUnlazDesc">
             <span data-i18n="image_unlazy_desc">
-              Some web pages serve extremely large images through lazy loading (eg. r/EarthPorn).<br />
+              Some web pages serve extremely large images through lazy loading (eg. Unsplash).<br />
               Add domains here if you want to disable image unlazy for those websites.
             </span>
           </li>
           <br />
           <li>
-            <label for="imageCacheDisableList" style="width: auto"><span data-i18n="image_cache_disable_list">Disable Image Cache</span>:</label><br />
+            <label for="imageCacheDisableList" style="width: auto"><span data-i18n="image_backup_disable_list">Disable Image Backup</span>:</label><br />
             <textarea id="imageCacheDisableList" rows="8" cols="40"></textarea><br />
           </li>
           <li id="imageCacheDesc">
-            <span data-i18n="image_cache_desc">
-              Some SPAs (Single Page Applications) don't change URLs but load new images dynamically.<br />
-              Add domains here if you want to disable image caching for those websites to ensure fresh image lists.
+            <span data-i18n="image_backup_desc">
+              Some SPA (Single Page Application) don't change URL when switching between pages.<br />
+              Add domains here if you only want fresh images.
             </span>
           </li>
           <br />
           <li>
-            <span data-i18n="domain_settings_example">Example setting (support regex):<br />example.com<br />sub.example.com<br />another.com<br />/^https.*regex\.com/</span>
+            <span data-i18n="domain_settings_example">Example setting (support regex):<br />example.com<br />sub.example.com<br />another.com<br />/.+\.regex\.com\/path/</span>
           </li>
         </ul>
       </fieldset>
     </form>
-    <button id="save" data-i18n="save" type="button">save</button>
-    <button id="reset" data-i18n="reset" type="button">reset</button>
-    <button id="export" data-i18n="export" type="button">Export Options</button>
-    <button id="import" data-i18n="import" type="button">Import Options</button>
+    <button id="save" data-i18n="save" type="button">Save</button>
+    <button id="reset" data-i18n="reset" type="button">Reset</button>
+    <button id="export" data-i18n="export" type="button">Export</button>
+    <button id="import" data-i18n="import" type="button">Import</button>
 
     <div id="optionsModal" class="modal">
       <div class="modal-content">
         <span id="closeModal" class="close">&times;</span>
-        <h2 id="modalTitle" data-i18n="import_options">Import Options</h2>
-        <textarea id="importTextarea" rows="15" cols="60" placeholder="Paste JSON settings here for import"></textarea>
-        <br />
+        <h2 id="modalTitle" data-i18n="import">Import</h2>
+        <textarea id="importTextarea" rows="15" cols="60" placeholder="Paste settings here"></textarea><br />
         <button id="modalAction" data-i18n="import" type="button">Import</button>
       </div>
     </div>

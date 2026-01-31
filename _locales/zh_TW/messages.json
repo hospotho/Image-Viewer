@@ -39,7 +39,7 @@
     "message": "預設圖像大小"
   },
   "domain_settings_example": {
-    "message": "範例設定（支援正則表示式）：<br />example.com<br />sub.example.com<br />another.com<br />/^https.*regex\\.com/"
+    "message": "範例設定(支援正則表示式)：<br>example.com<br>sub.example.com<br>another.com<br>/.+\\.regex\\.com\\/path/"
   },
   "domain_specific": {
     "message": "網域特定設定"
@@ -75,19 +75,19 @@
     "message": "高度"
   },
   "hotkey_notice": {
-    "message": "多個搜索使用相同的快捷鍵時，觸發後會同時啟動，既有快捷鍵如'Ctrl + W' 'Ctrl + T'等不會被覆蓋<br><br>使用自定搜索引擎時，搜索圖片的URL會置換'{imgSrc}'成真正的圖像連結<br><br>軟性禁止沒有使用Ctrl/Alt/Shift的熱鍵，在DevTools更改成需要的鍵以保存"
+    "message": "多個搜索使用相同的快捷鍵時，觸發後會同時啟動，既有快捷鍵如'Ctrl + W' 'Ctrl + T'等不會被覆蓋<br><br>使用自定搜索引擎時，搜索圖片的URL會置換'{imgSrc}'成真正的圖像連結<br><br>軟性禁止沒有使用Ctrl/Alt/Shift的熱鍵，可透過匯入修改後的設定來保存"
   },
   "hover_check_desc": {
-    "message": "Image Viewer允許您透過按滑鼠右鍵來選擇圖像<br>為了選擇影片縮圖，預設情況下會移除懸停元素<br>如果要保留懸停元素，請在此處添加域名"
+    "message": "Image Viewer允許您透過按滑鼠右鍵來選擇圖像<br>為了選擇影片縮圖，預設情況下會移除懸停元素<br>如果要選擇懸停元素，請在此處添加域名"
   },
   "hover_disable_list": {
     "message": "停用懸停檢查"
   },
-  "image_cache_desc": {
-    "message": "一些單頁應用（SPA）不會改變URL但會動態載入新圖片<br>如果希望為這些網站禁用圖片快取以確保最新的圖片清單，請在此處添加域名"
+  "image_backup_desc": {
+    "message": "某些SPA(單頁應用)在切換頁面時不會改變URL<br>如果只想要最新的圖片，請在此處添加域名"
   },
-  "image_cache_disable_list": {
-    "message": "禁用圖片快取"
+  "image_backup_disable_list": {
+    "message": "禁用圖片備份"
   },
   "image_size": {
     "message": "尺寸"
@@ -99,7 +99,7 @@
     "message": "類型"
   },
   "image_unlazy_desc": {
-    "message": "一些網頁通過延遲載入來載入非常大的圖片（例：r/EarthPorn）<br>如果希望禁用反延遲載入，請在這裡添加域名"
+    "message": "一些網頁通過延遲載入來載入非常大的圖片(例：Unsplash)<br>如果希望禁用反延遲載入，請在這裡添加域名"
   },
   "image_unlazy_disable_list": {
     "message": "禁用反延遲載入"
@@ -135,7 +135,7 @@
     "message": "設定 - Image Viewer"
   },
   "panel_desc": {
-    "message": "當鼠標停留在控制面板上時，Image Viewer會在此時間後隱藏控制面板<br>將設置為 0 以永遠不隱藏控制面板"
+    "message": "當鼠標停留在控制面板上時，Image Viewer會在此時間後隱藏控制面板<br>將設置為0以永遠不隱藏控制面板"
   },
   "panel_timeout": {
     "message": "控制面板逾時"
@@ -156,7 +156,7 @@
     "message": "保存"
   },
   "scroll_hotkey": {
-    "message": "啟用主動式自動捲動"
+    "message": "啟用主動式自動滾動"
   },
   "search_hotkey": {
     "message": "圖像搜索快捷鍵"

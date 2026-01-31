@@ -3,13 +3,13 @@
     "message": "カスタムを追加"
   },
   "app_desc": {
-    "message": "画像観覧をもっと使いやすいように機能を強化します"
+    "message": "既定画像ビューア以上の體験を提供します"
   },
   "app_name": {
     "message": "Image Viewer"
   },
   "auto_desc": {
-    "message": "自動観覧を使用すると、Image Viewerはこの時間間隔で次の画像に移動します。<br>自動観覧間隔が 0 に近い値に設定されている場合、実際の表示速度はコンピューターの性能に依存します"
+    "message": "自動観覧を使用すると、Image Viewerはこの時間間隔で次の画像に移動します<br>自動観覧間隔が0に近い値に設定されている場合、実際の表示速度はコンピューターの性能に依存します"
   },
   "auto_period": {
     "message": "自動観覧間隔"
@@ -30,16 +30,16 @@
     "message": "カスタム URL"
   },
   "debounce_desc": {
-    "message": "「矢印キーを長押し」すると、Image Viewerは最初/最後の画像にとどまり<br>遅延が終了し、他の操作によって中断されない場合、前の操作が続行されます<br>この動作を停止するには、遅延時間を 0 に設定してください"
+    "message": "矢印キーを長押しすると、Image Viewerは最初/最後の画像にとどまり<br>遅延が終了した後、他の操作で中断されない限り、移動が続行されます<br>この動作を無効にするには、遅延時間を0に設定してください"
   },
   "debounce_period": {
-    "message": "デバウンスタイム"
+    "message": "デバウンス時間"
   },
   "default_image_fit": {
     "message": "デフォルトの画像サイズ"
   },
   "domain_settings_example": {
-    "message": "設定例（正規表現対応）：<br>example.com<br>sub.example.com<br>another.com<br>/^https.*regex\\.com/"
+    "message": "設定例（正規表現対応）：<br>example.com<br>sub.example.com<br>another.com<br>/.+\\.regex\\.com\\/path/"
   },
   "domain_specific": {
     "message": "ドメイン固有の設定"
@@ -60,7 +60,7 @@
     "message": "ウィンドウのサイズ"
   },
   "fit_with_window_height": {
-    "message": "ウィンドウの高度"
+    "message": "ウィンドウの高さ"
   },
   "fit_with_window_width": {
     "message": "ウィンドウの横幅"
@@ -72,10 +72,10 @@
     "message": "Github ユーザマニュアル(Eng)"
   },
   "height": {
-    "message": "高度"
+    "message": "高さ"
   },
   "hotkey_notice": {
-    "message": "複数の検索で同じホットキーを使用すると、すべての検索が同時にトリガーされ、「Ctrl + W」「Ctrl + T」などの既存のショートカットキーはオーバーライドされません<br><br>カスタム検索エンジンを使用する場合、検索URLの'{imgSrc}'は実際の画像リンクに置き換えられ<br><br>Ctrl/Alt/Shiftを使用せずのホットキーは推奨しません、たがDevToolsで望みのキーに変更そして保存はできます"
+    "message": "複数の検索で同じホットキーを使用すると、すべての検索が同時にトリガーされ、「Ctrl + W」「Ctrl + T」などの既存のショートカットキーはオーバーライドされません<br><br>カスタム検索エンジンを使用する場合、検索URLの'{imgSrc}'は実際の画像リンクに置き換えられ<br><br>Ctrl/Alt/Shift なしの単独ホットキーは推奨しませんが、改変した設定をインポートすれば保存できます"
   },
   "hover_check_desc": {
     "message": "Image Viewerは、右クリックで画像を選択できます<br>ビデオのサムネイルを選択するには、デフォルトでホバー要素を削除します<br>ホバー要素を保持したい場合は、ここにドメインを追加してください"
@@ -83,10 +83,10 @@
   "hover_disable_list": {
     "message": "ホバーチェックを無効にする"
   },
-  "image_cache_desc": {
-    "message": "一部のSPA（シングルページアプリケーション）はURLを変更せずに新しい画像を動的に読み込みます<br>これらのウェブサイトの画像キャッシュを無効にして最新の画像リストを確保したい場合は、ここにドメインを追加してください"
+  "image_backup_desc": {
+    "message": "一部のSPA（シングルページアプリケーション）では、ページを切り替えてもURLが変更されません<br>常に最新の画像リストを取得したい場合は、ここにドメインを追加してください"
   },
-  "image_cache_disable_list": {
+  "image_backup_disable_list": {
     "message": "画像キャッシュを無効にする"
   },
   "image_size": {
@@ -99,7 +99,7 @@
     "message": "タイプ"
   },
   "image_unlazy_desc": {
-    "message": "一部のウェブページでは、遅延読み込みを利用して非常に大きな画像を提供しています（例: r/EarthPorn）。<br>遅延読み込み解除を無効にしたい場合は、ここにドメインを追加してください"
+    "message": "一部のウェブページでは、遅延読み込みを利用して非常に大きな画像を提供しています（例：Unsplash）<br>遅延読み込み解除を無効にしたい場合は、ここにドメインを追加してください"
   },
   "image_unlazy_disable_list": {
     "message": "遅延読み込み解除を無効にする"
@@ -117,7 +117,7 @@
     "message": "Support me"
   },
   "min_height": {
-    "message": "最小高度"
+    "message": "最小高さ"
   },
   "min_width": {
     "message": "最小横幅"
@@ -135,7 +135,7 @@
     "message": "オプション - Image Viewer"
   },
   "panel_desc": {
-    "message": "カーソルがコントロールパネル上にある場合、Image Viewerは指定した時間が経過するとコントロールパネルを非表示にします。<br>この時間を 0 に設定すると、この機能は無効になります。"
+    "message": "カーソルがコントロールパネル上にある場合、Image Viewerは指定した時間が経過するとコントロールパネルを非表示にします<br>この時間を0に設定すると、この機能は無効になります"
   },
   "panel_timeout": {
     "message": "コントロールパネルの非表示タイムアウト"
@@ -150,7 +150,7 @@
     "message": "リセット"
   },
   "rotate_degree": {
-    "message": "回転の角度"
+    "message": "回転角度"
   },
   "save": {
     "message": "保存"
@@ -177,10 +177,10 @@
     "message": "svgをフィルターする"
   },
   "throttle_desc": {
-    "message": "「矢印キーを長押し」すると、Image Viewerは各画像が切り替わる前に少なくともこの期間、各画像を表示します<br>デフォルト設定の 80 ms = 12.5 fps（1 秒あたり 12.5 画像）<br>スロットルタイムが 0 に近い値に設定されている場合、実際の表示速度はコンピューターの性能に依存します"
+    "message": "矢印キーを長押しすると、Image Viewerは指定した間隔で画像を自動的に切り替えます<br>デフォルト設定の 80 ms = 12.5 fps（1秒あたり12.5画像）<br>スロットル時間をほぼ0にした場合、実際の速度はPCの性能に依存します"
   },
   "throttle_period": {
-    "message": "スロットルタイム"
+    "message": "スロットル時間"
   },
   "use_all_search": {
     "message": "上記すべて"
@@ -201,6 +201,6 @@
     "message": "横幅"
   },
   "zoom_ratio": {
-    "message": "ズームの倍率"
+    "message": "ズーム倍率"
   }
 }
