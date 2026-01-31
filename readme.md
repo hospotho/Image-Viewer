@@ -117,6 +117,16 @@ For additional options, right-click the extension icon on the toolbar. eg: activ
     <td><kbd>Shift</kbd>+<kbd>b</kbd></td>
   </tr>
   <tr>
+    <td>Copy current image</td>
+    <td><kbd>Ctrl</kbd>+<kbd>c</kbd></td>
+  </tr>
+  </tr>
+  <tr>
+    <td>Copy current image URL</td>
+    <td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>c</kbd></td>
+  </tr>
+  </tr>
+  <tr>
     <td>Download current image</td>
     <td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>d</kbd></td>
   </tr>
