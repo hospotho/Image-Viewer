@@ -134,6 +134,12 @@
   "options_title": {
     "message": "オプション - Image Viewer"
   },
+  "panel_desc": {
+    "message": "カーソルがコントロールパネル上にある場合、Image Viewerは指定した時間が経過するとコントロールパネルを非表示にします。<br>この時間を 0 に設定すると、この機能は無効になります。"
+  },
+  "panel_timeout": {
+    "message": "コントロールパネルの非表示タイムアウト"
+  },
   "popup_title": {
     "message": "リリースノート - Image Viewer"
   },

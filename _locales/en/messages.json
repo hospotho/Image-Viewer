@@ -134,6 +134,12 @@
   "options_title": {
     "message": "Options - Image Viewer"
   },
+  "panel_desc": {
+    "message": "When the cursor is over the control panel, the Image Viewer will hide the control panel after the specified time.<br>Set the panel timeout to 0 to disable this feature."
+  },
+  "panel_timeout": {
+    "message": "Control panel timeout"
+  },
   "popup_title": {
     "message": "Release Notes - Image Viewer"
   },

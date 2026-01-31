@@ -134,6 +134,12 @@
   "options_title": {
     "message": "设定 - Image Viewer"
   },
+  "panel_desc": {
+    "message": "当光标悬停在控制面板上时，Image Viewer会在此时间后隐藏控制面板<br>将此设置为 0 以永远不隐藏控制面板"
+  },
+  "panel_timeout": {
+    "message": "控制面板逾时"
+  },
   "popup_title": {
     "message": "发布版本通知 - Image Viewer"
   },
