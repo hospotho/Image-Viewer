@@ -970,6 +970,55 @@ window.ImageViewer = (function () {
         URL.revokeObjectURL(url)
       })
     }
+    function addCopyHotkey() {
+      keydownHandlerList.push(async e => {
+        if (!e.ctrlKey || e.key.toUpperCase() !== 'C') return
+        e.preventDefault()
+
+        const img = shadowRoot.querySelector('li.current img')
+        const src = img.src
+        if (e.shiftKey) {
+          navigator.clipboard.write([new ClipboardItem({'text/plain': src})])
+          return
+        }
+
+        // canvas only works for same-origin url
+        const blob = await fetch(src)
+          .then(res => res.blob())
+          .catch(async () => {
+            if (!chrome.runtime?.id) return null
+            const [dataUrl] = await chrome.runtime.sendMessage({msg: 'request_cors_url', url: src})
+            const res = await fetch(dataUrl)
+            return res.blob()
+          })
+        if (blob === null) {
+          alert('Copy CORS image is not supported in non-extension mode')
+          throw new Error('Copy CORS image is not supported in non-extension mode')
+        }
+
+        // MS Paint bug ref: https://www.reddit.com/r/mspaint/comments/1kmw7q9
+        // pasting image into MS Paint reduces its size based on display scaling (125% scale = 80% size)
+        if (blob.type === 'image/png') {
+          navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
+        } else if (blob.type.startsWith('image/')) {
+          const img = new Image()
+          const url = URL.createObjectURL(blob)
+          img.src = url
+          await img.decode()
+          URL.revokeObjectURL(url)
+
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          canvas.width = img.naturalWidth
+          canvas.height = img.naturalHeight
+          ctx.drawImage(img, 0, 0)
+          canvas.toBlob(blob => navigator.clipboard.write([new ClipboardItem({'image/png': blob})]))
+        } else {
+          alert('Unable to copy this image to clipboard')
+          throw new Error(`Unable to copy this image of type ${blob.type} to clipboard`)
+        }
+      })
+    }
     function addImageReverseSearchHotkey() {
       function checkKey(e, hotkey) {
         const keyList = hotkey.split('+').map(str => str.trim())
@@ -980,7 +1029,7 @@ window.ImageViewer = (function () {
         return key && ctrl && alt && shift
       }
 
-      function readDateUrl(dataURL) {
+      function readDataUrl(dataURL) {
         const [header, data] = dataURL.split(',')
         const mime = header.split(':')[1].split(';')[0]
         const decodedData = atob(data)
@@ -993,7 +1042,7 @@ window.ImageViewer = (function () {
       }
       async function fetchImageBuffer(imgUrl) {
         if (imgUrl.startsWith('data')) {
-          return readDateUrl(imgUrl)
+          return readDataUrl(imgUrl)
         }
         if (imgUrl.startsWith('blob')) {
           const res = await fetch(imgUrl)
@@ -1508,6 +1557,7 @@ window.ImageViewer = (function () {
     addChangeBackgroundHotkey()
     addTransformationHotkey()
     addDownloadHotkey()
+    addCopyHotkey()
     addImageReverseSearchHotkey()
     addControlPanelHideEvent(options)
     addInfoPopupEvent()
