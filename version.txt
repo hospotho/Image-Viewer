@@ -1,3 +1,14 @@
+1.48 [2026-02-01]:
+Major Update
+1. Added new hotkeys for copying the current image:
+  - Copy image: Ctrl + C
+  - Copy URL  : Ctrl + Shift + C
+2. Added new option to disable image backup.
+  // useful when a website loads images in unusual ways and you want a fresh list
+3. Added settings import / export functionality.
+4. Improved wording and i18n consistency on the options page.
+5. Other bug fixes and improvements.
+
 1.47 [2026-01-16]:
 Major Update
 1. Added video first frame check when no poster image is available.
