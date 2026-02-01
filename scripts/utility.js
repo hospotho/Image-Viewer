@@ -1815,7 +1815,7 @@ window.ImageViewerUtils = (function () {
       disableImageBackup = getDomainSetting(options.imageBackupDisableList)
     }
     // empty image backup
-    if (disableImageBackup) {
+    if (disableImageBackup && !isImageViewerExist()) {
       window.backupImageList = []
     }
     // skip unlazy
