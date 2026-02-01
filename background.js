@@ -256,7 +256,7 @@ const defaultOptions = {
   hoverCheckDisableList: [],
   autoScrollEnableList: ['x.com', 'www.instagram.com', 'www.facebook.com'],
   imageUnlazyDisableList: [],
-  imageCacheDisableList: []
+  imageBackupDisableList: []
 }
 
 let currOptions = defaultOptions

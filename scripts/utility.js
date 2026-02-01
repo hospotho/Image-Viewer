@@ -118,7 +118,7 @@ window.ImageViewerUtils = (function () {
   // domain settings
   let enableAutoScroll = false
   let disableImageUnlazy = false
-  let disableImageCache = false
+  let disableImageBackup = false
 
   // image cache
   window.backupImageList = []
@@ -1812,10 +1812,10 @@ window.ImageViewerUtils = (function () {
       checkVideo()
       enableAutoScroll = getDomainSetting(options.autoScrollEnableList)
       disableImageUnlazy = getDomainSetting(options.imageUnlazyDisableList)
-      disableImageCache = getDomainSetting(options.imageCacheDisableList)
+      disableImageBackup = getDomainSetting(options.imageBackupDisableList)
     }
-    // empty image cache
-    if (disableImageCache) {
+    // empty image backup
+    if (disableImageBackup) {
       window.backupImageList = []
     }
     // skip unlazy

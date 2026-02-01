@@ -25,7 +25,7 @@
   const hoverCheck = document.querySelector('textarea#hoverCheckDisableList')
   const autoScroll = document.querySelector('textarea#autoScrollEnableList')
   const imageUnlazy = document.querySelector('textarea#imageUnlazyDisableList')
-  const imageCache = document.querySelector('textarea#imageCacheDisableList')
+  const imageBackup = document.querySelector('textarea#imageBackupDisableList')
 
   const modal = document.querySelector('div#optionsModal')
   const modalTitle = document.querySelector('h2#modalTitle')
@@ -49,7 +49,7 @@
     hoverCheckDisableList: [],
     autoScrollEnableList: ['x.com', 'www.instagram.com', 'www.facebook.com'],
     imageUnlazyDisableList: [],
-    imageCacheDisableList: []
+    imageBackupDisableList: []
   }
 
   //==========utility==========
@@ -160,7 +160,7 @@
       hoverCheck.value = options.hoverCheckDisableList.join('\n')
       autoScroll.value = options.autoScrollEnableList.join('\n')
       imageUnlazy.value = options.imageUnlazyDisableList.join('\n')
-      imageCache.value = options.imageCacheDisableList.join('\n')
+      imageBackup.value = options.imageBackupDisableList.join('\n')
     } catch (e) {
       resetDefaultOptions()
       setValue(defaultOptions)
@@ -285,7 +285,7 @@
       options.hoverCheckDisableList = inputToArray(hoverCheck.value)
       options.autoScrollEnableList = inputToArray(autoScroll.value)
       options.imageUnlazyDisableList = inputToArray(imageUnlazy.value)
-      options.imageCacheDisableList = inputToArray(imageCache.value)
+      options.imageBackupDisableList = inputToArray(imageBackup.value)
 
       chrome.storage.sync.set({options: options}, () => {
         if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
