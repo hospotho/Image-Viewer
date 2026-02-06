@@ -1570,7 +1570,7 @@ window.ImageViewer = (function () {
     }
   }
 
-  function addImageListEvent(options) {
+  function addNavigationEvent(options) {
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const controlBar = shadowRoot.querySelector('#iv-control')
     const closeButton = shadowRoot.querySelector('#iv-control-close')
@@ -1616,8 +1616,8 @@ window.ImageViewer = (function () {
       const relateImage = relateListItem.querySelector('img')
       if (relateImage.complete) await relateImage.decode().catch(() => {})
 
-      const renderTime = performance.now() - startTime
-      const decodeTime = Math.min(500, renderTime)
+      const decodeTime = performance.now() - startTime
+      const adjustedDecodeTime = Math.min(500, decodeTime)
       await throttlePromise
 
       // update dom
@@ -1629,9 +1629,9 @@ window.ImageViewer = (function () {
       infoPopup.dispatchEvent(updateEvent)
 
       // compensate for render
-      throttleTimestamp = Date.now() + throttlePeriod - decodeTime
+      throttleTimestamp = Date.now() + throttlePeriod - adjustedDecodeTime
       lastCompleteTime = performance.now()
-      lastDecodeTime = Math.max(lastDecodeTime, decodeTime) * smoothThrottleRatio
+      lastDecodeTime = Math.max(lastDecodeTime, adjustedDecodeTime) * smoothThrottleRatio
       resetDecodeTimeout = setTimeout(() => (lastDecodeTime = 0), 1500)
       moveLock = false
       moveCount++
@@ -2417,7 +2417,7 @@ window.ImageViewer = (function () {
     if (!document.body.classList.contains('iv-attached')) {
       buildApp(options)
       addFrameEvent(options)
-      addImageListEvent(options)
+      addNavigationEvent(options)
       buildImageList(imageDataList, options)
       const action = () => {
         initImageList(options)
