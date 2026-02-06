@@ -1442,13 +1442,25 @@ window.ImageViewerUtils = (function () {
     const proxy = cachedGetProxySrc(url, /https?:\/\/\S+/g)
     return proxy || url.href
   }
-  function checkAttrUrlPath(url, attrList) {
+  function checkAttrUrl(url, attrList) {
     const {origin, pathname, search} = url
 
-    // check url filename
+    // likely
     const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
     if (pathname !== nonThumbnailPath) {
       attrList.push({name: 'non thumbnail path', url: origin + nonThumbnailPath + search})
+    }
+    if (search.includes('width=') || search.includes('height=')) {
+      const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
+      attrList.push({name: 'no size query', url: origin + pathname + noSizeQuery})
+    }
+
+    // less likely
+    if (!pathname.includes('.')) {
+      const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
+      if (extMatch) {
+        attrList.push({name: 'raw extension', url: origin + pathname + '.' + extMatch[0]})
+      }
     }
     const filenameIndex = pathname.lastIndexOf('/')
     const filename = pathname.slice(filenameIndex + 1)
@@ -1459,19 +1471,10 @@ window.ImageViewerUtils = (function () {
       attrList.push({name: 'no size path', url: origin + rawSizePath + search})
     }
 
-    // check url parameters
-    if (search === '' || search === '?') return
-    if (!pathname.includes('.')) {
-      const extMatch = search.match(/jpeg|jpg|png|gif|webp|bmp|tiff|avif/)
-      if (extMatch) {
-        attrList.push({name: 'raw extension', url: origin + pathname + '.' + extMatch[0]})
-      }
+    // unlikely
+    if (search !== '' && search !== '?') {
+      attrList.push({name: 'no query', url: origin + pathname})
     }
-    if (search.includes('width=') || search.includes('height=')) {
-      const noSizeQuery = search.replace(/&?width=\d+|&?height=\d+/g, '')
-      attrList.push({name: 'no size query', url: origin + pathname + noSizeQuery})
-    }
-    attrList.push({name: 'no query', url: origin + pathname})
   }
   function getUnlazyAttrList(img) {
     const src = img.currentSrc || img.src
@@ -1496,18 +1499,15 @@ window.ImageViewerUtils = (function () {
       }
     }
 
-    // check srcset and src
+    // check srcset
     if (img.srcset && img.srcset !== src) {
       attrList.push({name: 'srcset', url: getSrcsetUrl(img.srcset)})
     }
-    if (rawUrl !== src) {
-      attrList.push({name: 'raw url', url: rawUrl})
-    }
 
-    // check url path
+    // check url
     const url = cachedGetUrl(src)
     if (url !== null) {
-      checkAttrUrlPath(url, attrList)
+      checkAttrUrl(url, attrList)
     }
 
     // check parent anchor
@@ -1518,6 +1518,12 @@ window.ImageViewerUtils = (function () {
       const maybeLarger = anchorHaveExt || anchorHaveExt === rawHaveExt || rawUrl.slice(0, 12).includes('cdn.')
       if (maybeLarger) attrList.push({name: 'parent anchor', url: anchor.href})
     }
+
+    // check raw url
+    if (rawUrl !== src) {
+      attrList.push({name: 'raw url', url: rawUrl})
+    }
+
     return attrList.filter(attr => encodeURI(attr.url) !== src)
   }
   function getUnlazyImageList(minWidth, minHeight) {
