@@ -2408,6 +2408,7 @@ window.ImageViewerUtils = (function () {
       const uniqueImageList = iframeImageList.concat(imageList)
       if (uniqueImageList.length === 0) {
         console.log('Found no image')
+        await new Promise(resolve => setTimeout(resolve, 200))
         return this.getOrderedImageList(options, retryCount - 1)
       }
 
