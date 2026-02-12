@@ -1622,7 +1622,7 @@ window.ImageViewer = (function () {
 
       const decodeTime = performance.now() - startTime
       const adjustedDecodeTime = Math.min(500, decodeTime)
-      await throttlePromise
+      if (decodeTime < throttleDelay) await throttlePromise
 
       // update dom
       currentListItem?.classList.remove('current')
