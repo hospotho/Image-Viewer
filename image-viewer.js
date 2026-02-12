@@ -19,6 +19,7 @@ window.ImageViewer = (function () {
   let lastTransform = null
 
   const keydownHandlerList = []
+  const keyupHandlerList = []
   const resizeHandlerList = []
 
   //==========utility==========
@@ -37,6 +38,7 @@ window.ImageViewer = (function () {
     lastSrc = current?.src || ''
     lastTransform = current ? getTransform(current) : null
     keydownHandlerList.length = 0
+    keyupHandlerList.length = 0
     resizeHandlerList.length = 0
 
     const viewer = shadowRoot.querySelector('#image-viewer')
@@ -872,19 +874,21 @@ window.ImageViewer = (function () {
         'keydown',
         e => {
           if (!document.body.classList.contains('iv-attached')) return
+          e.stopImmediatePropagation()
           const pressed = (e.getModifierState('AltGraph') && e.key === 'Control') || (e.ctrlKey && e.key === 'AltGraph')
           ctrlWithAltGraph = pressed || ctrlWithAltGraph
           e.ctrlWithAltGraph = ctrlWithAltGraph
           keydownHandlerList.forEach(func => func(e))
-          e.stopImmediatePropagation()
         },
         true
       )
       window.addEventListener(
         'keyup',
         e => {
+          e.stopImmediatePropagation()
           const released = (e.getModifierState('AltGraph') && e.key === 'Control') || (e.ctrlKey && e.key === 'AltGraph')
           ctrlWithAltGraph = !released && ctrlWithAltGraph
+          keyupHandlerList.forEach(func => func(e))
         },
         true
       )
@@ -1778,6 +1782,7 @@ window.ImageViewer = (function () {
     keydownHandlerList.push(normalNavigation)
     keydownHandlerList.push(fastNavigation)
     keydownHandlerList.push(autoNavigation)
+    keyupHandlerList.push(() => (navigateState = -1))
     // arrow button
     shadowRoot.querySelector('#iv-control-prev').addEventListener('click', prevItem)
     shadowRoot.querySelector('#iv-control-next').addEventListener('click', nextItem)
