@@ -1592,8 +1592,6 @@ window.ImageViewer = (function () {
     const smoothThrottleRatio = 0.75
 
     // debounce and throttle
-    let debounceFlag = false
-    let debounceTimeout = 0
     let throttleTimestamp = 0
     let lastCompleteTime = 0
     let lastDecodeTime = 0
@@ -1647,49 +1645,42 @@ window.ImageViewer = (function () {
       lastDecodeTime = 0
       clearTimeout(resetDecodeTimeout)
     }
-    function resetDebounce() {
-      debounceFlag = false
-      clearTimeout(debounceTimeout)
-    }
-    function prevItem(repeat = false) {
+    async function prevItem(repeat = false) {
       const currentIndex = Number(current.textContent) - 1
       const imageListLength = Number(total.textContent)
       const prevIndex = currentIndex === 0 ? imageListLength - 1 : currentIndex - 1
       if (!repeat) {
         resetThrottle()
-        resetDebounce()
-        moveToNode(prevIndex)
+        await moveToNode(prevIndex)
         return
       }
 
       if (prevIndex === imageListLength - 1) {
-        if (debounceFlag) return
+        const currentCount = moveCount
         const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
-        debounceTimeout = setTimeout(prevItem, delay)
-        debounceFlag = true
+        await new Promise(resolve => setTimeout(resolve, delay))
+        if (currentCount === moveCount) await moveToNode(prevIndex)
         return
       }
       if (Date.now() > throttleTimestamp) {
-        resetDebounce()
-        moveToNode(prevIndex)
+        await moveToNode(prevIndex)
       }
     }
-    function nextItem(repeat = false) {
+    async function nextItem(repeat = false) {
       const currentIndex = Number(current.textContent) - 1
       const imageListLength = Number(total.textContent)
       const nextIndex = currentIndex >= imageListLength - 1 ? 0 : currentIndex + 1
       if (!repeat) {
         resetThrottle()
-        resetDebounce()
-        moveToNode(nextIndex)
+        await moveToNode(nextIndex)
         return
       }
 
       if (nextIndex === 0) {
-        if (debounceFlag) return
+        const currentCount = moveCount
         const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
-        debounceTimeout = setTimeout(nextItem, delay)
-        debounceFlag = true
+        await new Promise(resolve => setTimeout(resolve, delay))
+        if (currentCount === moveCount) await moveToNode(nextIndex)
         return
       }
       // wait for new image insert
@@ -1704,8 +1695,7 @@ window.ImageViewer = (function () {
         if (!img.complete) return
       }
       if (Date.now() > throttleTimestamp) {
-        resetDebounce()
-        moveToNode(nextIndex)
+        await moveToNode(nextIndex)
       }
     }
 
