@@ -1591,8 +1591,7 @@ window.ImageViewer = (function () {
     const throttlePeriod = options.throttlePeriod ?? 80
     const smoothThrottleRatio = 0.75
 
-    // debounce and throttle
-    let throttleTimestamp = 0
+    // throttle
     let lastCompleteTime = 0
     let lastDecodeTime = 0
     let resetDecodeTimeout = 0
@@ -1600,6 +1599,7 @@ window.ImageViewer = (function () {
     // navigation lock
     let moveLock = false
     let moveCount = 0
+    let navigateState = -1
     let autoNavigateState = 0
 
     async function moveToNode(index) {
@@ -1631,7 +1631,6 @@ window.ImageViewer = (function () {
       infoPopup.dispatchEvent(updateEvent)
 
       // compensate for render
-      throttleTimestamp = Date.now() + throttlePeriod - adjustedDecodeTime
       lastCompleteTime = performance.now()
       lastDecodeTime = Math.max(lastDecodeTime, adjustedDecodeTime) * smoothThrottleRatio
       resetDecodeTimeout = setTimeout(() => (lastDecodeTime = 0), 1500)
@@ -1640,7 +1639,6 @@ window.ImageViewer = (function () {
     }
 
     function resetThrottle() {
-      throttleTimestamp = 0
       lastCompleteTime = 0
       lastDecodeTime = 0
       clearTimeout(resetDecodeTimeout)
@@ -1662,9 +1660,7 @@ window.ImageViewer = (function () {
         if (currentCount === moveCount) await moveToNode(prevIndex)
         return
       }
-      if (Date.now() > throttleTimestamp) {
-        await moveToNode(prevIndex)
-      }
+      await moveToNode(prevIndex)
     }
     async function nextItem(repeat = false) {
       const currentIndex = Number(current.textContent) - 1
@@ -1694,9 +1690,7 @@ window.ImageViewer = (function () {
         const img = imageListNode.children[nextIndex].firstChild
         if (!img.complete) return
       }
-      if (Date.now() > throttleTimestamp) {
-        await moveToNode(nextIndex)
-      }
+      await moveToNode(nextIndex)
     }
 
     // key event
@@ -1714,13 +1708,50 @@ window.ImageViewer = (function () {
       S: 1,
       D: 1
     }
-    const normalNavigation = e => {
-      if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
+    const normalNavigation = async e => {
+      // state transition
+      if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) {
+        navigateState = -1
+        return
+      }
       const action = keyMap[e.key]
-      if (action !== undefined) {
-        e.preventDefault()
-        if (moveLock) return
-        action === 1 ? nextItem(e.repeat) : prevItem(e.repeat)
+      if (action === undefined) {
+        navigateState = -1
+        return
+      }
+      e.preventDefault()
+      if ((navigateState & 0b1) === action && e.repeat) {
+        navigateState = action | 0b10
+        return
+      }
+
+      // key down
+      navigateState = action
+      const func = action === 1 ? nextItem : prevItem
+      await func()
+
+      // check key hold
+      let endTime = Date.now() + 500
+      while (Date.now() < endTime) {
+        if (navigateState !== action) break
+        await new Promise(resolve => setTimeout(resolve, 10))
+      }
+
+      // start auto throttle navigate
+      let lastRepeatTime = Date.now()
+      while (true) {
+        // check if key release without keyup event
+        if (navigateState & 0b100 && Date.now() - lastRepeatTime > 100) {
+          navigateState = -1
+          break
+        }
+        if ((navigateState & 0b100) === 0 && Date.now() - lastRepeatTime > 100) {
+          navigateState |= 0b100
+          lastRepeatTime = Date.now()
+        }
+        if ((navigateState & ~0b100) !== (action | 0b10)) break
+        await func(true)
+        await new Promise(resolve => setTimeout(resolve, 0))
       }
     }
     const fastNavigation = e => {
