@@ -2245,7 +2245,7 @@ window.ImageViewer = (function () {
       for (let i = 0; i < newFirstIndex; i++) {
         const src = imgList[i].src
         const dom = newList.find(data => data.src === src).dom
-        if (dom.tagName === 'IMAGE' || dom.tagName === 'VIDEO' || dom.tagName === 'IFRAME') {
+        if (dom.tagName === 'IMG' || dom.tagName === 'VIDEO' || dom.tagName === 'IFRAME') {
           clearIndex = i
           break
         }
