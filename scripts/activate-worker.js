@@ -424,6 +424,14 @@
           return hiddenImageInfoFromPoint
         }
 
+        const canvasIndex = elementList.findIndex(el => el.tagName === 'CANVAS')
+        if (canvasIndex !== -1) {
+          console.debug(`Canvas image node found, layer ${canvasIndex}`)
+          const canvas = elementList[canvasIndex]
+          const minSize = Math.min(canvas.clientWidth, canvas.clientHeight)
+          return ['', minSize, canvas]
+        }
+
         const imageInfoFromTree = await searchImageFromTree(firstVisibleDom, mouseX, mouseY)
         if (isImageInfoValid(imageInfoFromTree)) {
           console.debug('Image node found, hide under dom tree')
