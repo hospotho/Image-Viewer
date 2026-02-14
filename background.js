@@ -389,7 +389,7 @@ function addMessageHandler() {
         if (lastImageNodeInfoID === sender.tab.id) {
           sendResponse(lastImageNodeInfo)
         } else {
-          sendResponse(['', Number.MAX_SAFE_INTEGER])
+          sendResponse(['', Number.MAX_SAFE_INTEGER, ''])
         }
         return
       }
@@ -595,7 +595,8 @@ function createContextMenu() {
     switch (info.menuItemId) {
       case 'view_images_in_image_viewer': {
         await passOptionToTab(tab.id, currOptions)
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-image.js']})
+        const script = lastImageNodeInfoID === tab.id && lastImageNodeInfo[2] === 'CANVAS' ? '/scripts/action-canvas.js' : '/scripts/action-image.js'
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: [script]})
         break
       }
       case 'view_all_image_in_image_viewer': {
@@ -605,7 +606,8 @@ function createContextMenu() {
       }
       case 'view_last_right_click_image_in_image_viewer': {
         await passOptionToTab(tab.id, currOptions)
-        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-image.js']})
+        const script = lastImageNodeInfoID === tab.id && lastImageNodeInfo[2] === 'CANVAS' ? '/scripts/action-canvas.js' : '/scripts/action-image.js'
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: [script]})
         break
       }
       case 'view_canvas_in_image_viewer': {
