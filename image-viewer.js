@@ -1587,8 +1587,8 @@ window.ImageViewer = (function () {
     const infoHeight = shadowRoot.querySelector('#iv-info-height')
     const updateEvent = new CustomEvent('update-info')
 
-    const debouncePeriod = options.debouncePeriod ?? 1500
-    const throttlePeriod = options.throttlePeriod ?? 80
+    const debouncePeriod = Math.ceil(options.debouncePeriod ?? 1500)
+    const throttlePeriod = Math.ceil(options.throttlePeriod ?? 80)
     const smoothThrottleRatio = 0.75
 
     // throttle
@@ -1655,9 +1655,13 @@ window.ImageViewer = (function () {
 
       if (prevIndex === imageListLength - 1) {
         const currentCount = moveCount
-        const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
-        await new Promise(resolve => setTimeout(resolve, delay))
-        if (currentCount === moveCount) await moveToNode(prevIndex)
+        let delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
+        while (delay > 0) {
+          delay >>>= 1
+          await new Promise(resolve => setTimeout(resolve, delay))
+          if (currentCount !== moveCount || Number(total.textContent) !== imageListLength) return
+        }
+        await moveToNode(prevIndex)
         return
       }
       await moveToNode(prevIndex)
@@ -1674,9 +1678,13 @@ window.ImageViewer = (function () {
 
       if (nextIndex === 0) {
         const currentCount = moveCount
-        const delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
-        await new Promise(resolve => setTimeout(resolve, delay))
-        if (currentCount === moveCount) await moveToNode(nextIndex)
+        let delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
+        while (delay > 0) {
+          delay >>>= 1
+          await new Promise(resolve => setTimeout(resolve, delay))
+          if (currentCount !== moveCount || Number(total.textContent) !== imageListLength) return
+        }
+        await moveToNode(nextIndex)
         return
       }
       // wait for new image insert
