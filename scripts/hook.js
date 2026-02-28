@@ -99,7 +99,7 @@
     if (cached !== undefined) return cached
 
     if (image.crossOrigin === 'anonymous') {
-      imageCORSMap.set(image.src, true)
+      imageCORSMap.set(image.src, false)
       return false
     }
 
