@@ -1599,6 +1599,7 @@ window.ImageViewer = (function () {
     // navigation lock
     let moveLock = false
     let moveCount = 0
+    // -1 = stop | bits 0, 1, 2 = direction, repeat, hold check
     let navigateState = -1
     let autoNavigateState = 0
 
@@ -1722,54 +1723,56 @@ window.ImageViewer = (function () {
         navigateState = -1
         return
       }
-      const action = keyMap[e.key]
-      if (action === undefined) {
+      const direction = keyMap[e.key]
+      if (direction === undefined) {
         navigateState = -1
         return
       }
       e.preventDefault()
-      if ((navigateState & 0b1) === action && e.repeat) {
-        navigateState = action | 0b10
+      if ((navigateState & 0b1) === direction && e.repeat) {
+        navigateState = direction | 0b10
         return
       }
 
       // key down
-      navigateState = action
-      const func = action === 1 ? nextItem : prevItem
+      navigateState = direction
+      const func = direction === 1 ? nextItem : prevItem
       await func()
 
       // check key hold
       let endTime = Date.now() + 500
       while (Date.now() < endTime) {
-        if (navigateState !== action) break
+        if (navigateState !== direction) break
         await new Promise(resolve => setTimeout(resolve, 10))
       }
 
       // start auto throttle navigate
-      let lastRepeatTime = Date.now()
+      let lastCheckTime = Date.now()
       while (true) {
         // check if key release without keyup event
-        if (navigateState & 0b100 && Date.now() - lastRepeatTime > 100) {
-          navigateState = -1
-          break
+        const elapsed = Date.now() - lastCheckTime > 100
+        if (elapsed) {
+          if (navigateState & 0b100) {
+            navigateState = -1
+            return
+          } else {
+            navigateState |= 0b100
+            lastCheckTime = Date.now()
+          }
         }
-        if ((navigateState & 0b100) === 0 && Date.now() - lastRepeatTime > 100) {
-          navigateState |= 0b100
-          lastRepeatTime = Date.now()
-        }
-        if ((navigateState & ~0b100) !== (action | 0b10)) break
+        if ((navigateState | 0b100) !== (direction | 0b110)) return
         await func(true)
         await new Promise(resolve => setTimeout(resolve, 0))
       }
     }
     const fastNavigation = e => {
       if (!e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-      const action = keyMap[e.key]
-      if (action !== undefined && e.key.length !== 1) {
+      const direction = keyMap[e.key]
+      if (direction !== undefined && e.key.length !== 1) {
         e.preventDefault()
         if (moveLock) return
         const currIndex = Number(current.textContent) - 1
-        const newIndex = action === 1 ? Math.min(currIndex + 10, Number(total.textContent) - 1) : Math.max(currIndex - 10, 0)
+        const newIndex = direction === 1 ? Math.min(currIndex + 10, Number(total.textContent) - 1) : Math.max(currIndex - 10, 0)
         resetThrottle()
         moveToNode(newIndex)
       }
@@ -1780,13 +1783,13 @@ window.ImageViewer = (function () {
         return
       }
       if (e.key === 'Shift') return
-      const action = keyMap[e.key]
-      if (action === undefined || e.key.length === 1) {
+      const direction = keyMap[e.key]
+      if (direction === undefined || e.key.length === 1) {
         autoNavigateState = 0
         return
       }
       // -1 or 1
-      const newState = action * 2 - 1
+      const newState = direction * 2 - 1
       if (autoNavigateState === newState) return
 
       autoNavigateState = newState
@@ -1798,7 +1801,7 @@ window.ImageViewer = (function () {
         if (autoNavigateState !== newState || lastMoveCount !== moveCount) break
 
         const currIndex = Number(current.textContent) - 1
-        const newIndex = action === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
+        const newIndex = direction === 1 ? Math.min(currIndex + 1, Number(total.textContent) - 1) : Math.max(currIndex - 1, 0)
         if (currIndex === newIndex) break
 
         resetThrottle()
