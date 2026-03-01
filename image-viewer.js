@@ -1748,7 +1748,7 @@ window.ImageViewer = (function () {
 
       // start auto throttle navigate
       let lastCheckTime = Date.now()
-      while (true) {
+      while ((navigateState | 0b100) === (direction | 0b110)) {
         // check if key release without keyup event
         const elapsed = Date.now() - lastCheckTime > 100
         if (elapsed) {
@@ -1760,7 +1760,6 @@ window.ImageViewer = (function () {
             lastCheckTime = Date.now()
           }
         }
-        if ((navigateState | 0b100) !== (direction | 0b110)) return
         await func(true)
         await new Promise(resolve => setTimeout(resolve, 0))
       }
@@ -1811,10 +1810,25 @@ window.ImageViewer = (function () {
       }
       autoNavigateState = 0
     }
+    const resetNavigation = e => {
+      if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) {
+        navigateState = -1
+        return
+      }
+      const direction = keyMap[e.key]
+      if (direction === undefined) {
+        navigateState = -1
+        return
+      }
+      // only reset when same direction
+      if ((navigateState & 0b1) === direction) {
+        navigateState = -1
+      }
+    }
     keydownHandlerList.push(normalNavigation)
     keydownHandlerList.push(fastNavigation)
     keydownHandlerList.push(autoNavigation)
-    keyupHandlerList.push(() => (navigateState = -1))
+    keyupHandlerList.push(resetNavigation)
     // arrow button
     shadowRoot.querySelector('#iv-control-prev').addEventListener('click', prevItem)
     shadowRoot.querySelector('#iv-control-next').addEventListener('click', nextItem)
