@@ -1658,8 +1658,8 @@ window.ImageViewer = (function () {
         const currentCount = moveCount
         let delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
         while (delay > 0) {
-          delay >>>= 1
-          await new Promise(resolve => setTimeout(resolve, delay))
+          delay -= 100
+          await new Promise(resolve => setTimeout(resolve, 100))
           if (currentCount !== moveCount || Number(total.textContent) !== imageListLength) return
         }
         await moveToNode(prevIndex)
@@ -1681,8 +1681,8 @@ window.ImageViewer = (function () {
         const currentCount = moveCount
         let delay = Date.now() - lastUpdateTime > 5000 ? debouncePeriod : 5000
         while (delay > 0) {
-          delay >>>= 1
-          await new Promise(resolve => setTimeout(resolve, delay))
+          delay -= 100
+          await new Promise(resolve => setTimeout(resolve, 100))
           if (currentCount !== moveCount || Number(total.textContent) !== imageListLength) return
         }
         await moveToNode(nextIndex)
