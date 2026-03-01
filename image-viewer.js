@@ -1750,7 +1750,7 @@ window.ImageViewer = (function () {
       let lastCheckTime = Date.now()
       while ((navigateState | 0b100) === (direction | 0b110)) {
         // check if key release without keyup event
-        const elapsed = Date.now() - lastCheckTime > 100
+        const elapsed = Date.now() - lastCheckTime > 200
         if (elapsed) {
           if (navigateState & 0b100) {
             navigateState = -1
