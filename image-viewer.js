@@ -701,10 +701,9 @@ window.ImageViewer = (function () {
       }
       #iv-control-info::before {
         content: '\\2139';
-        position: absolute;
-        right: 50%;
-        margin-right: -26px;
-        margin-top: -5px;
+        position: relative;
+        top: 20%;
+        left: 20%;
         font-size: 35px;
         color: #999;
       }
