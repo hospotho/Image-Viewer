@@ -56,6 +56,21 @@ window.ImageViewer = (function () {
     return Math.round(1000 / median)
   }
 
+  function checkKey(e, hotkey) {
+    if (!hotkey) return false
+    const currentKey = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key
+    const keyList = hotkey.split(' + ')
+    const key = keyList.at(-1) === currentKey
+    const ctrl = keyList.includes('Ctrl') === e.ctrlKey
+    const alt = keyList.includes('Alt') === e.altKey || e.getModifierState('AltGraph')
+    const shift = keyList.includes('Shift') === e.shiftKey
+    return key && ctrl && alt && shift
+  }
+  function checkKeyList(e, hotkey) {
+    if (Array.isArray(hotkey)) return hotkey.some(key => checkKey(e, key))
+    return checkKey(e, hotkey)
+  }
+
   function applyTransform(img, scaleX, scaleY, rotate, moveX, moveY) {
     img.style.scale = `${scaleX} ${scaleY}`
     img.style.rotate = `${rotate}deg`
@@ -902,36 +917,46 @@ window.ImageViewer = (function () {
       if (options.canvasMode) backgroundList.sort((a, b) => b[0].length - a[0].length)
       let index = 0
       keydownHandlerList.push(e => {
-        if (!e.shiftKey || e.key.toUpperCase() !== 'B') return
+        if (!checkKeyList(e, options.viewerHotkey?.background)) return
         index = (index + 1) % backgroundList.length
         shadowRoot.querySelector('#image-viewer').style.setProperty('background', ...backgroundList[index])
       })
     }
     function addTransformationHotkey() {
-      const keyMap = {
-        ArrowUp: 0,
-        w: 0,
-        W: 0,
-        ArrowDown: 1,
-        s: 1,
-        S: 1,
-        ArrowLeft: 2,
-        a: 2,
-        A: 2,
-        ArrowRight: 3,
-        d: 3,
-        D: 3
-      }
       let lastHotkeyTime = 0
       keydownHandlerList.push(e => {
-        if (!(e.altKey || e.getModifierState('AltGraph')) || e.shiftKey) return
-        const action = keyMap[e.key]
-        if (action === undefined) return
+        let action = -1
+        let type = ''
+        if (checkKeyList(e, options.viewerHotkey?.moveUp)) {
+          action = 0
+          type = 'move'
+        } else if (checkKeyList(e, options.viewerHotkey?.moveDown)) {
+          action = 1
+          type = 'move'
+        } else if (checkKeyList(e, options.viewerHotkey?.moveLeft)) {
+          action = 2
+          type = 'move'
+        } else if (checkKeyList(e, options.viewerHotkey?.moveRight)) {
+          action = 3
+          type = 'move'
+        } else if (checkKeyList(e, options.viewerHotkey?.zoomIn)) {
+          action = 0
+          type = 'zoom'
+        } else if (checkKeyList(e, options.viewerHotkey?.zoomOut)) {
+          action = 1
+          type = 'zoom'
+        } else if (checkKeyList(e, options.viewerHotkey?.rotateLeft)) {
+          action = 2
+          type = 'rotate'
+        } else if (checkKeyList(e, options.viewerHotkey?.rotateRight)) {
+          action = 3
+          type = 'rotate'
+        }
+        if (action === -1) return
         const now = Date.now()
         if (e.repeat && now - lastHotkeyTime < 30) return
         lastHotkeyTime = now
         e.preventDefault()
-        const type = e.ctrlKey || e.ctrlWithAltGraph ? 'move' : action < 2 ? 'zoom' : 'rotate'
         const data = {detail: {type: type, action: action}}
         const event = new CustomEvent('hotkey', data)
         const current = shadowRoot.querySelector('li.current')
@@ -940,7 +965,7 @@ window.ImageViewer = (function () {
     }
     function addDownloadHotkey() {
       keydownHandlerList.push(async e => {
-        if (!e.ctrlKey || !e.shiftKey || e.key.toUpperCase() !== 'D') return
+        if (!checkKeyList(e, options.viewerHotkey?.downloadImage)) return
         e.preventDefault()
 
         const imgSrc = shadowRoot.querySelector('li.current img').src
@@ -975,12 +1000,14 @@ window.ImageViewer = (function () {
     }
     function addCopyHotkey() {
       keydownHandlerList.push(async e => {
-        if (!e.ctrlKey || e.key.toUpperCase() !== 'C') return
+        const copyImage = checkKeyList(e, options.viewerHotkey?.copyImage)
+        const copyImageUrl = checkKeyList(e, options.viewerHotkey?.copyImageUrl)
+        if (!copyImage && !copyImageUrl) return
         e.preventDefault()
 
         const img = shadowRoot.querySelector('li.current img')
         const src = img.src
-        if (e.shiftKey) {
+        if (copyImageUrl) {
           navigator.clipboard.write([new ClipboardItem({'text/plain': src})])
           return
         }
@@ -1023,15 +1050,6 @@ window.ImageViewer = (function () {
       })
     }
     function addImageReverseSearchHotkey() {
-      function checkKey(e, hotkey) {
-        const keyList = hotkey.split('+').map(str => str.trim())
-        const key = keyList[keyList.length - 1] === e.key.toUpperCase()
-        const ctrl = keyList.includes('Ctrl') === e.ctrlKey || e.ctrlWithAltGraph
-        const alt = keyList.includes('Alt') === (e.altKey || e.getModifierState('AltGraph'))
-        const shift = keyList.includes('Shift') === e.shiftKey
-        return key && ctrl && alt && shift
-      }
-
       function readDataUrl(dataURL) {
         const [header, data] = dataURL.split(',')
         const mime = header.split(':')[1].split(';')[0]
@@ -1444,8 +1462,7 @@ window.ImageViewer = (function () {
 
       shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
       keydownHandlerList.push(e => {
-        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-        if (e.key === 'Enter') {
+        if (checkKeyList(e, options.viewerHotkey?.moveTo)) {
           e.preventDefault()
           moveTo()
         }
@@ -1460,8 +1477,7 @@ window.ImageViewer = (function () {
         chrome.runtime?.id ? chrome.runtime.sendMessage('close_tab') : window.close()
       })
       keydownHandlerList.push(e => {
-        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-        if (e.key === 'Escape' || e.key === '"NumpadAdd"') {
+        if (checkKeyList(e, options.viewerHotkey?.close)) {
           e.preventDefault()
           closeImageViewer()
         }
@@ -1507,8 +1523,7 @@ window.ImageViewer = (function () {
       const dispatchEvent = anchor => anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
 
       keydownHandlerList.push(e => {
-        if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-        if (e.key === 'Insert' || e.key === '0' || e.key === ' ') {
+        if (checkKeyList(e, options.viewerHotkey?.openImageLink)) {
           e.preventDefault()
           const anchor = searchImgAnchor()
           if (anchor) openNewTab(anchor)
@@ -1702,27 +1717,9 @@ window.ImageViewer = (function () {
     }
 
     // key event
-    const keyMap = {
-      ArrowLeft: 0,
-      ArrowUp: 0,
-      w: 0,
-      a: 0,
-      W: 0,
-      A: 0,
-      ArrowRight: 1,
-      ArrowDown: 1,
-      s: 1,
-      d: 1,
-      S: 1,
-      D: 1
-    }
     const normalNavigation = async e => {
       // state transition
-      if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) {
-        navigateState = -1
-        return
-      }
-      const direction = keyMap[e.key]
+      const direction = checkKeyList(e, options.viewerHotkey?.navigatePrev) ? 0 : checkKeyList(e, options.viewerHotkey?.navigateNext) ? 1 : undefined
       if (direction === undefined) {
         navigateState = -1
         return
@@ -1764,9 +1761,8 @@ window.ImageViewer = (function () {
       }
     }
     const fastNavigation = e => {
-      if (!e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) return
-      const direction = keyMap[e.key]
-      if (direction !== undefined && e.key.length !== 1) {
+      const direction = checkKeyList(e, viewerHotkey.fastNavigatePrev) ? 0 : checkKeyList(e, viewerHotkey.fastNavigateNext) ? 1 : undefined
+      if (direction !== undefined) {
         e.preventDefault()
         if (moveLock) return
         const currIndex = Number(current.textContent) - 1
@@ -1776,13 +1772,8 @@ window.ImageViewer = (function () {
       }
     }
     const autoNavigation = async e => {
-      if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || !e.shiftKey) {
-        autoNavigateState = 0
-        return
-      }
-      if (e.key === 'Shift') return
-      const direction = keyMap[e.key]
-      if (direction === undefined || e.key.length === 1) {
+      const direction = checkKeyList(e, viewerHotkey.autoNavigatePrev) ? 0 : checkKeyList(e, viewerHotkey.autoNavigateNext) ? 1 : undefined
+      if (direction === undefined) {
         autoNavigateState = 0
         return
       }
@@ -1810,11 +1801,7 @@ window.ImageViewer = (function () {
       autoNavigateState = 0
     }
     const resetNavigation = e => {
-      if (e.ctrlKey || e.altKey || e.getModifierState('AltGraph') || e.shiftKey) {
-        navigateState = -1
-        return
-      }
-      const direction = keyMap[e.key]
+      const direction = checkKeyList(e, options.viewerHotkey?.navigatePrev) ? 0 : checkKeyList(e, options.viewerHotkey?.navigateNext) ? 1 : undefined
       if (direction === undefined) {
         navigateState = -1
         return

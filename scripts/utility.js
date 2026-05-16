@@ -245,8 +245,10 @@ window.ImageViewerUtils = (function () {
 
   //==========utility==========
   function checkKey(e, hotkey) {
-    const keyList = hotkey.split('+').map(str => str.trim())
-    const key = keyList[keyList.length - 1] === e.key.toUpperCase()
+    if (!hotkey) return false
+    const currentKey = e.key === " " ? "Space" : e.key.length === 1 ? e.key.toUpperCase() : e.key
+    const keyList = hotkey.split(' + ')
+    const key = keyList.at(-1) === currentKey
     const ctrl = keyList.includes('Ctrl') === e.ctrlKey
     const alt = keyList.includes('Alt') === e.altKey || e.getModifierState('AltGraph')
     const shift = keyList.includes('Shift') === e.shiftKey
