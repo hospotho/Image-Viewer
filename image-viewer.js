@@ -28,6 +28,11 @@ window.ImageViewer = (function () {
     if (!root || !document.body.classList.contains('iv-attached')) return
     document.body.classList.remove('iv-attached')
 
+    const viewer = shadowRoot.querySelector('#image-viewer')
+    viewer.addEventListener('transitionend', () => root.remove())
+    viewer.style.transition = 'opacity 0.2s'
+    viewer.style.opacity = '0'
+
     insertIndex = -1
     clearIndex = -1
     clearDom = null
@@ -40,11 +45,6 @@ window.ImageViewer = (function () {
     keydownHandlerList.length = 0
     keyupHandlerList.length = 0
     resizeHandlerList.length = 0
-
-    const viewer = shadowRoot.querySelector('#image-viewer')
-    viewer.addEventListener('transitionend', () => root.remove())
-    viewer.style.transition = 'opacity 0.2s'
-    viewer.style.opacity = '0'
   }
 
   async function getFPS(tick = 10) {
