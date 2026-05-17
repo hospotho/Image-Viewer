@@ -253,10 +253,44 @@ const defaultOptions = {
   searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + A', 'Shift + S', 'Ctrl + Shift + Q', ''],
   customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
   functionHotkey: ['Shift + R', 'Shift + D'],
+  viewerHotkey: {
+    background: ['Shift + B'],
+    downloadImage: ['Ctrl + Shift + D'],
+    copyImage: ['Ctrl + C'],
+    copyImageUrl: ['Ctrl + Shift + C'],
+    moveTo: ['Enter'],
+    close: ['Escape', 'NumpadAdd'],
+    openImageLink: ['Insert', '0', 'Space'],
+    zoomIn: ['Alt + ArrowUp', 'Alt + W'],
+    zoomOut: ['Alt + ArrowDown', 'Alt + S'],
+    rotateLeft: ['Alt + ArrowLeft', 'Alt + A'],
+    rotateRight: ['Alt + ArrowRight', 'Alt + D'],
+    moveUp: ['Ctrl + Alt + ArrowUp', 'Ctrl + Alt + W'],
+    moveDown: ['Ctrl + Alt + ArrowDown', 'Ctrl + Alt + S'],
+    moveLeft: ['Ctrl + Alt + ArrowLeft', 'Ctrl + Alt + A'],
+    moveRight: ['Ctrl + Alt + ArrowRight', 'Ctrl + Alt + D'],
+    navigatePrev: ['ArrowLeft', 'ArrowUp', 'W', 'A'],
+    navigateNext: ['ArrowRight', 'ArrowDown', 'S', 'D'],
+    fastNavigatePrev: ['Ctrl + ArrowLeft', 'Ctrl + ArrowUp'],
+    fastNavigateNext: ['Ctrl + ArrowRight', 'Ctrl + ArrowDown'],
+    autoNavigatePrev: ['Shift + ArrowLeft', 'Shift + ArrowUp'],
+    autoNavigateNext: ['Shift + ArrowRight', 'Shift + ArrowDown']
+  },
   hoverCheckDisableList: [],
   autoScrollEnableList: ['x.com', 'www.instagram.com', 'www.facebook.com'],
   imageUnlazyDisableList: [],
   imageBackupDisableList: []
+}
+
+function normalizeOptions(options = {}) {
+  return {
+    ...defaultOptions,
+    ...options,
+    viewerHotkey: {
+      ...defaultOptions.viewerHotkey,
+      ...(options.viewerHotkey || {})
+    }
+  }
 }
 
 let currOptions = defaultOptions
@@ -279,9 +313,9 @@ function resetLocalStorage() {
       })
       chrome.runtime.openOptionsPage()
     } else {
-      currOptions = res.options
+      currOptions = normalizeOptions(res.options)
       console.log('Loaded options from storage')
-      console.log(res.options)
+      console.log(currOptions)
 
       const existNewOptions = Object.keys(defaultOptions).some(key => key in currOptions === false)
       if (existNewOptions) {
@@ -319,7 +353,7 @@ function addMessageHandler() {
       case 'update_options': {
         ;(async () => {
           const res = await chrome.storage.sync.get('options')
-          currOptions = res.options
+          currOptions = normalizeOptions(res.options)
           currOptionsWithoutSize = Object.assign({}, currOptions)
           currOptionsWithoutSize.minWidth = 0
           currOptionsWithoutSize.minHeight = 0

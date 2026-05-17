@@ -64,7 +64,7 @@ ul {
 
 label {
   display: inline-block;
-  width: 180px;
+  min-width: 180px;
 }
 input#zoomRatio,
 input#rotateDeg {
@@ -73,6 +73,53 @@ input#rotateDeg {
 }
 input.customSearchUrl {
   width: 500px;
+}
+
+.viewer-hotkey-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.viewer-hotkey-inputs {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.hotkey-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+input.hotkey {
+  width: 130px;
+  padding-right: 20px;
+}
+
+.hotkey-remove {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hotkey-remove:hover {
+  background: #eee;
+  color: #333;
 }
 
 span#notFactor,

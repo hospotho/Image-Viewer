@@ -46,10 +46,44 @@
     searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + A', 'Shift + S', 'Ctrl + Shift + Q', ''],
     customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
     functionHotkey: ['Shift + R', 'Shift + D'],
+    viewerHotkey: {
+      background: ['Shift + B'],
+      downloadImage: ['Ctrl + Shift + D'],
+      copyImage: ['Ctrl + C'],
+      copyImageUrl: ['Ctrl + Shift + C'],
+      moveTo: ['Enter'],
+      close: ['Escape', 'NumpadAdd'],
+      openImageLink: ['Insert', '0', 'Space'],
+      zoomIn: ['Alt + ArrowUp', 'Alt + W'],
+      zoomOut: ['Alt + ArrowDown', 'Alt + S'],
+      rotateLeft: ['Alt + ArrowLeft', 'Alt + A'],
+      rotateRight: ['Alt + ArrowRight', 'Alt + D'],
+      moveUp: ['Ctrl + Alt + ArrowUp', 'Ctrl + Alt + W'],
+      moveDown: ['Ctrl + Alt + ArrowDown', 'Ctrl + Alt + S'],
+      moveLeft: ['Ctrl + Alt + ArrowLeft', 'Ctrl + Alt + A'],
+      moveRight: ['Ctrl + Alt + ArrowRight', 'Ctrl + Alt + D'],
+      navigatePrev: ['ArrowLeft', 'ArrowUp', 'W', 'A'],
+      navigateNext: ['ArrowRight', 'ArrowDown', 'S', 'D'],
+      fastNavigatePrev: ['Ctrl + ArrowLeft', 'Ctrl + ArrowUp'],
+      fastNavigateNext: ['Ctrl + ArrowRight', 'Ctrl + ArrowDown'],
+      autoNavigatePrev: ['Shift + ArrowLeft', 'Shift + ArrowUp'],
+      autoNavigateNext: ['Shift + ArrowRight', 'Shift + ArrowDown']
+    },
     hoverCheckDisableList: [],
     autoScrollEnableList: ['x.com', 'www.instagram.com', 'www.facebook.com'],
     imageUnlazyDisableList: [],
     imageBackupDisableList: []
+  }
+
+  function normalizeOptions(options = {}) {
+    return {
+      ...defaultOptions,
+      ...options,
+      viewerHotkey: {
+        ...defaultOptions.viewerHotkey,
+        ...(options.viewerHotkey || {})
+      }
+    }
   }
 
   //==========utility==========
@@ -87,14 +121,102 @@
   }
 
   function keyToString(e) {
+    const key = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key
     let result = ''
     if (e.ctrlKey) result += 'Ctrl + '
     if (e.altKey) result += 'Alt + '
     if (e.shiftKey) result += 'Shift + '
-    if (result !== '' && /^[\S]{1}$/.test(e.key)) {
-      result += e.key.toUpperCase()
-    }
+    if (result !== '' && !['Control', 'Alt', 'Shift'].includes(key)) result += key
     return result
+  }
+
+  function setupViewerHotkeyInputEvent(input, wrapper, container) {
+    input.addEventListener('keydown', e => {
+      e.preventDefault()
+      input.value = keyToString(e)
+
+      if (wrapper.classList.contains('trailing') && input.value) {
+        wrapper.classList.remove('trailing')
+
+        const removeBtn = document.createElement('button')
+        removeBtn.className = 'hotkey-remove'
+        removeBtn.textContent = 'x'
+        removeBtn.type = 'button'
+        removeBtn.onclick = () => wrapper.remove()
+        wrapper.appendChild(removeBtn)
+
+        const newTrailingInput = document.createElement('input')
+        newTrailingInput.className = 'hotkey'
+        newTrailingInput.placeholder = chrome.i18n.getMessage('add_hotkey') || 'Add hotkey'
+
+        const newWrapper = document.createElement('div')
+        newWrapper.className = 'hotkey-wrapper trailing'
+        newWrapper.appendChild(newTrailingInput)
+        setupViewerHotkeyInputEvent(newTrailingInput, newWrapper, container)
+        container.appendChild(newWrapper)
+      }
+    })
+  }
+  function createViewerHotkeyInput(hotkey, isPrimary) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'hotkey-wrapper' + (isPrimary ? ' primary' : '')
+
+    const input = document.createElement('input')
+    input.className = 'hotkey'
+    input.value = hotkey
+    wrapper.appendChild(input)
+
+    if (!isPrimary) {
+      const removeBtn = document.createElement('button')
+      removeBtn.className = 'hotkey-remove'
+      removeBtn.textContent = 'x'
+      removeBtn.type = 'button'
+      removeBtn.onclick = () => wrapper.remove()
+      wrapper.appendChild(removeBtn)
+    }
+
+    return [wrapper, input]
+  }
+  function setViewerHotkeyValue(viewerHotkey) {
+    for (const container of document.querySelectorAll('.viewer-hotkey-inputs')) {
+      const primaryInput = container.querySelector('input')
+      if (primaryInput === null) continue
+
+      const primaryId = primaryInput.id
+      container.innerHTML = ''
+
+      const hotkeyList = viewerHotkey[primaryId]
+      if (hotkeyList.length === 0) hotkeyList.push('')
+
+      hotkeyList.forEach((hotkey, index) => {
+        const [wrapper, input] = createViewerHotkeyInput(hotkey, index === 0)
+        if (index === 0) input.id = primaryId
+
+        setupViewerHotkeyInputEvent(input, wrapper, container)
+        container.appendChild(wrapper)
+      })
+
+      const trailingInput = document.createElement('input')
+      trailingInput.className = 'hotkey'
+      trailingInput.placeholder = chrome.i18n.getMessage('add_hotkey') || 'Add hotkey'
+
+      const trailingWrapper = document.createElement('div')
+      trailingWrapper.className = 'hotkey-wrapper trailing'
+      trailingWrapper.appendChild(trailingInput)
+
+      setupViewerHotkeyInputEvent(trailingInput, trailingWrapper, container)
+      container.appendChild(trailingWrapper)
+    }
+  }
+  function getViewerHotkeyOptions() {
+    const viewerHotkey = {...defaultOptions.viewerHotkey}
+
+    for (const container of document.querySelectorAll('.viewer-hotkey-inputs')) {
+      const inputList = container.querySelectorAll('input.hotkey')
+      viewerHotkey[inputList[0].id] = [...inputList].map(input => input.value).filter(Boolean)
+    }
+
+    return viewerHotkey
   }
 
   function addNewCustom() {
@@ -108,7 +230,7 @@
       `<li><label for="customSearchUrl${length + 1}"><span>${i18n[1]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearchUrl"></li>`
     li.insertAdjacentHTML('afterend', htmlStr)
 
-    for (const input of document.querySelectorAll('input.hotkey')) {
+    for (const input of document.querySelectorAll('input.hotkey:not(.viewer-hotkey-inputs input)')) {
       input.addEventListener('keydown', e => {
         e.preventDefault()
         input.value = keyToString(e)
@@ -118,6 +240,7 @@
 
   function setValue(options) {
     try {
+      options = normalizeOptions(options)
       document.querySelector(`input#fit-${options.fitMode}`).checked = true
       zoom.value = options.zoomRatio
       zoom.nextElementSibling.textContent = options.zoomRatio
@@ -157,6 +280,8 @@
       scrollHotkey.value = options.functionHotkey[0]
       downloadHotkey.value = options.functionHotkey[1]
 
+      setViewerHotkeyValue(options.viewerHotkey)
+
       hoverCheck.value = options.hoverCheckDisableList.join('\n')
       autoScroll.value = options.autoScrollEnableList.join('\n')
       imageUnlazy.value = options.imageUnlazyDisableList.join('\n')
@@ -179,7 +304,7 @@
         orderedOptions[key] = options[key]
       }
     }
-    return JSON.stringify(orderedOptions, orderedKeys, 2)
+    return JSON.stringify(orderedOptions, null, 2)
   }
 
   //==========main==========
@@ -230,7 +355,7 @@
     panelTimeout.addEventListener('focus', () => (panelDesc.style = 'display: block; padding: 0px 0px 10px 10px;'))
     panelTimeout.addEventListener('focusout', () => (panelDesc.style = ''))
 
-    for (const input of document.querySelectorAll('input.hotkey')) {
+    for (const input of document.querySelectorAll('input.hotkey:not(.viewer-hotkey-inputs input)')) {
       input.addEventListener('keydown', e => {
         e.preventDefault()
         input.value = keyToString(e)
@@ -276,6 +401,7 @@
       options.customUrl = customUrlList
 
       options.functionHotkey = [scrollHotkey.value, downloadHotkey.value]
+      options.viewerHotkey = getViewerHotkeyOptions()
 
       const inputToArray = str =>
         str
@@ -338,6 +464,12 @@
             options[key] = importData[key]
           }
         }
+        if ('viewerHotkey' in importData) {
+          options.viewerHotkey = {
+            ...defaultOptions.viewerHotkey,
+            ...importData.viewerHotkey
+          }
+        }
         chrome.storage.sync.set({options: options}, () => {
           if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
           optionsInput.value = getStringifyOptions(options)
@@ -351,8 +483,9 @@
   async function init() {
     i18n()
     const {options} = await chrome.storage.sync.get('options')
-    checkUpdate(options)
-    setValue(options)
+    const normalizedOptions = normalizeOptions(options)
+    checkUpdate(normalizedOptions)
+    setValue(normalizedOptions)
     initFormEvent()
     initFormButton()
     initModal()
