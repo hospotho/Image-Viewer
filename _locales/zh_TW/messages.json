@@ -197,6 +197,9 @@
   "view_last_right_click_image_in_image_viewer": {
     "message": "觀看圖片(最後右鍵的圖片)"
   },
+  "view_webtoon_in_image_viewer": {
+    "message": "在Image Viewer觀看Webtoon"
+  },
   "viewer_hotkey": {
     "message": "圖片快捷鍵"
   },
