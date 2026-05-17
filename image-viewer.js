@@ -2057,54 +2057,53 @@ window.ImageViewer = (function () {
       applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
     }
 
-    function addTransformHandler(li) {
-      const img = li.firstChild
+    function addTransformHandler(node, target) {
       let mirror = false
       let zoomCount = 0
       let rotateCount = 0
 
       // zoom & rotate
-      li.addEventListener(
+      node.addEventListener(
         'wheel',
         e => {
           e.preventDefault()
           if (!e.altKey && !e.getModifierState('AltGraph')) {
-            img.style.transition = ''
+            target.style.transition = ''
             const deltaZoom = e.deltaY > 0 ? -1 : 1
             zoomCount += deltaZoom
-            updateZoom(img, deltaZoom, zoomCount)
+            updateZoom(target, deltaZoom, zoomCount)
           } else {
             // transition cause flash when large offset
-            const [, , , moveX, moveY] = getTransform(img)
+            const [, , , moveX, moveY] = getTransform(target)
             const offset = Math.sqrt(moveX ** 2 + moveY ** 2)
-            img.style.transition = offset > 350 ? 'none' : ''
+            target.style.transition = offset > 350 ? 'none' : ''
             const deltaRotate = e.deltaY > 0 ? 1 : -1
             rotateCount += mirror ? -deltaRotate : deltaRotate
-            updateRotate(img, deltaRotate, rotateCount)
+            updateRotate(target, deltaRotate, rotateCount)
           }
         },
         {passive: false}
       )
 
       // mirror-reflect
-      li.addEventListener('click', e => {
+      node.addEventListener('click', e => {
         if (!e.altKey && !e.getModifierState('AltGraph')) return
-        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
+        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(target)
         mirror = !mirror
-        applyTransform(img, -scaleX, scaleY, -rotate, -moveX, moveY)
+        applyTransform(target, -scaleX, scaleY, -rotate, -moveX, moveY)
       })
 
       // dragging
       let dragFlag = false
       let finalDragTimeout = 0
       const lastPos = {x: 0, y: 0}
-      li.addEventListener('mousedown', e => {
+      node.addEventListener('mousedown', e => {
         e.preventDefault()
         dragFlag = true
         lastPos.x = e.clientX
         lastPos.y = e.clientY
       })
-      li.addEventListener('mousemove', e => {
+      node.addEventListener('mousemove', e => {
         if (!dragFlag) return
         const deltaX = e.clientX - lastPos.x
         const deltaY = e.clientY - lastPos.y
@@ -2112,52 +2111,52 @@ window.ImageViewer = (function () {
         lastPos.y = e.clientY
         // reset transition
         clearTimeout(finalDragTimeout)
-        finalDragTimeout = setTimeout(() => (img.style.transition = ''), 30)
-        img.style.transition = 'none'
-        updateDisplacement(img, deltaX, deltaY, rotateCount)
+        finalDragTimeout = setTimeout(() => (target.style.transition = ''), 30)
+        target.style.transition = 'none'
+        updateDisplacement(target, deltaX, deltaY, rotateCount)
       })
-      li.addEventListener('mouseup', () => (dragFlag = false))
+      node.addEventListener('mouseup', () => (dragFlag = false))
 
       // reset
       const reset = async () => {
         zoomCount = 0
         rotateCount = 0
         // normalize rotation
-        img.style.transition = 'none'
-        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
-        applyTransform(img, scaleX, scaleY, rotate % 360, moveX, moveY)
+        target.style.transition = 'none'
+        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(target)
+        applyTransform(target, scaleX, scaleY, rotate % 360, moveX, moveY)
         await new Promise(resolve => setTimeout(resolve, 20))
         // reset
-        img.style.transition = ''
-        applyTransform(img, 1, 1, 0, 0, 0)
+        target.style.transition = ''
+        applyTransform(target, 1, 1, 0, 0, 0)
       }
-      li.addEventListener('dblclick', reset)
+      node.addEventListener('dblclick', reset)
       // custom event
-      li.addEventListener('reset-transform', reset)
+      node.addEventListener('reset-transform', reset)
 
       // handle hotkey
-      li.addEventListener('hotkey', e => {
+      node.addEventListener('hotkey', e => {
         const {type, action} = e.detail
         switch (type) {
           case 'zoom': {
             const deltaZoom = action === 1 ? -1 : 1
             zoomCount += deltaZoom
-            updateZoom(img, deltaZoom, zoomCount)
+            updateZoom(target, deltaZoom, zoomCount)
             break
           }
           case 'rotate': {
             const deltaRotate = action === 3 ? 1 : -1
             rotateCount += mirror ? -deltaRotate : deltaRotate
-            updateRotate(img, deltaRotate, rotateCount)
+            updateRotate(target, deltaRotate, rotateCount)
             break
           }
           case 'move': {
             const displacement = action % 2 === 1 ? 50 : -50
-            action > 1 ? updateDisplacement(img, displacement, 0) : updateDisplacement(img, 0, displacement)
+            action > 1 ? updateDisplacement(target, displacement, 0) : updateDisplacement(target, 0, displacement)
             break
           }
           case 'restore': {
-            const [scaleX, , rotate, ,] = getTransform(img)
+            const [scaleX, , rotate, ,] = getTransform(target)
             zoomCount = Math.round(Math.log(scaleX) / Math.log(options.zoomRatio))
             rotateCount = rotate / options.rotateDeg
             break
@@ -2171,7 +2170,7 @@ window.ImageViewer = (function () {
     const current = shadowRoot.querySelector('#iv-image-list li.current:not([ready])')
     for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not([ready]):has(img.loaded)')) {
       li.setAttribute('ready', '')
-      addTransformHandler(li)
+      addTransformHandler(li, li.firstChild)
     }
     if (current) {
       const event = new CustomEvent('hotkey', {detail: {type: 'restore'}})
@@ -2185,13 +2184,13 @@ window.ImageViewer = (function () {
         const waitList = shadowRoot.querySelectorAll('#iv-image-list li:not([ready]):has(img.loaded)')
         for (const li of waitList) {
           li.setAttribute('ready', '')
-          addTransformHandler(li)
+          addTransformHandler(li, li.firstChild)
         }
         if (!initializing) break
       }
       for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not([ready])')) {
         li.setAttribute('ready', '')
-        addTransformHandler(li)
+        addTransformHandler(li, li.firstChild)
       }
     }
     action()
