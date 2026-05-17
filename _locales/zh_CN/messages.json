@@ -197,6 +197,72 @@
   "view_last_right_click_image_in_image_viewer": {
     "message": "观看图片(最后右键的图片)"
   },
+  "viewer_hotkey": {
+    "message": "图片热键"
+  },
+  "viewer_hotkey_auto_navigate_next": {
+    "message": "自动下一张图片"
+  },
+  "viewer_hotkey_auto_navigate_prev": {
+    "message": "自动上一张图片"
+  },
+  "viewer_hotkey_background": {
+    "message": "切换背景"
+  },
+  "viewer_hotkey_close": {
+    "message": "关闭Image Viewer"
+  },
+  "viewer_hotkey_copy_image": {
+    "message": "复制当前图片"
+  },
+  "viewer_hotkey_copy_image_url": {
+    "message": "复制当前图片网址"
+  },
+  "viewer_hotkey_download_image": {
+    "message": "下载当前图片"
+  },
+  "viewer_hotkey_fast_navigate_next": {
+    "message": "下十张图片"
+  },
+  "viewer_hotkey_fast_navigate_prev": {
+    "message": "上十张图片"
+  },
+  "viewer_hotkey_move_down": {
+    "message": "向下移动"
+  },
+  "viewer_hotkey_move_left": {
+    "message": "向左移动"
+  },
+  "viewer_hotkey_move_right": {
+    "message": "向右移动"
+  },
+  "viewer_hotkey_move_to": {
+    "message": "移动到原始图片"
+  },
+  "viewer_hotkey_move_up": {
+    "message": "向上移动"
+  },
+  "viewer_hotkey_navigate_next": {
+    "message": "下一张图片"
+  },
+  "viewer_hotkey_navigate_prev": {
+    "message": "上一张图片"
+  },
+  "viewer_hotkey_open_image_link": {
+    "message": "打开图片链接"
+  },
+  "viewer_hotkey_rotate_left": {
+    "message": "向左旋转"
+  },
+  "viewer_hotkey_rotate_right": {
+    "message": "向右旋转"
+  },
+  "viewer_hotkey_zoom_in": {
+    "message": "放大"
+  },
+  "viewer_hotkey_zoom_out": {
+    "message": "缩小"
+  },
   "width": {
     "message": "宽度"
   },

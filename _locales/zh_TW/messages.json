@@ -197,6 +197,72 @@
   "view_last_right_click_image_in_image_viewer": {
     "message": "觀看圖片(最後右鍵的圖片)"
   },
+  "viewer_hotkey": {
+    "message": "圖片快捷鍵"
+  },
+  "viewer_hotkey_auto_navigate_next": {
+    "message": "自動下一張圖片"
+  },
+  "viewer_hotkey_auto_navigate_prev": {
+    "message": "自動上一張圖片"
+  },
+  "viewer_hotkey_background": {
+    "message": "切換背景"
+  },
+  "viewer_hotkey_close": {
+    "message": "關閉Image Viewer"
+  },
+  "viewer_hotkey_copy_image": {
+    "message": "複製目前圖片"
+  },
+  "viewer_hotkey_copy_image_url": {
+    "message": "複製目前圖片網址"
+  },
+  "viewer_hotkey_download_image": {
+    "message": "下載目前圖片"
+  },
+  "viewer_hotkey_fast_navigate_next": {
+    "message": "下十張圖片"
+  },
+  "viewer_hotkey_fast_navigate_prev": {
+    "message": "上十張圖片"
+  },
+  "viewer_hotkey_move_down": {
+    "message": "向下移動"
+  },
+  "viewer_hotkey_move_left": {
+    "message": "向左移動"
+  },
+  "viewer_hotkey_move_right": {
+    "message": "向右移動"
+  },
+  "viewer_hotkey_move_to": {
+    "message": "移動到原始圖片"
+  },
+  "viewer_hotkey_move_up": {
+    "message": "向上移動"
+  },
+  "viewer_hotkey_navigate_next": {
+    "message": "下一張圖片"
+  },
+  "viewer_hotkey_navigate_prev": {
+    "message": "上一張圖片"
+  },
+  "viewer_hotkey_open_image_link": {
+    "message": "開啟圖片連結"
+  },
+  "viewer_hotkey_rotate_left": {
+    "message": "向左旋轉"
+  },
+  "viewer_hotkey_rotate_right": {
+    "message": "向右旋轉"
+  },
+  "viewer_hotkey_zoom_in": {
+    "message": "放大"
+  },
+  "viewer_hotkey_zoom_out": {
+    "message": "縮小"
+  },
   "width": {
     "message": "闊度"
   },
