@@ -609,6 +609,11 @@ function createContextMenu() {
       contexts: ['action']
     })
     chrome.contextMenus.create({
+      id: 'view_webtoon_in_image_viewer',
+      title: i18n('view_webtoon_in_image_viewer'),
+      contexts: ['action']
+    })
+    chrome.contextMenus.create({
       id: 'view_canvas_in_image_viewer',
       title: i18n('view_canvas_in_image_viewer'),
       contexts: ['action']
@@ -621,8 +626,9 @@ function createContextMenu() {
     if (!supported) return
 
     if (tab.url.startsWith('file') && tab.url.endsWith('/')) {
-      const targetOptions = info.menuItemId === 'view_all_image_in_image_viewer' ? currOptionsWithoutSize : currOptions
-      await passOptionToTab(tab.id, targetOptions)
+      const options = structuredClone(info.menuItemId === 'view_all_image_in_image_viewer' ? currOptionsWithoutSize : currOptions)
+      if (info.menuItemId === 'view_webtoon_in_image_viewer') options.webtoonMode = true
+      await passOptionToTab(tab.id, options)
       chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-folder.js']})
       return
     }
@@ -642,6 +648,13 @@ function createContextMenu() {
         await passOptionToTab(tab.id, currOptions)
         const script = lastImageNodeInfoID === tab.id && lastImageNodeInfo[2] === 'CANVAS' ? '/scripts/action-canvas.js' : '/scripts/action-image.js'
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: [script]})
+        break
+      }
+      case 'view_webtoon_in_image_viewer': {
+        const options = structuredClone(currOptions)
+        options.webtoonMode = true
+        await passOptionToTab(tab.id, options)
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         break
       }
       case 'view_canvas_in_image_viewer': {
