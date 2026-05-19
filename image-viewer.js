@@ -18,9 +18,40 @@ window.ImageViewer = (function () {
   let lastSrc = ''
   let lastTransform = null
 
-  const keydownHandlerList = []
+  const hotkeyHandlerList = []
   const keyupHandlerList = []
   const resizeHandlerList = []
+  const keydownHotkeyMap = new Map()
+
+  const COMMAND_ENUM = {
+    CHANGE_BACKGROUND: 0,
+    MOVE_UP: 1,
+    MOVE_DOWN: 2,
+    MOVE_LEFT: 3,
+    MOVE_RIGHT: 4,
+    ZOOM_IN: 5,
+    ZOOM_OUT: 6,
+    ROTATE_LEFT: 7,
+    ROTATE_RIGHT: 8,
+    DOWNLOAD_IMAGE: 9,
+    COPY_IMAGE: 10,
+    COPY_IMAGE_URL: 11,
+    MOVE_TO: 12,
+    CLOSE_VIEWER: 13,
+    OPEN_IMAGE_LINK: 14,
+    NAVIGATE_PREV: 15,
+    NAVIGATE_NEXT: 16,
+    FAST_NAVIGATE_PREV: 17,
+    FAST_NAVIGATE_NEXT: 18,
+    AUTO_NAVIGATE_PREV: 19,
+    AUTO_NAVIGATE_NEXT: 20,
+    SEARCH_GOOGLE: 21,
+    SEARCH_YANDEX: 22,
+    SEARCH_SAUCENAO: 23,
+    SEARCH_ASCII2D: 24,
+    SEARCH_ALL: 25,
+    SEARCH_CUSTOM_BASE: 26
+  }
 
   //==========utility==========
   function closeImageViewer() {
@@ -42,9 +73,10 @@ window.ImageViewer = (function () {
     const current = shadowRoot.querySelector('li.current img')
     lastSrc = current?.src || ''
     lastTransform = current ? getTransform(current) : null
-    keydownHandlerList.length = 0
+    hotkeyHandlerList.length = 0
     keyupHandlerList.length = 0
     resizeHandlerList.length = 0
+    keydownHotkeyMap.clear()
   }
 
   async function getFPS(tick = 10) {
@@ -56,19 +88,23 @@ window.ImageViewer = (function () {
     return Math.round(1000 / median)
   }
 
-  function checkKey(e, hotkey) {
-    if (!hotkey) return false
-    const currentKey = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key
-    const keyList = hotkey.split(' + ')
-    const key = keyList.at(-1) === currentKey
-    const ctrl = keyList.includes('Ctrl') === e.ctrlKey
-    const alt = keyList.includes('Alt') === e.altKey || e.getModifierState('AltGraph')
-    const shift = keyList.includes('Shift') === e.shiftKey
-    return key && ctrl && alt && shift
+  function parseHotkey(hotkey) {
+    const keyList = hotkey.split(' + ').filter(Boolean)
+    const key = keyList.at(-1) === 'Space' ? ' ' : keyList.at(-1)
+    const flag = keyList.includes('Ctrl') | (keyList.includes('Alt') << 1) | (keyList.includes('Shift') << 2)
+    return [key, flag]
   }
-  function checkKeyList(e, hotkey) {
-    if (Array.isArray(hotkey)) return hotkey.some(key => checkKey(e, key))
-    return checkKey(e, hotkey)
+  function checkKey(e, hotkey) {
+    const currentFlag = (e.ctrlKey || e.ctrlWithAltGraph) | ((e.altKey || e.getModifierState('AltGraph')) << 1) | (e.shiftKey << 2)
+    const [key, flag] = parseHotkey(hotkey)
+    return e.key === key && currentFlag === flag
+  }
+  function registerHotkey(COMMAND_ENUM_VALUE, hotkeyList) {
+    hotkeyList.map(parseHotkey).forEach(([key, flag]) => {
+      if (!keydownHotkeyMap.has(key)) keydownHotkeyMap.set(key, [])
+      const commandList = keydownHotkeyMap.get(key)
+      commandList.push([flag, COMMAND_ENUM_VALUE])
+    })
   }
 
   function applyTransform(img, scaleX, scaleY, rotate, moveX, moveY) {
@@ -880,6 +916,40 @@ window.ImageViewer = (function () {
   function addFrameEvent(options) {
     const viewer = shadowRoot.querySelector('#image-viewer')
     function initWindowEventHandler() {
+      hotkeyHandlerList.length = 0
+      keydownHotkeyMap.clear()
+      for (let i = 0; i < COMMAND_ENUM.SEARCH_CUSTOM_BASE; i++) {
+        hotkeyHandlerList[i] = () => {}
+      }
+
+      registerHotkey(COMMAND_ENUM.CHANGE_BACKGROUND, options.viewerHotkey.background)
+      registerHotkey(COMMAND_ENUM.MOVE_UP, options.viewerHotkey.moveUp)
+      registerHotkey(COMMAND_ENUM.MOVE_DOWN, options.viewerHotkey.moveDown)
+      registerHotkey(COMMAND_ENUM.MOVE_LEFT, options.viewerHotkey.moveLeft)
+      registerHotkey(COMMAND_ENUM.MOVE_RIGHT, options.viewerHotkey.moveRight)
+      registerHotkey(COMMAND_ENUM.ZOOM_IN, options.viewerHotkey.zoomIn)
+      registerHotkey(COMMAND_ENUM.ZOOM_OUT, options.viewerHotkey.zoomOut)
+      registerHotkey(COMMAND_ENUM.ROTATE_LEFT, options.viewerHotkey.rotateLeft)
+      registerHotkey(COMMAND_ENUM.ROTATE_RIGHT, options.viewerHotkey.rotateRight)
+      registerHotkey(COMMAND_ENUM.DOWNLOAD_IMAGE, options.viewerHotkey.downloadImage)
+      registerHotkey(COMMAND_ENUM.COPY_IMAGE, options.viewerHotkey.copyImage)
+      registerHotkey(COMMAND_ENUM.COPY_IMAGE_URL, options.viewerHotkey.copyImageUrl)
+      registerHotkey(COMMAND_ENUM.MOVE_TO, options.viewerHotkey.moveTo)
+      registerHotkey(COMMAND_ENUM.CLOSE_VIEWER, options.viewerHotkey.close)
+      registerHotkey(COMMAND_ENUM.OPEN_IMAGE_LINK, options.viewerHotkey.openImageLink)
+      registerHotkey(COMMAND_ENUM.NAVIGATE_PREV, options.viewerHotkey.navigatePrev)
+      registerHotkey(COMMAND_ENUM.NAVIGATE_NEXT, options.viewerHotkey.navigateNext)
+      registerHotkey(COMMAND_ENUM.FAST_NAVIGATE_PREV, options.viewerHotkey.fastNavigatePrev)
+      registerHotkey(COMMAND_ENUM.FAST_NAVIGATE_NEXT, options.viewerHotkey.fastNavigateNext)
+      registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_PREV, options.viewerHotkey.autoNavigatePrev)
+      registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_NEXT, options.viewerHotkey.autoNavigateNext)
+      registerHotkey(COMMAND_ENUM.SEARCH_GOOGLE, options.searchHotkey[0])
+      registerHotkey(COMMAND_ENUM.SEARCH_YANDEX, options.searchHotkey[1])
+      registerHotkey(COMMAND_ENUM.SEARCH_SAUCENAO, options.searchHotkey[2])
+      registerHotkey(COMMAND_ENUM.SEARCH_ASCII2D, options.searchHotkey[3])
+      registerHotkey(COMMAND_ENUM.SEARCH_ALL, options.searchHotkey[4])
+      options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, hotkey))
+
       if (document.body.classList.contains('iv-ready')) return
       document.body.classList.add('iv-ready')
 
@@ -892,7 +962,16 @@ window.ImageViewer = (function () {
           const pressed = (e.getModifierState('AltGraph') && e.key === 'Control') || (e.ctrlKey && e.key === 'AltGraph')
           ctrlWithAltGraph = pressed || ctrlWithAltGraph
           e.ctrlWithAltGraph = ctrlWithAltGraph
-          keydownHandlerList.forEach(func => func(e))
+
+          const commandList = keydownHotkeyMap.get(e.key)
+          if (!commandList) return
+
+          const currentModifierFlag = (e.ctrlKey || e.ctrlWithAltGraph) | ((e.altKey || e.getModifierState('AltGraph')) << 1) | (e.shiftKey << 2)
+          for (const [flag, COMMAND_ENUM_VALUE] of commandList) {
+            if (flag !== currentModifierFlag) continue
+            const func = hotkeyHandlerList[COMMAND_ENUM_VALUE]
+            func(e, COMMAND_ENUM_VALUE)
+          }
         },
         true
       )
@@ -916,56 +995,73 @@ window.ImageViewer = (function () {
       if (options.closeButton) backgroundList.unshift([''])
       if (options.canvasMode) backgroundList.sort((a, b) => b[0].length - a[0].length)
       let index = 0
-      keydownHandlerList.push(e => {
-        if (!checkKeyList(e, options.viewerHotkey?.background)) return
+      hotkeyHandlerList[COMMAND_ENUM.CHANGE_BACKGROUND] = () => {
         index = (index + 1) % backgroundList.length
         shadowRoot.querySelector('#image-viewer').style.setProperty('background', ...backgroundList[index])
-      })
+      }
     }
     function addTransformationHotkey() {
       let lastHotkeyTime = 0
-      keydownHandlerList.push(e => {
-        let action = -1
-        let type = ''
-        if (checkKeyList(e, options.viewerHotkey?.moveUp)) {
-          action = 0
-          type = 'move'
-        } else if (checkKeyList(e, options.viewerHotkey?.moveDown)) {
-          action = 1
-          type = 'move'
-        } else if (checkKeyList(e, options.viewerHotkey?.moveLeft)) {
-          action = 2
-          type = 'move'
-        } else if (checkKeyList(e, options.viewerHotkey?.moveRight)) {
-          action = 3
-          type = 'move'
-        } else if (checkKeyList(e, options.viewerHotkey?.zoomIn)) {
-          action = 0
-          type = 'zoom'
-        } else if (checkKeyList(e, options.viewerHotkey?.zoomOut)) {
-          action = 1
-          type = 'zoom'
-        } else if (checkKeyList(e, options.viewerHotkey?.rotateLeft)) {
-          action = 2
-          type = 'rotate'
-        } else if (checkKeyList(e, options.viewerHotkey?.rotateRight)) {
-          action = 3
-          type = 'rotate'
-        }
-        if (action === -1) return
+      const transformHandler = (e, COMMAND_ENUM_VALUE) => {
         const now = Date.now()
         if (e.repeat && now - lastHotkeyTime < 30) return
         lastHotkeyTime = now
         e.preventDefault()
+
+        let action = -1
+        let type = ''
+        switch (COMMAND_ENUM_VALUE) {
+          case COMMAND_ENUM.MOVE_UP:
+            action = 0
+            type = 'move'
+            break
+          case COMMAND_ENUM.MOVE_DOWN:
+            action = 1
+            type = 'move'
+            break
+          case COMMAND_ENUM.MOVE_LEFT:
+            action = 2
+            type = 'move'
+            break
+          case COMMAND_ENUM.MOVE_RIGHT:
+            action = 3
+            type = 'move'
+            break
+          case COMMAND_ENUM.ZOOM_IN:
+            action = 0
+            type = 'zoom'
+            break
+          case COMMAND_ENUM.ZOOM_OUT:
+            action = 1
+            type = 'zoom'
+            break
+          case COMMAND_ENUM.ROTATE_LEFT:
+            action = 2
+            type = 'rotate'
+            break
+          case COMMAND_ENUM.ROTATE_RIGHT:
+            action = 3
+            type = 'rotate'
+            break
+          default:
+            return
+        }
         const data = {detail: {type: type, action: action}}
         const event = new CustomEvent('hotkey', data)
         const current = shadowRoot.querySelector('li.current')
         current.dispatchEvent(event)
-      })
+      }
+      hotkeyHandlerList[COMMAND_ENUM.MOVE_UP] = transformHandler
+      hotkeyHandlerList[COMMAND_ENUM.MOVE_DOWN] = transformHandler
+      hotkeyHandlerList[COMMAND_ENUM.MOVE_LEFT] = transformHandler
+      hotkeyHandlerList[COMMAND_ENUM.MOVE_RIGHT] = transformHandler
+      hotkeyHandlerList[COMMAND_ENUM.ZOOM_IN] = transformHandler
+      hotkeyHandlerList[COMMAND_ENUM.ZOOM_OUT] = transformHandler
+      hotkeyHandlerList[COMMAND_ENUM.ROTATE_LEFT] = transformHandler
+      hotkeyHandlerList[COMMAND_ENUM.ROTATE_RIGHT] = transformHandler
     }
     function addDownloadHotkey() {
-      keydownHandlerList.push(async e => {
-        if (!checkKeyList(e, options.viewerHotkey?.downloadImage)) return
+      hotkeyHandlerList[COMMAND_ENUM.DOWNLOAD_IMAGE] = async e => {
         e.preventDefault()
 
         const imgSrc = shadowRoot.querySelector('li.current img').src
@@ -996,18 +1092,15 @@ window.ImageViewer = (function () {
         a.download = imgSrc.split('/').at(-1).split('?')[0]
         a.click()
         URL.revokeObjectURL(url)
-      })
+      }
     }
     function addCopyHotkey() {
-      keydownHandlerList.push(async e => {
-        const copyImage = checkKeyList(e, options.viewerHotkey?.copyImage)
-        const copyImageUrl = checkKeyList(e, options.viewerHotkey?.copyImageUrl)
-        if (!copyImage && !copyImageUrl) return
+      const copyHandler = async (e, COMMAND_ENUM_VALUE) => {
         e.preventDefault()
 
         const img = shadowRoot.querySelector('li.current img')
         const src = img.src
-        if (copyImageUrl) {
+        if (COMMAND_ENUM_VALUE === COMMAND_ENUM.COPY_IMAGE_URL) {
           navigator.clipboard.write([new ClipboardItem({'text/plain': src})])
           return
         }
@@ -1047,7 +1140,9 @@ window.ImageViewer = (function () {
           alert('Unable to copy this image to clipboard')
           throw new Error(`Unable to copy this image of type ${blob.type} to clipboard`)
         }
-      })
+      }
+      hotkeyHandlerList[COMMAND_ENUM.COPY_IMAGE] = copyHandler
+      hotkeyHandlerList[COMMAND_ENUM.COPY_IMAGE_URL] = copyHandler
     }
     function addImageReverseSearchHotkey() {
       function readDataUrl(dataURL) {
@@ -1175,25 +1270,24 @@ window.ImageViewer = (function () {
       const urlList = [googleUrl, yandexUrl, saucenaoUrl, ascii2dUrl]
       const searchImageFunctionList = [searchImageByGoogle, searchImageByYandex, searchImageBySaucenao, searchImageByAscii2d]
 
-      keydownHandlerList.push(async e => {
-        for (let i = urlList.length - 1; i >= 0; i--) {
-          if (hotkey[i] === '' || !checkKey(e, hotkey[i])) continue
-
-          e.preventDefault()
-          const imgUrl = getCurrentUrl()
-          if (imgUrl.startsWith('http')) {
-            const queryUrl = urlList[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
-            openNewTab(queryUrl)
-            return
-          }
-          const searchDataImage = searchImageFunctionList[i]
-          searchDataImage(imgUrl)
+      const singleSearchHandler = async (e, COMMAND_ENUM_VALUE) => {
+        e.preventDefault()
+        const imgUrl = getCurrentUrl()
+        const index = COMMAND_ENUM_VALUE - COMMAND_ENUM.SEARCH_GOOGLE
+        if (imgUrl.startsWith('http')) {
+          const queryUrl = urlList[index].replace('{imgSrc}', encodeURIComponent(imgUrl))
+          openNewTab(queryUrl)
           return
         }
-      })
+        const searchDataImage = searchImageFunctionList[index]
+        searchDataImage(imgUrl)
+      }
+      hotkeyHandlerList[COMMAND_ENUM.SEARCH_GOOGLE] = singleSearchHandler
+      hotkeyHandlerList[COMMAND_ENUM.SEARCH_YANDEX] = singleSearchHandler
+      hotkeyHandlerList[COMMAND_ENUM.SEARCH_SAUCENAO] = singleSearchHandler
+      hotkeyHandlerList[COMMAND_ENUM.SEARCH_ASCII2D] = singleSearchHandler
 
-      keydownHandlerList.push(async e => {
-        if (!checkKey(e, hotkey[4])) return
+      hotkeyHandlerList[COMMAND_ENUM.SEARCH_ALL] = async e => {
         e.preventDefault()
         const imgUrl = getCurrentUrl()
         const isNormalImage = imgUrl.startsWith('http')
@@ -1208,15 +1302,13 @@ window.ImageViewer = (function () {
           const searchDataImage = searchImageFunctionList[i]
           searchDataImage(imgUrl)
         }
-      })
+      }
 
       const customHotkey = hotkey.slice(5)
       const customUrl = options.customUrl
       if (customHotkey.length !== customUrl.length) return
-      keydownHandlerList.push(e => {
-        for (let i = customHotkey.length - 1; i >= 0; i--) {
-          if (customHotkey[i] === '' || !checkKey(e, customHotkey[i])) continue
-
+      customHotkey.forEach((_, i) => {
+        hotkeyHandlerList[COMMAND_ENUM.SEARCH_CUSTOM_BASE + i] = e => {
           e.preventDefault()
           const imgUrl = getCurrentUrl()
           if (!imgUrl.startsWith('http')) {
@@ -1225,7 +1317,6 @@ window.ImageViewer = (function () {
           }
           const queryUrl = customUrl[i].replace('{imgSrc}', encodeURIComponent(imgUrl))
           openNewTab(queryUrl)
-          break
         }
       })
     }
@@ -1461,12 +1552,10 @@ window.ImageViewer = (function () {
       }
 
       shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
-      keydownHandlerList.push(e => {
-        if (checkKeyList(e, options.viewerHotkey?.moveTo)) {
-          e.preventDefault()
-          moveTo()
-        }
-      })
+      hotkeyHandlerList[COMMAND_ENUM.MOVE_TO] = e => {
+        e.preventDefault()
+        moveTo()
+      }
     }
     function addCloseButtonEvent() {
       const closeButton = shadowRoot.querySelector('#iv-control-close')
@@ -1476,12 +1565,10 @@ window.ImageViewer = (function () {
         e.preventDefault()
         chrome.runtime?.id ? chrome.runtime.sendMessage('close_tab') : window.close()
       })
-      keydownHandlerList.push(e => {
-        if (checkKeyList(e, options.viewerHotkey?.close)) {
-          e.preventDefault()
-          closeImageViewer()
-        }
-      })
+      hotkeyHandlerList[COMMAND_ENUM.CLOSE_VIEWER] = e => {
+        e.preventDefault()
+        closeImageViewer()
+      }
     }
     function addMiddleClickKeyEvent() {
       function searchImgAnchor() {
@@ -1522,13 +1609,11 @@ window.ImageViewer = (function () {
       const openNewTab = chrome.runtime?.id ? anchor => chrome.runtime.sendMessage({msg: 'open_tab', url: anchor.href}) : anchor => window.open(anchor.href, '_blank')
       const dispatchEvent = anchor => anchor.dispatchEvent(new MouseEvent('click', {button: 1, which: 2}))
 
-      keydownHandlerList.push(e => {
-        if (checkKeyList(e, options.viewerHotkey?.openImageLink)) {
-          e.preventDefault()
-          const anchor = searchImgAnchor()
-          if (anchor) openNewTab(anchor)
-        }
-      })
+      hotkeyHandlerList[COMMAND_ENUM.OPEN_IMAGE_LINK] = e => {
+        e.preventDefault()
+        const anchor = searchImgAnchor()
+        if (anchor) openNewTab(anchor)
+      }
       // call preventDefault to trigger auxclick event
       viewer.addEventListener('mousedown', e => {
         if (e.button === 1) e.preventDefault()
@@ -1716,14 +1801,10 @@ window.ImageViewer = (function () {
     }
 
     // key event
-    const normalNavigation = async e => {
-      // state transition
-      const direction = checkKeyList(e, options.viewerHotkey?.navigatePrev) ? 0 : checkKeyList(e, options.viewerHotkey?.navigateNext) ? 1 : undefined
-      if (direction === undefined) {
-        navigateState = -1
-        return
-      }
+    const normalNavigation = async (e, COMMAND_ENUM_VALUE) => {
       e.preventDefault()
+      // state transition
+      const direction = COMMAND_ENUM_VALUE === COMMAND_ENUM.NAVIGATE_NEXT ? 1 : 0
       if ((navigateState & 0b1) === direction && e.repeat) {
         navigateState = direction | 0b10
         return
@@ -1759,27 +1840,20 @@ window.ImageViewer = (function () {
         await new Promise(resolve => setTimeout(resolve, 0))
       }
     }
-    const fastNavigation = e => {
-      const direction = checkKeyList(e, viewerHotkey.fastNavigatePrev) ? 0 : checkKeyList(e, viewerHotkey.fastNavigateNext) ? 1 : undefined
-      if (direction !== undefined) {
-        e.preventDefault()
-        if (moveLock) return
-        const currIndex = Number(current.textContent) - 1
-        const newIndex = direction === 1 ? Math.min(currIndex + 10, Number(total.textContent) - 1) : Math.max(currIndex - 10, 0)
-        resetThrottle()
-        moveToNode(newIndex)
-      }
+    const fastNavigation = (e, COMMAND_ENUM_VALUE) => {
+      e.preventDefault()
+      if (moveLock) return
+      const direction = COMMAND_ENUM_VALUE === COMMAND_ENUM.FAST_NAVIGATE_NEXT ? 1 : 0
+      const currIndex = Number(current.textContent) - 1
+      const newIndex = direction === 1 ? Math.min(currIndex + 10, Number(total.textContent) - 1) : Math.max(currIndex - 10, 0)
+      resetThrottle()
+      moveToNode(newIndex)
     }
-    const autoNavigation = async e => {
-      const direction = checkKeyList(e, viewerHotkey.autoNavigatePrev) ? 0 : checkKeyList(e, viewerHotkey.autoNavigateNext) ? 1 : undefined
-      if (direction === undefined) {
-        autoNavigateState = 0
-        return
-      }
+    const autoNavigation = async (e, COMMAND_ENUM_VALUE) => {
+      const direction = COMMAND_ENUM_VALUE === COMMAND_ENUM.AUTO_NAVIGATE_NEXT ? 1 : 0
       // -1 or 1
       const newState = direction * 2 - 1
       if (autoNavigateState === newState) return
-
       autoNavigateState = newState
       e.preventDefault()
 
@@ -1800,19 +1874,18 @@ window.ImageViewer = (function () {
       autoNavigateState = 0
     }
     const resetNavigation = e => {
-      const direction = checkKeyList(e, options.viewerHotkey?.navigatePrev) ? 0 : checkKeyList(e, options.viewerHotkey?.navigateNext) ? 1 : undefined
-      if (direction === undefined) {
-        navigateState = -1
-        return
-      }
+      const direction = options.viewerHotkey.navigateNext.some(hotkey => checkKey(e, hotkey)) ? 1 : options.viewerHotkey.navigatePrev.some(hotkey => checkKey(e, hotkey)) ? 0 : -1
       // only reset when same direction
-      if ((navigateState & 0b1) === direction) {
+      if (direction === -1 || (navigateState & 0b1) === direction) {
         navigateState = -1
       }
     }
-    keydownHandlerList.push(normalNavigation)
-    keydownHandlerList.push(fastNavigation)
-    keydownHandlerList.push(autoNavigation)
+    hotkeyHandlerList[COMMAND_ENUM.NAVIGATE_PREV] = normalNavigation
+    hotkeyHandlerList[COMMAND_ENUM.NAVIGATE_NEXT] = normalNavigation
+    hotkeyHandlerList[COMMAND_ENUM.FAST_NAVIGATE_PREV] = fastNavigation
+    hotkeyHandlerList[COMMAND_ENUM.FAST_NAVIGATE_NEXT] = fastNavigation
+    hotkeyHandlerList[COMMAND_ENUM.AUTO_NAVIGATE_PREV] = autoNavigation
+    hotkeyHandlerList[COMMAND_ENUM.AUTO_NAVIGATE_NEXT] = autoNavigation
     keyupHandlerList.push(resetNavigation)
     // arrow button
     shadowRoot.querySelector('#iv-control-prev').addEventListener('click', prevItem)
