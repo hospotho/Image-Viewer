@@ -943,12 +943,12 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.FAST_NAVIGATE_NEXT, options.viewerHotkey.fastNavigateNext)
       registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_PREV, options.viewerHotkey.autoNavigatePrev)
       registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_NEXT, options.viewerHotkey.autoNavigateNext)
-      registerHotkey(COMMAND_ENUM.SEARCH_GOOGLE, options.searchHotkey[0])
-      registerHotkey(COMMAND_ENUM.SEARCH_YANDEX, options.searchHotkey[1])
-      registerHotkey(COMMAND_ENUM.SEARCH_SAUCENAO, options.searchHotkey[2])
-      registerHotkey(COMMAND_ENUM.SEARCH_ASCII2D, options.searchHotkey[3])
-      registerHotkey(COMMAND_ENUM.SEARCH_ALL, options.searchHotkey[4])
-      options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, hotkey))
+      registerHotkey(COMMAND_ENUM.SEARCH_GOOGLE, [options.searchHotkey[0]])
+      registerHotkey(COMMAND_ENUM.SEARCH_YANDEX, [options.searchHotkey[1]])
+      registerHotkey(COMMAND_ENUM.SEARCH_SAUCENAO, [options.searchHotkey[2]])
+      registerHotkey(COMMAND_ENUM.SEARCH_ASCII2D, [options.searchHotkey[3]])
+      registerHotkey(COMMAND_ENUM.SEARCH_ALL, [options.searchHotkey[4]])
+      options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
 
       if (document.body.classList.contains('iv-ready')) return
       document.body.classList.add('iv-ready')
