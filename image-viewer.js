@@ -1568,7 +1568,6 @@ window.ImageViewer = (function () {
       for (const event of disableList) {
         viewer.addEventListener(event, e => e.stopPropagation(), {passive: true})
       }
-      keydownHandlerList.push(e => e.stopPropagation())
     }
 
     initWindowEventHandler()
