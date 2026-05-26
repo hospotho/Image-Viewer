@@ -71,9 +71,9 @@ async function fetchBitSize(src, useGetMethod = false) {
     }
 
     if (res.redirected) {
-      const originalPath = new URL(src).pathname
-      const newPath = new URL(res.url).pathname
-      if (originalPath !== newPath) return 0
+      const currFilename = new URL(src).pathname.split('/').at(-1)
+      const newFilename = new URL(res.url).pathname.split('/').at(-1)
+      if (currFilename !== newFilename) return 0
     }
 
     const type = res.headers.get('Content-Type')

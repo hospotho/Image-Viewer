@@ -1248,7 +1248,11 @@ window.ImageViewerUtils = (function () {
       const method = url.href.startsWith('blob:') ? 'GET' : 'HEAD'
       const res = await fetch(url.href, {method, signal: AbortSignal.timeout(5000)})
       if (!res.ok) return 0
-      if (res.redirected) return -1
+      if (res.redirected) {
+        const currFilename = url.pathname.split('/').at(-1)
+        const newFilename = cachedGetUrl(res.url).pathname.split('/').at(-1)
+        if (currFilename !== newFilename) return -1
+      }
 
       const length = res.headers.get('Content-Length')
       // may be transfer-encoding: chunked
