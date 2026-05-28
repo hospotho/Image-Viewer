@@ -59,18 +59,10 @@
   })()
   function calculateCRC32(data) {
     let crc = 0xffffffff // initial value
-    for (let i = 0; i < data.length; i++) {
-      const byte = data[i]
+    for (const byte of data) {
       crc = (crc >>> 8) ^ crcTable[(crc ^ byte) & 0xff]
     }
-    crc ^= 0xffffffff // final xor value
-
-    const crcBytes = new Uint8Array(4)
-    crcBytes[0] = (crc >> 24) & 0xff
-    crcBytes[1] = (crc >> 16) & 0xff
-    crcBytes[2] = (crc >> 8) & 0xff
-    crcBytes[3] = crc & 0xff
-    return crcBytes
+    return (crc ^ 0xffffffff) >>> 0 // final xor value
   }
 
   function buildLocalFileHeader(filename, data) {
