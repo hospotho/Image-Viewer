@@ -115,8 +115,8 @@ window.ImageViewer = (function () {
   function getTransform(img) {
     const scale = img.style.scale.split(' ')
     const rotate = img.style.rotate.replace('deg', '')
-    const moveX = img.style.translate.replaceAll('px', '').split(' ')
-    return [Number(scale[0]) || 1, Number(scale[1]) || Math.abs(Number(scale[0])) || 1, Number(rotate) || 0, Number(moveX[0]) || 0, Number(moveX[1]) || 0]
+    const translate = img.style.translate.replaceAll('px', '').split(' ')
+    return [Number(scale[0]) || 1, Number(scale[1]) || Math.abs(Number(scale[0])) || 1, Number(rotate) || 0, Number(translate[0]) || 0, Number(translate[1]) || 0]
   }
 
   const buildImageNode = (function () {
