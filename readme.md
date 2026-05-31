@@ -8,15 +8,16 @@ If you like this extension, you can [buy me a coffee](https://ko-fi.com/tonymilk
 ## Features
 
 1. Collect and view all images on the page.
-2. Support video posters, canvas element and images in iframes.
-3. Auto replace lazy loaded or resized images with original image.
-4. Redirect middle click to original image to open link you want.
-5. Go to original image on the page.
-6. Fit, zoom, rotate and mirror the image.
-7. Hotkey for image reverse search.
-8. Download collected images.
-9. Easy to use.
-10. And more...
+2. Provide gallery mode and webtoon mode.
+3. Support video posters, canvas element and images in iframes.
+4. Auto replace lazy loaded or resized images with original image.
+5. Redirect middle click to original image to open link you want.
+6. Go to original image on the page.
+7. Fit, zoom, rotate and mirror the image.
+8. Hotkey for image reverse search.
+9. Download collected images.
+10. Easy to use.
+11. And more...
 
 ## Installation
 
@@ -39,7 +40,9 @@ For image tabs, Image Viewer will be activate automatically.
 
 For normal websites and local folders, you can activate Image Viewer by click its icon on the toolbar, choose this extension from the right-click menu or use keyboard hotkey (default <kbd>Alt</kbd>+<kbd>1</kbd>).
 
-For additional options, right-click the extension icon on the toolbar. eg: activate Image Viewer with disabled size filter, activate with the last picked image (use it when the right-click menu is disabled by the website).
+For additional options, right-click the extension icon on the toolbar. eg: activate Image Viewer with disabled size filter, activate with webtoon mode, activate with the last picked image (use it when the right-click menu is disabled by the website).
+
+Most hotkeys can be customize in the options page. The hotkeys listed below are the default mappings.
 
 <table>
   <tr>
@@ -96,7 +99,7 @@ For additional options, right-click the extension icon on the toolbar. eg: activ
   </tr>
   <tr>
     <td rowspan="2">Zoom image</td>
-    <td>Scroll on the image</td>
+    <td>Scroll on the image (<kbd>Ctrl</kbd>+Scroll in webtoon mode)</td>
   </tr>
   <tr>
     <td><kbd>Alt</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>w</kbd><kbd>s</kbd></td>
@@ -136,11 +139,11 @@ For additional options, right-click the extension icon on the toolbar. eg: activ
   </tr>
   <tr>
     <td>Download collected images</td>
-    <td><kbd>Shift</kbd>+<kbd>d</kbd> (default)</td>
+    <td><kbd>Shift</kbd>+<kbd>d</kbd></td>
   </tr>
   <tr>
     <td>Enable auto scroll</td>
-    <td><kbd>Shift</kbd>+<kbd>r</kbd> (default)</td>
+    <td><kbd>Shift</kbd>+<kbd>r</kbd></td>
   </tr>
   <tr>
     <td rowspan="2">Close Image Viewer</td>
