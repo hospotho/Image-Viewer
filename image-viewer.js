@@ -645,13 +645,13 @@ window.ImageViewer = (function () {
         overflow: hidden;
         translate: 100% 0;
       }
+      #iv-image-list li.current {
+        display: flex;
+        translate: 0 0;
+      }
       #image-viewer.webtoon #iv-image-list li {
         position: relative;
         display: block;
-        translate: 0 0;
-      }
-      #iv-image-list li.current {
-        display: flex;
         translate: 0 0;
       }
       img {
