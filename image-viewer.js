@@ -2502,13 +2502,13 @@ window.ImageViewer = (function () {
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
     const relateImage = relateListItem.querySelector('img')
-
-    imageListNode.querySelector('li.current')?.classList.remove('current')
-    relateListItem.classList.add('current')
     shadowRoot.querySelector('#iv-counter-current').textContent = newIndex + 1
     shadowRoot.querySelector('#iv-info-width').textContent = relateImage.naturalWidth
     shadowRoot.querySelector('#iv-info-height').textContent = relateImage.naturalHeight
     if (lastTransform) applyTransform(relateImage, ...lastTransform)
+
+    imageListNode.querySelector('li.current')?.classList.remove('current')
+    relateListItem.classList.add('current')
 
     clearIndex = -1
     clearDom = null
