@@ -17,6 +17,7 @@ window.ImageViewer = (function () {
   let lastDom = null
   let lastSrc = ''
   let lastTransform = null
+  let lastWebtoonTransform = null
 
   const hotkeyHandlerList = []
   const keyupHandlerList = []
@@ -71,8 +72,12 @@ window.ImageViewer = (function () {
     lastIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
     lastDom = imageDataList[lastIndex]?.dom || null
     const current = shadowRoot.querySelector('li.current img')
-    lastSrc = current?.src || ''
-    lastTransform = current ? getTransform(current) : null
+    if (current) {
+      const webtoonMode = viewer.classList.contains('webtoon')
+      lastSrc = current.src || ''
+      lastTransform = !webtoonMode ? getTransform(current) : lastTransform
+      lastWebtoonTransform = webtoonMode ? getTransform(shadowRoot.querySelector('#iv-list-wrapper')) : lastWebtoonTransform
+    }
     hotkeyHandlerList.length = 0
     keyupHandlerList.length = 0
     resizeHandlerList.length = 0
@@ -2142,14 +2147,16 @@ window.ImageViewer = (function () {
     const liList = imageListNode.children
     const base = current || liList[getBaseIndex(options)]
     const baseImg = base.firstChild
+    const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : baseImg
     base.classList.add('current')
 
+    const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
     const targetDom = clearDom || lastDom
     const baseIndex = Array.prototype.indexOf.call(liList, base)
-    if (lastTransform && targetDom === imageDataList[baseIndex]?.dom) {
-      baseImg.style.transition = 'none'
-      applyTransform(baseImg, ...lastTransform)
-      lastTransform = null
+    if (transform && targetDom === imageDataList[baseIndex]?.dom) {
+      target.style.transition = 'none'
+      applyTransform(target, ...transform)
+      options.webtoonMode ? (lastWebtoonTransform = null) : (lastTransform = null)
     }
 
     const counterTotal = shadowRoot.querySelector('#iv-counter-total')
@@ -2159,7 +2166,7 @@ window.ImageViewer = (function () {
 
     // update viewer when base image complete
     const action = () => {
-      baseImg.style.transition = ''
+      target.style.transition = ''
       // prevent image loading flash
       if (!options.closeButton) {
         const viewer = shadowRoot.querySelector('#image-viewer')
@@ -2572,7 +2579,8 @@ window.ImageViewer = (function () {
         clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
         clearDom = imageDataList[clearIndex]?.dom || null
         clearSrc = current.src
-        lastTransform = getTransform(current)
+        if (options.webtoonMode) lastWebtoonTransform = getTransform(shadowRoot.querySelector('#iv-list-wrapper'))
+        else lastTransform = getTransform(current)
 
         imageDataList.length = 0
         const imageListNode = shadowRoot.querySelector('#iv-image-list')
@@ -2642,6 +2650,7 @@ window.ImageViewer = (function () {
       lastDom = null
       lastSrc = ''
       lastTransform = null
+      lastWebtoonTransform = null
       return
     }
 
@@ -2652,7 +2661,12 @@ window.ImageViewer = (function () {
     shadowRoot.querySelector('#iv-counter-current').textContent = newIndex + 1
     shadowRoot.querySelector('#iv-info-width').textContent = relateImage.naturalWidth
     shadowRoot.querySelector('#iv-info-height').textContent = relateImage.naturalHeight
-    if (lastTransform) applyTransform(relateImage, ...lastTransform)
+
+    const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
+    if (transform) {
+      const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : relateImage
+      applyTransform(target, ...transform)
+    }
 
     imageListNode.querySelector('li.current')?.classList.remove('current')
     relateListItem.classList.add('current')
@@ -2664,6 +2678,7 @@ window.ImageViewer = (function () {
     lastDom = null
     lastSrc = ''
     lastTransform = null
+    lastWebtoonTransform = null
   }
 
   function executeCommand(command) {
@@ -2689,6 +2704,7 @@ window.ImageViewer = (function () {
         lastDom = null
         lastSrc = ''
         lastTransform = null
+        lastWebtoonTransform = null
         return
       }
       case 'close_image_viewer': {
