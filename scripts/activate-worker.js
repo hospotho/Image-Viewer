@@ -22,9 +22,19 @@
   disableHoverCheck ||= regexList.some(regex => regex.test(location.href))
 
   if (window.top === window.self && !disableHoverCheck) {
-    const styles = 'html.iv-worker-checking img {pointer-events: auto !important;} .disable-hover {pointer-events: none !important;}'
     const styleSheet = document.createElement('style')
-    styleSheet.textContent = styles
+    styleSheet.textContent = `
+html.iv-worker-checking img {
+  pointer-events: auto !important;
+}
+.disable-hover {
+  pointer-events: none !important;
+}
+html:has(#image-viewer-root.webtoon),
+body:has(#image-viewer-root.webtoon) {
+  overflow: hidden !important;
+}
+`
     document.head.appendChild(styleSheet)
   }
 

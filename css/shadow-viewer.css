@@ -1,3 +1,9 @@
+/* content script css in active-worker.js */
+html:has(#image-viewer-root.webtoon),
+body:has(#image-viewer-root.webtoon) {
+  overflow: hidden !important;
+}
+
 /* Just file version of style() in image-viewer.js */
 /* global */
 :host {
@@ -22,12 +28,28 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.8) !important;
 }
+#iv-webtoon {
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+#iv-list-wrapper {
+  width: 100%;
+  transform-origin: 0 0;
+  will-change: transform;
+}
 
 /* image list */
 #iv-image-list {
   width: 100%;
   height: 100%;
   transition: 0s;
+}
+#image-viewer.webtoon #iv-image-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
 }
 #iv-image-list li {
   position: absolute;
@@ -39,6 +61,11 @@
   align-items: center;
   overflow: hidden;
   translate: 100% 0;
+}
+#image-viewer.webtoon #iv-image-list li {
+  position: relative;
+  display: block;
+  translate: 0 0;
 }
 #iv-image-list li.current {
   display: flex;
@@ -52,6 +79,10 @@ img {
 img.loaded {
   max-width: none;
   max-height: none;
+}
+#image-viewer.webtoon img {
+  display: block;
+  padding: 0 calc((100% - var(--width)) / 2);
 }
 
 /* control panel */
@@ -130,7 +161,15 @@ img.loaded {
 }
 #iv-counter span {
   font-size: 20px;
-  text-shadow: -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
+  text-shadow:
+    -1px -1px 0 #000,
+    0 -1px 0 #000,
+    1px -1px 0 #000,
+    1px 0 0 #000,
+    1px 1px 0 #000,
+    0 1px 0 #000,
+    -1px 1px 0 #000,
+    -1px 0 0 #000;
   opacity: 0.5;
 }
 
