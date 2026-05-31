@@ -2220,6 +2220,7 @@ window.ImageViewer = (function () {
 
       // reset
       const reset = async () => {
+        mirror = false
         zoomCount = 0
         rotateCount = 0
         // normalize rotation
@@ -2257,8 +2258,9 @@ window.ImageViewer = (function () {
             break
           }
           case 'restore': {
-            const [scaleX, , rotate, ,] = getTransform(target)
-            zoomCount = Math.round(Math.log(scaleX) / Math.log(options.zoomRatio))
+            const [scaleX, scaleY, rotate, ,] = getTransform(target)
+            mirror = scaleX < 0
+            zoomCount = Math.round(Math.log(scaleY) / Math.log(options.zoomRatio))
             rotateCount = rotate / options.rotateDeg
             break
           }
