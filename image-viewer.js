@@ -1765,6 +1765,7 @@ window.ImageViewer = (function () {
       // update dom
       currentListItem?.classList.remove('current')
       relateListItem.classList.add('current')
+      if (options.webtoonMode) relateListItem.scrollIntoView({behavior: 'instant', block: 'center'})
       current.textContent = index + 1
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
@@ -1940,6 +1941,76 @@ window.ImageViewer = (function () {
     const scrollableElements = [controlBar, closeButton, infoButton, infoPopup]
     for (const dom of scrollableElements) {
       dom.addEventListener('wheel', wheelNavigation, {passive: false})
+    }
+
+    // update info after scroll
+    if (options.webtoonMode) {
+      const webtoon = shadowRoot.querySelector('#iv-webtoon')
+      const findNearestIndex = () => {
+        const liList = shadowRoot.querySelectorAll('#iv-image-list li')
+        if (liList.length === 0 || liList.length === 1) return liList.length - 1
+        // left = y, top = x
+        const leftRect = liList[0].getBoundingClientRect()
+        const rightRect = liList[liList.length - 1].getBoundingClientRect()
+        const webtoonRect = webtoon.getBoundingClientRect()
+        const slope = (rightRect.left - leftRect.left) / (rightRect.top - leftRect.top)
+        const webtoonX = webtoonRect.top + webtoonRect.height / 2
+        // fast path, rect no overlap
+        if (slope === 0) {
+          const projectIndex = Math.round((liList.length - 1) * ((webtoonX - leftRect.top) / (rightRect.top - leftRect.top)))
+          const order = rightRect.top > leftRect.top
+          let index = Math.max(0, Math.min(liList.length - 1, projectIndex))
+          while (true) {
+            const rect = liList[index].getBoundingClientRect()
+            if (rect.top <= webtoonX && webtoonX <= rect.top + rect.height) return index
+            const direction = (webtoonX < rect.top) ^ order ? 1 : -1
+            index += direction
+            if (index === -1 || index === liList.length) return index - direction
+          }
+        }
+        // find the nearest item by projection
+        const webtoonY = webtoonRect.left + webtoonRect.width / 2
+        const intersect1 = leftRect.left - slope * leftRect.top
+        const intersect2 = webtoonY + webtoonX / slope
+        const projectX = Number.isFinite(slope) ? (intersect2 - intersect1) / (slope + 1 / slope) : 0
+        const projectY = Number.isFinite(slope) ? slope * projectX + intersect1 : webtoonY
+        const projectIndex = Math.round((liList.length - 1) * ((projectY - leftRect.left) / (rightRect.left - leftRect.left)))
+
+        const order = rightRect.left > leftRect.left
+        let index = Math.max(0, Math.min(liList.length - 1, projectIndex))
+        let direction = 0
+        let minDistance = Number.MAX_VALUE
+        while (true) {
+          const rect = liList[index].getBoundingClientRect()
+          direction = direction !== 0 ? direction : (projectY < rect.left) ^ order ? 1 : -1
+          const distance = Math.sqrt((rect.left + rect.width / 2 - webtoonY) ** 2 + (rect.top + rect.height / 2 - webtoonX) ** 2)
+          if (distance > minDistance) return index - direction
+          minDistance = distance
+          index += direction
+          if (index === -1 || index === liList.length) return index - direction
+        }
+      }
+
+      let scrollTimeout = 0
+      const action = () => {
+        clearTimeout(scrollTimeout)
+        scrollTimeout = setTimeout(() => {
+          const nearestIndex = findNearestIndex()
+          if (nearestIndex === -1) return
+          const currentListItem = imageListNode.querySelector('li.current')
+          const relateListItem = shadowRoot.querySelector(`#iv-image-list li:nth-child(${nearestIndex + 1})`)
+          if (currentListItem !== relateListItem) {
+            currentListItem?.classList.remove('current')
+            relateListItem.classList.add('current')
+            current.textContent = nearestIndex + 1
+            const relateImage = relateListItem.querySelector('img')
+            infoWidth.textContent = relateImage.naturalWidth
+            infoHeight.textContent = relateImage.naturalHeight
+            infoPopup.dispatchEvent(updateEvent)
+          }
+        }, 100)
+      }
+      webtoon.addEventListener('scroll', action)
     }
   }
 
