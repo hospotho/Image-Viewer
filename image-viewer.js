@@ -545,8 +545,18 @@ window.ImageViewer = (function () {
   }
 
   //==========html&style==========
-  const frame = i18n => {
-    return `<ul id="iv-image-list"></ul>
+  const frame = (i18n, webtoonMode) => {
+    return `${
+      webtoonMode
+        ? `<div id="iv-webtoon">
+            <div id="iv-scene">
+              <div id="iv-list-wrapper">
+                <ul id="iv-image-list"></ul>
+              </div>
+            </div>
+          </div>`
+        : '<ul id="iv-image-list"></ul>'
+    }
       <nav id="iv-control">
         <ul id="iv-index">
           <li><button id="iv-control-prev"></button></li>
@@ -600,12 +610,28 @@ window.ImageViewer = (function () {
         height: 100%;
         background: rgba(0, 0, 0, 0.8) !important;
       }
+      #iv-webtoon {
+        position: fixed;
+        inset: 0;
+        overflow: auto;
+        overscroll-behavior: contain;
+      }
+      #iv-list-wrapper {
+        width: 100%;
+        transform-origin: 0 0;
+        will-change: transform;
+      }
 
       /* image list */
       #iv-image-list {
         width: 100%;
         height: 100%;
         transition: 0s;
+      }
+      #image-viewer.webtoon #iv-image-list {
+        display: flex;
+        flex-direction: column;
+        list-style: none;
       }
       #iv-image-list li {
         position: absolute;
@@ -617,6 +643,11 @@ window.ImageViewer = (function () {
         align-items: center;
         overflow: hidden;
         translate: 100% 0;
+      }
+      #image-viewer.webtoon #iv-image-list li {
+        position: relative;
+        display: block;
+        translate: 0 0;
       }
       #iv-image-list li.current {
         display: flex;
@@ -630,6 +661,10 @@ window.ImageViewer = (function () {
       img.loaded {
         max-width: none;
         max-height: none;
+      }
+      #image-viewer.webtoon img {
+        display: block;
+        padding: 0 calc((100% - var(--width)) / 2);
       }
 
       /* control panel */
@@ -895,7 +930,13 @@ window.ImageViewer = (function () {
       i18n.sizeText = chrome.i18n.getMessage('image_size')
       i18n.typeText = chrome.i18n.getMessage('image_type')
     }
-    viewer.innerHTML = frame(i18n)
+    viewer.innerHTML = frame(i18n, options.webtoonMode)
+
+    if (options.webtoonMode) {
+      shadowHolder.classList.add('webtoon')
+      viewer.classList.add('webtoon')
+      options.fitMode = 'none'
+    }
 
     if (!options.closeButton) {
       viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
@@ -2069,6 +2110,7 @@ window.ImageViewer = (function () {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
       img.height = h
+      img.style.setProperty('--width', `${w}px`)
       img.classList.add('loaded')
     }
     const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'}`)
