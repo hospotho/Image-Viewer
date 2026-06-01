@@ -656,8 +656,9 @@ window.ImageViewer = (function () {
       }
       #image-viewer.webtoon #iv-image-list li {
         position: relative;
-        display: block;
+        display: flex;
         translate: 0 0;
+        overflow: visible;
       }
       img {
         max-width: 100%;
@@ -667,10 +668,6 @@ window.ImageViewer = (function () {
       img.loaded {
         max-width: none;
         max-height: none;
-      }
-      #image-viewer.webtoon img {
-        display: block;
-        padding: 0 calc((100% - var(--width)) / 2);
       }
 
       /* control panel */
@@ -941,7 +938,7 @@ window.ImageViewer = (function () {
     if (options.webtoonMode) {
       shadowHolder.classList.add('webtoon')
       viewer.classList.add('webtoon')
-      options.fitMode = 'none'
+      options.fitMode = 'keep'
     }
 
     if (!options.closeButton) {
@@ -1770,7 +1767,7 @@ window.ImageViewer = (function () {
       // update dom
       currentListItem?.classList.remove('current')
       relateListItem.classList.add('current')
-      if (options.webtoonMode) relateListItem.scrollIntoView({behavior: 'instant', block: 'center'})
+      if (options.webtoonMode) relateListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
       current.textContent = index + 1
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
@@ -2670,6 +2667,7 @@ window.ImageViewer = (function () {
 
     imageListNode.querySelector('li.current')?.classList.remove('current')
     relateListItem.classList.add('current')
+    if (options.webtoonMode) relateListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
 
     clearIndex = -1
     clearDom = null

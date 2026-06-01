@@ -68,8 +68,9 @@ body:has(#image-viewer-root.webtoon) {
 }
 #image-viewer.webtoon #iv-image-list li {
   position: relative;
-  display: block;
+  display: flex;
   translate: 0 0;
+  overflow: visible;
 }
 img {
   max-width: 100%;
@@ -79,10 +80,6 @@ img {
 img.loaded {
   max-width: none;
   max-height: none;
-}
-#image-viewer.webtoon img {
-  display: block;
-  padding: 0 calc((100% - var(--width)) / 2);
 }
 
 /* control panel */
