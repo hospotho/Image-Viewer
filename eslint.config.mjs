@@ -1,38 +1,21 @@
-import globals from 'globals'
-import path from 'node:path'
-import {fileURLToPath} from 'node:url'
-import js from '@eslint/js'
-import {FlatCompat} from '@eslint/eslintrc'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all
-})
+import neostandard from 'neostandard'
 
 export default [
-  ...compat.extends('standard'),
+  ...neostandard({
+    env: ['browser', 'webextensions'],
+    globals: {
+      chrome: 'readonly',
+      ImageViewer: 'readonly',
+      ImageViewerUtils: 'readonly'
+    }
+  }),
   {
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.webextensions,
-        ImageViewer: false,
-        ImageViewerUtils: false
-      },
-
-      ecmaVersion: 'latest',
-      sourceType: 'module'
-    },
-
     rules: {
-      'space-before-function-paren': 'off',
-      'object-curly-spacing': 'off',
-      'spaced-comment': 'off',
       'object-shorthand': 'off',
-      indent: 'off'
+      '@stylistic/space-before-function-paren': 'off',
+      '@stylistic/object-curly-spacing': 'off',
+      '@stylistic/spaced-comment': 'off',
+      '@stylistic/indent': 'off'
     }
   }
 ]
