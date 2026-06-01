@@ -1,3 +1,13 @@
+2.0 [2026-06-02]:
+Major Update
+1. Added webtoon mode for image viewing, the default Chrome hotkey is Alt + 2.
+2. Added customization options for most viewer hotkeys.
+3. Added support for picking canvas with right-click picker, it will be used as size reference in canvas mode.
+4. Improved folder mode with progressive loading, helpful for folders with >1k images or remote folders.
+5. Fixed a bug that created non-standard zip files that could not be extracted by macOS archive utility.
+6. Improved unlazy logic to pick a better image for unlazy.
+7. Other bug fixes and improvements.
+
 1.48 [2026-02-01]:
 Major Update
 1. Added new hotkeys for copying the current image:
