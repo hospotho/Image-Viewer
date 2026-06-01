@@ -1863,7 +1863,7 @@ window.ImageViewer = (function () {
       await func()
 
       // check key hold
-      let endTime = Date.now() + 500
+      const endTime = Date.now() + 500
       while (Date.now() < endTime) {
         if (navigateState !== direction) break
         await new Promise(resolve => setTimeout(resolve, 10))

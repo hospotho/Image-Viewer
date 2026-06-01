@@ -246,7 +246,7 @@ window.ImageViewerUtils = (function () {
   //==========utility==========
   function checkKey(e, hotkey) {
     if (!hotkey) return false
-    const currentKey = e.key === " " ? "Space" : e.key.length === 1 ? e.key.toUpperCase() : e.key
+    const currentKey = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key
     const keyList = hotkey.split(' + ')
     const key = keyList.at(-1) === currentKey
     const ctrl = keyList.includes('Ctrl') === e.ctrlKey

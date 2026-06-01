@@ -30,7 +30,7 @@
 
   // update image size filter
   const nodeInfo = await safeSendMessage('get_info')
-  const [_, nodeSize] = nodeInfo
+  const [, nodeSize] = nodeInfo
   options.minWidth = Math.min(nodeSize, options.minWidth)
   options.minHeight = Math.min(nodeSize, options.minHeight)
 
