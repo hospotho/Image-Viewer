@@ -958,40 +958,6 @@ window.ImageViewer = (function () {
   function addFrameEvent(options) {
     const viewer = shadowRoot.querySelector('#image-viewer')
     function initWindowEventHandler() {
-      hotkeyHandlerList.length = 0
-      keydownHotkeyMap.clear()
-      for (let i = 0; i < COMMAND_ENUM.SEARCH_CUSTOM_BASE; i++) {
-        hotkeyHandlerList[i] = () => {}
-      }
-
-      registerHotkey(COMMAND_ENUM.CHANGE_BACKGROUND, options.viewerHotkey.background)
-      registerHotkey(COMMAND_ENUM.MOVE_UP, options.viewerHotkey.moveUp)
-      registerHotkey(COMMAND_ENUM.MOVE_DOWN, options.viewerHotkey.moveDown)
-      registerHotkey(COMMAND_ENUM.MOVE_LEFT, options.viewerHotkey.moveLeft)
-      registerHotkey(COMMAND_ENUM.MOVE_RIGHT, options.viewerHotkey.moveRight)
-      registerHotkey(COMMAND_ENUM.ZOOM_IN, options.viewerHotkey.zoomIn)
-      registerHotkey(COMMAND_ENUM.ZOOM_OUT, options.viewerHotkey.zoomOut)
-      registerHotkey(COMMAND_ENUM.ROTATE_LEFT, options.viewerHotkey.rotateLeft)
-      registerHotkey(COMMAND_ENUM.ROTATE_RIGHT, options.viewerHotkey.rotateRight)
-      registerHotkey(COMMAND_ENUM.DOWNLOAD_IMAGE, options.viewerHotkey.downloadImage)
-      registerHotkey(COMMAND_ENUM.COPY_IMAGE, options.viewerHotkey.copyImage)
-      registerHotkey(COMMAND_ENUM.COPY_IMAGE_URL, options.viewerHotkey.copyImageUrl)
-      registerHotkey(COMMAND_ENUM.MOVE_TO, options.viewerHotkey.moveTo)
-      registerHotkey(COMMAND_ENUM.CLOSE_VIEWER, options.viewerHotkey.close)
-      registerHotkey(COMMAND_ENUM.OPEN_IMAGE_LINK, options.viewerHotkey.openImageLink)
-      registerHotkey(COMMAND_ENUM.NAVIGATE_PREV, options.viewerHotkey.navigatePrev)
-      registerHotkey(COMMAND_ENUM.NAVIGATE_NEXT, options.viewerHotkey.navigateNext)
-      registerHotkey(COMMAND_ENUM.FAST_NAVIGATE_PREV, options.viewerHotkey.fastNavigatePrev)
-      registerHotkey(COMMAND_ENUM.FAST_NAVIGATE_NEXT, options.viewerHotkey.fastNavigateNext)
-      registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_PREV, options.viewerHotkey.autoNavigatePrev)
-      registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_NEXT, options.viewerHotkey.autoNavigateNext)
-      registerHotkey(COMMAND_ENUM.SEARCH_GOOGLE, [options.searchHotkey[0]])
-      registerHotkey(COMMAND_ENUM.SEARCH_YANDEX, [options.searchHotkey[1]])
-      registerHotkey(COMMAND_ENUM.SEARCH_SAUCENAO, [options.searchHotkey[2]])
-      registerHotkey(COMMAND_ENUM.SEARCH_ASCII2D, [options.searchHotkey[3]])
-      registerHotkey(COMMAND_ENUM.SEARCH_ALL, [options.searchHotkey[4]])
-      options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
-
       if (document.body.classList.contains('iv-ready')) return
       document.body.classList.add('iv-ready')
 
@@ -1028,6 +994,38 @@ window.ImageViewer = (function () {
         true
       )
       window.addEventListener('resize', () => resizeHandlerList.forEach(func => func()))
+    }
+    function initHotkeyMapping() {
+      hotkeyHandlerList.length = COMMAND_ENUM.SEARCH_CUSTOM_BASE
+      hotkeyHandlerList.fill(() => {})
+      keydownHotkeyMap.clear()
+      registerHotkey(COMMAND_ENUM.CHANGE_BACKGROUND, options.viewerHotkey.background)
+      registerHotkey(COMMAND_ENUM.MOVE_UP, options.viewerHotkey.moveUp)
+      registerHotkey(COMMAND_ENUM.MOVE_DOWN, options.viewerHotkey.moveDown)
+      registerHotkey(COMMAND_ENUM.MOVE_LEFT, options.viewerHotkey.moveLeft)
+      registerHotkey(COMMAND_ENUM.MOVE_RIGHT, options.viewerHotkey.moveRight)
+      registerHotkey(COMMAND_ENUM.ZOOM_IN, options.viewerHotkey.zoomIn)
+      registerHotkey(COMMAND_ENUM.ZOOM_OUT, options.viewerHotkey.zoomOut)
+      registerHotkey(COMMAND_ENUM.ROTATE_LEFT, options.viewerHotkey.rotateLeft)
+      registerHotkey(COMMAND_ENUM.ROTATE_RIGHT, options.viewerHotkey.rotateRight)
+      registerHotkey(COMMAND_ENUM.DOWNLOAD_IMAGE, options.viewerHotkey.downloadImage)
+      registerHotkey(COMMAND_ENUM.COPY_IMAGE, options.viewerHotkey.copyImage)
+      registerHotkey(COMMAND_ENUM.COPY_IMAGE_URL, options.viewerHotkey.copyImageUrl)
+      registerHotkey(COMMAND_ENUM.MOVE_TO, options.viewerHotkey.moveTo)
+      registerHotkey(COMMAND_ENUM.CLOSE_VIEWER, options.viewerHotkey.close)
+      registerHotkey(COMMAND_ENUM.OPEN_IMAGE_LINK, options.viewerHotkey.openImageLink)
+      registerHotkey(COMMAND_ENUM.NAVIGATE_PREV, options.viewerHotkey.navigatePrev)
+      registerHotkey(COMMAND_ENUM.NAVIGATE_NEXT, options.viewerHotkey.navigateNext)
+      registerHotkey(COMMAND_ENUM.FAST_NAVIGATE_PREV, options.viewerHotkey.fastNavigatePrev)
+      registerHotkey(COMMAND_ENUM.FAST_NAVIGATE_NEXT, options.viewerHotkey.fastNavigateNext)
+      registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_PREV, options.viewerHotkey.autoNavigatePrev)
+      registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_NEXT, options.viewerHotkey.autoNavigateNext)
+      registerHotkey(COMMAND_ENUM.SEARCH_GOOGLE, [options.searchHotkey[0]])
+      registerHotkey(COMMAND_ENUM.SEARCH_YANDEX, [options.searchHotkey[1]])
+      registerHotkey(COMMAND_ENUM.SEARCH_SAUCENAO, [options.searchHotkey[2]])
+      registerHotkey(COMMAND_ENUM.SEARCH_ASCII2D, [options.searchHotkey[3]])
+      registerHotkey(COMMAND_ENUM.SEARCH_ALL, [options.searchHotkey[4]])
+      options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
     }
     function addChangeBackgroundHotkey() {
       const backgroundList = [
@@ -1698,6 +1696,7 @@ window.ImageViewer = (function () {
     }
 
     initWindowEventHandler()
+    initHotkeyMapping()
     addChangeBackgroundHotkey()
     addTransformationHotkey()
     addDownloadHotkey()
