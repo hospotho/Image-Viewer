@@ -2,7 +2,6 @@
 
 // parallel fetch
 const semaphore = (() => {
-  // parallel fetch
   let activeCount = 0
   const maxConcurrent = 32
   const queue = []
