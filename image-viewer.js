@@ -89,8 +89,9 @@ window.ImageViewer = (function () {
   }
 
   function parseHotkey(hotkey) {
-    const keyList = hotkey.split(' + ').filter(Boolean)
-    const key = keyList.at(-1) === 'Space' ? ' ' : keyList.at(-1)
+    const keyList = hotkey.split(' + ')
+    const keyStr = keyList.at(-1)
+    const key = keyStr.length === 1 ? keyStr.toLowerCase() : keyStr === 'Space' ? ' ' : keyStr
     const flag = keyList.includes('Ctrl') | (keyList.includes('Alt') << 1) | (keyList.includes('Shift') << 2)
     return [key, flag]
   }

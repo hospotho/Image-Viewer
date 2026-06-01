@@ -121,7 +121,7 @@
   }
 
   function keyToString(e) {
-    const key = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key
+    const key = e.key.length === 1 ? e.key.toUpperCase() : e.key === ' ' ? 'Space' : e.key
     let result = ''
     if (e.ctrlKey) result += 'Ctrl + '
     if (e.altKey) result += 'Alt + '
