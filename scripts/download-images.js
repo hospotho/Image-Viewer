@@ -65,6 +65,46 @@
     return (crc ^ 0xffffffff) >>> 0 // final xor value
   }
 
+  function buildEndOfCentralDirectoryRecord(fileHeaderLength, centralDirectorySize, centralOffset) {
+    // construct the end of central directory record
+    const endOfCentralDirectoryRecord = new Uint8Array(22)
+    const view = new DataView(endOfCentralDirectoryRecord.buffer)
+
+    // little-endian byte order
+    view.setUint32(0, 0x06054b50, true) // end of central directory signature
+    view.setUint16(4, 0, true) // number of this disk
+    view.setUint16(6, 0, true) // disk where central directory starts
+    view.setUint16(8, fileHeaderLength, true) // number of central directory records on this disk
+    view.setUint16(10, fileHeaderLength, true) // total number of central directory records
+    view.setUint32(12, centralDirectorySize, true) // size of central directory
+    view.setUint32(16, centralOffset, true) // offset of start of central directory
+    view.setUint16(20, 0, true) // no comment
+
+    return endOfCentralDirectoryRecord
+  }
+  function buildCentralDirectory(localFileHeader, offset) {
+    const headerView = new DataView(localFileHeader.buffer)
+    const filenameLength = headerView.getUint16(26, true)
+    const headerData = localFileHeader.subarray(4, 30)
+    const fileName = localFileHeader.subarray(30, 30 + filenameLength)
+
+    // construct the central directory entry
+    const centralDirectoryEntry = new Uint8Array(46 + filenameLength)
+    const view = new DataView(centralDirectoryEntry.buffer)
+
+    // little-endian byte order
+    view.setUint32(0, 0x02014b50, true) // central directory file header signature
+    view.setUint16(4, 20, true) // version made by
+    centralDirectoryEntry.set(headerData, 6) // offset 6-32 = lfh 4-30
+    view.setUint16(32, 0, true) // no file comment
+    view.setUint16(34, 0, true) // disk number start
+    view.setUint16(36, 0, true) // internal file attributes
+    view.setUint32(38, 0, true) // external file attributes
+    view.setUint32(42, offset, true) // relative offset of local file header
+    centralDirectoryEntry.set(fileName, 46) // file name
+
+    return centralDirectoryEntry
+  }
   function buildLocalFileHeader(filename, data) {
     const crc32 = calculateCRC32(data)
     const compressedSize = data.length
@@ -93,29 +133,6 @@
 
     return localFileHeader
   }
-  function buildCentralDirectory(localFileHeader, offset) {
-    const headerView = new DataView(localFileHeader.buffer)
-    const filenameLength = headerView.getUint16(26, true)
-    const headerData = localFileHeader.subarray(4, 30)
-    const fileName = localFileHeader.subarray(30, 30 + filenameLength)
-
-    // construct the central directory entry
-    const centralDirectoryEntry = new Uint8Array(46 + filenameLength)
-    const view = new DataView(centralDirectoryEntry.buffer)
-
-    // little-endian byte order
-    view.setUint32(0, 0x02014b50, true) // central directory file header signature
-    view.setUint16(4, 20, true) // version made by
-    centralDirectoryEntry.set(headerData, 6) // offset 6-32 = lfh 4-30
-    view.setUint16(32, 0, true) // no file comment
-    view.setUint16(34, 0, true) // disk number start
-    view.setUint16(36, 0, true) // internal file attributes
-    view.setUint32(38, 0, true) // external file attributes
-    view.setUint32(42, offset, true) // relative offset of local file header
-    centralDirectoryEntry.set(fileName, 46) // file name
-
-    return centralDirectoryEntry
-  }
   function buildZip(localFileHeaderList) {
     const centralDirectoryList = []
     let centralOffset = 0
@@ -132,17 +149,7 @@
     const centralDirectorySize = centralDirectoryList.reduce((total, entry) => total + entry.length, 0)
 
     // build the end of central directory record
-    const endOfCentralDirectoryRecord = new Uint8Array(22)
-    const view = new DataView(endOfCentralDirectoryRecord.buffer)
-
-    view.setUint32(0, 0x06054b50, true) // end of central directory signature
-    view.setUint16(4, 0, true) // number of this disk
-    view.setUint16(6, 0, true) // disk where central directory starts
-    view.setUint16(8, localFileHeaderList.length, true) // number of central directory records on this disk
-    view.setUint16(10, localFileHeaderList.length, true) // total number of central directory records
-    view.setUint32(12, centralDirectorySize, true) // size of central directory
-    view.setUint32(16, centralOffset, true) // offset of start of central directory
-    view.setUint16(20, 0, true) // no comment
+    const endOfCentralDirectoryRecord = buildEndOfCentralDirectoryRecord(localFileHeaderList.length, centralDirectorySize, centralOffset)
 
     // combine all the components into the final zip file
     const zipSize = centralOffset + centralDirectorySize + endOfCentralDirectoryRecord.length
