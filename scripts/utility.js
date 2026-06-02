@@ -493,8 +493,9 @@ window.ImageViewerUtils = (function () {
     const lower = className.toLowerCase()
     return lower.includes('lazy') || lower.includes('loading')
   }
-  function isPromiseComplete(promise) {
-    return Promise.race([promise, signal]).then(result => result !== symbol)
+  async function isPromiseComplete(promise) {
+    const result = await Promise.race([promise, signal])
+    return result !== symbol
   }
   async function waitPromiseComplete(promise, maxWait) {
     await Promise.race([promise, new Promise(resolve => setTimeout(resolve, maxWait))])
