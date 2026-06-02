@@ -65,17 +65,20 @@
     return (crc ^ 0xffffffff) >>> 0 // final xor value
   }
 
-  function buildEndOfCentralDirectoryRecord(fileHeaderLength, centralDirectorySize, centralOffset) {
+  const LOCAL_FILE_HEADER_SIZE = 30
+  const CENTRAL_DIRECTORY_HEADER_SIZE = 46
+  const END_OF_CENTRAL_DIRECTORY_SIZE = 22
+  function buildEndOfCentralDirectoryRecord(imageCount, centralDirectorySize, centralOffset) {
     // construct the end of central directory record
-    const endOfCentralDirectoryRecord = new Uint8Array(22)
+    const endOfCentralDirectoryRecord = new Uint8Array(END_OF_CENTRAL_DIRECTORY_SIZE)
     const view = new DataView(endOfCentralDirectoryRecord.buffer)
 
     // little-endian byte order
     view.setUint32(0, 0x06054b50, true) // end of central directory signature
     view.setUint16(4, 0, true) // number of this disk
     view.setUint16(6, 0, true) // disk where central directory starts
-    view.setUint16(8, fileHeaderLength, true) // number of central directory records on this disk
-    view.setUint16(10, fileHeaderLength, true) // total number of central directory records
+    view.setUint16(8, imageCount, true) // number of central directory records on this disk
+    view.setUint16(10, imageCount, true) // total number of central directory records
     view.setUint32(12, centralDirectorySize, true) // size of central directory
     view.setUint32(16, centralOffset, true) // offset of start of central directory
     view.setUint16(20, 0, true) // no comment
@@ -85,11 +88,11 @@
   function buildCentralDirectory(localFileHeader, offset) {
     const headerView = new DataView(localFileHeader.buffer)
     const filenameLength = headerView.getUint16(26, true)
-    const headerData = localFileHeader.subarray(4, 30)
-    const fileName = localFileHeader.subarray(30, 30 + filenameLength)
+    const headerData = localFileHeader.subarray(4, LOCAL_FILE_HEADER_SIZE)
+    const fileName = localFileHeader.subarray(LOCAL_FILE_HEADER_SIZE, LOCAL_FILE_HEADER_SIZE + filenameLength)
 
     // construct the central directory entry
-    const centralDirectoryEntry = new Uint8Array(46 + filenameLength)
+    const centralDirectoryEntry = new Uint8Array(CENTRAL_DIRECTORY_HEADER_SIZE + filenameLength)
     const view = new DataView(centralDirectoryEntry.buffer)
 
     // little-endian byte order
@@ -101,19 +104,17 @@
     view.setUint16(36, 0, true) // internal file attributes
     view.setUint32(38, 0, true) // external file attributes
     view.setUint32(42, offset, true) // relative offset of local file header
-    centralDirectoryEntry.set(fileName, 46) // file name
+    centralDirectoryEntry.set(fileName, CENTRAL_DIRECTORY_HEADER_SIZE) // file name
 
     return centralDirectoryEntry
   }
-  function buildLocalFileHeader(filename, data) {
-    const crc32 = calculateCRC32(data)
-    const compressedSize = data.length
-    const encoder = new TextEncoder()
-    const filenameBytes = encoder.encode(filename)
+  function buildLocalFileHeader(filenameBytes, data) {
     const filenameLength = filenameBytes.length
+    const compressedSize = data.length
+    const crc32 = calculateCRC32(data)
 
     // construct the local file header
-    const localFileHeader = new Uint8Array(30 + filenameLength + compressedSize)
+    const localFileHeader = new Uint8Array(LOCAL_FILE_HEADER_SIZE + filenameLength + compressedSize)
     const view = new DataView(localFileHeader.buffer)
 
     // little-endian byte order
@@ -128,48 +129,42 @@
     view.setUint32(22, compressedSize, true) // uncompressed size
     view.setUint16(26, filenameLength, true) // file name length
     view.setUint16(28, 0, true) // no extra fields
-    localFileHeader.set(filenameBytes, 30) // file name
-    localFileHeader.set(data, 30 + filenameLength) // file data
+    localFileHeader.set(filenameBytes, LOCAL_FILE_HEADER_SIZE) // file name
+    localFileHeader.set(data, LOCAL_FILE_HEADER_SIZE + filenameLength) // file data
 
     return localFileHeader
   }
-  function buildZip(imageBinaryList) {
-    // build local file headers
-    const localFileHeaderList = []
-    for (const [filename, data] of imageBinaryList) {
-      const localFileHeader = buildLocalFileHeader(filename, data)
-      localFileHeaderList.push(localFileHeader)
+  function buildZip(filenameList, imageBinaryList) {
+    const encoder = new TextEncoder()
+    const encodedFilenameList = filenameList.map(filename => encoder.encode(filename))
+
+    // calculate total size
+    let totalHeaderSize = 0
+    let totalDirectorySize = 0
+    for (let i = 0; i < imageBinaryList.length; i++) {
+      const filenameLength = encodedFilenameList[i].length
+      const dataLength = imageBinaryList[i].length
+      totalHeaderSize += LOCAL_FILE_HEADER_SIZE + filenameLength + dataLength
+      totalDirectorySize += CENTRAL_DIRECTORY_HEADER_SIZE + filenameLength
     }
 
-    // build central directory entries
-    const centralDirectoryList = []
-    let centralOffset = 0
-    for (const localFileHeader of localFileHeaderList) {
-      const centralDirectoryEntry = buildCentralDirectory(localFileHeader, centralOffset)
-      centralDirectoryList.push(centralDirectoryEntry)
-      centralOffset += localFileHeader.length
-    }
-
-    // calculate the size of the central directory
-    const centralDirectorySize = centralDirectoryList.reduce((total, entry) => total + entry.length, 0)
-
-    // build the end of central directory record
-    const endOfCentralDirectoryRecord = buildEndOfCentralDirectoryRecord(localFileHeaderList.length, centralDirectorySize, centralOffset)
-
-    // combine all the components into the final zip file
-    const zipSize = centralOffset + centralDirectorySize + endOfCentralDirectoryRecord.length
+    // construct the zip file
+    const zipSize = totalHeaderSize + totalDirectorySize + END_OF_CENTRAL_DIRECTORY_SIZE
     const zipFile = new Uint8Array(zipSize)
 
+    // build zip file
     let offset = 0
-    for (const localFileHeader of localFileHeaderList) {
+    let centralOffset = totalHeaderSize
+    for (let i = 0; i < imageBinaryList.length; i++) {
+      const localFileHeader = buildLocalFileHeader(encodedFilenameList[i], imageBinaryList[i])
+      const centralDirectoryEntry = buildCentralDirectory(localFileHeader, offset)
       zipFile.set(localFileHeader, offset)
+      zipFile.set(centralDirectoryEntry, centralOffset)
       offset += localFileHeader.length
+      centralOffset += centralDirectoryEntry.length
     }
-    for (const centralDirectoryEntry of centralDirectoryList) {
-      zipFile.set(centralDirectoryEntry, offset)
-      offset += centralDirectoryEntry.length
-    }
-    zipFile.set(endOfCentralDirectoryRecord, offset)
+    const endOfCentralDirectoryRecord = buildEndOfCentralDirectoryRecord(imageBinaryList.length, totalDirectorySize, totalHeaderSize)
+    zipFile.set(endOfCentralDirectoryRecord, centralOffset)
 
     return zipFile
   }
@@ -221,33 +216,33 @@
       .catch(() => getCorsImageBinary(url))
       .finally(() => release())
   }
-  function getImageBinaryList(selectedUrlList) {
-    const length = selectedUrlList.length
-    const progress = new Array(length).fill(0)
-
+  async function downloadImages(selectedUrlList) {
+    let progress = 0
+    const filenameList = []
     const asyncList = []
-    for (let i = 0; i < length; i++) {
-      const [url, index] = selectedUrlList[i]
+    for (const [url, index] of selectedUrlList) {
       const indexString = ('0000' + (index + 1)).slice(-5)
       const name = url.startsWith('data') ? '' : '_' + url.split('?')[0].split('/').at(-1)
       const extension = name.includes('.') ? '' : '.jpg'
       const filename = indexString + name + extension
+      filenameList.push(filename)
 
-      const promise = getImageBinary(url).then(data => [filename, data])
-      promise.finally(() => (progress[i] = 1))
+      const promise = getImageBinary(url)
+      promise.finally(() => (progress += 1))
       asyncList.push(promise)
     }
 
+    const length = selectedUrlList.length
     const interval = setInterval(() => {
-      const total = progress.reduce((a, c) => a + c, 0)
-      console.log(`Downloading: ${total} / ${length}`)
-      if (total === length) {
+      console.log(`Downloading: ${progress} / ${length}`)
+      if (progress === length) {
         clearInterval(interval)
         console.log('Download complete.')
       }
     }, 3000)
 
-    return Promise.all(asyncList)
+    const imageBinaryList = await Promise.all(asyncList)
+    return [filenameList, imageBinaryList]
   }
 
   // main
@@ -261,8 +256,8 @@
     const selectedUrlList = imageList.map((img, i) => selectionRange[i] && [img.src, i]).filter(Boolean)
     if (selectedUrlList.length === 0) return
 
-    const imageBinaryList = await getImageBinaryList(selectedUrlList)
-    const zip = buildZip(imageBinaryList)
+    const [filenameList, imageBinaryList] = await downloadImages(selectedUrlList)
+    const zip = buildZip(filenameList, imageBinaryList)
     const blob = new Blob([zip.buffer])
 
     const a = document.createElement('a')
