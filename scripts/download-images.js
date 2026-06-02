@@ -133,13 +133,18 @@
 
     return localFileHeader
   }
-  function buildZip(localFileHeaderList) {
-    const centralDirectoryList = []
-    let centralOffset = 0
+  function buildZip(imageBinaryList) {
+    // build local file headers
+    const localFileHeaderList = []
+    for (const [filename, data] of imageBinaryList) {
+      const localFileHeader = buildLocalFileHeader(filename, data)
+      localFileHeaderList.push(localFileHeader)
+    }
 
     // build central directory entries
-    for (let i = 0; i < localFileHeaderList.length; i++) {
-      const localFileHeader = localFileHeaderList[i]
+    const centralDirectoryList = []
+    let centralOffset = 0
+    for (const localFileHeader of localFileHeaderList) {
       const centralDirectoryEntry = buildCentralDirectory(localFileHeader, centralOffset)
       centralDirectoryList.push(centralDirectoryEntry)
       centralOffset += localFileHeader.length
@@ -223,7 +228,12 @@
     const asyncList = []
     for (let i = 0; i < length; i++) {
       const [url, index] = selectedUrlList[i]
-      const promise = getImageBinary(url).then(data => [url, index, data])
+      const indexString = ('0000' + (index + 1)).slice(-5)
+      const name = url.startsWith('data') ? '' : '_' + url.split('?')[0].split('/').at(-1)
+      const extension = name.includes('.') ? '' : '.jpg'
+      const filename = indexString + name + extension
+
+      const promise = getImageBinary(url).then(data => [filename, data])
       promise.finally(() => (progress[i] = 1))
       asyncList.push(promise)
     }
@@ -252,18 +262,7 @@
     if (selectedUrlList.length === 0) return
 
     const imageBinaryList = await getImageBinaryList(selectedUrlList)
-
-    const localFileHeaderList = []
-    for (const [url, index, data] of imageBinaryList) {
-      const indexString = ('0000' + (index + 1)).slice(-5)
-      const name = url.startsWith('data') ? '' : '_' + url.split('?')[0].split('/').at(-1)
-      const extension = name.includes('.') ? '' : '.jpg'
-      const filename = indexString + name + extension
-
-      const localFileHeader = buildLocalFileHeader(filename, data)
-      localFileHeaderList.push(localFileHeader)
-    }
-    const zip = buildZip(localFileHeaderList)
+    const zip = buildZip(imageBinaryList)
     const blob = new Blob([zip.buffer])
 
     const a = document.createElement('a')
