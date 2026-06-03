@@ -973,7 +973,8 @@ window.ImageViewer = (function () {
           ctrlWithAltGraph = pressed || ctrlWithAltGraph
           e.ctrlWithAltGraph = ctrlWithAltGraph
 
-          const commandList = keydownHotkeyMap.get(e.key)
+          const key = e.key.length === 1 ? e.key.toLowerCase() : e.key
+          const commandList = keydownHotkeyMap.get(key)
           if (!commandList) return
 
           const currentModifierFlag = (e.ctrlKey || e.ctrlWithAltGraph) | ((e.altKey || e.getModifierState('AltGraph')) << 1) | (e.shiftKey << 2)
