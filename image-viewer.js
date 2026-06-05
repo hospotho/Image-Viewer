@@ -1578,7 +1578,7 @@ window.ImageViewer = (function () {
         }, 100)
       }
       webtoon.addEventListener('scroll', action)
-      new MutationObserver(action).observe(wrapper, {attributeFilter: ['style'] })
+      new MutationObserver(action).observe(wrapper, {attributeFilter: ['style']})
     }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
@@ -2311,7 +2311,7 @@ window.ImageViewer = (function () {
       let rotateCount = 0
       let dragFlag = false
       let finalDragTimeout = 0
-      const lastPos = {x: 0, y: 0}
+      const lastPos = [0, 0]
 
       // zoom & rotate
       node.addEventListener(
@@ -2354,15 +2354,15 @@ window.ImageViewer = (function () {
       node.addEventListener('mousedown', e => {
         e.preventDefault()
         dragFlag = true
-        lastPos.x = e.clientX
-        lastPos.y = e.clientY
+        lastPos[0] = e.clientX
+        lastPos[1] = e.clientY
       })
       node.addEventListener('mousemove', e => {
         if (!dragFlag) return
-        const deltaX = e.clientX - lastPos.x
-        const deltaY = e.clientY - lastPos.y
-        lastPos.x = e.clientX
-        lastPos.y = e.clientY
+        const deltaX = e.clientX - lastPos[0]
+        const deltaY = e.clientY - lastPos[1]
+        lastPos[0] = e.clientX
+        lastPos[1] = e.clientY
         // reset transition
         clearTimeout(finalDragTimeout)
         finalDragTimeout = setTimeout(() => (target.style.transition = ''), 30)
