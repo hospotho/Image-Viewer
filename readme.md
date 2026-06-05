@@ -88,7 +88,7 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
   </tr>
   <tr>
     <td rowspan="2">Move image</td>
-    <td><kbd>click</kbd> and <kbd>drag</kbd></td>
+    <td><kbd>click</kbd> and <kbd>drag</kbd> (any mouse button)</td>
   </tr>
   <tr>
     <td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd><kbd>w</kbd><kbd>a</kbd><kbd>s</kbd><kbd>d</kbd></td>
@@ -98,8 +98,11 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
     <td><kbd>double-click</kbd> anywhere</td>
   </tr>
   <tr>
-    <td rowspan="2">Zoom image</td>
-    <td>Scroll on the image (<kbd>Ctrl</kbd>+Scroll in webtoon mode)</td>
+    <td rowspan="3">Zoom image</td>
+    <td>Scroll on the image</td>
+  </tr>
+  <tr>
+    <td><kbd>Ctrl</kbd> or <kbd>drag</kbd> + scroll in webtoon mode</td>
   </tr>
   <tr>
     <td><kbd>Alt</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>w</kbd><kbd>s</kbd></td>

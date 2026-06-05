@@ -2303,7 +2303,7 @@ window.ImageViewer = (function () {
         'wheel',
         e => {
           const isRotate = e.altKey || e.getModifierState('AltGraph')
-          const isZoom = !isRotate && (!options.webtoonMode || e.ctrlKey)
+          const isZoom = !isRotate && (!options.webtoonMode || e.ctrlKey || dragFlag)
           if (!isRotate && !isZoom) return
           e.preventDefault()
           if (isZoom) {
