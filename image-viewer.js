@@ -1505,13 +1505,13 @@ window.ImageViewer = (function () {
       const infoPopup = shadowRoot.querySelector('#iv-info-popup')
       const updateEvent = new CustomEvent('update-info')
 
-      function findNearestIndex() {
+      function findNearestIndex(checkScroll) {
         const liList = shadowRoot.querySelectorAll('#iv-image-list li')
         if (liList.length === 0 || liList.length === 1) return liList.length - 1
         const webtoonRect = webtoon.getBoundingClientRect()
         // last scroll may block by scroll boundary
         const [, , rotate, ,] = getTransform(wrapper)
-        if (rotate % 90 !== 0) {
+        if (checkScroll && rotate % 90 !== 0) {
           const horizontal = (webtoonRect.width >= webtoon.scrollWidth && webtoon.scrollLeft === 0) || webtoon.scrollLeft + webtoonRect.width >= webtoon.scrollWidth
           const vertical = webtoon.scrollTop === 0 || webtoon.scrollTop + webtoonRect.height >= webtoon.scrollHeight
           if (horizontal || vertical) return -1
@@ -1557,11 +1557,12 @@ window.ImageViewer = (function () {
         }
       }
 
-      let scrollTimeout = 0
-      const action = () => {
-        clearTimeout(scrollTimeout)
-        scrollTimeout = setTimeout(() => {
-          const nearestIndex = findNearestIndex()
+      let timeout = 0
+      const action = trigger => {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => {
+          const checkScroll = trigger instanceof Event
+          const nearestIndex = findNearestIndex(checkScroll)
           if (nearestIndex === -1) return
           const currentListItem = imageListNode.querySelector('li.current')
           const relateListItem = shadowRoot.querySelector(`#iv-image-list li:nth-child(${nearestIndex + 1})`)
@@ -1577,6 +1578,7 @@ window.ImageViewer = (function () {
         }, 100)
       }
       webtoon.addEventListener('scroll', action)
+      new MutationObserver(action).observe(wrapper, {attributeFilter: ['style'] })
     }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
