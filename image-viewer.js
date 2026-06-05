@@ -2294,6 +2294,9 @@ window.ImageViewer = (function () {
       let mirror = false
       let zoomCount = 0
       let rotateCount = 0
+      let dragFlag = false
+      let finalDragTimeout = 0
+      const lastPos = {x: 0, y: 0}
 
       // zoom & rotate
       node.addEventListener(
@@ -2333,9 +2336,6 @@ window.ImageViewer = (function () {
       })
 
       // dragging
-      let dragFlag = false
-      let finalDragTimeout = 0
-      const lastPos = {x: 0, y: 0}
       node.addEventListener('mousedown', e => {
         e.preventDefault()
         dragFlag = true
@@ -2424,11 +2424,11 @@ window.ImageViewer = (function () {
       return
     }
 
-    const current = shadowRoot.querySelector('#iv-image-list li.current:not([ready])')
     for (const li of shadowRoot.querySelectorAll('#iv-image-list li:not([ready]):has(img.loaded)')) {
       li.setAttribute('ready', '')
       addTransformHandler(li, li.firstChild)
     }
+    const current = shadowRoot.querySelector('#iv-image-list li.current:not([ready])')
     if (current) {
       const event = new CustomEvent('hotkey', {detail: {type: 'restore'}})
       current.dispatchEvent(event)
