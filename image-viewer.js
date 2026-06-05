@@ -1949,14 +1949,18 @@ window.ImageViewer = (function () {
     // update info after scroll
     if (options.webtoonMode) {
       const webtoon = shadowRoot.querySelector('#iv-webtoon')
+      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
       const findNearestIndex = () => {
         const liList = shadowRoot.querySelectorAll('#iv-image-list li')
         if (liList.length === 0 || liList.length === 1) return liList.length - 1
-        // last scroll may block by scroll boundary
         const webtoonRect = webtoon.getBoundingClientRect()
-        const horizontal = webtoon.scrollLeft === 0 || webtoon.scrollLeft + webtoonRect.width >= webtoon.scrollWidth
-        const vertical = webtoon.scrollTop === 0 || webtoon.scrollTop + webtoonRect.height >= webtoon.scrollHeight
-        if (horizontal || vertical) return -1
+        // last scroll may block by scroll boundary
+        const [, , rotate, ,] = getTransform(wrapper)
+        if (rotate % 90 !== 0) {
+          const horizontal = (webtoonRect.width >= webtoon.scrollWidth && webtoon.scrollLeft === 0) || webtoon.scrollLeft + webtoonRect.width >= webtoon.scrollWidth
+          const vertical = webtoon.scrollTop === 0 || webtoon.scrollTop + webtoonRect.height >= webtoon.scrollHeight
+          if (horizontal || vertical) return -1
+        }
         // left = y, top = x
         const leftRect = liList[0].getBoundingClientRect()
         const rightRect = liList[liList.length - 1].getBoundingClientRect()
