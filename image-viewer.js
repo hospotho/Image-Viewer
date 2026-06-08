@@ -938,7 +938,7 @@ window.ImageViewer = (function () {
     if (options.webtoonMode) {
       shadowHolder.classList.add('webtoon')
       viewer.classList.add('webtoon')
-      options.fitMode = 'keep'
+      options.fitMode = 'none'
     }
 
     if (!options.closeButton) {
