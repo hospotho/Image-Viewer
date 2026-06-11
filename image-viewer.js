@@ -2470,6 +2470,24 @@ window.ImageViewer = (function () {
 
   function updateImageList(newList, options) {
     function tryUpdate() {
+      const newDomDataMap = new Map()
+      const newUrlDataMap = new Map()
+      const newFilenameDataMap = new Map()
+      const repeatFilename = new Set()
+      for (const data of newList) {
+        const {src, dom} = data
+        if (dom.tagName !== 'IFRAME' && !dom.hasAttribute('iv-dynamic')) newDomDataMap.set(dom, data)
+        newUrlDataMap.set(src, data)
+
+        const filename = getFilename(src)
+        if (repeatFilename.has(filename) || newFilenameDataMap.has(filename)) {
+          repeatFilename.add(filename)
+          newFilenameDataMap.delete(filename)
+        } else {
+          newFilenameDataMap.set(filename, data)
+        }
+      }
+
       const imgList = shadowRoot.querySelectorAll('img')
       const action = (i, src) => {
         currentUrlList[i] = src
@@ -2614,26 +2632,9 @@ window.ImageViewer = (function () {
     }
 
     // init update check cache
-    const currentUrlList = imageDataList.map(data => data.src)
-    const newDomDataMap = new Map()
-    const newUrlDataMap = new Map()
-    const newFilenameDataMap = new Map()
-    const repeatFilename = new Set()
-    for (const data of newList) {
-      const {src, dom} = data
-      if (dom.tagName !== 'IFRAME' && !dom.hasAttribute('iv-dynamic')) newDomDataMap.set(dom, data)
-      newUrlDataMap.set(src, data)
-
-      const filename = getFilename(src)
-      if (repeatFilename.has(filename) || newFilenameDataMap.has(filename)) {
-        repeatFilename.add(filename)
-        newFilenameDataMap.delete(filename)
-      } else {
-        newFilenameDataMap.set(filename, data)
-      }
-    }
-
     let updated = false
+    const currentUrlList = imageDataList.map(data => data.src)
+
     tryUpdate()
     tryInsert()
     // This extension never remove old image from the list
