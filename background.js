@@ -115,6 +115,29 @@ async function getImageBitSize(src) {
   srcBitSizeMap.set(src, promise)
   return promise
 }
+async function getImageRealSize(src) {
+  const cache = srcLocalRealSizeMap.get(src)
+  if (cache !== undefined) return cache
+
+  const promise = new Promise(_resolve => {
+    const resolve = size => {
+      srcLocalRealSizeMap.set(src, size)
+      _resolve(size)
+    }
+    fetch(src)
+      .then(res => res.blob())
+      .then(blob => createImageBitmap(blob))
+      .then(bitmap => {
+        const size = Math.min(bitmap.width, bitmap.height)
+        bitmap.close()
+        resolve(size)
+      })
+      .catch(() => resolve(0))
+  })
+
+  srcLocalRealSizeResolveMap.set(src, promise)
+  return promise
+}
 async function getImageLocalRealSize(id, src) {
   const cache = srcLocalRealSizeMap.get(src)
   if (cache !== undefined) return cache
@@ -441,6 +464,13 @@ function addMessageHandler() {
           const size = await getImageBitSize(request.url)
           sendResponse(size, false)
           console.log(request.url, size)
+        })()
+        return true
+      }
+      case 'get_real_size': {
+        ;(async () => {
+          const size = await getImageRealSize(request.url)
+          sendResponse(size, false)
         })()
         return true
       }
