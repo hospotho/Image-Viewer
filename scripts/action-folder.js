@@ -29,7 +29,7 @@
   const asyncList = anchorList.map(a => a.getAttribute('iv-size') || ImageViewerUtils.getImageRealSize(a.href).then(size => a.setAttribute('iv-size', size)))
 
   let ready = false
-  while (!ready) {
+  while (!ready && document.body.classList.contains('iv-attached')) {
     // collect image data
     const imageDataList = []
     for (const anchor of anchorList) {
