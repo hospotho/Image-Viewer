@@ -29,6 +29,23 @@
   let complete = false
   let terminated = false
   const imageDataList = []
+
+  let left = 0
+  let right = anchorList.length - 1
+  while (true) {
+    const mid = Math.floor((left + right) / 2)
+    const size = anchorList[mid].getAttribute('iv-size')
+    size ? (left = mid + 1) : (right = mid - 1)
+    if (left > right) break
+  }
+  if (right !== -1) {
+    const skipList = anchorList.splice(0, right + 1)
+    for (const anchor of skipList) {
+      const size = Number(anchor.getAttribute('iv-size'))
+      if (size >= minSize) imageDataList.push({src: anchor.href, dom: anchor})
+    }
+  }
+
   ;(async () => {
     const action = async anchor => {
       const attrSize = anchor.getAttribute('iv-size')
@@ -49,7 +66,7 @@
     setTimeout(() => (complete = true), 1000)
   })()
 
-  await new Promise(resolve => setTimeout(resolve, 200))
+  if (!imageDataList.length) await new Promise(resolve => setTimeout(resolve, 200))
   while (true) {
     // update image viewer
     ImageViewer(imageDataList, options)
