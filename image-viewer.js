@@ -2520,14 +2520,16 @@ window.ImageViewer = (function () {
     }
     function tryInsert() {
       function insertImageNode(node, index) {
-        const list = imageListNode.children
-        if (index === list.length) {
+        if (index === listLength++) {
           imageListNode.appendChild(node)
         } else {
           imageListNode.insertBefore(node, list[index])
         }
       }
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const list = imageListNode.children
+      let listLength = list.length
+
       const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
       const currentIndex = counterCurrent.textContent - 1
       const currentUrlIndexMap = new Map(currentUrlList.map((url, i) => [url, i]))
@@ -2575,12 +2577,11 @@ window.ImageViewer = (function () {
       }
       // first image changed
       if (!firstImageChanged) return
-      const imgList = [...shadowRoot.querySelectorAll('img')]
       const oldFirstSrc = imageDataList[0].src
-      const newFirstIndex = imgList.findIndex(node => node.src === oldFirstSrc)
+      const newFirstIndex = newList.findIndex(data => data.src === oldFirstSrc)
       for (let i = 0; i < newFirstIndex; i++) {
-        const src = imgList[i].src
-        const dom = newList.find(data => data.src === src).dom
+        const dom = newList[i].dom
+        // skip background image
         if (dom.tagName === 'IMG' || dom.tagName === 'VIDEO' || dom.tagName === 'IFRAME') {
           clearIndex = i
           break
