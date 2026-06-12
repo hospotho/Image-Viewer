@@ -2,13 +2,15 @@ window.ImageViewer = (function () {
   'use strict'
 
   let shadowRoot = null
-  let initializing = false
   let lastHref = location.href
   let lastUpdateTime = 0
   let imageDataList = []
   const imageFailureCountMap = new Map()
 
+  let initializing = false
+  let filtering = false
   let fps = getFPS().then(result => (fps = result)) && 60
+
   let insertIndex = -1
   let clearIndex = -1
   let clearDom = null
@@ -2142,21 +2144,23 @@ window.ImageViewer = (function () {
         updateCounter()
       }
 
-      // delay check image fail to avoid block main thread
+      if (filtering) return
+      filtering = true
+
       while (true) {
         for (const img of shadowRoot.querySelectorAll('img[src]:not([checked])')) {
+          if (!img.complete) continue
           img.setAttribute('checked', '')
-          if (img.complete && img.naturalWidth === 0) action(img)
-          else img.addEventListener('error', () => action(img))
+          if (img.naturalWidth === 0) {
+            img.addEventListener('error', () => action(img))
+            action(img)
+          }
         }
-        if (!initializing) break
-        await new Promise(resolve => setTimeout(resolve, 1))
+        const length = shadowRoot.querySelectorAll('img:not([src]):not([checked])').length
+        if (length === 0) break
+        await new Promise(resolve => setTimeout(resolve, 1000))
       }
-      for (const img of shadowRoot.querySelectorAll('img:not([checked])')) {
-        img.setAttribute('checked', '')
-        if (img.complete && img.naturalWidth === 0) action(img)
-        else img.addEventListener('error', () => action(img))
-      }
+      filtering = false
     }
 
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
@@ -2179,7 +2183,7 @@ window.ImageViewer = (function () {
     const counterTotal = shadowRoot.querySelector('#iv-counter-total')
     const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
     updateCounter()
-    setTimeout(() => removeFailedImg, 3000)
+    setTimeout(removeFailedImg, 3000)
 
     // update viewer when base image complete
     const action = () => {
