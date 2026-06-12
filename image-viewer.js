@@ -2524,6 +2524,12 @@ window.ImageViewer = (function () {
           action(i, filenameData.src)
         }
       }
+
+      const current = shadowRoot.querySelector('li.current img')
+      const currentIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
+      if (current.src !== currentUrlList[currentIndex]) {
+        current.src = currentUrlList[currentIndex]
+      }
     }
     function tryInsert() {
       function insertImageNode(node, index) {
