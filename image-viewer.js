@@ -138,7 +138,7 @@ window.ImageViewer = (function () {
       const start = Math.max(0, index - chunkSize)
       const end = Math.min(length - 1, index + chunkSize)
       for (let i = start; i <= end; i++) {
-        if (imgList[i].src === '') {
+        if (imgList[i].currentSrc === '') {
           imgList[i].src = imageDataList[i].src
         }
       }
@@ -146,12 +146,12 @@ window.ImageViewer = (function () {
     }
 
     for (let i = 0; i < (index + chunkSize) % length; i++) {
-      if (imgList[i].src === '') {
+      if (imgList[i].currentSrc === '') {
         imgList[i].src = imageDataList[i].src
       }
     }
     for (let i = (index - chunkSize + length) % length; i < length; i++) {
-      if (imgList[i].src === '') {
+      if (imgList[i].currentSrc === '') {
         imgList[i].src = imageDataList[i].src
       }
     }
@@ -1599,6 +1599,7 @@ window.ImageViewer = (function () {
           const checkScroll = trigger instanceof Event
           const nearestIndex = findNearestIndex(checkScroll)
           if (nearestIndex === -1) return
+          loadImageChunk(nearestIndex)
           const currentListItem = imageListNode.querySelector('li.current')
           const relateListItem = shadowRoot.querySelector(`#iv-image-list li:nth-child(${nearestIndex + 1})`)
           if (currentListItem !== relateListItem) {
@@ -1609,12 +1610,12 @@ window.ImageViewer = (function () {
             infoWidth.textContent = relateImage.naturalWidth
             infoHeight.textContent = relateImage.naturalHeight
             infoPopup.dispatchEvent(updateEvent)
-            loadImageChunk(nearestIndex)
           }
         }, 100)
       }
       webtoon.addEventListener('scroll', action)
       new MutationObserver(action).observe(wrapper, {attributeFilter: ['style']})
+      new ResizeObserver(action).observe(wrapper)
     }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
