@@ -2399,7 +2399,8 @@ window.ImageViewer = (function () {
       // reset
       const reset = async () => {
         const target = getTarget()
-        const context = getContext(target)
+        const context = nodeContextMap.get(target)
+        if (context === undefined) return
         context.mirror = false
         context.zoomCount = 0
         context.rotateCount = 0
