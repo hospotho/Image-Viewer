@@ -61,7 +61,6 @@
       for (let i = 0; i < batch.length; i++) {
         if (sizeList[i] >= minSize) imageDataList.push({src: batch[i].href, dom: batch[i]})
       }
-      await new Promise(resolve => setTimeout(resolve, 100))
     }
     setTimeout(() => (complete = true), 1000)
   })()
