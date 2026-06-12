@@ -2588,26 +2588,6 @@ window.ImageViewer = (function () {
         }
       }
     }
-    // function tryRemove() {
-    //   const current = shadowRoot.querySelector('li.current img')
-    //   const currentSrc = current.src
-
-    //   for (const imgNode of shadowRoot.querySelectorAll('img')) {
-    //     if (!newUrlDataMap.has(imgNode.src)) {
-    //       imgNode.parentElement.remove()
-    //       updated = true
-    //     }
-    //   }
-
-    //   const rawUrl = getRawUrl(currentSrc)
-    //   if (!shadowRoot.contains(current) || rawUrl === currentSrc) return
-    //   for (const imgNode of shadowRoot.querySelectorAll('img')) {
-    //     if (imgNode.src === rawUrl) {
-    //       imgNode.parentElement.classList.add('current')
-    //       break
-    //     }
-    //   }
-    // }
     function tryClear() {
       // failed update will became incorrect insertion
       const imgList = shadowRoot.querySelectorAll('img')
@@ -2640,9 +2620,6 @@ window.ImageViewer = (function () {
 
     tryUpdate()
     tryInsert()
-    // This extension never remove old image from the list
-    // fork and uncomment if you need it
-    // tryRemove()
 
     lastUpdateTime = Date.now()
     imageDataList = Array.from(newList)
