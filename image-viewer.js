@@ -1865,7 +1865,7 @@ window.ImageViewer = (function () {
         }
       }
     }
-    async function moveToNode(index) {
+    async function moveToNode(index, fastForward = false) {
       if (moveLock) return
       moveLock = true
 
@@ -1874,13 +1874,15 @@ window.ImageViewer = (function () {
       const throttleDelay = Math.max(lastDecodeTime, lastCompleteTime + throttlePeriod - performance.now())
       const throttlePromise = new Promise(resolve => setTimeout(resolve, throttleDelay))
 
-      loadImageChunk(index)
-
-      // wait next image decode
-      const startTime = performance.now()
       const currentListItem = imageListNode.querySelector('li.current')
       const relateListItem = imageListNode.querySelector(`li:nth-child(${index + 1})`)
       const relateImage = relateListItem.querySelector('img')
+
+      if (!fastForward) loadImageChunk(index)
+      else if (relateImage.src === '') relateImage.src = imageDataList[index].src
+
+      // wait next image decode
+      const startTime = performance.now()
       if (relateImage.complete) await relateImage.decode().catch(() => {})
 
       const decodeTime = performance.now() - startTime
@@ -2014,7 +2016,7 @@ window.ImageViewer = (function () {
       const currIndex = Number(current.textContent) - 1
       const newIndex = direction === 1 ? Math.min(currIndex + 10, Number(total.textContent) - 1) : Math.max(currIndex - 10, 0)
       resetThrottle()
-      moveToNode(newIndex)
+      moveToNode(newIndex, true)
     }
     const autoNavigation = async (e, COMMAND_ENUM_VALUE) => {
       const direction = COMMAND_ENUM_VALUE === COMMAND_ENUM.AUTO_NAVIGATE_NEXT ? 1 : 0
