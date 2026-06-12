@@ -81,6 +81,10 @@ img.loaded {
   max-width: none;
   max-height: none;
 }
+#image-viewer.webtoon img:not(.loaded) {
+  min-width: 80vw;
+  min-height: 80vh;
+}
 
 /* control panel */
 #iv-control {

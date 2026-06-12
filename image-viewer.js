@@ -126,6 +126,36 @@ window.ImageViewer = (function () {
     return [Number(scale[0]) || 1, Number(scale[1]) || Math.abs(Number(scale[0])) || 1, Number(rotate) || 0, Number(translate[0]) || 0, Number(translate[1]) || 0]
   }
 
+  function loadImageChunk(index) {
+    const chunkSize = 20
+    const imgList = shadowRoot.querySelectorAll('img')
+    const length = imgList.length
+
+    // load image src in chunks from center outward
+    const fullWindow = chunkSize * 2 + 1 >= length
+    const withinBounds = index - chunkSize >= 0 && index + chunkSize < length
+    if (fullWindow || withinBounds) {
+      const start = Math.max(0, index - chunkSize)
+      const end = Math.min(length - 1, index + chunkSize)
+      for (let i = start; i <= end; i++) {
+        if (imgList[i].src === '') {
+          imgList[i].src = imageDataList[i].src
+        }
+      }
+      return
+    }
+
+    for (let i = 0; i < (index + chunkSize) % length; i++) {
+      if (imgList[i].src === '') {
+        imgList[i].src = imageDataList[i].src
+      }
+    }
+    for (let i = (index - chunkSize + length) % length; i < length; i++) {
+      if (imgList[i].src === '') {
+        imgList[i].src = imageDataList[i].src
+      }
+    }
+  }
   const buildImageNode = (function () {
     const liTemplate = document.createElement('li')
     const imgTemplate = document.createElement('img')
@@ -669,6 +699,10 @@ window.ImageViewer = (function () {
       img.loaded {
         max-width: none;
         max-height: none;
+      }
+      #image-viewer.webtoon img:not(.loaded) {
+        min-width: 80vw;
+        min-height: 80vh;
       }
 
       /* control panel */
@@ -1575,6 +1609,7 @@ window.ImageViewer = (function () {
             infoWidth.textContent = relateImage.naturalWidth
             infoHeight.textContent = relateImage.naturalHeight
             infoPopup.dispatchEvent(updateEvent)
+            loadImageChunk(nearestIndex)
           }
         }, 100)
       }
@@ -1835,36 +1870,6 @@ window.ImageViewer = (function () {
     let navigateState = -1
     let autoNavigateState = 0
 
-    function loadImageChunk(index) {
-      const chunkSize = 20
-      const imgList = shadowRoot.querySelectorAll('img')
-      const length = imgList.length
-
-      // load image src in chunks from center outward
-      const fullWindow = chunkSize * 2 + 1 >= length
-      const withinBounds = index - chunkSize >= 0 && index + chunkSize < length
-      if (fullWindow || withinBounds) {
-        const start = Math.max(0, index - chunkSize)
-        const end = Math.min(length - 1, index + chunkSize)
-        for (let i = start; i <= end; i++) {
-          if (imgList[i].src === '') {
-            imgList[i].src = imageDataList[i].src
-          }
-        }
-        return
-      }
-
-      for (let i = 0; i < (index + chunkSize) % length; i++) {
-        if (imgList[i].src === '') {
-          imgList[i].src = imageDataList[i].src
-        }
-      }
-      for (let i = (index - chunkSize + length) % length; i < length; i++) {
-        if (imgList[i].src === '') {
-          imgList[i].src = imageDataList[i].src
-        }
-      }
-    }
     async function moveToNode(index, fastForward = false) {
       if (moveLock) return
       moveLock = true
