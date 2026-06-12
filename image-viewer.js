@@ -7,7 +7,6 @@ window.ImageViewer = (function () {
   let imageDataList = []
   const imageFailureCountMap = new Map()
 
-  let initializing = false
   let filtering = false
   let fps = getFPS().then(result => (fps = result)) && 60
 
@@ -1836,6 +1835,36 @@ window.ImageViewer = (function () {
     let navigateState = -1
     let autoNavigateState = 0
 
+    function loadImageChunk(index) {
+      const chunkSize = 20
+      const imgList = shadowRoot.querySelectorAll('img')
+      const length = imgList.length
+
+      // load image src in chunks from center outward
+      const fullWindow = chunkSize * 2 + 1 >= length
+      const withinBounds = index - chunkSize >= 0 && index + chunkSize < length
+      if (fullWindow || withinBounds) {
+        const start = Math.max(0, index - chunkSize)
+        const end = Math.min(length - 1, index + chunkSize)
+        for (let i = start; i <= end; i++) {
+          if (imgList[i].src === '') {
+            imgList[i].src = imageDataList[i].src
+          }
+        }
+        return
+      }
+
+      for (let i = 0; i < (index + chunkSize) % length; i++) {
+        if (imgList[i].src === '') {
+          imgList[i].src = imageDataList[i].src
+        }
+      }
+      for (let i = (index - chunkSize + length) % length; i < length; i++) {
+        if (imgList[i].src === '') {
+          imgList[i].src = imageDataList[i].src
+        }
+      }
+    }
     async function moveToNode(index) {
       if (moveLock) return
       moveLock = true
@@ -1844,6 +1873,8 @@ window.ImageViewer = (function () {
       clearTimeout(resetDecodeTimeout)
       const throttleDelay = Math.max(lastDecodeTime, lastCompleteTime + throttlePeriod - performance.now())
       const throttlePromise = new Promise(resolve => setTimeout(resolve, throttleDelay))
+
+      loadImageChunk(index)
 
       // wait next image decode
       const startTime = performance.now()
@@ -2053,7 +2084,7 @@ window.ImageViewer = (function () {
     const fragment = document.createDocumentFragment()
 
     // build all image node at once when the list is small
-    if (dataList.length <= 100) {
+    if (dataList.length <= 101) {
       for (const data of dataList) {
         fragment.append(buildImageNode(data))
       }
@@ -2066,41 +2097,18 @@ window.ImageViewer = (function () {
     const baseIndex = getBaseIndex(options)
 
     // load image src in chunks from center outward
-    const reverseFlag = baseIndex - chunkSize < 0 || baseIndex + chunkSize > length
-    const [left, right] = reverseFlag ? [(baseIndex + chunkSize) % length, (baseIndex - chunkSize + length) % length] : [baseIndex - chunkSize, baseIndex + chunkSize]
+    const withinBounds = baseIndex - chunkSize >= 0 && baseIndex + chunkSize < length
+    const [left, right] = withinBounds ? [baseIndex - chunkSize, baseIndex + chunkSize] : [(baseIndex + chunkSize) % length, (baseIndex - chunkSize + length) % length]
     for (let i = 0; i < left; i++) {
-      fragment.append(buildImageNode(dataList[i], !reverseFlag))
+      fragment.append(buildImageNode(dataList[i], withinBounds))
     }
     for (let i = left; i <= right; i++) {
-      fragment.append(buildImageNode(dataList[i], reverseFlag))
+      fragment.append(buildImageNode(dataList[i], !withinBounds))
     }
     for (let i = right + 1; i < length; i++) {
-      fragment.append(buildImageNode(dataList[i], !reverseFlag))
+      fragment.append(buildImageNode(dataList[i], withinBounds))
     }
     imageList.appendChild(fragment)
-
-    // delay set src to avoid block main thread
-    initializing = true
-    const action = async () => {
-      const liList = shadowRoot.querySelectorAll('#iv-image-list li')
-      let leftIndex = reverseFlag ? (left + length) % length : (right + 1 + length) % length
-      let rightIndex = reverseFlag ? (right + length) % length : (left - 1 + length) % length
-      while (initializing) {
-        await new Promise(resolve => setTimeout(resolve, 1))
-        let count = chunkSize * 2
-        while (count-- > 0) {
-          liList[leftIndex].firstChild.src = dataList[leftIndex].src
-          liList[rightIndex].firstChild.src = dataList[rightIndex].src
-          if (leftIndex === rightIndex || (leftIndex + 1) % length === rightIndex) {
-            initializing = false
-            break
-          }
-          leftIndex = (leftIndex + 1) % length
-          rightIndex = (rightIndex - 1 + length) % length
-        }
-      }
-    }
-    action()
   }
 
   function initImageList(options) {
@@ -2487,7 +2495,6 @@ window.ImageViewer = (function () {
       const action = (i, src) => {
         currentUrlList[i] = src
         imgList[i].src = '' // clear image
-        imgList[i].src = src
         imgList[i].parentElement.removeAttribute('resized')
       }
       for (let i = 0; i < currentUrlList.length; i++) {
@@ -2550,7 +2557,7 @@ window.ImageViewer = (function () {
         if (index !== undefined) continue
 
         indexShift++
-        const node = buildImageNode(data)
+        const node = buildImageNode(data, true)
         const lastSrc = newList[i - 1].src
         // insert to known position
         const refIndex = currentUrlIndexMap.get(lastSrc) + indexShift || newUrlInsertIndexMap.get(lastSrc) + 1
@@ -2739,7 +2746,7 @@ window.ImageViewer = (function () {
       return executeCommand(command)
     }
 
-    if (imageDataList.length === 0 || initializing) return
+    if (imageDataList.length === 0) return
 
     if (!document.body.classList.contains('iv-attached')) {
       buildApp(options)
