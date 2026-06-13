@@ -2493,6 +2493,8 @@ window.ImageViewer = (function () {
 
   function updateImageList(newList, options) {
     function tryUpdate() {
+      // init update check cache
+      const currentUrlList = imageDataList.map(data => data.src)
       const newDomDataMap = new Map()
       const newUrlDataMap = new Map()
       const newFilenameDataMap = new Map()
@@ -2543,8 +2545,12 @@ window.ImageViewer = (function () {
       if (current.src !== currentUrlList[currentIndex]) {
         current.src = currentUrlList[currentIndex]
       }
+
+      return currentUrlList
     }
-    function tryInsert() {
+    function tryInsert(currentUrlList) {
+      let imageInserted = false
+
       function insertImageNode(node, index) {
         if (index === listLength++) {
           imageListNode.appendChild(node)
@@ -2571,7 +2577,7 @@ window.ImageViewer = (function () {
         const node = buildImageNode(firstData)
         newUrlInsertIndexMap.set(firstData.src, 0)
         insertImageNode(node, 0)
-        updated = true
+        imageInserted = true
         if (currentIndex === 0) {
           console.log('First image changed')
           firstImageChanged = true
@@ -2593,7 +2599,7 @@ window.ImageViewer = (function () {
         insertImageNode(node, refIndex)
         // only first consecutive insert
         lastIndex = lastIndex === -1 || lastIndex + 1 === refIndex ? refIndex : lastIndex
-        updated = true
+        imageInserted = true
       }
       // update insert index for navigation lock
       if (lastIndex > insertIndex) {
@@ -2601,8 +2607,9 @@ window.ImageViewer = (function () {
         const resetTime = Math.min(Math.max(Date.now() - lastUpdateTime, 2000), 5000)
         setTimeout(() => (insertIndex = insertIndex === lastIndex ? -1 : insertIndex), resetTime)
       }
+      if (!firstImageChanged) return imageInserted
+
       // first image changed
-      if (!firstImageChanged) return
       const oldFirstSrc = imageDataList[0].src
       const newFirstIndex = newList.findIndex(data => data.src === oldFirstSrc)
       for (let i = 0; i < newFirstIndex; i++) {
@@ -2613,6 +2620,7 @@ window.ImageViewer = (function () {
           break
         }
       }
+      return imageInserted
     }
     function tryClear() {
       // failed update will became incorrect insertion
@@ -2640,24 +2648,20 @@ window.ImageViewer = (function () {
       }
     }
 
-    // init update check cache
-    let updated = false
-    const currentUrlList = imageDataList.map(data => data.src)
+    const currentUrlList = tryUpdate()
+    const imageInserted = tryInsert(currentUrlList)
 
-    tryUpdate()
-    tryInsert()
-
-    lastUpdateTime = Date.now()
-    imageDataList = Array.from(newList)
-
-    if (updated) {
+    if (imageInserted) {
       if (options.closeButton) {
         shadowRoot.querySelector('#iv-index').style.display = 'flex'
-        shadowRoot.querySelector('#iv-counter-total').textContent = imageDataList.length
+        shadowRoot.querySelector('#iv-counter-total').textContent = newList.length
       }
       if (tryClear()) console.log('Image list has been rebuilt')
       else console.log('Image viewer updated')
     }
+
+    lastUpdateTime = Date.now()
+    imageDataList = Array.from(newList)
   }
 
   function restoreIndex(options) {
