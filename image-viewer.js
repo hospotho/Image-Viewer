@@ -2089,176 +2089,6 @@ window.ImageViewer = (function () {
     }
   }
 
-  function buildImageList(dataList, options) {
-    lastHref = location.href
-    lastUpdateTime = Date.now()
-    imageDataList = Array.from(dataList)
-    if (dataList.length > 1) {
-      shadowRoot.querySelector('#iv-index').style.display = 'flex'
-      shadowRoot.querySelector('#iv-counter-total').textContent = dataList.length
-    }
-    // trigger style recalculation
-    shadowRoot.querySelector('#image-viewer').focus()
-
-    const imageList = shadowRoot.querySelector('#iv-image-list')
-    const fragment = document.createDocumentFragment()
-
-    // build all image node at once when the list is small
-    if (dataList.length <= 101) {
-      for (const data of dataList) {
-        fragment.append(buildImageNode(data))
-      }
-      imageList.appendChild(fragment)
-      return
-    }
-
-    const chunkSize = 50
-    const length = dataList.length
-    const baseIndex = getBaseIndex(options)
-
-    // load image src in chunks from center outward
-    const withinBounds = baseIndex - chunkSize >= 0 && baseIndex + chunkSize < length
-    const [left, right] = withinBounds ? [baseIndex - chunkSize, baseIndex + chunkSize] : [(baseIndex + chunkSize) % length, (baseIndex - chunkSize + length) % length]
-    for (let i = 0; i < left; i++) {
-      fragment.append(buildImageNode(dataList[i], withinBounds))
-    }
-    for (let i = left; i <= right; i++) {
-      fragment.append(buildImageNode(dataList[i], !withinBounds))
-    }
-    for (let i = right + 1; i < length; i++) {
-      fragment.append(buildImageNode(dataList[i], withinBounds))
-    }
-    imageList.appendChild(fragment)
-  }
-
-  function initImageList(options) {
-    function updateCounter() {
-      const list = imageListNode.children
-      const length = list.length
-      if (length === 0) {
-        closeImageViewer()
-        return
-      }
-
-      const current = shadowRoot.querySelector('li.current')
-      const currIndex = Array.prototype.indexOf.call(list, current)
-
-      counterTotal.textContent = length
-      counterCurrent.textContent = currIndex + 1
-    }
-    async function removeFailedImg() {
-      const action = img => {
-        // update counter
-        const src = img.src
-        const lastCount = imageFailureCountMap.get(src) || 0
-        imageFailureCountMap.set(src, lastCount + 1)
-        if (lastCount < 3) {
-          fetch(src, {cache: 'reload'}).catch(() => {})
-          img.src = src
-          return
-        }
-        console.log(`Removing failed img: ${src}`)
-        // update data list
-        const index = imageDataList.findIndex(data => data.src === src)
-        if (index !== -1) imageDataList.splice(index, 1)
-        // set new current
-        const target = img.parentNode
-        if (target.classList.contains('current')) {
-          const newCurrent = target.previousElementSibling || target.nextElementSibling
-          newCurrent?.classList.add('current')
-        }
-        // remove img container
-        target.remove()
-        updateCounter()
-      }
-
-      if (filtering) return
-      filtering = true
-
-      while (true) {
-        for (const img of shadowRoot.querySelectorAll('img[src]:not([checked])')) {
-          if (!img.complete) continue
-          img.setAttribute('checked', '')
-          if (img.naturalWidth === 0) {
-            img.addEventListener('error', () => action(img))
-            action(img)
-          }
-        }
-        const length = shadowRoot.querySelectorAll('img:not([src]):not([checked])').length
-        if (length === 0) break
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-      filtering = false
-    }
-
-    const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    const current = shadowRoot.querySelector('#iv-image-list li.current')
-    const liList = imageListNode.children
-    const base = current || liList[getBaseIndex(options)]
-    const baseImg = base.firstChild
-    const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : baseImg
-    base.classList.add('current')
-
-    const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
-    const targetDom = clearDom || lastDom
-    const baseIndex = Array.prototype.indexOf.call(liList, base)
-    if (transform && targetDom === imageDataList[baseIndex]?.dom) {
-      target.style.transition = 'none'
-      applyTransform(target, ...transform)
-      options.webtoonMode ? (lastWebtoonTransform = null) : (lastTransform = null)
-    }
-
-    const counterTotal = shadowRoot.querySelector('#iv-counter-total')
-    const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
-    updateCounter()
-    setTimeout(removeFailedImg, 3000)
-
-    // update viewer when base image complete
-    const action = () => {
-      target.style.transition = ''
-      // prevent image loading flash
-      if (!options.closeButton) {
-        const viewer = shadowRoot.querySelector('#image-viewer')
-        viewer.style.removeProperty('opacity')
-      }
-      if (base.classList.contains('current')) {
-        shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
-        shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
-      }
-      removeFailedImg()
-    }
-    if (baseImg.complete) action()
-    else baseImg.addEventListener('load', action, {once: true})
-  }
-
-  function fitImage(options, reset = true) {
-    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
-    const action = img => {
-      const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
-      img.width = w
-      img.height = h
-      img.style.setProperty('--width', `${w}px`)
-      img.classList.add('loaded')
-    }
-    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'}`)
-    for (const li of liList) {
-      const img = li.firstChild
-      if (img.naturalWidth) action(img)
-      else img.addEventListener('load', () => action(img), {once: true})
-      li.setAttribute('resized', '')
-    }
-    if (reset) {
-      const event = new CustomEvent('reset-transform')
-      if (options.webtoonMode) {
-        shadowRoot.querySelector('#iv-webtoon').dispatchEvent(event)
-        return
-      }
-      for (const li of liList) {
-        li.dispatchEvent(event)
-      }
-    }
-  }
-
   function addImageEvent(options) {
     // webtoon transformation matrix
     function calculateViewpointProjection(target, viewX, viewY, offsetX, offsetY) {
@@ -2486,9 +2316,48 @@ window.ImageViewer = (function () {
     const container = options.webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('#iv-image-list')
     const getTarget = options.webtoonMode ? () => shadowRoot.querySelector('#iv-list-wrapper') : () => shadowRoot.querySelector('#iv-image-list li.current img')
     addTransformHandler(container, getTarget)
+  }
 
-    const event = new CustomEvent('hotkey', {detail: {type: 'restore'}})
-    container.dispatchEvent(event)
+  function buildImageList(dataList, options) {
+    lastHref = location.href
+    lastUpdateTime = Date.now()
+    imageDataList = Array.from(dataList)
+    if (dataList.length > 1) {
+      shadowRoot.querySelector('#iv-index').style.display = 'flex'
+      shadowRoot.querySelector('#iv-counter-total').textContent = dataList.length
+    }
+    // trigger style recalculation
+    shadowRoot.querySelector('#image-viewer').focus()
+
+    const imageList = shadowRoot.querySelector('#iv-image-list')
+    const fragment = document.createDocumentFragment()
+
+    // build all image node at once when the list is small
+    if (dataList.length <= 101) {
+      for (const data of dataList) {
+        fragment.append(buildImageNode(data))
+      }
+      imageList.appendChild(fragment)
+      return
+    }
+
+    const chunkSize = 50
+    const length = dataList.length
+    const baseIndex = getBaseIndex(options)
+
+    // load image src in chunks from center outward
+    const withinBounds = baseIndex - chunkSize >= 0 && baseIndex + chunkSize < length
+    const [left, right] = withinBounds ? [baseIndex - chunkSize, baseIndex + chunkSize] : [(baseIndex + chunkSize) % length, (baseIndex - chunkSize + length) % length]
+    for (let i = 0; i < left; i++) {
+      fragment.append(buildImageNode(dataList[i], withinBounds))
+    }
+    for (let i = left; i <= right; i++) {
+      fragment.append(buildImageNode(dataList[i], !withinBounds))
+    }
+    for (let i = right + 1; i < length; i++) {
+      fragment.append(buildImageNode(dataList[i], withinBounds))
+    }
+    imageList.appendChild(fragment)
   }
 
   function updateImageList(newList, options) {
@@ -2664,6 +2533,138 @@ window.ImageViewer = (function () {
     imageDataList = Array.from(newList)
   }
 
+  function initImageList(options) {
+    function updateCounter() {
+      const list = imageListNode.children
+      const length = list.length
+      if (length === 0) {
+        closeImageViewer()
+        return
+      }
+
+      const current = shadowRoot.querySelector('li.current')
+      const currIndex = Array.prototype.indexOf.call(list, current)
+
+      counterTotal.textContent = length
+      counterCurrent.textContent = currIndex + 1
+    }
+    async function removeFailedImg() {
+      const action = img => {
+        // update counter
+        const src = img.src
+        const lastCount = imageFailureCountMap.get(src) || 0
+        imageFailureCountMap.set(src, lastCount + 1)
+        if (lastCount < 3) {
+          fetch(src, {cache: 'reload'}).catch(() => {})
+          img.src = src
+          return
+        }
+        console.log(`Removing failed img: ${src}`)
+        // update data list
+        const index = imageDataList.findIndex(data => data.src === src)
+        if (index !== -1) imageDataList.splice(index, 1)
+        // set new current
+        const target = img.parentNode
+        if (target.classList.contains('current')) {
+          const newCurrent = target.previousElementSibling || target.nextElementSibling
+          newCurrent?.classList.add('current')
+        }
+        // remove img container
+        target.remove()
+        updateCounter()
+      }
+
+      if (filtering) return
+      filtering = true
+
+      while (true) {
+        for (const img of shadowRoot.querySelectorAll('img[src]:not([checked])')) {
+          if (!img.complete) continue
+          img.setAttribute('checked', '')
+          if (img.naturalWidth === 0) {
+            img.addEventListener('error', () => action(img))
+            action(img)
+          }
+        }
+        const length = shadowRoot.querySelectorAll('img:not([src]):not([checked])').length
+        if (length === 0) break
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      filtering = false
+    }
+
+    const imageListNode = shadowRoot.querySelector('#iv-image-list')
+    const current = shadowRoot.querySelector('#iv-image-list li.current')
+    const liList = imageListNode.children
+    const base = current || liList[getBaseIndex(options)]
+    const baseImg = base.firstChild
+    const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : baseImg
+    base.classList.add('current')
+
+    const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
+    const targetDom = clearDom || lastDom
+    const baseIndex = Array.prototype.indexOf.call(liList, base)
+    if (transform && targetDom === imageDataList[baseIndex]?.dom) {
+      target.style.transition = 'none'
+      applyTransform(target, ...transform)
+      options.webtoonMode ? (lastWebtoonTransform = null) : (lastTransform = null)
+
+      const container = options.webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('#iv-image-list')
+      const event = new CustomEvent('hotkey', {detail: {type: 'restore'}})
+      container.dispatchEvent(event)
+    }
+
+    const counterTotal = shadowRoot.querySelector('#iv-counter-total')
+    const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+    updateCounter()
+    setTimeout(removeFailedImg, 3000)
+
+    // update viewer when base image complete
+    const action = () => {
+      target.style.transition = ''
+      // prevent image loading flash
+      if (!options.closeButton) {
+        const viewer = shadowRoot.querySelector('#image-viewer')
+        viewer.style.removeProperty('opacity')
+      }
+      if (base.classList.contains('current')) {
+        shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
+        shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
+      }
+      removeFailedImg()
+    }
+    if (baseImg.complete) action()
+    else baseImg.addEventListener('load', action, {once: true})
+  }
+
+  function fitImage(options, reset = true) {
+    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
+    const action = img => {
+      const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
+      img.width = w
+      img.height = h
+      img.style.setProperty('--width', `${w}px`)
+      img.classList.add('loaded')
+    }
+    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'}`)
+    for (const li of liList) {
+      const img = li.firstChild
+      if (img.naturalWidth) action(img)
+      else img.addEventListener('load', () => action(img), {once: true})
+      li.setAttribute('resized', '')
+    }
+    if (reset) {
+      const event = new CustomEvent('reset-transform')
+      if (options.webtoonMode) {
+        shadowRoot.querySelector('#iv-webtoon').dispatchEvent(event)
+        return
+      }
+      for (const li of liList) {
+        li.dispatchEvent(event)
+      }
+    }
+  }
+
   function restoreIndex(options) {
     const neededToRestore = clearIndex !== -1 || (options.index === undefined && lastIndex !== -1)
     if (!neededToRestore) return
@@ -2760,21 +2761,14 @@ window.ImageViewer = (function () {
       buildApp(options)
       addFrameEvent(options)
       addNavigationEvent(options)
+      addImageEvent(options)
       buildImageList(imageDataList, options)
-      const action = () => {
-        initImageList(options)
-        fitImage(options, false)
-        addImageEvent(options)
-        console.log('Image viewer initialized')
-      }
-      // release priority to prevent blocking
-      if (imageDataList.length <= 100) action()
-      else setTimeout(action, 0)
+      console.log('Image viewer initialized')
     } else {
       updateImageList(imageDataList, options)
-      initImageList(options)
-      fitImage(options, false)
     }
+    initImageList(options)
+    fitImage(options, false)
     restoreIndex(options)
   }
 
