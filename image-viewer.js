@@ -2186,7 +2186,7 @@ window.ImageViewer = (function () {
         }
         const length = shadowRoot.querySelectorAll('img:not([src]):not([checked])').length
         if (length === 0) break
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise(resolve => setTimeout(resolve, 100))
       }
       filtering = false
     }
