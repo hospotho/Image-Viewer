@@ -655,7 +655,8 @@ function createContextMenu() {
     if (!supported) return
 
     if (tab.url.startsWith('file') && tab.url.endsWith('/')) {
-      const options = structuredClone(info.menuItemId === 'view_all_image_in_image_viewer' ? currOptionsWithoutSize : currOptions)
+      const targetOptions = info.menuItemId === 'view_all_image_in_image_viewer' ? currOptionsWithoutSize : currOptions
+      const options = structuredClone(targetOptions)
       if (info.menuItemId === 'view_webtoon_in_image_viewer') options.webtoonMode = true
       await passOptionToTab(tab.id, options)
       chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-folder.js']})
@@ -703,7 +704,9 @@ function addCommandHandler() {
 
     if (tab.url.startsWith('file') && tab.url.endsWith('/')) {
       const targetOptions = command === 'open-image-viewer-without-size-filter' ? currOptionsWithoutSize : currOptions
-      await passOptionToTab(tab.id, targetOptions)
+      const options = structuredClone(targetOptions)
+      if (command === 'open-image-viewer-in-webtoon-mode') options.webtoonMode = true
+      await passOptionToTab(tab.id, options)
       chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-folder.js']})
       return
     }
@@ -715,6 +718,13 @@ function addCommandHandler() {
       }
       case 'open-image-viewer-without-size-filter': {
         await passOptionToTab(tab.id, currOptionsWithoutSize)
+        chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
+        break
+      }
+      case 'open-image-viewer-in-webtoon-mode': {
+        const options = structuredClone(currOptions)
+        options.webtoonMode = true
+        await passOptionToTab(tab.id, options)
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['/scripts/action-page.js']})
         break
       }

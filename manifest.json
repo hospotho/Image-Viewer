@@ -59,6 +59,12 @@
         "default": "Alt+2"
       },
       "description": "__MSG_view_canvas_in_image_viewer__"
+    },
+    "open-image-viewer-in-webtoon-mode": {
+      "suggested_key": {
+        "default": "Alt+3"
+      },
+      "description": "__MSG_view_webtoon_in_image_viewer__"
     }
   }
 }
