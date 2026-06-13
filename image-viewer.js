@@ -2413,6 +2413,9 @@ window.ImageViewer = (function () {
       const currentIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
       if (current.src !== currentUrlList[currentIndex]) {
         current.src = currentUrlList[currentIndex]
+        const updateEvent = new CustomEvent('update-info')
+        const infoPopup = shadowRoot.querySelector('#iv-info-popup')
+        infoPopup.dispatchEvent(updateEvent)
       }
 
       return currentUrlList
