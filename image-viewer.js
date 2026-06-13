@@ -138,7 +138,8 @@ window.ImageViewer = (function () {
       const start = Math.max(0, index - chunkSize)
       const end = Math.min(length - 1, index + chunkSize)
       for (let i = start; i <= end; i++) {
-        if (imgList[i].currentSrc === '') {
+        // currentSrc may not yet be in sync with src
+        if (imgList[i].currentSrc === '' || imgList[i].getAttribute('src') === '') {
           imgList[i].src = imageDataList[i].src
         }
       }
@@ -146,12 +147,12 @@ window.ImageViewer = (function () {
     }
 
     for (let i = 0; i < (index + chunkSize) % length; i++) {
-      if (imgList[i].currentSrc === '') {
+      if (imgList[i].currentSrc === '' || imgList[i].getAttribute('src') === '') {
         imgList[i].src = imageDataList[i].src
       }
     }
     for (let i = (index - chunkSize + length) % length; i < length; i++) {
-      if (imgList[i].currentSrc === '') {
+      if (imgList[i].currentSrc === '' || imgList[i].getAttribute('src') === '') {
         imgList[i].src = imageDataList[i].src
       }
     }
@@ -176,7 +177,7 @@ window.ImageViewer = (function () {
         img.setAttribute('data-iframe-src', dom.src)
         img.referrerPolicy = 'no-referrer'
       }
-      if (!delay) img.src = data.src
+      img.src = delay ? '' : data.src
       return li
     }
   })()
