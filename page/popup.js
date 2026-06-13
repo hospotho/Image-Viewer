@@ -2,9 +2,17 @@
   'use strict'
 
   const rawText = `
+2.1 [2026-06-13]:
+Performance and Stability Update, please also refer to the v2.0 release notes.
+1. Improve folder mode, no longer runs out of memory when folders contain >4k images.
+2. Reworked image viewer initialization logic to improve performance and reduce RAM usage.
+3. Improved webtoon mode UI and UX.
+4. Refactored packaging code for downloads to reduce RAM usage.
+5. Other bug fixes and improvements.
+
 2.0 [2026-06-02]:
 Major Update
-1. Added webtoon mode for image viewing, the default Chrome hotkey is Alt + 2.
+1. Added webtoon mode for image viewing, the default Chrome hotkey is Alt + 3.
 2. Added customization options for most viewer hotkeys.
 3. Added support for picking canvas with right-click picker, it will be used as size reference in canvas mode.
 4. Improved folder mode with progressive loading, helpful for folders with >1k images or remote folders.
