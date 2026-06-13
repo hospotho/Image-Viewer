@@ -650,7 +650,8 @@ window.ImageViewer = (function () {
       #iv-webtoon {
         position: fixed;
         inset: 0;
-        overflow: auto;
+        overflow-x: auto;
+        overflow-y: scroll;
         overscroll-behavior: contain;
       }
       #iv-list-wrapper {
@@ -819,6 +820,7 @@ window.ImageViewer = (function () {
         border-radius: 50%;
         box-shadow: inset 0 0 0 #fff;
         opacity: 0;
+        clip-path: polygon(50% 50%, 100% 50%, 100% 100%, 50% 100%);
       }
       #iv-control-info.show {
         opacity: 0.8;
@@ -875,9 +877,13 @@ window.ImageViewer = (function () {
         box-shadow: inset 0 0 0 #fff;
         opacity: 0.8;
         visibility: hidden;
+        clip-path: polygon(0 50%, 50% 50%, 50% 100%, 0 100%);
       }
       #iv-control-close.show {
         visibility: visible;
+      }
+      #image-viewer.webtoon #iv-control-close {
+        right: calc(-50px + var(--scrollbar-width, 17px));
       }
       #iv-control-close::before,
       #iv-control-close::after {
@@ -990,6 +996,12 @@ window.ImageViewer = (function () {
     shadowRoot.append(viewer)
     document.body.appendChild(shadowHolder)
     document.body.classList.add('iv-attached')
+
+    // align close button
+    if (options.webtoonMode) {
+      const scrollbarWidth = window.innerWidth - viewer.querySelector('#iv-webtoon').clientWidth
+      viewer.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`)
+    }
   }
 
   function addFrameEvent(options) {

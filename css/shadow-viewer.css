@@ -31,7 +31,8 @@ body:has(#image-viewer-root.webtoon) {
 #iv-webtoon {
   position: fixed;
   inset: 0;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: scroll;
   overscroll-behavior: contain;
 }
 #iv-list-wrapper {
@@ -200,6 +201,7 @@ img.loaded {
   border-radius: 50%;
   box-shadow: inset 0 0 0 #fff;
   opacity: 0;
+  clip-path: polygon(50% 50%, 100% 50%, 100% 100%, 50% 100%);
 }
 #iv-control-info.show {
   opacity: 0.8;
@@ -256,9 +258,13 @@ img.loaded {
   box-shadow: inset 0 0 0 #fff;
   opacity: 0.8;
   visibility: hidden;
+  clip-path: polygon(0 50%, 50% 50%, 50% 100%, 0 100%);
 }
 #iv-control-close.show {
   visibility: visible;
+}
+#image-viewer.webtoon #iv-control-close {
+  right: calc(-50px + var(--scrollbar-width, 17px));
 }
 #iv-control-close::before,
 #iv-control-close::after {
