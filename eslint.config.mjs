@@ -11,11 +11,12 @@ export default [
   }),
   {
     rules: {
-      'object-shorthand': 'off',
-      '@stylistic/space-before-function-paren': 'off',
+      '@stylistic/generator-star-spacing': 'off',
+      '@stylistic/indent': 'off',
       '@stylistic/object-curly-spacing': 'off',
+      '@stylistic/space-before-function-paren': 'off',
       '@stylistic/spaced-comment': 'off',
-      '@stylistic/indent': 'off'
+      'object-shorthand': 'off'
     }
   }
 ]
