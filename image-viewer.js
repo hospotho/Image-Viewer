@@ -2257,8 +2257,7 @@ window.ImageViewer = (function () {
       })
 
       // reset
-      const reset = async () => {
-        const target = getTarget()
+      const reset = async target => {
         const context = nodeContextMap.get(target)
         if (context === undefined) return
         context.mirror = false
@@ -2273,9 +2272,9 @@ window.ImageViewer = (function () {
         target.style.transition = ''
         applyTransform(target, 1, 1, 0, 0, 0)
       }
-      node.addEventListener('dblclick', reset)
+      node.addEventListener('dblclick', () => reset(getTarget()))
       // custom event
-      node.addEventListener('reset-transform', reset)
+      node.addEventListener('reset-transform', e => reset(e.target))
 
       // handle hotkey
       node.addEventListener('hotkey', e => {
@@ -2652,21 +2651,20 @@ window.ImageViewer = (function () {
       img.style.setProperty('--width', `${w}px`)
       img.classList.add('loaded')
     }
-    const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'}`)
-    for (const li of liList) {
-      const img = li.firstChild
+    const imgList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'} img`)
+    for (const img of imgList) {
+      img.setAttribute('resized', '')
       if (img.complete) action(img)
       else img.addEventListener('load', () => action(img), {once: true})
-      li.setAttribute('resized', '')
     }
     if (reset) {
-      const event = new CustomEvent('reset-transform')
+      const event = new CustomEvent('reset-transform', {bubbles: true})
       if (options.webtoonMode) {
         shadowRoot.querySelector('#iv-webtoon').dispatchEvent(event)
         return
       }
-      for (const li of liList) {
-        li.dispatchEvent(event)
+      for (const img of imgList) {
+        img.dispatchEvent(event)
       }
     }
   }
