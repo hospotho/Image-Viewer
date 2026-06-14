@@ -136,10 +136,7 @@
 
     return localFileHeader
   }
-  function buildZip(filenameList, imageBinaryList) {
-    const encoder = new TextEncoder()
-    const encodedFilenameList = filenameList.map(filename => encoder.encode(filename))
-
+  function buildZip(encodedFilenameList, imageBinaryList) {
     // calculate total size
     let totalHeaderSize = 0
     let totalDirectorySize = 0
@@ -169,6 +166,32 @@
     zipFile.set(endOfCentralDirectoryRecord, centralOffset)
 
     return zipFile
+  }
+  async function* buildZipStream(filenameList, imageBinaryStream) {
+    const encoder = new TextEncoder()
+    const maxSizeMask = 1 << 29 // 512MB
+    const fileHeaderSize = LOCAL_FILE_HEADER_SIZE + CENTRAL_DIRECTORY_HEADER_SIZE
+
+    let size = END_OF_CENTRAL_DIRECTORY_SIZE
+    const encodedFilenameList = []
+    const imageBinaryList = []
+    for (let i = 0; i < imageBinaryStream.length; i++) {
+      const data = await imageBinaryStream[i]
+      const encodedFilename = encoder.encode(filenameList[i])
+      const deltaSize = fileHeaderSize + encodedFilename.length * 2 + data.length
+
+      const newSize = size + deltaSize
+      if (newSize & maxSizeMask) {
+        yield buildZip(encodedFilenameList, imageBinaryList)
+        size = END_OF_CENTRAL_DIRECTORY_SIZE
+        encodedFilenameList.length = 0
+        imageBinaryList.length = 0
+      }
+      size += deltaSize
+      encodedFilenameList.push(encodedFilename)
+      imageBinaryList.push(data)
+    }
+    yield buildZip(encodedFilenameList, imageBinaryList)
   }
 
   // utility
@@ -223,10 +246,10 @@
       .catch(() => corsHostSet.add(host) && getCorsImageBinary(url))
       .finally(() => release())
   }
-  async function downloadImages(selectedUrlList) {
+  function downloadImages(selectedUrlList) {
     let progress = 0
     const filenameList = []
-    const asyncList = []
+    const imageBinaryStream = []
     for (const [url, index] of selectedUrlList) {
       const indexString = ('0000' + (index + 1)).slice(-5)
       const name = url.startsWith('data') ? '' : '_' + url.split('?')[0].split('/').at(-1)
@@ -236,7 +259,7 @@
 
       const promise = getImageBinary(url)
       promise.finally(() => (progress += 1))
-      asyncList.push(promise)
+      imageBinaryStream.push(promise)
     }
 
     const length = selectedUrlList.length
@@ -248,30 +271,30 @@
       }
     }, 3000)
 
-    const imageBinaryList = await Promise.all(asyncList)
-    return [filenameList, imageBinaryList]
+    return [filenameList, imageBinaryStream]
   }
 
   // main
   async function main() {
-    const imageList = ImageViewer('get_image_list')
-    if (imageList.length === 0) return
+    const imageDataList = ImageViewer('get_image_list')
+    if (imageDataList.length === 0) return
 
-    const selectionRange = getUserSelection(imageList.length)
+    const selectionRange = getUserSelection(imageDataList.length)
     if (selectionRange === null) return
 
-    const selectedUrlList = imageList.map((img, i) => selectionRange[i] && [img.src, i]).filter(Boolean)
+    const selectedUrlList = imageDataList.map((data, i) => selectionRange[i] && [data.src, i]).filter(Boolean)
     if (selectedUrlList.length === 0) return
 
-    const [filenameList, imageBinaryList] = await downloadImages(selectedUrlList)
-    const zip = buildZip(filenameList, imageBinaryList)
-    const blob = new Blob([zip.buffer])
-
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob, 'application/zip')
-    a.download = `ImageViewer_${Date.now()}_${document.title}.zip`
-    a.click()
-    URL.revokeObjectURL(a.href)
+    const [filenameList, imageBinaryStream] = downloadImages(selectedUrlList)
+    const zipStream = buildZipStream(filenameList, imageBinaryStream)
+    for await (const zip of zipStream) {
+      const blob = new Blob([zip.buffer])
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob, 'application/zip')
+      a.download = `ImageViewer_${Date.now()}_${document.title}.zip`
+      a.click()
+      URL.revokeObjectURL(a.href)
+    }
   }
 
   main()
