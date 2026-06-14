@@ -2566,7 +2566,7 @@ window.ImageViewer = (function () {
         }
         console.log(`Removing failed img: ${src}`)
         // update data list
-        const index = imageDataList.findIndex(data => data.src === src)
+        const index = [...shadowRoot.querySelectorAll('img')].indexOf(img)
         if (index !== -1) imageDataList.splice(index, 1)
         // set new current
         const target = img.parentNode
