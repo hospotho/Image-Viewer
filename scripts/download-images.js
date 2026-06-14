@@ -194,39 +194,7 @@
     yield buildZip(encodedFilenameList, imageBinaryList)
   }
 
-  // utility
-  function getUserSelection(length) {
-    if (length === 1) return [true]
-
-    const userSelection = prompt("Images to Download: eg. '1-5, 8, 11-13'", `1-${length}`)
-    if (!userSelection) return null
-
-    const input = userSelection.replaceAll(' ', '')
-    const regex = /^\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*$/
-    if (!regex.test(input)) {
-      alert('Invalid selection.')
-      return null
-    }
-
-    const result = new Array(length).fill(false)
-    const processedInput = input.split(',')
-    for (const part of processedInput) {
-      if (part.includes('-')) {
-        const [start, end] = part
-          .split('-')
-          .map(n => Math.min(Math.max(Number(n), 1), length) - 1)
-          .sort((a, b) => a - b)
-        for (let i = start; i <= end; i++) {
-          result[i] = true
-        }
-      } else {
-        const index = Math.min(Math.max(Number(part), 1), length) - 1
-        result[index] = true
-      }
-    }
-
-    return result
-  }
+  // download
   async function getCorsImageBinary(url) {
     const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: url})
     return fetch(dataUrl)
@@ -274,6 +242,40 @@
     return [filenameList, imageBinaryStream]
   }
 
+  // utility
+  function getUserSelection(length) {
+    if (length === 1) return [true]
+
+    const userSelection = prompt("Images to Download: eg. '1-5, 8, 11-13'", `1-${length}`)
+    if (!userSelection) return null
+
+    const input = userSelection.replaceAll(' ', '')
+    const regex = /^\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*$/
+    if (!regex.test(input)) {
+      alert('Invalid selection.')
+      return null
+    }
+
+    const result = new Array(length).fill(false)
+    const processedInput = input.split(',')
+    for (const part of processedInput) {
+      if (part.includes('-')) {
+        const [start, end] = part
+          .split('-')
+          .map(n => Math.min(Math.max(Number(n), 1), length) - 1)
+          .sort((a, b) => a - b)
+        for (let i = start; i <= end; i++) {
+          result[i] = true
+        }
+      } else {
+        const index = Math.min(Math.max(Number(part), 1), length) - 1
+        result[index] = true
+      }
+    }
+
+    return result
+  }
+
   // main
   async function main() {
     const imageDataList = ImageViewer('get_image_list')
@@ -287,6 +289,7 @@
 
     const [filenameList, imageBinaryStream] = downloadImages(selectedUrlList)
     const zipStream = buildZipStream(filenameList, imageBinaryStream)
+
     for await (const zip of zipStream) {
       const blob = new Blob([zip.buffer])
       const a = document.createElement('a')
@@ -295,6 +298,8 @@
       a.click()
       URL.revokeObjectURL(a.href)
     }
+
+    alert('Download complete.')
   }
 
   main()
