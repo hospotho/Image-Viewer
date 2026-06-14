@@ -38,6 +38,8 @@
     }
   })()
 
+  const corsHostSet = window.corsHostSet
+
   // zip
   const crcTable = (() => {
     const crcTable = new Uint32Array(256)
@@ -210,10 +212,15 @@
   }
   async function getImageBinary(url) {
     const release = await semaphore.acquire()
+    const host = new URL(url).hostname
+    if (corsHostSet.has(host)) {
+      const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: url})
+      url = dataUrl
+    }
     return fetch(url)
       .then(res => res.arrayBuffer())
       .then(buffer => new Uint8Array(buffer))
-      .catch(() => getCorsImageBinary(url))
+      .catch(() => corsHostSet.add(host) && getCorsImageBinary(url))
       .finally(() => release())
   }
   async function downloadImages(selectedUrlList) {
