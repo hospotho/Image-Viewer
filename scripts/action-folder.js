@@ -56,16 +56,23 @@
     }
     while (anchorList.length) {
       if (terminated) return
-      const batch = anchorList.splice(0, 32)
-      const sizeList = await Promise.all(batch.map(action))
-      for (let i = 0; i < batch.length; i++) {
-        if (sizeList[i] >= minSize) imageDataList.push({src: batch[i].href, dom: batch[i]})
+      const asyncList = anchorList.splice(0, 32).map(anchor => action(anchor).then(size => [size, anchor]))
+      for await (const [size, anchor] of asyncList) {
+        if (size >= minSize) imageDataList.push({src: anchor.href, dom: anchor})
       }
     }
     setTimeout(() => (complete = true), 1000)
   })()
 
-  if (!imageDataList.length) await new Promise(resolve => setTimeout(resolve, 200))
+  // wait for image data
+  const overtime = setTimeout(() => alert('Images still loading'), 3000)
+  while (true) {
+    await new Promise(resolve => setTimeout(resolve, 100))
+    if (imageDataList.length) break
+    if (anchorList.length === 0) return
+  }
+  clearTimeout(overtime)
+
   while (true) {
     // update image viewer
     ImageViewer(imageDataList, options)
