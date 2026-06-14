@@ -2498,7 +2498,7 @@ window.ImageViewer = (function () {
     function tryClear() {
       // failed update will became incorrect insertion
       const imgList = shadowRoot.querySelectorAll('img')
-      const invalidImageList = imageDataList.length > newList.length || imgList.length > imageDataList.length
+      const invalidImageList = imageDataList.length > newList.length || imgList.length > newList.length
       if (invalidImageList) {
         const current = shadowRoot.querySelector('li.current img')
         clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
