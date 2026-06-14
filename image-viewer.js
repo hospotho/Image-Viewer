@@ -25,6 +25,7 @@ window.ImageViewer = (function () {
   const resizeHandlerList = []
   const keydownHotkeyMap = new Map()
 
+  const EMPTY_IMAGE = 'data:,'
   const COMMAND_ENUM = {
     CHANGE_BACKGROUND: 0,
     MOVE_UP: 1,
@@ -139,7 +140,7 @@ window.ImageViewer = (function () {
       const end = Math.min(length - 1, index + chunkSize)
       for (let i = start; i <= end; i++) {
         // currentSrc may not yet be in sync with src
-        if (imgList[i].currentSrc === '' || imgList[i].getAttribute('src') === '') {
+        if (imgList[i].currentSrc === EMPTY_IMAGE || imgList[i].src === EMPTY_IMAGE) {
           imgList[i].src = imageDataList[i].src
         }
       }
@@ -147,12 +148,12 @@ window.ImageViewer = (function () {
     }
 
     for (let i = 0; i < (index + chunkSize) % length; i++) {
-      if (imgList[i].currentSrc === '' || imgList[i].getAttribute('src') === '') {
+      if (imgList[i].currentSrc === EMPTY_IMAGE || imgList[i].src === EMPTY_IMAGE) {
         imgList[i].src = imageDataList[i].src
       }
     }
     for (let i = (index - chunkSize + length) % length; i < length; i++) {
-      if (imgList[i].currentSrc === '' || imgList[i].getAttribute('src') === '') {
+      if (imgList[i].currentSrc === EMPTY_IMAGE || imgList[i].src === EMPTY_IMAGE) {
         imgList[i].src = imageDataList[i].src
       }
     }
@@ -177,7 +178,7 @@ window.ImageViewer = (function () {
         img.setAttribute('data-iframe-src', dom.src)
         img.referrerPolicy = 'no-referrer'
       }
-      img.src = delay ? '' : data.src
+      img.src = delay ? EMPTY_IMAGE : data.src
       return li
     }
   })()
@@ -1898,7 +1899,7 @@ window.ImageViewer = (function () {
       const relateImage = relateListItem.querySelector('img')
 
       if (!fastForward) loadImageChunk(index)
-      else if (relateImage.src === '') relateImage.src = imageDataList[index].src
+      else if (relateImage.src === EMPTY_IMAGE) relateImage.src = imageDataList[index].src
 
       // wait next image decode
       const startTime = performance.now()
@@ -2386,7 +2387,7 @@ window.ImageViewer = (function () {
       const imgList = shadowRoot.querySelectorAll('img')
       const action = (i, src) => {
         currentUrlList[i] = src
-        imgList[i].src = '' // clear image
+        imgList[i].src = EMPTY_IMAGE
         imgList[i].parentElement.removeAttribute('resized')
       }
       for (let i = 0; i < currentUrlList.length; i++) {
@@ -2556,6 +2557,7 @@ window.ImageViewer = (function () {
       const action = img => {
         // update counter
         const src = img.src
+        if (src === EMPTY_IMAGE) return
         const lastCount = imageFailureCountMap.get(src) || 0
         imageFailureCountMap.set(src, lastCount + 1)
         if (lastCount < 3) {
@@ -2582,7 +2584,7 @@ window.ImageViewer = (function () {
       filtering = true
 
       while (true) {
-        for (const img of shadowRoot.querySelectorAll('img[src]:not([checked])')) {
+        for (const img of shadowRoot.querySelectorAll(`img:not([src="${EMPTY_IMAGE}"]):not([checked])`)) {
           if (!img.complete) continue
           img.setAttribute('checked', '')
           if (img.naturalWidth === 0) {
@@ -2590,7 +2592,7 @@ window.ImageViewer = (function () {
             action(img)
           }
         }
-        const length = shadowRoot.querySelectorAll('img:not([src]):not([checked])').length
+        const length = shadowRoot.querySelectorAll('img:not([checked])').length
         if (length === 0) break
         await new Promise(resolve => setTimeout(resolve, 100))
       }
@@ -2653,7 +2655,7 @@ window.ImageViewer = (function () {
     const liList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'}`)
     for (const li of liList) {
       const img = li.firstChild
-      if (img.naturalWidth) action(img)
+      if (img.complete) action(img)
       else img.addEventListener('load', () => action(img), {once: true})
       li.setAttribute('resized', '')
     }
