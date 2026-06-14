@@ -2387,7 +2387,8 @@ window.ImageViewer = (function () {
       const action = (i, src) => {
         currentUrlList[i] = src
         imgList[i].src = EMPTY_IMAGE
-        imgList[i].parentElement.removeAttribute('resized')
+        imgList[i].removeAttribute('checked')
+        imgList[i].removeAttribute('resized')
       }
       for (let i = 0; i < currentUrlList.length; i++) {
         const src = currentUrlList[i]
