@@ -152,6 +152,8 @@ window.ImageViewer = (function () {
         imgList[i].src = imageDataList[i].src
       }
     }
+    // skip prev chunk if index is near the start when inserting
+    if (insertIndex !== -1 && index - chunkSize < 0) return
     for (let i = (index - chunkSize + length) % length; i < length; i++) {
       if (imgList[i].currentSrc === EMPTY_IMAGE || imgList[i].src === EMPTY_IMAGE) {
         imgList[i].src = imageDataList[i].src
