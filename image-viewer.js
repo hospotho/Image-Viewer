@@ -1142,7 +1142,7 @@ window.ImageViewer = (function () {
         }
         const data = {detail: {type: type, action: action}}
         const event = new CustomEvent('hotkey', data)
-        const current = options.webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('li.current')
+        const current = options.webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('#iv-image-list')
         current.dispatchEvent(event)
       }
       hotkeyHandlerList[COMMAND_ENUM.MOVE_UP] = transformHandler
