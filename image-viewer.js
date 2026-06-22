@@ -2022,10 +2022,9 @@ window.ImageViewer = (function () {
           if (navigateState & 0b100) {
             navigateState = -1
             return
-          } else {
-            navigateState |= 0b100
-            lastCheckTime = Date.now()
           }
+          navigateState |= 0b100
+          lastCheckTime = Date.now()
         }
         await func(true)
         await new Promise(resolve => setTimeout(resolve, 0))
