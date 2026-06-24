@@ -150,6 +150,14 @@
     image.style.margin = 'auto'
     image.style.backgroundColor = 'rgb(0, 0, 0)'
 
+    // check CORS
+    const {promise, resolve} = Promise.withResolvers()
+    setTimeout(() => resolve(true), 500)
+    const testImage = new Image()
+    testImage.onload = () => resolve(true)
+    testImage.onerror = () => resolve(false)
+    testImage.src = image.src
+
     await loadOptions()
     await safeSendMessage('load_script')
 
@@ -158,10 +166,14 @@
     options.minWidth = 0
     options.minHeight = 0
 
-    const imageDate = {src: image.src, dom: image}
+    const success = await promise
+    const src = success ? image.src : await safeSendMessage({msg: 'request_cors_url', url: image.src}).then(([dataUrl]) => dataUrl)
+    if (!success) image.setAttribute('iv-cors', '')
+
+    const imageDate = {src: src, dom: image}
     ImageViewer([imageDate], options)
 
-    if (image.src.startsWith('data')) return
+    if (image.src.startsWith('data') || !success) return
 
     const attrList = getUnlazyAttrList(image)
     for (const attr of attrList) {

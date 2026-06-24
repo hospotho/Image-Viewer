@@ -1466,7 +1466,8 @@ window.ImageViewer = (function () {
           infoSource.textContent = decodeNestedURIComponent(currentImage.src)
           infoSource.removeAttribute('data-url')
         } else {
-          infoSource.textContent = '[Data URL]'
+          const dom = imageDataList[currentIndex].dom
+          infoSource.textContent = dom.hasAttribute('iv-cors') ? decodeNestedURIComponent(dom.src) : '[Data URL]'
           infoSource.setAttribute('data-url', currentImage.src)
         }
         switch (imageDataList[currentIndex].dom.nodeName) {
