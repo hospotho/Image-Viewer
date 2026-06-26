@@ -152,7 +152,7 @@
 
     // check CORS
     const {promise, resolve} = Promise.withResolvers()
-    setTimeout(() => resolve(true), 500)
+    setTimeout(() => resolve(true), 1000)
     const testImage = new Image()
     testImage.onload = () => resolve(true)
     testImage.onerror = () => resolve(false)
