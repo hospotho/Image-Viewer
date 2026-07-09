@@ -2262,6 +2262,7 @@ window.ImageViewer = (function () {
       const reset = async target => {
         const context = nodeContextMap.get(target)
         if (context === undefined) return
+        const current = target === shadowRoot.querySelector('#iv-list-wrapper') ? shadowRoot.querySelector('#iv-image-list li.current') : null
         context.mirror = false
         context.zoomCount = 0
         context.rotateCount = 0
@@ -2273,6 +2274,7 @@ window.ImageViewer = (function () {
         // reset
         target.style.transition = ''
         applyTransform(target, 1, 1, 0, 0, 0)
+        current?.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
       }
       node.addEventListener('dblclick', () => reset(getTarget()))
       // custom event
@@ -2663,7 +2665,7 @@ window.ImageViewer = (function () {
     if (reset) {
       const event = new CustomEvent('reset-transform', {bubbles: true})
       if (options.webtoonMode) {
-        shadowRoot.querySelector('#iv-webtoon').dispatchEvent(event)
+        shadowRoot.querySelector('#iv-list-wrapper').dispatchEvent(event)
         return
       }
       for (const img of imgList) {
