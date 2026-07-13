@@ -1422,6 +1422,14 @@ window.ImageViewer = (function () {
       const panelTimeout = options.panelTimeout
 
       let displayTimeout = 0
+      controlPanel.addEventListener('click', e => {
+        if (e.target.tagName === 'BUTTON') return
+        controlPanel.classList.add('show')
+        clearTimeout(displayTimeout)
+        if (panelTimeout !== 0) {
+          displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), panelTimeout)
+        }
+      })
       controlPanel.addEventListener('mouseenter', () => {
         controlPanel.classList.add('show')
         clearTimeout(displayTimeout)
