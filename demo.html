@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -27,12 +27,37 @@
         debouncePeriod: 1500,
         throttlePeriod: 80,
         autoPeriod: 2000,
+        panelTimeout: 1500,
         searchHotkey: ['Shift + Q', 'Shift + W', 'Shift + A', 'Shift + S', 'Ctrl + Shift + Q', ''],
         customUrl: ['https://example.com/search?query={imgSrc}&option=example_option'],
         functionHotkey: ['Shift + R', 'Shift + D'],
+        viewerHotkey: {
+          background: ['Shift + B'],
+          downloadImage: ['Ctrl + Shift + D'],
+          copyImage: ['Ctrl + C'],
+          copyImageUrl: ['Ctrl + Shift + C'],
+          moveTo: ['Enter'],
+          close: ['Escape', 'NumpadAdd'],
+          openImageLink: ['Insert', '0', 'Space'],
+          zoomIn: ['Alt + ArrowUp', 'Alt + W'],
+          zoomOut: ['Alt + ArrowDown', 'Alt + S'],
+          rotateLeft: ['Alt + ArrowLeft', 'Alt + A'],
+          rotateRight: ['Alt + ArrowRight', 'Alt + D'],
+          moveUp: ['Ctrl + Alt + ArrowUp', 'Ctrl + Alt + W'],
+          moveDown: ['Ctrl + Alt + ArrowDown', 'Ctrl + Alt + S'],
+          moveLeft: ['Ctrl + Alt + ArrowLeft', 'Ctrl + Alt + A'],
+          moveRight: ['Ctrl + Alt + ArrowRight', 'Ctrl + Alt + D'],
+          navigatePrev: ['ArrowLeft', 'ArrowUp', 'W', 'A'],
+          navigateNext: ['ArrowRight', 'ArrowDown', 'S', 'D'],
+          fastNavigatePrev: ['Ctrl + ArrowLeft', 'Ctrl + ArrowUp'],
+          fastNavigateNext: ['Ctrl + ArrowRight', 'Ctrl + ArrowDown'],
+          autoNavigatePrev: ['Shift + ArrowLeft', 'Shift + ArrowUp'],
+          autoNavigateNext: ['Shift + ArrowRight', 'Shift + ArrowDown']
+        },
         hoverCheckDisableList: [],
         autoScrollEnableList: ['x.com', 'www.instagram.com', 'www.facebook.com'],
-        imageUnlazyDisableList: []
+        imageUnlazyDisableList: [],
+        imageBackupDisableList: []
       }
 
       const startButton = document.getElementById('startButton')
