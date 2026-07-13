@@ -1868,6 +1868,7 @@ window.ImageViewer = (function () {
   }
 
   function addNavigationEvent(options) {
+    const viewer = shadowRoot.querySelector('#image-viewer')
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const controlBar = shadowRoot.querySelector('#iv-control')
     const closeButton = shadowRoot.querySelector('#iv-control-close')
@@ -2087,8 +2088,37 @@ window.ImageViewer = (function () {
     hotkeyHandlerList[COMMAND_ENUM.AUTO_NAVIGATE_NEXT] = autoNavigation
     keyupHandlerList.push(resetNavigation)
     // arrow button
-    shadowRoot.querySelector('#iv-control-prev').addEventListener('click', () => prevItem(false))
-    shadowRoot.querySelector('#iv-control-next').addEventListener('click', () => nextItem(false))
+    const arrowNavigation = async next => {
+      const direction = next ? 1 : 0
+
+      // state transition
+      let cancel = false
+      const stop = () => {
+        cancel = true
+        if ((navigateState & 0b1) === direction) navigateState = -1
+        viewer.removeEventListener('mouseup', stop, {once: true})
+        viewer.removeEventListener('mouseleave', stop, {once: true})
+      }
+      viewer.addEventListener('mouseup', stop, {once: true})
+      viewer.addEventListener('mouseleave', stop, {once: true})
+
+      // mouse down
+      navigateState = direction
+      const func = next ? nextItem : prevItem
+      await func()
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // start auto throttle navigate
+      navigateState |= 0b10
+      while (true) {
+        // check if mouse release
+        if (cancel || navigateState !== (direction | 0b10)) break
+        await func(true)
+        await new Promise(resolve => setTimeout(resolve, 0))
+      }
+    }
+    shadowRoot.querySelector('#iv-control-prev').addEventListener('mousedown', () => arrowNavigation(false))
+    shadowRoot.querySelector('#iv-control-next').addEventListener('mousedown', () => arrowNavigation(true))
     // mouse wheel
     const wheelNavigation = e => {
       e.preventDefault()
