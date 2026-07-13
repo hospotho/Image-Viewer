@@ -2079,8 +2079,8 @@ window.ImageViewer = (function () {
     hotkeyHandlerList[COMMAND_ENUM.AUTO_NAVIGATE_NEXT] = autoNavigation
     keyupHandlerList.push(resetNavigation)
     // arrow button
-    shadowRoot.querySelector('#iv-control-prev').addEventListener('click', prevItem)
-    shadowRoot.querySelector('#iv-control-next').addEventListener('click', nextItem)
+    shadowRoot.querySelector('#iv-control-prev').addEventListener('click', () => prevItem(false))
+    shadowRoot.querySelector('#iv-control-next').addEventListener('click', () => nextItem(false))
     // mouse wheel
     const wheelNavigation = e => {
       e.preventDefault()
