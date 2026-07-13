@@ -83,6 +83,9 @@
   "hover_disable_list": {
     "message": "停用懸停檢查"
   },
+  "image_alt": {
+    "message": "描述"
+  },
   "image_backup_desc": {
     "message": "某些SPA(單頁應用)在切換頁面時不會改變URL<br>如果只想要最新的圖片，請在此處添加域名"
   },

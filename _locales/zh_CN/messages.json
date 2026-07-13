@@ -83,6 +83,9 @@
   "hover_disable_list": {
     "message": "禁用悬停检查"
   },
+  "image_alt": {
+    "message": "描述"
+  },
   "image_backup_desc": {
     "message": "某些SPA(单页应用)在切换页面时不会更改URL<br>如果只想要最新的图片，请在此添加域名"
   },

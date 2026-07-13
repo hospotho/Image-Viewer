@@ -83,6 +83,9 @@
   "hover_disable_list": {
     "message": "Disable Hover Check"
   },
+  "image_alt": {
+    "message": "Alt"
+  },
   "image_backup_desc": {
     "message": "Some SPA (Single Page Application) don't change URL when switching between pages.<br>Add domains here if you only want fresh images."
   },

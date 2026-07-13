@@ -83,6 +83,9 @@
   "hover_disable_list": {
     "message": "ホバーチェックを無効にする"
   },
+  "image_alt": {
+    "message": "テキスト"
+  },
   "image_backup_desc": {
     "message": "一部のSPA（シングルページアプリケーション）では、ページを切り替えてもURLが変更されません<br>常に最新の画像リストを取得したい場合は、ここにドメインを追加してください"
   },

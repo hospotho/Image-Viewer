@@ -621,6 +621,7 @@ window.ImageViewer = (function () {
           <li>${i18n.sourceText}:<span id="iv-info-source"></span></li>
           <li>${i18n.sizeText}:<span id="iv-info-size"></span></li>
           <li>${i18n.typeText}:<span id="iv-info-type"></span></li>
+          <li>${i18n.altText}:<span id="iv-info-alt"></span></li>
         </ul>
       </div>
       <button id="iv-control-info"></button>
@@ -969,7 +970,8 @@ window.ImageViewer = (function () {
       heightText: 'Height',
       sourceText: 'Source',
       sizeText: 'Size',
-      typeText: 'Type'
+      typeText: 'Type',
+      altText: 'Alt'
     }
     if (chrome.i18n?.getMessage) {
       i18n.widthText = chrome.i18n.getMessage('width')
@@ -977,6 +979,7 @@ window.ImageViewer = (function () {
       i18n.sourceText = chrome.i18n.getMessage('image_source')
       i18n.sizeText = chrome.i18n.getMessage('image_size')
       i18n.typeText = chrome.i18n.getMessage('image_type')
+      i18n.altText = chrome.i18n.getMessage('image_alt')
     }
     viewer.innerHTML = frame(i18n, options.webtoonMode)
 
@@ -1470,6 +1473,7 @@ window.ImageViewer = (function () {
         const currentImage = currentListItem.querySelector('img')
         const currentIndex = Array.from(imageListNode.children).indexOf(currentListItem)
         infoSize.textContent = `${currentImage.naturalWidth}x${currentImage.naturalHeight}`
+        infoAlt.textContent = currentImage.alt
         if (currentImage.src.startsWith('http') || currentImage.src.startsWith('file')) {
           infoSource.textContent = decodeNestedURIComponent(currentImage.src)
           infoSource.removeAttribute('data-url')
@@ -1501,6 +1505,7 @@ window.ImageViewer = (function () {
       const infoSource = shadowRoot.querySelector('#iv-info-source')
       const infoSize = shadowRoot.querySelector('#iv-info-size')
       const infoType = shadowRoot.querySelector('#iv-info-type')
+      const infoAlt = shadowRoot.querySelector('#iv-info-alt')
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
 
       let displayFlag = false
