@@ -2560,13 +2560,12 @@ window.ImageViewer = (function () {
         imageListNode.innerHTML = ''
         buildImageList(newList, options)
         return true
-      } else {
-        // new first image inserted
-        clearIndex = clearIndex === 0 ? 0 : -1
-        clearDom = null
-        clearSrc = ''
-        return false
       }
+      // new first image inserted
+      clearIndex = clearIndex === 0 ? 0 : -1
+      clearDom = null
+      clearSrc = ''
+      return false
     }
 
     const currentUrlList = tryUpdate()
