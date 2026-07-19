@@ -520,15 +520,20 @@ window.ImageViewer = (function () {
   }
 
   const fitFuncDict = (function () {
-    // calculate document size is very slow
-    let windowWidth = document.documentElement.clientWidth
-    let windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-    let windowRatio = windowWidth / windowHeight
-    window.addEventListener('resize', () => {
-      windowWidth = document.documentElement.clientWidth
-      windowHeight = document.compatMode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight
-      windowRatio = windowWidth / windowHeight
-    })
+    let windowWidth = 1
+    let windowHeight = 1
+    let windowRatio = 1
+    function init() {
+      const viewer = shadowRoot.querySelector('#iv-webtoon') || shadowRoot.querySelector('#image-viewer')
+      const action = () => {
+        windowWidth = viewer.clientWidth
+        windowHeight = viewer.clientHeight
+        windowRatio = windowWidth / windowHeight
+      }
+      action()
+      new ResizeObserver(action).observe(viewer)
+      window.addEventListener('resize', action)
+    }
     function both(imageWidth, imageHeight) {
       const imgRatio = imageWidth / imageHeight
       const maxWidth = Math.min(imageWidth * 3, windowWidth)
@@ -553,7 +558,7 @@ window.ImageViewer = (function () {
     function none(imageWidth, imageHeight) {
       return [imageWidth, imageHeight]
     }
-    const dict = {both, width, height, keep, none}
+    const dict = {init, both, width, height, keep, none}
     return dict
   })()
 
@@ -1005,6 +1010,8 @@ window.ImageViewer = (function () {
     shadowRoot.append(viewer)
     document.body.appendChild(shadowHolder)
     document.body.classList.add('iv-attached')
+
+    fitFuncDict.init()
 
     // align close button
     if (options.webtoonMode) {
