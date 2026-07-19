@@ -1635,6 +1635,7 @@ window.ImageViewer = (function () {
       const action = trigger => {
         clearTimeout(timeout)
         timeout = setTimeout(() => {
+          if (!document.body.classList.contains('iv-attached')) return
           const checkScroll = trigger instanceof Event
           const nearestIndex = findNearestIndex(checkScroll)
           if (nearestIndex === -1) return
