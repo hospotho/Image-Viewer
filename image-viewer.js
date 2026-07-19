@@ -651,6 +651,7 @@ window.ImageViewer = (function () {
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.8) !important;
+        touch-action: none;
       }
       #iv-webtoon {
         position: fixed;
@@ -658,6 +659,7 @@ window.ImageViewer = (function () {
         overflow-x: auto;
         overflow-y: scroll;
         overscroll-behavior: contain;
+        touch-action: pan-x pan-y;
       }
       #iv-list-wrapper {
         width: 100%;
@@ -1433,19 +1435,19 @@ window.ImageViewer = (function () {
           displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), panelTimeout)
         }
       })
-      controlPanel.addEventListener('mouseenter', () => {
+      controlPanel.addEventListener('pointerenter', () => {
         controlPanel.classList.add('show')
         clearTimeout(displayTimeout)
         if (panelTimeout !== 0) {
           displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), panelTimeout)
         }
       })
-      controlPanel.addEventListener('mouseleave', () => {
+      controlPanel.addEventListener('pointerleave', () => {
         controlPanel.classList.remove('show')
         clearTimeout(displayTimeout)
       })
       for (const button of buttonList) {
-        button.addEventListener('mouseenter', () => {
+        button.addEventListener('pointerenter', () => {
           controlPanel.classList.add('show')
           clearTimeout(displayTimeout)
           if (panelTimeout !== 0) {
@@ -1758,6 +1760,7 @@ window.ImageViewer = (function () {
       closeButton.classList.add('show')
       closeButton.addEventListener('click', closeImageViewer)
       closeButton.addEventListener('contextmenu', e => {
+        if (e.button !== 2 || e.pointerType === 'touch') return
         e.preventDefault()
         chrome.runtime?.id ? chrome.runtime.sendMessage('close_tab') : window.close()
       })
@@ -1843,6 +1846,7 @@ window.ImageViewer = (function () {
         'pointerout',
         'pointerover',
         'pointerup',
+        'pointercancel',
         'wheel'
       ]
 
@@ -2092,20 +2096,36 @@ window.ImageViewer = (function () {
     hotkeyHandlerList[COMMAND_ENUM.AUTO_NAVIGATE_PREV] = autoNavigation
     hotkeyHandlerList[COMMAND_ENUM.AUTO_NAVIGATE_NEXT] = autoNavigation
     keyupHandlerList.push(resetNavigation)
+    // mouse wheel
+    const wheelNavigation = e => {
+      e.preventDefault()
+      if (moveLock) return
+      e.deltaY > 0 ? nextItem() : prevItem()
+    }
+    const scrollableElements = [controlBar, closeButton, infoButton, infoPopup]
+    for (const dom of scrollableElements) {
+      dom.addEventListener('wheel', wheelNavigation, {passive: false})
+    }
     // arrow button
-    const arrowNavigation = async next => {
+    const arrowNavigation = async (e, next) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
       const direction = next ? 1 : 0
+      const pointerId = e.pointerId
+      if (e.pointerType !== 'mouse') e.currentTarget.setPointerCapture(pointerId)
 
       // state transition
       let cancel = false
-      const stop = () => {
+      const stop = event => {
+        if (event.pointerId !== pointerId) return
         cancel = true
         if ((navigateState & 0b1) === direction) navigateState = -1
-        viewer.removeEventListener('mouseup', stop, {once: true})
-        viewer.removeEventListener('mouseleave', stop, {once: true})
+        viewer.removeEventListener('pointerup', stop)
+        viewer.removeEventListener('pointercancel', stop)
+        viewer.removeEventListener('pointerleave', stop)
       }
-      viewer.addEventListener('mouseup', stop, {once: true})
-      viewer.addEventListener('mouseleave', stop, {once: true})
+      viewer.addEventListener('pointerup', stop)
+      viewer.addEventListener('pointercancel', stop)
+      if (e.pointerType === 'mouse') viewer.addEventListener('pointerleave', stop)
 
       // mouse down
       navigateState = direction
@@ -2122,18 +2142,8 @@ window.ImageViewer = (function () {
         await new Promise(resolve => setTimeout(resolve, 0))
       }
     }
-    shadowRoot.querySelector('#iv-control-prev').addEventListener('mousedown', () => arrowNavigation(false))
-    shadowRoot.querySelector('#iv-control-next').addEventListener('mousedown', () => arrowNavigation(true))
-    // mouse wheel
-    const wheelNavigation = e => {
-      e.preventDefault()
-      if (moveLock) return
-      e.deltaY > 0 ? nextItem() : prevItem()
-    }
-    const scrollableElements = [controlBar, closeButton, infoButton, infoPopup]
-    for (const dom of scrollableElements) {
-      dom.addEventListener('wheel', wheelNavigation, {passive: false})
-    }
+    shadowRoot.querySelector('#iv-control-prev').addEventListener('pointerdown', e => arrowNavigation(e, false))
+    shadowRoot.querySelector('#iv-control-next').addEventListener('pointerdown', e => arrowNavigation(e, true))
   }
 
   function addImageEvent(options) {
@@ -2225,7 +2235,9 @@ window.ImageViewer = (function () {
           rotateCount: 0,
           dragFlag: false,
           finalDragTimeout: 0,
-          lastPos: [0, 0]
+          pointerMap: new Map(),
+          lastPos: [0, 0],
+          pinchDistance: 0
         }
         nodeContextMap.set(target, newContext)
         return newContext
@@ -2272,34 +2284,93 @@ window.ImageViewer = (function () {
         else applyTransform(target, -scaleX, scaleY, -rotate, -moveX, moveY)
       })
 
-      // dragging
-      node.addEventListener('mousedown', e => {
-        e.preventDefault()
+      // dragging and pinch zoom
+      const getTouchPointList = context => [...context.pointerMap.values()].filter(point => point[0])
+      node.addEventListener('pointerdown', e => {
         const target = getTarget()
         const context = getContext(target)
+        // [type, startX, startY, currX, currY]
+        const pointerData = [e.pointerType === 'touch', e.clientX, e.clientY, e.clientX, e.clientY]
+        context.pointerMap.set(e.pointerId, pointerData)
+        // clear last tap
+        const touchPointList = getTouchPointList(context)
+        if (touchPointList.length > 1) context.lastTap = null
+        // at least two touch points in webtoon mode
+        if (options.webtoonMode && e.pointerType === 'touch' && touchPointList.length < 2) return
+        e.preventDefault()
+        if (e.pointerType === 'mouse') node.setPointerCapture(e.pointerId)
+        else touchPointList.forEach(point => node.setPointerCapture(point.pointerId))
+        // update context
         context.dragFlag = true
-        context.lastPos[0] = e.clientX
-        context.lastPos[1] = e.clientY
+        if (touchPointList.length < 2) {
+          context.lastPos[0] = e.clientX
+          context.lastPos[1] = e.clientY
+        } else {
+          const [first, second] = touchPointList
+          context.lastPos[0] = (first[3] + second[3]) / 2
+          context.lastPos[1] = (first[4] + second[4]) / 2
+          context.pinchDistance = Math.hypot(first[3] - second[3], first[4] - second[4]) + 1e-6
+        }
       })
-      node.addEventListener('mousemove', e => {
+      node.addEventListener('pointermove', e => {
         const target = getTarget()
         const context = getContext(target)
         if (!context.dragFlag) return
-        const deltaX = e.clientX - context.lastPos[0]
-        const deltaY = e.clientY - context.lastPos[1]
-        context.lastPos[0] = e.clientX
-        context.lastPos[1] = e.clientY
+        // touch point check
+        const point = context.pointerMap.get(e.pointerId)
+        const touchPointList = getTouchPointList(context)
+        if (point === undefined) return
+        if (options.webtoonMode && e.pointerType === 'touch' && touchPointList.length < 2) return
+        point[3] = e.clientX
+        point[4] = e.clientY
         // reset transition
         clearTimeout(context.finalDragTimeout)
         context.finalDragTimeout = setTimeout(() => (target.style.transition = ''), 30)
         target.style.transition = 'none'
-        updateDisplacement(target, deltaX, deltaY, context.rotateCount)
+        // one touch drag
+        if (touchPointList.length < 2) {
+          const deltaX = e.clientX - context.lastPos[0]
+          const deltaY = e.clientY - context.lastPos[1]
+          context.lastPos[0] = e.clientX
+          context.lastPos[1] = e.clientY
+          updateDisplacement(target, deltaX, deltaY)
+          return
+        }
+        // two touch pinch zoom
+        const [first, second] = touchPointList
+        const distance = Math.hypot(first[3] - second[3], first[4] - second[4])
+        const deltaZoom = Math.trunc(Math.log(distance / context.pinchDistance) / Math.log(options.zoomRatio))
+        if (deltaZoom !== 0) {
+          context.zoomCount += deltaZoom
+          context.pinchDistance = distance
+          if (options.webtoonMode) updateWebtoonZoom(node, target, context.zoomCount)
+          else updateZoom(target, deltaZoom, context.zoomCount)
+        }
+        // two touch drag
+        const centerX = (first[3] + second[3]) / 2
+        const centerY = (first[4] + second[4]) / 2
+        const deltaX = centerX - context.lastPos[0]
+        const deltaY = centerY - context.lastPos[1]
+        context.lastPos[0] = centerX
+        context.lastPos[1] = centerY
+        updateDisplacement(target, deltaX, deltaY)
       })
-      node.addEventListener('mouseup', () => {
+      const stopDragging = e => {
         const target = getTarget()
         const context = getContext(target)
-        context.dragFlag = false
-      })
+        const point = context.pointerMap.get(e.pointerId)
+        if (point === undefined) return
+        context.pointerMap.delete(e.pointerId)
+        // clear context
+        const pointerList = Array.from(context.pointerMap.values())
+        context.dragFlag = pointerList.length !== 0
+        if (pointerList.length === 1) {
+          context.lastPos[0] = pointerList[0][3]
+          context.lastPos[1] = pointerList[0][4]
+        }
+      }
+      node.addEventListener('pointerup', stopDragging)
+      node.addEventListener('pointercancel', stopDragging)
 
       // reset
       const reset = async target => {

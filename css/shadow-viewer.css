@@ -27,6 +27,7 @@ body:has(#image-viewer-root.webtoon) {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.8) !important;
+  touch-action: none;
 }
 #iv-webtoon {
   position: fixed;
@@ -34,6 +35,7 @@ body:has(#image-viewer-root.webtoon) {
   overflow-x: auto;
   overflow-y: scroll;
   overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
 }
 #iv-list-wrapper {
   width: 100%;
