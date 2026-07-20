@@ -1250,8 +1250,8 @@ window.ImageViewerUtils = (function () {
       const res = await fetch(url.href, {method, signal: AbortSignal.timeout(5000)})
       if (!res.ok) return 0
       if (res.redirected) {
-        const currFilename = url.pathname.split('/').at(-1)
-        const newFilename = cachedGetUrl(res.url).pathname.split('/').at(-1)
+        const currFilename = url.pathname.split('/').findLast(Boolean)
+        const newFilename = res.url.split('/').findLast(Boolean)
         if (currFilename !== newFilename) return -1
       }
 
@@ -1303,7 +1303,7 @@ window.ImageViewerUtils = (function () {
       // protocol-relative URL
       const url = cachedGetUrl(src)
       const href = url.href
-      if (url.hostname !== location.hostname) {
+      if (url.hostname !== location.hostname || corsHostSet.has(url.hostname)) {
         waiting = true
         safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
       }

@@ -70,8 +70,8 @@ async function fetchBitSize(src, useGetMethod = false) {
     }
 
     if (res.redirected) {
-      const currFilename = new URL(src).pathname.split('/').at(-1)
-      const newFilename = new URL(res.url).pathname.split('/').at(-1)
+      const currFilename = new URL(src).pathname.split('/').findLast(Boolean)
+      const newFilename = res.url.split('/').findLast(Boolean)
       if (currFilename !== newFilename) return 0
     }
 
