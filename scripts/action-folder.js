@@ -56,7 +56,7 @@
     }
     while (anchorList.length) {
       if (terminated) return
-      const asyncList = anchorList.splice(0, 32).map(anchor => action(anchor).then(size => [size, anchor]))
+      const asyncList = anchorList.splice(0, 8).map(anchor => action(anchor).then(size => [size, anchor]))
       for await (const [size, anchor] of asyncList) {
         if (size >= minSize) imageDataList.push({src: anchor.href, dom: anchor})
       }
