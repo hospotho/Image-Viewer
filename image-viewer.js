@@ -7,6 +7,7 @@ window.ImageViewer = (function () {
   let imageDataList = []
   const imageFailureCountMap = new Map()
 
+  let pendingReset = false
   let filtering = false
   let fps = getFPS().then(result => (fps = result)) && 60
 
@@ -2841,6 +2842,21 @@ window.ImageViewer = (function () {
     lastWebtoonTransform = null
   }
 
+  function applyPendingReset() {
+    if (pendingReset) {
+      pendingReset = false
+      imageDataList = []
+      clearIndex = -1
+      clearDom = null
+      clearSrc = ''
+      lastIndex = -1
+      lastDom = null
+      lastSrc = ''
+      lastTransform = null
+      lastWebtoonTransform = null
+    }
+  }
+
   function executeCommand(command) {
     switch (command) {
       case 'get_href': {
@@ -2856,15 +2872,7 @@ window.ImageViewer = (function () {
         return imageFailureCountMap
       }
       case 'reset_image_list': {
-        imageDataList = []
-        clearIndex = -1
-        clearDom = null
-        clearSrc = ''
-        lastIndex = -1
-        lastDom = null
-        lastSrc = ''
-        lastTransform = null
-        lastWebtoonTransform = null
+        pendingReset = true
         return
       }
       case 'close_image_viewer': {
@@ -2886,6 +2894,8 @@ window.ImageViewer = (function () {
     }
 
     if (imageDataList.length === 0) return
+
+    applyPendingReset()
 
     if (!document.body.classList.contains('iv-attached')) {
       buildApp(options)
