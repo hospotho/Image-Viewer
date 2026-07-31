@@ -651,17 +651,20 @@ window.ImageViewer = (function () {
       /* root container */
       #image-viewer {
         position: fixed;
-        top: 0;
-        left: 0;
         z-index: 2147483647;
-        width: 100%;
-        height: 100%;
+        top: var(--vv-top);
+        left: var(--vv-left);
+        width: var(--vv-width);
+        height: var(--vv-height);
         background: rgba(0, 0, 0, 0.8) !important;
         touch-action: none;
       }
       #iv-webtoon {
         position: fixed;
-        inset: 0;
+        top: var(--vv-top);
+        left: var(--vv-left);
+        width: var(--vv-width);
+        height: var(--vv-height);
         overflow-x: auto;
         overflow-y: scroll;
         overscroll-behavior: contain;
@@ -722,8 +725,9 @@ window.ImageViewer = (function () {
       /* control panel */
       #iv-control {
         position: fixed;
-        bottom: 0;
-        width: 100%;
+        top: calc(var(--vv-top) + var(--vv-height) - 60px);
+        left: var(--vv-left);
+        width: var(--vv-width);
         height: 60px;
         background: rgba(0, 0, 0, 0);
       }
@@ -852,7 +856,7 @@ window.ImageViewer = (function () {
         cursor: pointer;
         display: none;
         position: fixed;
-        top: 0;
+        top: var(--vv-top);
         max-width: 70%;
         opacity: 0.9;
         background: #fff;
@@ -972,6 +976,12 @@ window.ImageViewer = (function () {
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
 
+    const viewpoint = window.visualViewport
+    viewer.style.setProperty('--vv-top', `${viewpoint.offsetTop}px`)
+    viewer.style.setProperty('--vv-left', `${viewpoint.offsetLeft}px`)
+    viewer.style.setProperty('--vv-width', `${viewpoint.width}px`)
+    viewer.style.setProperty('--vv-height', `${viewpoint.height}px`)
+
     // init i18n
     const i18n = {
       widthText: 'Width',
@@ -1016,8 +1026,10 @@ window.ImageViewer = (function () {
 
     // align close button
     if (options.webtoonMode) {
-      const scrollbarWidth = window.innerWidth - viewer.querySelector('#iv-webtoon').clientWidth
-      viewer.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`)
+      const scrollbarSize = window.innerWidth - viewer.querySelector('#iv-webtoon').clientWidth
+      viewer.style.setProperty('--scrollbar-width', `${scrollbarSize}px`)
+      viewer.style.setProperty('--vv-width', `${viewpoint.width}px`)
+      viewer.style.setProperty('--vv-height', `${viewpoint.height}px`)
     }
   }
 
