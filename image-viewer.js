@@ -1036,7 +1036,6 @@ window.ImageViewer = (function () {
   }
 
   function addFrameEvent(options) {
-    const viewer = shadowRoot.querySelector('#image-viewer')
     function initWindowEventHandler() {
       if (document.body.classList.contains('iv-ready')) return
       document.body.classList.add('iv-ready')
@@ -1836,6 +1835,7 @@ window.ImageViewer = (function () {
         const anchor = searchImgAnchor()
         if (anchor) openNewTab(anchor)
       }
+      const viewer = shadowRoot.querySelector('#image-viewer')
       // call preventDefault to trigger auxclick event
       viewer.addEventListener('mousedown', e => {
         if (e.button === 1) e.preventDefault()
@@ -1873,6 +1873,7 @@ window.ImageViewer = (function () {
         'wheel'
       ]
 
+      const viewer = shadowRoot.querySelector('#image-viewer')
       for (const event of disableList) {
         viewer.addEventListener(event, e => e.stopPropagation(), {passive: true})
       }
