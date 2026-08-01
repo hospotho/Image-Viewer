@@ -521,19 +521,21 @@ window.ImageViewer = (function () {
   }
 
   const fitFuncDict = (function () {
+    let viewer = null
     let windowWidth = 1
     let windowHeight = 1
     let windowRatio = 1
+    const action = () => {
+      windowWidth = viewer.clientWidth
+      windowHeight = viewer.clientHeight
+      windowRatio = windowWidth / windowHeight
+    }
+    const observer = new ResizeObserver(action)
     function init() {
-      const viewer = shadowRoot.querySelector('#iv-webtoon') || shadowRoot.querySelector('#image-viewer')
-      const action = () => {
-        windowWidth = viewer.clientWidth
-        windowHeight = viewer.clientHeight
-        windowRatio = windowWidth / windowHeight
-      }
+      viewer = shadowRoot.querySelector('#iv-webtoon') || shadowRoot.querySelector('#image-viewer')
+      observer.observe(viewer)
+      resizeHandlerList.push(action)
       action()
-      new ResizeObserver(action).observe(viewer)
-      window.addEventListener('resize', action)
     }
     function both(imageWidth, imageHeight) {
       const imgRatio = imageWidth / imageHeight
