@@ -87,12 +87,16 @@ window.ImageViewer = (function () {
     keydownHotkeyMap.clear()
   }
 
-  async function getFPS(tick = 10) {
+  async function getFPS() {
     await new Promise(resolve => requestIdleCallback(resolve))
+    const tick = 10
     const timeList = Array(tick)
     for (let i = 0; i < tick; i++) timeList[i] = await new Promise(resolve => requestAnimationFrame(resolve))
-    const intervalList = timeList.slice(1).map((t, i) => t - timeList[i])
-    const median = intervalList.sort((a, b) => a - b)[Math.floor(intervalList.length / 2)]
+    const median = timeList
+      .slice(1)
+      .map((t, i) => t - timeList[i])
+      .sort((a, b) => a - b)
+      .at(Math.floor(tick / 2))
     return Math.round(1000 / median)
   }
 
