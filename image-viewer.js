@@ -2642,45 +2642,50 @@ window.ImageViewer = (function () {
       }
       return imageInserted
     }
-    function tryClear() {
-      // failed update will became incorrect insertion
-      const imgList = shadowRoot.querySelectorAll('img')
-      const invalidImageList = imageDataList.length > newList.length || imgList.length > newList.length
-      if (invalidImageList) {
-        const current = shadowRoot.querySelector('li.current img')
-        clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
-        clearDom = imageDataList[clearIndex]?.dom || null
-        clearSrc = current.src
-        if (options.webtoonMode) lastWebtoonTransform = getTransform(shadowRoot.querySelector('#iv-list-wrapper'))
-        else lastTransform = getTransform(current)
 
-        imageDataList.length = 0
-        const imageListNode = shadowRoot.querySelector('#iv-image-list')
-        imageListNode.innerHTML = ''
-        buildImageList(newList, options)
-        return true
-      }
-      // new first image inserted
-      clearIndex = clearIndex === 0 ? 0 : -1
-      clearDom = null
-      clearSrc = ''
-      return false
+    function rebuildImageList() {
+      const current = shadowRoot.querySelector('li.current img')
+      clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
+      clearDom = imageDataList[clearIndex]?.dom || null
+      clearSrc = current.src
+      if (options.webtoonMode) lastWebtoonTransform = getTransform(shadowRoot.querySelector('#iv-list-wrapper'))
+      else lastTransform = getTransform(current)
+      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      imageListNode.replaceChildren()
+      buildImageList(newList, options)
+    }
+
+    // impossible to update when shrink
+    if (imageDataList.length > newList.length) {
+      rebuildImageList()
+      console.log('Image list has been rebuilt')
+      return
     }
 
     const currentUrlList = tryUpdate()
     const imageInserted = tryInsert(currentUrlList)
 
+    // failed update will became incorrect insertion
+    const invalidImageList = imageInserted && shadowRoot.querySelectorAll('img').length > newList.length
+    if (invalidImageList) {
+      rebuildImageList()
+      console.log('Image list has been rebuilt')
+      return
+    }
+
     if (imageInserted) {
+      // check new first image inserted
+      clearIndex = clearIndex === 0 ? 0 : -1
+      clearDom = null
+      clearSrc = ''
       if (options.closeButton) {
         shadowRoot.querySelector('#iv-index').style.display = 'flex'
         shadowRoot.querySelector('#iv-counter-total').textContent = newList.length
       }
-      if (tryClear()) console.log('Image list has been rebuilt')
-      else console.log('Image viewer updated')
     }
-
     lastUpdateTime = Date.now()
     imageDataList = Array.from(newList)
+    console.log('Image viewer updated')
   }
 
   function initImageList(options) {
