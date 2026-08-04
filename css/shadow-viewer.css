@@ -24,8 +24,8 @@ body:has(#image-viewer-root.webtoon) {
   z-index: 2147483647;
   top: var(--vv-top);
   left: var(--vv-left);
-  width: var(--vv-width);
-  height: var(--vv-height);
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.8) !important;
   touch-action: none;
 }
@@ -33,8 +33,8 @@ body:has(#image-viewer-root.webtoon) {
   position: fixed;
   top: var(--vv-top);
   left: var(--vv-left);
-  width: var(--vv-width);
-  height: var(--vv-height);
+  width: 100vw;
+  height: 100vh;
   overflow-x: auto;
   overflow-y: scroll;
   overscroll-behavior: contain;
@@ -95,9 +95,9 @@ img.loaded {
 /* control panel */
 #iv-control {
   position: fixed;
-  top: calc(var(--vv-top) + var(--vv-height) - 60px);
+  top: calc(var(--vv-top) + 100vh - 60px);
   left: var(--vv-left);
-  width: var(--vv-width);
+  width: 100vw;
   height: 60px;
   background: rgba(0, 0, 0, 0);
 }

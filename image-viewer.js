@@ -660,8 +660,8 @@ window.ImageViewer = (function () {
         z-index: 2147483647;
         top: var(--vv-top);
         left: var(--vv-left);
-        width: var(--vv-width);
-        height: var(--vv-height);
+        width: 100vw;
+        height: 100vh;
         background: rgba(0, 0, 0, 0.8) !important;
         touch-action: none;
       }
@@ -669,8 +669,8 @@ window.ImageViewer = (function () {
         position: fixed;
         top: var(--vv-top);
         left: var(--vv-left);
-        width: var(--vv-width);
-        height: var(--vv-height);
+        width: 100vw;
+        height: 100vh;
         overflow-x: auto;
         overflow-y: scroll;
         overscroll-behavior: contain;
@@ -731,9 +731,9 @@ window.ImageViewer = (function () {
       /* control panel */
       #iv-control {
         position: fixed;
-        top: calc(var(--vv-top) + var(--vv-height) - 60px);
+        top: calc(var(--vv-top) + 100vh - 60px);
         left: var(--vv-left);
-        width: var(--vv-width);
+        width: 100vw;
         height: 60px;
         background: rgba(0, 0, 0, 0);
       }
@@ -985,8 +985,6 @@ window.ImageViewer = (function () {
     const viewpoint = window.visualViewport
     viewer.style.setProperty('--vv-top', `${viewpoint.offsetTop}px`)
     viewer.style.setProperty('--vv-left', `${viewpoint.offsetLeft}px`)
-    viewer.style.setProperty('--vv-width', `${viewpoint.width}px`)
-    viewer.style.setProperty('--vv-height', `${viewpoint.height}px`)
 
     // init i18n
     const i18n = {
@@ -1032,8 +1030,6 @@ window.ImageViewer = (function () {
     if (options.webtoonMode) {
       const scrollbarSize = window.innerWidth - viewer.querySelector('#iv-webtoon').clientWidth
       viewer.style.setProperty('--scrollbar-width', `${scrollbarSize}px`)
-      viewer.style.setProperty('--vv-width', `${viewpoint.width}px`)
-      viewer.style.setProperty('--vv-height', `${viewpoint.height}px`)
     }
   }
 
