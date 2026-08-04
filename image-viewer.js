@@ -1028,8 +1028,6 @@ window.ImageViewer = (function () {
     document.body.appendChild(shadowHolder)
     document.body.classList.add('iv-attached')
 
-    fitFuncDict.init()
-
     // align close button
     if (options.webtoonMode) {
       const scrollbarSize = window.innerWidth - viewer.querySelector('#iv-webtoon').clientWidth
@@ -1585,6 +1583,7 @@ window.ImageViewer = (function () {
         })
       }
       resizeHandlerList.push(() => fitImage(options))
+      fitFuncDict.init()
     }
     function addWebtoonInfoEvent() {
       const webtoon = shadowRoot.querySelector('#iv-webtoon')
