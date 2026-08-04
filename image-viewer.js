@@ -1077,7 +1077,7 @@ window.ImageViewer = (function () {
       )
       window.addEventListener('resize', () => resizeHandlerList.forEach(func => func()))
     }
-    function initHotkeyMapping() {
+    function initHotkeyMapping(options) {
       hotkeyHandlerList.length = COMMAND_ENUM.SEARCH_CUSTOM_BASE
       hotkeyHandlerList.fill(() => {})
       keydownHotkeyMap.clear()
@@ -1109,7 +1109,7 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.SEARCH_ALL, [options.searchHotkey[4]])
       options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
     }
-    function addChangeBackgroundHotkey() {
+    function addChangeBackgroundHotkey(options) {
       const backgroundList = [
         ['rgb(0, 0, 0)', 'important'],
         ['rgb(255, 255, 255)', 'important']
@@ -1122,7 +1122,7 @@ window.ImageViewer = (function () {
         shadowRoot.querySelector('#image-viewer').style.setProperty('background', ...backgroundList[index])
       }
     }
-    function addTransformationHotkey() {
+    function addTransformationHotkey(options) {
       let lastHotkeyTime = 0
       const transformHandler = (e, COMMAND_ENUM_VALUE) => {
         const now = Date.now()
@@ -1266,7 +1266,7 @@ window.ImageViewer = (function () {
       hotkeyHandlerList[COMMAND_ENUM.COPY_IMAGE] = copyHandler
       hotkeyHandlerList[COMMAND_ENUM.COPY_IMAGE_URL] = copyHandler
     }
-    function addImageReverseSearchHotkey() {
+    function addImageReverseSearchHotkey(options) {
       function readDataUrl(dataURL) {
         const [header, data] = dataURL.split(',')
         const mime = header.split(':')[1].split(';')[0]
@@ -1570,7 +1570,7 @@ window.ImageViewer = (function () {
       })
       infoPopup.addEventListener('update-info', updateInfoPopup)
     }
-    function addFitButtonEvent() {
+    function addFitButtonEvent(options) {
       const currFitBtn = shadowRoot.querySelector(`#iv-control-${options.fitMode}`)
       currFitBtn?.classList.add('on')
       const fitBtnList = shadowRoot.querySelectorAll('#iv-control-buttons button[data-fit]')
@@ -1883,15 +1883,15 @@ window.ImageViewer = (function () {
     }
 
     initWindowEventHandler()
-    initHotkeyMapping()
-    addChangeBackgroundHotkey()
-    addTransformationHotkey()
+    initHotkeyMapping(options)
+    addChangeBackgroundHotkey(options)
+    addTransformationHotkey(options)
     addDownloadHotkey()
     addCopyHotkey()
-    addImageReverseSearchHotkey()
+    addImageReverseSearchHotkey(options)
     addControlPanelHideEvent(options)
     addInfoPopupEvent()
-    addFitButtonEvent()
+    addFitButtonEvent(options)
     if (options.webtoonMode) {
       addWebtoonInfoEvent()
     }
