@@ -983,9 +983,12 @@ window.ImageViewer = (function () {
     viewer.style.setProperty('--vv-height', `${viewport.height}px`)
 
     // overlay existing scrollbar
-    const scrollbarSize = window.innerWidth - document.documentElement.clientWidth
+    const verticalScrollbarSize = window.innerWidth - document.documentElement.clientWidth
+    const horizontalScrollbarSize = window.innerHeight - document.documentElement.clientHeight
+    const scrollbarSize = Math.max(verticalScrollbarSize, horizontalScrollbarSize)
     if (options.webtoonMode && scrollbarSize > 0) {
-      viewer.style.setProperty('--vv-width', `${viewport.width + scrollbarSize}px`)
+      viewer.style.setProperty('--vv-width', `${viewport.width + verticalScrollbarSize}px`)
+      viewer.style.setProperty('--vv-height', `${viewport.height + horizontalScrollbarSize}px`)
       viewer.style.setProperty('--scrollbar-width', `${scrollbarSize}px`)
     }
     // disable body overflow
