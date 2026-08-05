@@ -660,8 +660,8 @@ window.ImageViewer = (function () {
         z-index: 2147483647;
         top: var(--vv-top);
         left: var(--vv-left);
-        width: 100vw;
-        height: 100vh;
+        width: var(--vv-width);
+        height: var(--vv-height);
         background: rgba(0, 0, 0, 0.8) !important;
         touch-action: none;
       }
@@ -669,8 +669,8 @@ window.ImageViewer = (function () {
         position: fixed;
         top: var(--vv-top);
         left: var(--vv-left);
-        width: 100vw;
-        height: 100vh;
+        width: var(--vv-width);
+        height: var(--vv-height);
         overflow-x: auto;
         overflow-y: scroll;
         overscroll-behavior: contain;
@@ -731,9 +731,9 @@ window.ImageViewer = (function () {
       /* control panel */
       #iv-control {
         position: fixed;
-        top: calc(var(--vv-top) + 100vh - 60px);
+        top: calc(var(--vv-top) + var(--vv-height) - 60px);
         left: var(--vv-left);
-        width: 100vw;
+        width: var(--vv-width);
         height: 60px;
         background: rgba(0, 0, 0, 0);
       }
@@ -985,7 +985,15 @@ window.ImageViewer = (function () {
     viewer.tabIndex = 0
     viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
     viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
+    viewer.style.setProperty('--vv-width', `${viewport.width}px`)
+    viewer.style.setProperty('--vv-height', `${viewport.height}px`)
 
+    // overlay existing scrollbar
+    const scrollbarSize = window.innerWidth - document.documentElement.clientWidth
+    if (options.webtoonMode && scrollbarSize > 0) {
+      viewer.style.setProperty('--vv-width', `${viewport.width + scrollbarSize}px`)
+      viewer.style.setProperty('--scrollbar-width', `${scrollbarSize}px`)
+    }
     // disable body overflow
     if (options.webtoonMode) {
       shadowHolder.classList.add('webtoon')
@@ -1027,7 +1035,7 @@ window.ImageViewer = (function () {
     document.body.classList.add('iv-attached')
 
     // align close button
-    if (options.webtoonMode) {
+    if (options.webtoonMode && scrollbarSize === 0) {
       const scrollbarSize = window.innerWidth - viewer.querySelector('#iv-webtoon').clientWidth
       viewer.style.setProperty('--scrollbar-width', `${scrollbarSize}px`)
     }
