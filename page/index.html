@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Viewer Demo</title>
+    <link rel="stylesheet" href="https://sindresorhus.com/github-markdown-css/github-markdown.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background: #f6f8fa;
+        color: #1f2328;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+
+      header {
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        background: #24292f;
+        color: #fff;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      header a {
+        color: #fff;
+        font-size: 14px;
+      }
+
+      main {
+        height: calc(100% - 56px);
+        display: grid;
+        grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .panel {
+        min-width: 0;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid #d0d7de;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(31, 35, 40, 0.08);
+      }
+
+      .readme {
+        overflow-y: auto;
+        padding: 32px;
+      }
+
+      .markdown-body {
+        max-width: 980px;
+        margin: 0 auto;
+      }
+
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      @media (max-width: 800px) {
+        html,
+        body {
+          height: auto;
+        }
+
+        header {
+          position: sticky;
+          top: 0;
+          z-index: 1;
+        }
+
+        main {
+          height: auto;
+          grid-template-columns: 1fr;
+        }
+
+        .readme {
+          max-height: 70vh;
+          padding: 20px;
+        }
+
+        .demo {
+          height: calc(100vh - 80px);
+        }
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Image Viewer Demo</h1>
+      <a href="https://github.com/hospotho/Image-Viewer">View on GitHub</a>
+    </header>
+    <main>
+      <section class="panel readme" aria-label="Project README">
+        <article class="markdown-body">Loading README…</article>
+      </section>
+      <section class="panel demo" aria-label="Interactive demo">
+        <iframe src="demo.html" title="Image Viewer interactive demo"></iframe>
+      </section>
+    </main>
+    <script>
+      const readme = document.querySelector('.markdown-body')
+
+      fetch('../readme.md')
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`)
+          return response.text()
+        })
+        .then(markdown => {
+          readme.innerHTML = marked.parse(markdown)
+          readme.querySelectorAll('img').forEach(image => (image.src = `../${image.getAttribute('src')}`))
+          setTimeout(() => {
+            const readmePanel = readme.parentElement
+            const howToUse = [...readme.querySelectorAll('h2')].find(heading => heading.textContent === 'How to use')
+            const top = howToUse.getBoundingClientRect().top - readmePanel.getBoundingClientRect().top + readmePanel.scrollTop
+            readmePanel.scrollTo({top: top - parseFloat(getComputedStyle(howToUse).marginTop), behavior: 'smooth'})
+          }, 100)
+        })
+        .catch(error => {
+          readme.textContent = `Unable to load README: ${error.message}`
+        })
+    </script>
+  </body>
+</html>
