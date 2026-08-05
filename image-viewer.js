@@ -529,17 +529,11 @@ window.ImageViewer = (function () {
     let windowWidth = 1
     let windowHeight = 1
     let windowRatio = 1
-    const action = () => {
+    function init() {
+      viewer = shadowRoot.querySelector('#iv-webtoon') || shadowRoot.querySelector('#image-viewer')
       windowWidth = viewer.clientWidth
       windowHeight = viewer.clientHeight
       windowRatio = windowWidth / windowHeight
-    }
-    const observer = new ResizeObserver(action)
-    function init() {
-      viewer = shadowRoot.querySelector('#iv-webtoon') || shadowRoot.querySelector('#image-viewer')
-      observer.observe(viewer)
-      resizeHandlerList.push(action)
-      action()
     }
     function both(imageWidth, imageHeight) {
       const imgRatio = imageWidth / imageHeight
@@ -1114,9 +1108,9 @@ window.ImageViewer = (function () {
       options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
     }
     function addViewportResizeEvent() {
+      const viewer = shadowRoot.querySelector('#image-viewer')
+      const viewport = window.visualViewport
       const action = () => {
-        const viewer = shadowRoot.querySelector('#image-viewer')
-        const viewport = window.visualViewport
         viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
         viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
         viewer.style.setProperty('--vv-width', `${viewport.width}px`)
@@ -1597,7 +1591,8 @@ window.ImageViewer = (function () {
           fitImage(options)
         })
       }
-      resizeHandlerList.push(() => fitImage(options))
+      const observer = new ResizeObserver(() => fitFuncDict.init() || fitImage(options))
+      observer.observe(shadowRoot.querySelector('#image-viewer'))
       fitFuncDict.init()
     }
     function addWebtoonInfoEvent() {
