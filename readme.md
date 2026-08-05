@@ -16,14 +16,15 @@ If you like this extension, you can [buy me a coffee](https://ko-fi.com/tonymilk
 7. Fit, zoom, rotate and mirror the image.
 8. Hotkey for image reverse search.
 9. Download collected images.
-10. Easy to use.
-11. And more...
+10. Support mobile touch controls.
+11. Easy to use.
+12. And more...
 
 ## Installation
 
-[Web Demo](https://hospotho.github.io/Image-Viewer/) (Does not include some extension-only features)
+[Web Demo](https://hospotho.github.io/Image-Viewer/page/) (Does not include some extension-only features)
 
-You can install release version from [Chrome Web Store](https://chrome.google.com/webstore/detail/image-viewer/ghdcoodfcolpdebbdhbgkbodbjololfl) and [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/syrup-image-viewer/). For development version, follow steps below:
+The release version is not yet available. ~~You can install release version from [Chrome Web Store](https://chrome.google.com/webstore) and [Firefox Add-ons](https://addons.mozilla.org/firefox/addon).~~ For development version, follow steps below:
 
 1. Download the source code and place it anywhere you want.
 2. Open your browser and go to `chrome://extensions`.
@@ -38,9 +39,9 @@ After adding this extension to your browser, it is recommended to pin it to the 
 
 For image tabs, Image Viewer will be activate automatically.
 
-For normal websites and local folders, you can activate Image Viewer by click its icon on the toolbar, choose this extension from the right-click menu or use keyboard hotkey (default <kbd>Alt</kbd>+<kbd>1</kbd>).
+For normal websites and local folders, you can activate Image Viewer by click its icon on the toolbar, choose this extension from the right-click menu or use keyboard hotkeys (default <kbd>Alt</kbd>+<kbd>1</kbd>).
 
-For additional options, right-click the extension icon on the toolbar. eg: activate Image Viewer with disabled size filter, activate with webtoon mode, activate with the last picked image (use it when the right-click menu is disabled by the website).
+For additional options, right-click the extension icon on the toolbar. eg: activate Image Viewer with `disabled size filter`, activate with `webtoon mode`, activate with the `last picked image` (use it when the right-click menu is disabled by the website).
 
 Most hotkeys can be customize in the options page. The hotkeys listed below are the default mappings.
 
@@ -160,6 +161,12 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
     <td><kbd>right-click</kbd> the close button</td>
   </tr>
 </table>
+
+### Touch controls
+
+On touch devices, drag an image to move it and pinch with two fingers to zoom. In webtoon mode, use one finger to scroll and two fingers to move or zoom the image list.
+
+Tap an empty area of the bottom control bar to show its buttons. Tap an arrow button to view the previous or next image, or hold it for fast navigation.
 
 ## Browser support
 
