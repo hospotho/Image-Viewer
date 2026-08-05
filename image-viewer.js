@@ -1113,6 +1113,17 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.SEARCH_ALL, [options.searchHotkey[4]])
       options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
     }
+    function addViewportResizeEvent() {
+      const action = () => {
+        const viewer = shadowRoot.querySelector('#image-viewer')
+        const viewport = window.visualViewport
+        viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
+        viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
+        viewer.style.setProperty('--vv-width', `${viewport.width}px`)
+        viewer.style.setProperty('--vv-height', `${viewport.height}px`)
+      }
+      resizeHandlerList.push(action)
+    }
     function addChangeBackgroundHotkey(options) {
       const backgroundList = [
         ['rgb(0, 0, 0)', 'important'],
@@ -1888,6 +1899,7 @@ window.ImageViewer = (function () {
 
     initWindowEventHandler()
     initHotkeyMapping(options)
+    addViewportResizeEvent()
     addChangeBackgroundHotkey(options)
     addTransformationHotkey(options)
     addDownloadHotkey()
