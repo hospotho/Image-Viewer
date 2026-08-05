@@ -1594,7 +1594,10 @@ window.ImageViewer = (function () {
           fitImage(options)
         })
       }
-      const observer = new ResizeObserver(() => fitFuncDict.init() || fitImage(options))
+      // prevent fitImage trigger by observe() init reset lastTransform
+      let skipped = true
+      setTimeout(() => (skipped = false), 1)
+      const observer = new ResizeObserver(() => skipped || fitFuncDict.init() || fitImage(options))
       observer.observe(shadowRoot.querySelector('#image-viewer'))
       fitFuncDict.init()
     }
