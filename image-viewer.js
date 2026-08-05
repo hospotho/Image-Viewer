@@ -1486,7 +1486,8 @@ window.ImageViewer = (function () {
           displayTimeout = setTimeout(() => controlPanel.classList.remove('show'), panelTimeout)
         }
       })
-      controlPanel.addEventListener('pointerenter', () => {
+      controlPanel.addEventListener('pointerenter', e => {
+        if (e.target.tagName === 'BUTTON') return
         controlPanel.classList.add('show')
         clearTimeout(displayTimeout)
         if (panelTimeout !== 0) {
@@ -1498,7 +1499,7 @@ window.ImageViewer = (function () {
         clearTimeout(displayTimeout)
       })
       for (const button of buttonList) {
-        button.addEventListener('pointerenter', () => {
+        button.addEventListener('mouseenter', () => {
           controlPanel.classList.add('show')
           clearTimeout(displayTimeout)
           if (panelTimeout !== 0) {
