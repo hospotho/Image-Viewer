@@ -100,13 +100,28 @@ window.ImageViewer = (function () {
     return Math.round(1000 / median)
   }
   function getScrollbarSize() {
+    const temp = document.createElement('div')
+    temp.style.position = 'absolute'
+    temp.style.top = '-9999px'
+    temp.style.left = '-9999px'
+    temp.style.width = '100px'
+    temp.style.height = '100px'
+    temp.style.overflow = 'scroll'
+    temp.style.visibility = 'hidden'
+    temp.style.pointerEvents = 'none'
+    temp.style.contain = 'strict'
+    document.body.appendChild(temp)
+
+    const base = temp.offsetWidth - temp.clientWidth
+    temp.remove()
+
     const widthDiff = window.innerWidth - document.documentElement.clientWidth
     const heightDiff = window.innerHeight - document.documentElement.clientHeight
 
     const MAX_SIZE = 25
     const vertical = document.documentElement.scrollHeight > document.documentElement.clientHeight && MAX_SIZE >= widthDiff && widthDiff > 0 ? widthDiff : 0
     const horizontal = document.documentElement.scrollWidth > document.documentElement.clientWidth && MAX_SIZE >= heightDiff && heightDiff > 0 ? heightDiff : 0
-    return [vertical, horizontal]
+    return [base, vertical, horizontal]
   }
 
   function parseHotkey(hotkey) {
@@ -992,12 +1007,11 @@ window.ImageViewer = (function () {
     viewer.style.setProperty('--vv-height', `${viewport.height}px`)
 
     // overlay existing scrollbar
-    const [vertical, horizontal] = getScrollbarSize()
-    const scrollbarSize = Math.max(vertical, horizontal)
-    if (options.webtoonMode && scrollbarSize > 0) {
-      viewer.style.setProperty('--vv-width', `${viewport.width + vertical}px`)
-      viewer.style.setProperty('--vv-height', `${viewport.height + horizontal}px`)
-      viewer.style.setProperty('--scrollbar-width', `${scrollbarSize}px`)
+    if (options.webtoonMode) {
+      const [base, vertical, horizontal] = getScrollbarSize()
+      viewer.style.setProperty('--scrollbar-width', `${base}px`)
+      if (vertical) viewer.style.setProperty('--vv-width', `${viewport.width + vertical}px`)
+      if (horizontal) viewer.style.setProperty('--vv-height', `${viewport.height + horizontal}px`)
     }
     // disable body overflow
     if (options.webtoonMode) {
@@ -1038,12 +1052,6 @@ window.ImageViewer = (function () {
     shadowRoot.append(viewer)
     document.body.appendChild(shadowHolder)
     document.body.classList.add('iv-attached')
-
-    // align close button
-    if (options.webtoonMode && scrollbarSize === 0) {
-      const scrollbarSize = window.innerWidth - viewer.querySelector('#iv-webtoon').clientWidth
-      viewer.style.setProperty('--scrollbar-width', `${scrollbarSize}px`)
-    }
   }
 
   function addFrameEvent(options) {
