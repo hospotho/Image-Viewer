@@ -12,8 +12,8 @@ jobs:
   build_and_release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Get version from history
         id: get_version
@@ -54,7 +54,7 @@ jobs:
           cd ..
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: image-viewer-${{ steps.get_version.outputs.version }}
           path: ./release-build/*
@@ -62,7 +62,7 @@ jobs:
 
       - name: Create release
         if: ${{ steps.get_version.outputs.version != 'latest' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
           name: v${{ steps.get_version.outputs.version }}
