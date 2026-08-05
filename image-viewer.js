@@ -978,15 +978,31 @@ window.ImageViewer = (function () {
 
     const stylesheet = document.createElement('style')
     stylesheet.textContent = style()
+
     const viewer = document.createElement('div')
+    const viewport = window.visualViewport
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
+    viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
+    viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
 
-    const viewpoint = window.visualViewport
-    viewer.style.setProperty('--vv-top', `${viewpoint.offsetTop}px`)
-    viewer.style.setProperty('--vv-left', `${viewpoint.offsetLeft}px`)
+    // disable body overflow
+    if (options.webtoonMode) {
+      shadowHolder.classList.add('webtoon')
+      viewer.classList.add('webtoon')
+      options.fitMode = 'none'
+    }
+    // prevent image loading flash
+    if (!options.closeButton) {
+      viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
+      viewer.style.setProperty('opacity', '0')
+    }
+    // default white background for canvas
+    if (options.canvasMode) {
+      viewer.style.setProperty('background', 'rgb(255, 255, 255)', 'important')
+    }
 
-    // init i18n
+    // init frame
     const i18n = {
       widthText: 'Width',
       heightText: 'Height',
@@ -1004,22 +1020,6 @@ window.ImageViewer = (function () {
       i18n.altText = chrome.i18n.getMessage('image_alt')
     }
     viewer.innerHTML = frame(i18n, options.webtoonMode)
-
-    if (options.webtoonMode) {
-      shadowHolder.classList.add('webtoon')
-      viewer.classList.add('webtoon')
-      options.fitMode = 'none'
-    }
-
-    if (!options.closeButton) {
-      viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
-      // prevent image loading flash
-      viewer.style.setProperty('opacity', '0')
-    }
-
-    if (options.canvasMode) {
-      viewer.style.setProperty('background', 'rgb(255, 255, 255)', 'important')
-    }
 
     shadowRoot.append(stylesheet)
     shadowRoot.append(viewer)
