@@ -99,6 +99,15 @@ window.ImageViewer = (function () {
       .at(Math.floor(tick / 2))
     return Math.round(1000 / median)
   }
+  function getScrollbarSize() {
+    const widthDiff = window.innerWidth - document.documentElement.clientWidth
+    const heightDiff = window.innerHeight - document.documentElement.clientHeight
+
+    const MAX_SIZE = 25
+    const vertical = document.documentElement.scrollHeight > document.documentElement.clientHeight && MAX_SIZE >= widthDiff && widthDiff > 0 ? widthDiff : 0
+    const horizontal = document.documentElement.scrollWidth > document.documentElement.clientWidth && MAX_SIZE >= heightDiff && heightDiff > 0 ? heightDiff : 0
+    return [vertical, horizontal]
+  }
 
   function parseHotkey(hotkey) {
     const keyList = hotkey.split(' + ')
@@ -983,12 +992,11 @@ window.ImageViewer = (function () {
     viewer.style.setProperty('--vv-height', `${viewport.height}px`)
 
     // overlay existing scrollbar
-    const verticalScrollbarSize = window.innerWidth - document.documentElement.clientWidth
-    const horizontalScrollbarSize = window.innerHeight - document.documentElement.clientHeight
-    const scrollbarSize = Math.max(verticalScrollbarSize, horizontalScrollbarSize)
+    const [vertical, horizontal] = getScrollbarSize()
+    const scrollbarSize = Math.max(vertical, horizontal)
     if (options.webtoonMode && scrollbarSize > 0) {
-      viewer.style.setProperty('--vv-width', `${viewport.width + verticalScrollbarSize}px`)
-      viewer.style.setProperty('--vv-height', `${viewport.height + horizontalScrollbarSize}px`)
+      viewer.style.setProperty('--vv-width', `${viewport.width + vertical}px`)
+      viewer.style.setProperty('--vv-height', `${viewport.height + horizontal}px`)
       viewer.style.setProperty('--scrollbar-width', `${scrollbarSize}px`)
     }
     // disable body overflow
