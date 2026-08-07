@@ -3,7 +3,7 @@
 
   async function createNotes() {
     const rawText = await fetch('../version.txt').then(res => res.text())
-    const data = rawText.split('\n\n').map(t => t.trim().split('\n'))
+    const data = rawText.replaceAll('\r', '').split('\n\n').map(t => t.trim().split('\n'))
 
     const noteContainerGroup = document.createElement('div')
     noteContainerGroup.classList.add('note-container-group')
