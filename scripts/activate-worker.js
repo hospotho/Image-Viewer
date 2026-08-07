@@ -371,8 +371,8 @@ body:has(#image-viewer-root.webtoon) {
       const oldRect = oldInfo[2].getBoundingClientRect()
       const newOffset = [mouseX - newRect.left - newRect.width / 2, mouseY - newRect.top - newRect.height / 2]
       const oldOffset = [mouseX - oldRect.left - oldRect.width / 2, mouseY - oldRect.top - oldRect.height / 2]
-      const newDist = Math.sqrt(newOffset[0] ** 2 + newOffset[1] ** 2)
-      const oldDist = Math.sqrt(oldOffset[0] ** 2 + oldOffset[1] ** 2)
+      const newDist = Math.hypot(newOffset[0], newOffset[1])
+      const oldDist = Math.hypot(oldOffset[0], oldOffset[1])
       if (newDist > oldDist + 50) return false
       // size check
       const asyncList = [[newUrl, oldUrl].map(getImageBitSize), [newUrl, oldUrl].map(getImageRealSize)].flat()

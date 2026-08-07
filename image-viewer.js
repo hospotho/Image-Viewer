@@ -1673,7 +1673,7 @@ window.ImageViewer = (function () {
         while (true) {
           const rect = liList[index].getBoundingClientRect()
           direction = direction !== 0 ? direction : (projectY < rect.left) ^ order ? 1 : -1
-          const distance = Math.sqrt((rect.left + rect.width / 2 - webtoonY) ** 2 + (rect.top + rect.height / 2 - webtoonX) ** 2)
+          const distance = Math.hypot(rect.left + rect.width / 2 - webtoonY, rect.top + rect.height / 2 - webtoonX)
           if (distance > minDistance) return index - direction
           minDistance = distance
           index += direction
@@ -2271,7 +2271,7 @@ window.ImageViewer = (function () {
       const mirror = Math.sign(scaleX) * Math.sign(scaleY)
       rotate = mirror * options.rotateDeg * rotateCount
       // recalculate displacement for rotation around the center of the viewpoint
-      const radial = Math.sqrt(moveX ** 2 + moveY ** 2)
+      const radial = Math.hypot(moveX, moveY)
       const deltaRadian = ((options.rotateDeg * deltaRotate) / 180) * Math.PI
       const newRadian = Math.atan2(moveY, moveX) + deltaRadian
       moveX = radial * Math.cos(newRadian)
@@ -2323,7 +2323,7 @@ window.ImageViewer = (function () {
           } else {
             // transition cause flash when large offset
             const [, , , moveX, moveY] = getTransform(target)
-            const offset = Math.sqrt(moveX ** 2 + moveY ** 2)
+            const offset = Math.hypot(moveX, moveY)
             target.style.transition = offset > 350 || options.webtoonMode ? 'none' : ''
             const deltaRotate = e.deltaY > 0 ? 1 : -1
             context.rotateCount += context.mirror ? -deltaRotate : deltaRotate
