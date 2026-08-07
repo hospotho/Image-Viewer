@@ -728,6 +728,8 @@ window.ImageViewer = (function () {
       }
       #image-viewer.webtoon #iv-image-list li {
         position: relative;
+        width: auto;
+        height: auto;
         display: flex;
         translate: 0 0;
         overflow: visible;
@@ -2832,7 +2834,6 @@ window.ImageViewer = (function () {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
       img.height = h
-      img.style.setProperty('--width', `${w}px`)
       img.classList.add('loaded')
     }
     const imgList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'} img`)
