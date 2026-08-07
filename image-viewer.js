@@ -689,7 +689,7 @@ window.ImageViewer = (function () {
         left: var(--vv-left);
         width: var(--vv-width);
         height: var(--vv-height);
-        overflow-x: auto;
+        overflow-x: scroll;
         overflow-y: scroll;
         overscroll-behavior: contain;
         touch-action: pan-x pan-y;
@@ -756,6 +756,10 @@ window.ImageViewer = (function () {
         width: var(--vv-width);
         height: 60px;
         background: rgba(0, 0, 0, 0);
+      }
+      #image-viewer.webtoon #iv-control {
+        top: calc(var(--vv-top) + var(--vv-height) - var(--scrollbar-size) - 60px);
+        width: calc(var(--vv-width) - var(--scrollbar-size));
       }
       #iv-control * {
         opacity: 0;
@@ -926,7 +930,7 @@ window.ImageViewer = (function () {
         visibility: visible;
       }
       #image-viewer.webtoon #iv-control-close {
-        right: calc(-50px + var(--scrollbar-width, 17px));
+        right: calc(-50px + var(--scrollbar-size, 17px));
       }
       #iv-control-close::before,
       #iv-control-close::after {
@@ -1011,7 +1015,7 @@ window.ImageViewer = (function () {
     // overlay existing scrollbar
     if (options.webtoonMode) {
       const [base, vertical, horizontal] = getScrollbarSize()
-      viewer.style.setProperty('--scrollbar-width', `${base}px`)
+      viewer.style.setProperty('--scrollbar-size', `${base}px`)
       if (vertical) viewer.style.setProperty('--vv-width', `${viewport.width + vertical}px`)
       if (horizontal) viewer.style.setProperty('--vv-height', `${viewport.height + horizontal}px`)
     }
