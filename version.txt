@@ -1,3 +1,13 @@
+2.2 [2026-08-07]:
+Mobile and Stability Update
+First release version since v1.48, please also read v2.0 release note.
+1. Added mobile controls support, including drag and pinch-to-zoom gestures.
+2. Added image alt text to the info popup.
+3. Added long-press fast navigation to the arrow buttons.
+4. Improved large downloads by packaging images progressively and splitting oversized archives.
+5. Improved image viewer layout.
+6. Other bug fixes and improvements.
+
 2.1 [2026-06-13]:
 Performance and Stability update, please also read v2.0 release note.
 1. Improve folder mode, no longer runs out of memory when folders contain >4k images.
