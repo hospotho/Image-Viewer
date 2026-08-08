@@ -49,12 +49,14 @@ window.ImageViewer = (function () {
     FAST_NAVIGATE_NEXT: 18,
     AUTO_NAVIGATE_PREV: 19,
     AUTO_NAVIGATE_NEXT: 20,
-    SEARCH_GOOGLE: 21,
-    SEARCH_YANDEX: 22,
-    SEARCH_SAUCENAO: 23,
-    SEARCH_ASCII2D: 24,
-    SEARCH_ALL: 25,
-    SEARCH_CUSTOM_BASE: 26
+    FLIP_LIST_DIRECTION: 21,
+    FLIP_LIST_ORDER: 22,
+    SEARCH_GOOGLE: 23,
+    SEARCH_YANDEX: 24,
+    SEARCH_SAUCENAO: 25,
+    SEARCH_ASCII2D: 26,
+    SEARCH_ALL: 27,
+    SEARCH_CUSTOM_BASE: 28
   }
 
   //==========utility==========
@@ -1135,6 +1137,8 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.FAST_NAVIGATE_NEXT, options.viewerHotkey.fastNavigateNext)
       registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_PREV, options.viewerHotkey.autoNavigatePrev)
       registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_NEXT, options.viewerHotkey.autoNavigateNext)
+      registerHotkey(COMMAND_ENUM.FLIP_LIST_DIRECTION, options.viewerHotkey.flipListDirection)
+      registerHotkey(COMMAND_ENUM.FLIP_LIST_ORDER, options.viewerHotkey.flipListOrder)
       registerHotkey(COMMAND_ENUM.SEARCH_GOOGLE, [options.searchHotkey[0]])
       registerHotkey(COMMAND_ENUM.SEARCH_YANDEX, [options.searchHotkey[1]])
       registerHotkey(COMMAND_ENUM.SEARCH_SAUCENAO, [options.searchHotkey[2]])
@@ -1722,6 +1726,22 @@ window.ImageViewer = (function () {
       new MutationObserver(action).observe(wrapper, {attributeFilter: ['style']})
       new ResizeObserver(action).observe(wrapper)
     }
+    function addWebtoonOrientationHotkey() {
+      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      hotkeyHandlerList[COMMAND_ENUM.FLIP_LIST_DIRECTION] = () => {
+        const length = imageListNode.children.length
+        const reverse = imageListNode.children[0].style.order !== '0'
+        if (reverse) for (let i = 0; i < length; i++) imageListNode.children[i].style.order = i
+        else for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
+        const currentListItem = imageListNode.querySelector('li.current')
+        currentListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+      }
+      hotkeyHandlerList[COMMAND_ENUM.FLIP_LIST_ORDER] = () => {
+        imageListNode.style.flexDirection = imageListNode.style.flexDirection === 'row' ? 'column' : 'row'
+        const currentListItem = imageListNode.querySelector('li.current')
+        currentListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+      }
+    }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
         const border = document.createElement('div')
@@ -1943,6 +1963,7 @@ window.ImageViewer = (function () {
     addFitButtonEvent(options)
     if (options.webtoonMode) {
       addWebtoonInfoEvent()
+      addWebtoonOrientationHotkey()
     }
     if (options.closeButton) {
       addMoveToButtonEvent()
