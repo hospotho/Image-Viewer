@@ -233,6 +233,12 @@
   "viewer_hotkey_fast_navigate_prev": {
     "message": "Fast navigate (previous)"
   },
+  "viewer_hotkey_flip_list_direction": {
+    "message": "Flip webtoon direction"
+  },
+  "viewer_hotkey_flip_list_order": {
+    "message": "Reverse webtoon order"
+  },
   "viewer_hotkey_move_down": {
     "message": "Move down"
   },
