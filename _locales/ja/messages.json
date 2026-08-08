@@ -215,6 +215,9 @@
   "viewer_hotkey_background": {
     "message": "背景を切り替える"
   },
+  "viewer_hotkey_toggle_native_drag": {
+    "message": "画像のネイティブドラッグを切り替える"
+  },
   "viewer_hotkey_close": {
     "message": "ビューワーを閉じる"
   },

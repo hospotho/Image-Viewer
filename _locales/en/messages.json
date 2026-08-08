@@ -215,6 +215,9 @@
   "viewer_hotkey_background": {
     "message": "Change background"
   },
+  "viewer_hotkey_toggle_native_drag": {
+    "message": "Toggle native image dragging"
+  },
   "viewer_hotkey_close": {
     "message": "Close viewer"
   },

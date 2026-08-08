@@ -215,6 +215,9 @@
   "viewer_hotkey_background": {
     "message": "切换背景"
   },
+  "viewer_hotkey_toggle_native_drag": {
+    "message": "切换原生图片拖放"
+  },
   "viewer_hotkey_close": {
     "message": "关闭Image Viewer"
   },
