@@ -67,7 +67,10 @@
       fastNavigatePrev: ['Ctrl + ArrowLeft', 'Ctrl + ArrowUp'],
       fastNavigateNext: ['Ctrl + ArrowRight', 'Ctrl + ArrowDown'],
       autoNavigatePrev: ['Shift + ArrowLeft', 'Shift + ArrowUp'],
-      autoNavigateNext: ['Shift + ArrowRight', 'Shift + ArrowDown']
+      autoNavigateNext: ['Shift + ArrowRight', 'Shift + ArrowDown'],
+      flipListDirection: ['Shift + I'],
+      flipListOrder: ['Shift + O'],
+      toggleNativeDrag: ['Ctrl + Alt + D']
     },
     hoverCheckDisableList: [],
     autoScrollEnableList: ['x.com', 'www.instagram.com', 'www.facebook.com'],
