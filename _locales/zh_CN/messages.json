@@ -233,6 +233,12 @@
   "viewer_hotkey_fast_navigate_prev": {
     "message": "上十张图片"
   },
+  "viewer_hotkey_flip_list_direction": {
+    "message": "反转Webtoon阅读方向"
+  },
+  "viewer_hotkey_flip_list_order": {
+    "message": "切换Webtoon排列方向"
+  },
   "viewer_hotkey_move_down": {
     "message": "向下移动"
   },
