@@ -70,6 +70,14 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
     <td><kbd>Shift</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></td>
   </tr>
   <tr>
+    <td>Reverse webtoon reading direction</td>
+    <td><kbd>Shift</kbd>+<kbd>i</kbd></td>
+  </tr>
+  <tr>
+    <td>Switch webtoon orientation</td>
+    <td><kbd>Shift</kbd>+<kbd>o</kbd></td>
+  </tr>
+  <tr>
     <td rowspan="2">Go to original image on page</td>
     <td><kbd>Enter</kbd></td>
   </tr>
@@ -122,6 +130,10 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
   <tr>
     <td>Change background color<br>(loop: transparent -> black -> white)</td>
     <td><kbd>Shift</kbd>+<kbd>b</kbd></td>
+  </tr>
+  <tr>
+    <td>Toggle native image dragging<br>(drag the image to another app)</td>
+    <td><kbd>Shift</kbd>+<kbd>g</kbd></td>
   </tr>
   <tr>
     <td>Copy current image</td>
