@@ -51,12 +51,13 @@ window.ImageViewer = (function () {
     AUTO_NAVIGATE_NEXT: 20,
     FLIP_LIST_DIRECTION: 21,
     FLIP_LIST_ORDER: 22,
-    SEARCH_GOOGLE: 23,
-    SEARCH_YANDEX: 24,
-    SEARCH_SAUCENAO: 25,
-    SEARCH_ASCII2D: 26,
-    SEARCH_ALL: 27,
-    SEARCH_CUSTOM_BASE: 28
+    DISABLE_DRAG: 23,
+    SEARCH_GOOGLE: 24,
+    SEARCH_YANDEX: 25,
+    SEARCH_SAUCENAO: 26,
+    SEARCH_ASCII2D: 27,
+    SEARCH_ALL: 28,
+    SEARCH_CUSTOM_BASE: 29
   }
 
   //==========utility==========
@@ -679,6 +680,10 @@ window.ImageViewer = (function () {
         user-select: none;
         -webkit-user-drag: none;
       }
+      #image-viewer.disable-drag * {
+        user-select: auto;
+        -webkit-user-drag: auto;
+      }
 
       /* root container */
       #image-viewer {
@@ -690,6 +695,9 @@ window.ImageViewer = (function () {
         height: var(--vv-height);
         background: rgba(0, 0, 0, 0.8) !important;
         touch-action: none;
+      }
+      #image-viewer.disable-drag {
+        touch-action: auto;
       }
       #iv-webtoon {
         position: fixed;
@@ -1139,6 +1147,7 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_NEXT, options.viewerHotkey.autoNavigateNext)
       registerHotkey(COMMAND_ENUM.FLIP_LIST_DIRECTION, options.viewerHotkey.flipListDirection)
       registerHotkey(COMMAND_ENUM.FLIP_LIST_ORDER, options.viewerHotkey.flipListOrder)
+      registerHotkey(COMMAND_ENUM.DISABLE_DRAG, options.viewerHotkey.disableDrag)
       registerHotkey(COMMAND_ENUM.SEARCH_GOOGLE, [options.searchHotkey[0]])
       registerHotkey(COMMAND_ENUM.SEARCH_YANDEX, [options.searchHotkey[1]])
       registerHotkey(COMMAND_ENUM.SEARCH_SAUCENAO, [options.searchHotkey[2]])
@@ -1168,6 +1177,12 @@ window.ImageViewer = (function () {
       hotkeyHandlerList[COMMAND_ENUM.CHANGE_BACKGROUND] = () => {
         index = (index + 1) % backgroundList.length
         shadowRoot.querySelector('#image-viewer').style.setProperty('background', ...backgroundList[index])
+      }
+    }
+    function addDisableDragHotkey() {
+      hotkeyHandlerList[COMMAND_ENUM.DISABLE_DRAG] = e => {
+        e.preventDefault()
+        shadowRoot.querySelector('#image-viewer').classList.toggle('disable-drag')
       }
     }
     function addTransformationHotkey(options) {
@@ -1954,6 +1969,7 @@ window.ImageViewer = (function () {
     initHotkeyMapping(options)
     addViewportResizeEvent()
     addChangeBackgroundHotkey(options)
+    addDisableDragHotkey()
     addTransformationHotkey(options)
     addDownloadHotkey()
     addCopyHotkey()
@@ -2384,6 +2400,7 @@ window.ImageViewer = (function () {
       // dragging and pinch zoom
       const getTouchPointList = context => [...context.pointerMap.values()].filter(point => point[0])
       node.addEventListener('pointerdown', e => {
+        if (shadowRoot.querySelector('#image-viewer').classList.contains('disable-drag')) return
         const target = getTarget()
         const context = getContext(target)
         // [type, startX, startY, currX, currY]
