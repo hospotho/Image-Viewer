@@ -224,6 +224,9 @@
   "viewer_hotkey_copy_image_url": {
     "message": "Copy current image URL"
   },
+  "viewer_hotkey_disable_drag": {
+    "message": "Disable image drag"
+  },
   "viewer_hotkey_download_image": {
     "message": "Download current image"
   },

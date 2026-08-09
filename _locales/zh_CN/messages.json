@@ -224,6 +224,9 @@
   "viewer_hotkey_copy_image_url": {
     "message": "复制当前图片网址"
   },
+  "viewer_hotkey_disable_drag": {
+    "message": "停用图片拖动"
+  },
   "viewer_hotkey_download_image": {
     "message": "下载当前图片"
   },
@@ -235,9 +238,6 @@
   },
   "viewer_hotkey_flip_list_direction": {
     "message": "切换Webtoon阅读方向"
-  },
-  "viewer_hotkey_reverse_list_order": {
-    "message": "反转Webtoon排列方向"
   },
   "viewer_hotkey_move_down": {
     "message": "向下移动"
@@ -262,6 +262,9 @@
   },
   "viewer_hotkey_open_image_link": {
     "message": "打开图片链接"
+  },
+  "viewer_hotkey_reverse_list_order": {
+    "message": "反转Webtoon排列方向"
   },
   "viewer_hotkey_rotate_left": {
     "message": "向左旋转"
