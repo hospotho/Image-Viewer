@@ -553,7 +553,13 @@ window.ImageViewer = (function () {
     let windowWidth = 1
     let windowHeight = 1
     let windowRatio = 1
-    function init() {
+    function init(width = -1, height = -1) {
+      if (width !== -1 && height !== -1) {
+        windowWidth = width
+        windowHeight = height
+        windowRatio = windowWidth / windowHeight
+        return
+      }
       viewer = shadowRoot.querySelector('#iv-webtoon') || shadowRoot.querySelector('#image-viewer')
       windowWidth = viewer.clientWidth
       windowHeight = viewer.clientHeight
@@ -1011,13 +1017,17 @@ window.ImageViewer = (function () {
     viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
     viewer.style.setProperty('--vv-width', `${viewport.width}px`)
     viewer.style.setProperty('--vv-height', `${viewport.height}px`)
+    fitFuncDict.init(viewport.width, viewport.height)
 
     // overlay existing scrollbar
     if (options.webtoonMode) {
       const [base, vertical, horizontal] = getScrollbarSize()
+      const fullWidth = viewport.width + vertical
+      const fullHeight = viewport.height + horizontal
       viewer.style.setProperty('--scrollbar-size', `${base}px`)
-      if (vertical) viewer.style.setProperty('--vv-width', `${viewport.width + vertical}px`)
-      if (horizontal) viewer.style.setProperty('--vv-height', `${viewport.height + horizontal}px`)
+      viewer.style.setProperty('--vv-width', `${fullWidth}px`)
+      viewer.style.setProperty('--vv-height', `${fullHeight}px`)
+      fitFuncDict.init(fullWidth - base, fullHeight - base)
     }
     // disable body overflow
     if (options.webtoonMode) {
@@ -1622,7 +1632,6 @@ window.ImageViewer = (function () {
       setTimeout(() => (skipped = false), 1)
       const observer = new ResizeObserver(() => skipped || fitFuncDict.init() || fitImage(options))
       observer.observe(shadowRoot.querySelector('#image-viewer'))
-      fitFuncDict.init()
     }
     function addWebtoonInfoEvent() {
       const webtoon = shadowRoot.querySelector('#iv-webtoon')
