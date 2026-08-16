@@ -141,7 +141,7 @@
     "message": "カーソルがコントロールパネル上にある場合、Image Viewerは指定した時間が経過するとコントロールパネルを非表示にします<br>この時間を0に設定すると、この機能は無効になります"
   },
   "panel_timeout": {
-    "message": "コントロールパネルの非表示タイムアウト"
+    "message": "パネル非表示時間"
   },
   "popup_title": {
     "message": "リリースノート - Image Viewer"
@@ -237,7 +237,7 @@
     "message": "高速移動（前へ）"
   },
   "viewer_hotkey_flip_list_direction": {
-    "message": "Webtoonの表示方向を切り替える"
+    "message": "Webtoon表示方向を切替"
   },
   "viewer_hotkey_move_down": {
     "message": "下へ移動"
@@ -264,7 +264,7 @@
     "message": "画像リンクを開く"
   },
   "viewer_hotkey_reverse_list_order": {
-    "message": "Webtoonの読む方向を反転"
+    "message": "Webtoon読む方向を反転"
   },
   "viewer_hotkey_rotate_left": {
     "message": "左回転"

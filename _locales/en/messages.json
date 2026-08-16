@@ -239,7 +239,7 @@
   "viewer_hotkey_flip_list_direction": {
     "message": "Flip webtoon direction"
   },
-  "viewer_hotkey_flip_list_order": {
+  "viewer_hotkey_reverse_list_order": {
     "message": "Reverse webtoon order"
   },
   "viewer_hotkey_move_down": {

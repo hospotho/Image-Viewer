@@ -114,7 +114,8 @@
       const tag = el.getAttribute('data-i18n')
       const message = getMessage(tag)
       if (!message) continue
-      el.textContent = message
+      // handle multiline text with <br>
+      el.innerHTML = message
       if (el.value !== '') el.value = message
     }
   }
