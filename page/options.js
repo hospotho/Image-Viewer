@@ -1,6 +1,8 @@
 ;(function () {
   'use strict'
 
+  const languageSelect = document.querySelector('select#language')
+
   const zoom = document.querySelector('input#zoomRatio')
   const rotate = document.querySelector('input#rotateDeg')
 
@@ -90,26 +92,27 @@
   }
 
   //==========utility==========
-  function i18n() {
-    chrome.i18n.getAcceptLanguages(languages => {
-      const exist = ['en', 'ja', 'zh_CN', 'zh_TW']
-      let displayLanguages = 'en'
-      for (const lang of languages) {
-        if (exist.includes(lang.replace('-', '_'))) {
-          displayLanguages = lang
-          break
-        }
-        if (exist.includes(lang.slice(0, 2))) {
-          displayLanguages = lang.slice(0, 2)
-          break
-        }
-      }
-      document.documentElement.setAttribute('lang', displayLanguages)
-    })
+  let messages = {}
+  function getMessage(tag) {
+    return messages[tag]?.message || chrome.i18n.getMessage(tag)
+  }
+  async function i18n(language = null) {
+    language ??= localStorage.getItem('language')
+    if (!language) {
+      const languageList = await chrome.i18n.getAcceptLanguages()
+      const supportedLanguages = ['en', 'ja', 'zh_CN', 'zh_TW']
+      language = languageList.map(lang => lang.replace('-', '_')).find(lang => supportedLanguages.includes(lang))
+      language ||= languageList.map(lang => lang.slice(0, 2)).find(lang => supportedLanguages.includes(lang)) || 'en'
+      language ||= 'en'
+    }
+    localStorage.setItem('language', language)
+    languageSelect.value = language
+    document.documentElement.lang = language.replace('_', '-')
 
+    messages = await fetch(`/_locales/${language}/messages.json`).then(response => response.json())
     for (const el of document.querySelectorAll('[data-i18n]')) {
       const tag = el.getAttribute('data-i18n')
-      const message = chrome.i18n.getMessage(tag)
+      const message = getMessage(tag)
       if (!message) continue
       el.textContent = message
       if (el.value !== '') el.value = message
@@ -150,7 +153,7 @@
 
         const newTrailingInput = document.createElement('input')
         newTrailingInput.className = 'hotkey'
-        newTrailingInput.placeholder = chrome.i18n.getMessage('add_hotkey') || 'Add hotkey'
+        newTrailingInput.placeholder = getMessage('add_hotkey') || 'Add hotkey'
 
         const newWrapper = document.createElement('div')
         newWrapper.className = 'hotkey-wrapper trailing'
@@ -201,7 +204,7 @@
 
       const trailingInput = document.createElement('input')
       trailingInput.className = 'hotkey'
-      trailingInput.placeholder = chrome.i18n.getMessage('add_hotkey') || 'Add hotkey'
+      trailingInput.placeholder = getMessage('add_hotkey') || 'Add hotkey'
 
       const trailingWrapper = document.createElement('div')
       trailingWrapper.className = 'hotkey-wrapper trailing'
@@ -227,10 +230,10 @@
     const last = custom[custom.length - 1]
     const li = last.parentNode
 
-    const i18n = [chrome.i18n.getMessage('custom_search'), chrome.i18n.getMessage('custom_search_url')]
+    const i18n = [getMessage('custom_search'), getMessage('custom_search_url')]
     const htmlStr =
-      `<li><label for="customSearch${length + 1}"><span>${i18n[0]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearch hotkey"></li>` +
-      `<li><label for="customSearchUrl${length + 1}"><span>${i18n[1]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearchUrl"></li>`
+      `<li><label for="customSearch${length + 1}"><span data-i18n="custom_search">${i18n[0]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearch hotkey"></li>` +
+      `<li><label for="customSearchUrl${length + 1}"><span data-i18n="custom_search_url">${i18n[1]}</span> ${length + 1}:</label><input id="customSearch${length + 1}" class="customSearchUrl"></li>`
     li.insertAdjacentHTML('afterend', htmlStr)
 
     for (const input of document.querySelectorAll('input.hotkey:not(.viewer-hotkey-inputs input)')) {
@@ -317,9 +320,9 @@
 
     const message = newOptionList
       .map(key => key.replace(/([A-Z])/g, '_$1').toLowerCase())
-      .map(tag => chrome.i18n.getMessage(tag) || tag)
+      .map(tag => getMessage(tag) || tag)
       .join('\n')
-    alert(chrome.i18n.getMessage('new_option') + ':\n' + message)
+    alert(getMessage('new_option') + ':\n' + message)
 
     // sync with default options
     for (const key of newOptionList) {
@@ -332,6 +335,8 @@
   }
 
   function initFormEvent() {
+    languageSelect.addEventListener('change', () => i18n(languageSelect.value))
+
     zoom.addEventListener('input', () => {
       document.querySelector('span#zoomDisplay').textContent = zoom.value
     })
@@ -433,16 +438,16 @@
     document.querySelector('button#export').addEventListener('click', async () => {
       const {options} = await chrome.storage.sync.get('options')
       modal.style.display = 'block'
-      modalTitle.textContent = chrome.i18n.getMessage('export')
-      modalButton.textContent = chrome.i18n.getMessage('copy')
+      modalTitle.textContent = getMessage('export')
+      modalButton.textContent = getMessage('copy')
       modalButton.dataset.mode = 'copy'
       optionsInput.value = getStringifyOptions(options)
     })
 
     document.querySelector('button#import').addEventListener('click', () => {
       modal.style.display = 'block'
-      modalTitle.textContent = chrome.i18n.getMessage('import')
-      modalButton.textContent = chrome.i18n.getMessage('import')
+      modalTitle.textContent = getMessage('import')
+      modalButton.textContent = getMessage('import')
       modalButton.dataset.mode = 'import'
       optionsInput.value = ''
     })
@@ -457,7 +462,7 @@
           importData = JSON.parse(optionsInput.value)
         } catch (error) {}
         if (importData === null) {
-          alert(chrome.i18n.getMessage('import_failed_invalid_json'))
+          alert(getMessage('import_failed_invalid_json'))
           return
         }
 
@@ -477,14 +482,14 @@
           if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
           optionsInput.value = getStringifyOptions(options)
           setValue(options)
-          alert(chrome.i18n.getMessage('import_success'))
+          alert(getMessage('import_success'))
         })
       }
     })
   }
 
   async function init() {
-    i18n()
+    await i18n()
     const {options} = await chrome.storage.sync.get('options')
     const normalizedOptions = normalizeOptions(options)
     checkUpdate(normalizedOptions)

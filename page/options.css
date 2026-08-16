@@ -9,6 +9,10 @@ body {
   margin-bottom: 10px;
   background: url(/icon/icon.png) 5px center no-repeat;
 }
+#language {
+  float: right;
+  margin-top: 14px;
+}
 
 nav {
   display: flex;
