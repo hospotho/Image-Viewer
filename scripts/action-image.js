@@ -31,6 +31,14 @@
   options.minHeight = Math.min(nodeSize, options.minHeight)
 
   const dom = window.ImageViewerLastDom
+  if (dom?.tagName === 'IMG') {
+    const imageRatio = dom.naturalWidth / dom.naturalHeight
+    const webtoonPickRatio = options.webtoonPickRatio
+    if (imageRatio >= webtoonPickRatio || imageRatio <= 1 / webtoonPickRatio) {
+      options.webtoonMode = true
+      options.webtoonDirection = imageRatio > 1 ? 'row' : 'column'
+    }
+  }
   const domRect = dom?.getBoundingClientRect()
   const domSize = domRect ? [domRect.width, domRect.height] : [0, 0]
   ImageViewerUtils.updateWrapperSize(dom, domSize, options)
