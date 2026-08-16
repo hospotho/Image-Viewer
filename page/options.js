@@ -10,6 +10,8 @@
   const height = document.querySelector('input#minHeight')
   const svgFilter = document.querySelector('input#svgFilter')
 
+  const webtoonPickRatio = document.querySelector('input#webtoonPickRatio')
+
   const debounce = document.querySelector('input#debouncePeriod')
   const throttle = document.querySelector('input#throttlePeriod')
   const auto = document.querySelector('input#autoPeriod')
@@ -41,6 +43,9 @@
     minWidth: 180,
     minHeight: 150,
     svgFilter: true,
+    webtoonDirection: 'column',
+    webtoonOrder: 'normal',
+    webtoonPickRatio: 3.5,
     debouncePeriod: 1500,
     throttlePeriod: 80,
     autoPeriod: 2000,
@@ -258,6 +263,10 @@
       height.value = options.minHeight
       svgFilter.checked = options.svgFilter
 
+      document.querySelector(`input#direction-${options.webtoonDirection}`).checked = true
+      document.querySelector(`input#order-${options.webtoonOrder}`).checked = true
+      webtoonPickRatio.value = options.webtoonPickRatio
+
       debounce.value = options.debouncePeriod
       throttle.value = options.throttlePeriod
       auto.value = options.autoPeriod
@@ -392,6 +401,9 @@
       options.minWidth = Number(width.value)
       options.minHeight = Number(height.value)
       options.svgFilter = svgFilter.checked
+      options.webtoonDirection = document.querySelector('input[name="direction"]:checked').value
+      options.webtoonOrder = document.querySelector('input[name="order"]:checked').value
+      options.webtoonPickRatio = Number(webtoonPickRatio.value)
       options.debouncePeriod = Number(debounce.value)
       options.throttlePeriod = Number(throttle.value)
       options.autoPeriod = Number(auto.value)

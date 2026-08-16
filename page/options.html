@@ -107,6 +107,46 @@
         </ul>
       </fieldset>
       <fieldset>
+        <legend data-i18n="webtoon_mode">Webtoon mode</legend>
+        <ul class="option-list">
+          <li>
+            <div class="label"><span data-i18n="webtoon_direction">Default reading direction</span>:</div>
+            <div class="input">
+              <ul>
+                <li>
+                  <input type="radio" name="direction" id="direction-column" value="column" />
+                  <label data-i18n="webtoon_direction_column" for="direction-column">Top to bottom</label>
+                </li>
+                <li>
+                  <input type="radio" name="direction" id="direction-row" value="row" />
+                  <label data-i18n="webtoon_direction_row" for="direction-row">Left to right</label>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <div class="label"><span data-i18n="webtoon_order">Default image order</span>:</div>
+            <div class="input">
+              <ul>
+                <li>
+                  <input type="radio" name="order" id="order-normal" value="normal" />
+                  <label data-i18n="webtoon_order_normal" for="order-normal">First to last</label>
+                </li>
+                <li>
+                  <input type="radio" name="order" id="order-reverse" value="reverse" />
+                  <label data-i18n="webtoon_order_reverse" for="order-reverse">Last to first</label>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <label for="webtoonPickRatio"><span data-i18n="webtoon_pick_ratio">Auto-open aspect ratio</span>:</label>
+            <input id="webtoonPickRatio" type="number" min="1" step="0.1" />
+          </li>
+          <li class="desc" data-i18n="webtoon_pick_ratio_desc">Automatically enable Webtoon mode when opening a picked image if one side is more than this many times longer than the other.</li>
+        </ul>
+      </fieldset>
+      <fieldset>
         <legend data-i18n="speed_control">Speed control</legend>
         <ul class="option-list">
           <li>

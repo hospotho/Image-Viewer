@@ -188,6 +188,33 @@
   "use_all_search": {
     "message": "以上所有"
   },
+  "webtoon_direction": {
+    "message": "默认阅读方向"
+  },
+  "webtoon_direction_column": {
+    "message": "从上到下"
+  },
+  "webtoon_direction_row": {
+    "message": "从左到右"
+  },
+  "webtoon_mode": {
+    "message": "Webtoon模式"
+  },
+  "webtoon_order": {
+    "message": "默认图像顺序"
+  },
+  "webtoon_order_normal": {
+    "message": "正序"
+  },
+  "webtoon_order_reverse": {
+    "message": "倒序"
+  },
+  "webtoon_pick_ratio": {
+    "message": "自动打开比值"
+  },
+  "webtoon_pick_ratio_desc": {
+    "message": "打开所选图像时，若某条边大于另一条边此倍数，则自动启用Webtoon模式"
+  },
   "view_all_images_in_image_viewer": {
     "message": "观看图片(无过滤)"
   },

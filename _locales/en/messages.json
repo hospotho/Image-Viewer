@@ -188,6 +188,33 @@
   "use_all_search": {
     "message": "All of above"
   },
+  "webtoon_direction": {
+    "message": "Default reading direction"
+  },
+  "webtoon_direction_column": {
+    "message": "Top to bottom"
+  },
+  "webtoon_direction_row": {
+    "message": "Left to right"
+  },
+  "webtoon_mode": {
+    "message": "Webtoon mode"
+  },
+  "webtoon_order": {
+    "message": "Default image order"
+  },
+  "webtoon_order_normal": {
+    "message": "Normal"
+  },
+  "webtoon_order_reverse": {
+    "message": "Reverse"
+  },
+  "webtoon_pick_ratio": {
+    "message": "Auto-open ratio"
+  },
+  "webtoon_pick_ratio_desc": {
+    "message": "Automatically enable Webtoon mode when opening a picked image if one side is more than this many times longer than the other."
+  },
   "view_all_images_in_image_viewer": {
     "message": "View images (no filter)"
   },

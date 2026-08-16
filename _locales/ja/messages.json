@@ -188,6 +188,33 @@
   "use_all_search": {
     "message": "上記すべて"
   },
+  "webtoon_direction": {
+    "message": "デフォルトの閲覧方向"
+  },
+  "webtoon_direction_column": {
+    "message": "上から下"
+  },
+  "webtoon_direction_row": {
+    "message": "左から右"
+  },
+  "webtoon_mode": {
+    "message": "Webtoonモード"
+  },
+  "webtoon_order": {
+    "message": "デフォルトの画像順序"
+  },
+  "webtoon_order_normal": {
+    "message": "通常"
+  },
+  "webtoon_order_reverse": {
+    "message": "逆順"
+  },
+  "webtoon_pick_ratio": {
+    "message": "自動表示比率"
+  },
+  "webtoon_pick_ratio_desc": {
+    "message": "選択した画像を開く際、一辺がもう一辺のこの倍数を超える場合はWebtoonモードを自動的に有効にします。"
+  },
   "view_all_images_in_image_viewer": {
     "message": "画像を表示（フィルターなし）"
   },
