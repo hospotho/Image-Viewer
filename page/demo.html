@@ -9,6 +9,7 @@
   <body>
     <h1>This is demo web page for Image Viewer</h1>
     <button id="startButton">click me to start image viewer</button>
+    <button id="webtoonButton">click me to start webtoon mode</button>
     <button id="newTabButton">click me to open on new tab</button>
     <h3>1280x853 Example <a href="https://www.pexels.com/photo/concrete-road-between-trees-1563356/">Photo by Craig Adderley from Pexels</a></h3>
     <img src="image/image1.jpg" />
@@ -24,6 +25,9 @@
         minWidth: 180,
         minHeight: 150,
         svgFilter: true,
+        webtoonDirection: 'column',
+        webtoonOrder: 'normal',
+        webtoonPickRatio: 3.5,
         debouncePeriod: 1500,
         throttlePeriod: 80,
         autoPeriod: 2000,
@@ -66,8 +70,15 @@
       const startButton = document.getElementById('startButton')
       startButton.addEventListener('click', () => {
         const imgList = [...document.getElementsByTagName('img')].map(img => ({src: img.src, dom: img}))
-        defaultOptions.closeButton = true
-        ImageViewer(imgList, defaultOptions)
+        const options = {...defaultOptions, closeButton: true}
+        ImageViewer(imgList, options)
+      })
+
+      const webtoonButton = document.getElementById('webtoonButton')
+      webtoonButton.addEventListener('click', () => {
+        const imgList = [...document.getElementsByTagName('img')].map(img => ({src: img.src, dom: img}))
+        const options = {...defaultOptions, closeButton: true, webtoonMode: true}
+        ImageViewer(imgList, options)
       })
 
       const newTabButton = document.getElementById('newTabButton')
