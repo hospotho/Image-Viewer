@@ -2495,10 +2495,14 @@ window.ImageViewer = (function () {
         context.zoomCount = 0
         context.rotateCount = 0
         // normalize rotation
-        target.style.transition = 'none'
         const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(target)
-        applyTransform(target, scaleX, scaleY, rotate % 360, moveX, moveY)
-        await new Promise(resolve => setTimeout(resolve, 20))
+        const baseRotate = ((rotate % 360) + 360) % 360
+        const minRotate = baseRotate > Math.abs(baseRotate - 360) ? baseRotate - 360 : baseRotate
+        if (rotate !== minRotate) {
+          target.style.transition = 'none'
+          applyTransform(target, scaleX, scaleY, minRotate, moveX, moveY)
+          await new Promise(resolve => setTimeout(resolve, 1000 / fps))
+        }
         // reset
         target.style.transition = ''
         applyTransform(target, 1, 1, 0, 0, 0)
