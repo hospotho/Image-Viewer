@@ -76,7 +76,7 @@
       autoNavigatePrev: ['Shift + ArrowLeft', 'Shift + ArrowUp'],
       autoNavigateNext: ['Shift + ArrowRight', 'Shift + ArrowDown'],
       flipListDirection: ['Shift + I'],
-      flipListOrder: ['Shift + O'],
+      reverseListOrder: ['Shift + O'],
       disableDrag: ['Ctrl + Alt + D']
     },
     hoverCheckDisableList: [],

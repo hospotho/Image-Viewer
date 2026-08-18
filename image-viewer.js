@@ -50,7 +50,7 @@ window.ImageViewer = (function () {
     AUTO_NAVIGATE_PREV: 19,
     AUTO_NAVIGATE_NEXT: 20,
     FLIP_LIST_DIRECTION: 21,
-    FLIP_LIST_ORDER: 22,
+    REVERSE_LIST_ORDER: 22,
     DISABLE_DRAG: 23,
     SEARCH_GOOGLE: 24,
     SEARCH_YANDEX: 25,
@@ -1145,7 +1145,7 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_PREV, options.viewerHotkey.autoNavigatePrev)
       registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_NEXT, options.viewerHotkey.autoNavigateNext)
       registerHotkey(COMMAND_ENUM.FLIP_LIST_DIRECTION, options.viewerHotkey.flipListDirection)
-      registerHotkey(COMMAND_ENUM.FLIP_LIST_ORDER, options.viewerHotkey.flipListOrder)
+      registerHotkey(COMMAND_ENUM.REVERSE_LIST_ORDER, options.viewerHotkey.reverseListOrder)
       registerHotkey(COMMAND_ENUM.DISABLE_DRAG, options.viewerHotkey.disableDrag)
       registerHotkey(COMMAND_ENUM.SEARCH_GOOGLE, [options.searchHotkey[0]])
       registerHotkey(COMMAND_ENUM.SEARCH_YANDEX, [options.searchHotkey[1]])
@@ -1750,7 +1750,7 @@ window.ImageViewer = (function () {
         const currentListItem = imageListNode.querySelector('li.current')
         currentListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
       }
-      hotkeyHandlerList[COMMAND_ENUM.FLIP_LIST_ORDER] = () => {
+      hotkeyHandlerList[COMMAND_ENUM.REVERSE_LIST_ORDER] = () => {
         imageListNode.style.flexDirection = imageListNode.style.flexDirection === 'row' ? 'column' : 'row'
         const currentListItem = imageListNode.querySelector('li.current')
         currentListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
