@@ -120,6 +120,14 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
     <td>Hold <kbd>Alt</kbd> and <kbd>click</kbd></td>
   </tr>
   <tr>
+    <td>Flip webtoon direction</td>
+    <td><kbd>Shift</kbd>+<kbd>i</kbd></td>
+  </tr>
+  <tr>
+    <td>Reverse webtoon order</td>
+    <td><kbd>Shift</kbd>+<kbd>o</kbd></td>
+  </tr>
+  <tr>
     <td>Change background color<br>(loop: transparent -> black -> white)</td>
     <td><kbd>Shift</kbd>+<kbd>b</kbd></td>
   </tr>
