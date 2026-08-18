@@ -2046,7 +2046,7 @@ window.ImageViewer = (function () {
       // update dom
       currentListItem?.classList.remove('current')
       relateListItem.classList.add('current')
-      if (options.webtoonMode) relateListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+      if (options.webtoonMode) relateImage.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
       current.textContent = index + 1
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
@@ -2490,7 +2490,7 @@ window.ImageViewer = (function () {
       const reset = async target => {
         const context = nodeContextMap.get(target)
         if (context === undefined) return
-        const current = target === shadowRoot.querySelector('#iv-list-wrapper') ? shadowRoot.querySelector('#iv-image-list li.current') : null
+        const current = target === shadowRoot.querySelector('#iv-list-wrapper') ? shadowRoot.querySelector('#iv-image-list li.current img') : null
         context.mirror = false
         context.zoomCount = 0
         context.rotateCount = 0
@@ -2943,7 +2943,7 @@ window.ImageViewer = (function () {
 
     imageListNode.querySelector('li.current')?.classList.remove('current')
     relateListItem.classList.add('current')
-    if (options.webtoonMode) relateListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+    if (options.webtoonMode) relateImage.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
 
     clearIndex = -1
     clearDom = null
