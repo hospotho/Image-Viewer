@@ -97,24 +97,11 @@
   }
 
   //==========utility==========
-  let messages = {}
+  let translation = {}
   function getMessage(tag) {
-    return messages[tag]?.message || chrome.i18n.getMessage(tag)
+    return translation[tag]?.message || chrome.i18n.getMessage(tag)
   }
-  async function i18n(language = null) {
-    language ??= localStorage.getItem('language')
-    if (!language) {
-      const languageList = await chrome.i18n.getAcceptLanguages()
-      const supportedLanguages = ['en', 'ja', 'zh_CN', 'zh_TW']
-      language = languageList.map(lang => lang.replace('-', '_')).find(lang => supportedLanguages.includes(lang))
-      language ||= languageList.map(lang => lang.slice(0, 2)).find(lang => supportedLanguages.includes(lang)) || 'en'
-      language ||= 'en'
-    }
-    localStorage.setItem('language', language)
-    languageSelect.value = language
-    document.documentElement.lang = language.replace('_', '-')
-
-    messages = await fetch(`/_locales/${language}/messages.json`).then(response => response.json())
+  function updateTranslation() {
     for (const el of document.querySelectorAll('[data-i18n]')) {
       const tag = el.getAttribute('data-i18n')
       const message = getMessage(tag)
@@ -123,6 +110,38 @@
       el.innerHTML = message
       if (el.value !== '') el.value = message
     }
+  }
+  async function getDefaultLanguage() {
+    const defaultLang = localStorage.getItem('default-language')
+    if (defaultLang) return defaultLang
+    const languageList = await chrome.i18n.getAcceptLanguages()
+    const supportedLanguages = ['en', 'ja', 'zh_CN', 'zh_TW']
+    let language = languageList.map(lang => lang.replace('-', '_')).find(lang => supportedLanguages.includes(lang))
+    language ||= languageList.map(lang => lang.slice(0, 2)).find(lang => supportedLanguages.includes(lang))
+    language ||= 'en'
+    localStorage.setItem('default-language', language)
+    return language
+  }
+  async function i18n(language = null) {
+    // change
+    if (language) {
+      localStorage.setItem('preferred-language', language)
+      languageSelect.value = language
+      document.documentElement.lang = language.replace('_', '-')
+      translation = await fetch(`/_locales/${language}/messages.json`).then(response => response.json())
+      updateTranslation()
+      return
+    }
+    // init
+    const preferredLang = localStorage.getItem('preferred-language')
+    const defaultLang = await getDefaultLanguage()
+    const targetLang = preferredLang || defaultLang
+    if (targetLang !== defaultLang) {
+      translation = await fetch(`/_locales/${targetLang}/messages.json`).then(response => response.json())
+    }
+    languageSelect.value = targetLang
+    document.documentElement.lang = targetLang.replace('_', '-')
+    updateTranslation()
   }
 
   function resetDefaultOptions() {
