@@ -727,6 +727,9 @@ window.ImageViewer = (function () {
         flex-direction: column;
         list-style: none;
       }
+      #image-viewer.webtoon #iv-image-list.row {
+        flex-direction: row;
+      }
       #iv-image-list li {
         position: absolute;
         cursor: move;
@@ -1741,20 +1744,45 @@ window.ImageViewer = (function () {
       new ResizeObserver(action).observe(wrapper)
     }
     function addWebtoonOrientationHotkey() {
+      const viewer = shadowRoot.querySelector('#image-viewer')
+      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
-      hotkeyHandlerList[COMMAND_ENUM.FLIP_LIST_DIRECTION] = () => {
+      const scrollbarSize = Number(viewer.style.getPropertyValue('--scrollbar-size').slice(0, -2))
+
+      async function recalculateWebtoonTransform(action) {
+        // reset current translate then apply action
+        const current = shadowRoot.querySelector('li.current img')
+        const event = new CustomEvent('reset-translate', {bubbles: true})
+        wrapper.dispatchEvent(event)
+        action()
+        // restore scroll and reposition to center
+        current.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+        const [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
+        const {left, top, width, height} = current.getBoundingClientRect()
+        const viewerWidth = viewer.clientWidth - scrollbarSize
+        const viewerHeight = viewer.clientHeight - scrollbarSize
+        const moveX = viewerWidth / 2 - left - width / 2
+        const moveY = viewerHeight / 2 - top - height / 2
+        applyTransform(wrapper, scaleX, scaleY, rotate, moveX, moveY)
+      }
+      const flipDirection = () => {
+        if (imageListNode.classList.contains('row')) imageListNode.classList.remove('row')
+        else imageListNode.classList.add('row')
+      }
+      const reverseOrder = () => {
         const length = imageListNode.children.length
-        const reverse = imageListNode.children[0].style.order !== '0'
-        if (reverse) for (let i = 0; i < length; i++) imageListNode.children[i].style.order = i
-        else for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
-        const currentListItem = imageListNode.querySelector('li.current')
-        currentListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+        const firstOrder = imageListNode.children[0].style.order
+        const reverse = firstOrder && firstOrder !== '0'
+        if (reverse) {
+          imageListNode.classList.remove('reverse')
+          for (let i = 0; i < length; i++) imageListNode.children[i].style.order = i
+        } else {
+          imageListNode.classList.add('reverse')
+          for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
+        }
       }
-      hotkeyHandlerList[COMMAND_ENUM.REVERSE_LIST_ORDER] = () => {
-        imageListNode.style.flexDirection = imageListNode.style.flexDirection === 'row' ? 'column' : 'row'
-        const currentListItem = imageListNode.querySelector('li.current')
-        currentListItem.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
-      }
+      hotkeyHandlerList[COMMAND_ENUM.FLIP_LIST_DIRECTION] = () => recalculateWebtoonTransform(flipDirection)
+      hotkeyHandlerList[COMMAND_ENUM.REVERSE_LIST_ORDER] = () => recalculateWebtoonTransform(reverseOrder)
     }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
@@ -2510,6 +2538,11 @@ window.ImageViewer = (function () {
       node.addEventListener('dblclick', () => reset(getTarget()))
       // custom event
       node.addEventListener('reset-transform', e => reset(e.target))
+      node.addEventListener('reset-translate', e => {
+        const target = e.target
+        const [scaleX, scaleY, rotate, ,] = getTransform(target)
+        applyTransform(target, scaleX, scaleY, rotate, 0, 0)
+      })
 
       // handle hotkey
       node.addEventListener('hotkey', e => {
