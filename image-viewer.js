@@ -615,7 +615,7 @@ window.ImageViewer = (function () {
     const filenameIndexList = srcList.map((src, i) => [getFilename(src), i]).filter(item => item[0] === filename)
     if (filenameIndexList.length === 1) return filenameIndexList[0][1]
 
-    return Math.max(Math.min(clearIndex, imageDataList.length - 1), 0)
+    return Math.min(Math.max(clearIndex, 0), imageDataList.length - 1)
   }
   function getBaseIndex(options) {
     // page mode
