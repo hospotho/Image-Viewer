@@ -1695,37 +1695,36 @@ window.ImageViewer = (function () {
         // left = y, top = x
         const leftRect = liList[0].getBoundingClientRect()
         const rightRect = liList[liList.length - 1].getBoundingClientRect()
-        const slope = (rightRect.left - leftRect.left) / (rightRect.top - leftRect.top)
+        const leftX = leftRect.top + leftRect.height / 2
+        const leftY = leftRect.left + leftRect.width / 2
+        const rightX = rightRect.top + rightRect.height / 2
+        const rightY = rightRect.left + rightRect.width / 2
         const webtoonX = webtoonRect.top + webtoonRect.height / 2
-        // fast path, rect no overlap
-        if (slope === 0) {
-          const projectIndex = Math.round((liList.length - 1) * ((webtoonX - leftRect.top) / (rightRect.top - leftRect.top)))
-          const order = rightRect.top > leftRect.top
-          let index = Math.max(0, Math.min(liList.length - 1, projectIndex))
-          while (true) {
-            const rect = liList[index].getBoundingClientRect()
-            if (rect.top <= webtoonX && webtoonX <= rect.top + rect.height) return index
-            const direction = (webtoonX < rect.top) ^ order ? 1 : -1
-            index += direction
-            if (index === -1 || index === liList.length) return index - direction
-          }
-        }
-        // find the nearest item by projection
         const webtoonY = webtoonRect.left + webtoonRect.width / 2
-        const intersect1 = leftRect.left - slope * leftRect.top
-        const intersect2 = webtoonY + webtoonX / slope
-        const projectX = Number.isFinite(slope) ? (intersect2 - intersect1) / (slope + 1 / slope) : 0
-        const projectY = Number.isFinite(slope) ? slope * projectX + intersect1 : webtoonY
-        const projectIndex = Math.round((liList.length - 1) * ((projectY - leftRect.left) / (rightRect.left - leftRect.left)))
 
-        const order = rightRect.left > leftRect.left
-        let index = Math.max(0, Math.min(liList.length - 1, projectIndex))
-        let direction = 0
+        // find the nearest item by projection
+        const deltaX = rightX - leftX
+        const deltaY = rightY - leftY
+        const offsetX = webtoonX - leftX
+        const offsetY = webtoonY - leftY
+        const lengthSquared = deltaX * deltaX + deltaY * deltaY
+        const projectRatio = (offsetX * deltaX + offsetY * deltaY) / lengthSquared
+        const normalizedRatio = Math.min(Math.max(projectRatio, 0), 1)
+
+        let index = Math.round((liList.length - 1) * normalizedRatio)
         let minDistance = Number.MAX_VALUE
+        let direction = 0
         while (true) {
           const rect = liList[index].getBoundingClientRect()
-          direction = direction !== 0 ? direction : (projectY < rect.left) ^ order ? 1 : -1
-          const distance = Math.hypot(rect.left + rect.width / 2 - webtoonY, rect.top + rect.height / 2 - webtoonX)
+          const rectX = rect.top + rect.height / 2
+          const rectY = rect.left + rect.width / 2
+          if (direction === 0) {
+            const rectOffsetX = rectX - leftRect.top
+            const rectOffsetY = rectY - leftRect.left
+            const rectProjectRatio = (rectOffsetX * deltaX + rectOffsetY * deltaY) / lengthSquared
+            direction = projectRatio < rectProjectRatio ? -1 : 1
+          }
+          const distance = Math.hypot(rectY - webtoonY, rectX - webtoonX)
           if (distance > minDistance) return index - direction
           minDistance = distance
           index += direction
