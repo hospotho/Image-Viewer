@@ -2845,6 +2845,9 @@ window.ImageViewer = (function () {
     const baseImg = base.firstChild
     const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : baseImg
     base.classList.add('current')
+    if (options.webtoonMode && !current) {
+      baseImg.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+    }
 
     const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
     const targetDom = clearDom || lastDom
