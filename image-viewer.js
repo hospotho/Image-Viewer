@@ -726,9 +726,25 @@ window.ImageViewer = (function () {
         display: flex;
         flex-direction: column;
         list-style: none;
+        padding-block: 1000vmax;
+        padding-inline: 0;
       }
       #image-viewer.webtoon #iv-image-list.row {
         flex-direction: row;
+        padding-block: 0;
+        padding-inline: 1000vmax;
+      }
+      #iv-image-list::before {
+        content: "";
+        order: -1;
+      }
+      #iv-image-list::after {
+        content: "";
+        order: 999999;
+      }
+      #image-viewer.webtoon #iv-image-list.row::before,
+      #image-viewer.webtoon #iv-image-list.row::after {
+        flex: 0 0 1000vmax;
       }
       #iv-image-list li {
         position: absolute;
