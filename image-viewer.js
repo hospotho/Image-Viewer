@@ -1029,8 +1029,9 @@ window.ImageViewer = (function () {
     viewer.style.setProperty('--vv-height', `${viewport.height}px`)
     fitFuncDict.init(viewport.width, viewport.height)
 
-    // overlay existing scrollbar
+    // apply mode specific settings
     if (options.webtoonMode) {
+      // overlay existing scrollbar
       const [base, vertical, horizontal] = getScrollbarSize()
       const fullWidth = viewport.width + vertical
       const fullHeight = viewport.height + horizontal
@@ -1038,20 +1039,18 @@ window.ImageViewer = (function () {
       viewer.style.setProperty('--vv-width', `${fullWidth}px`)
       viewer.style.setProperty('--vv-height', `${fullHeight}px`)
       fitFuncDict.init(fullWidth - base, fullHeight - base)
-    }
-    // disable body overflow
-    if (options.webtoonMode) {
+      // disable body overflow
       shadowHolder.classList.add('webtoon')
       viewer.classList.add('webtoon')
       options.fitMode = 'none'
     }
-    // prevent image loading flash
     if (!options.closeButton) {
+      // prevent image loading flash
       viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
       viewer.style.setProperty('opacity', '0')
     }
-    // default white background for canvas
     if (options.canvasMode) {
+      // default white background for canvas
       viewer.style.setProperty('background', 'rgb(255, 255, 255)', 'important')
     }
 
