@@ -369,10 +369,12 @@ body:has(#image-viewer-root.webtoon) {
       // mouse position
       const newRect = newInfo[2].getBoundingClientRect()
       const oldRect = oldInfo[2].getBoundingClientRect()
-      const newOffset = [mouseX - newRect.left - newRect.width / 2, mouseY - newRect.top - newRect.height / 2]
-      const oldOffset = [mouseX - oldRect.left - oldRect.width / 2, mouseY - oldRect.top - oldRect.height / 2]
-      const newDist = Math.hypot(newOffset[0], newOffset[1])
-      const oldDist = Math.hypot(oldOffset[0], oldOffset[1])
+      const newOffsetX = mouseX - newRect.left - newRect.width / 2
+      const newOffsetY = mouseY - newRect.top - newRect.height / 2
+      const oldOffsetX = mouseX - oldRect.left - oldRect.width / 2
+      const oldOffsetY = mouseY - oldRect.top - oldRect.height / 2
+      const newDist = Math.hypot(newOffsetX, newOffsetY)
+      const oldDist = Math.hypot(oldOffsetX, oldOffsetY)
       if (newDist > oldDist + 50) return false
       // size check
       const asyncList = [[newUrl, oldUrl].map(getImageBitSize), [newUrl, oldUrl].map(getImageRealSize)].flat()
@@ -385,14 +387,13 @@ body:has(#image-viewer-root.webtoon) {
 
     return {
       searchDomByPosition: async function (elementList, mouseX, mouseY) {
-        let firstVisibleDom = null
         let imageInfoFromPoint = null
         let imageDomLayer = 0
-
         let hiddenImageInfoFromPoint = null
         let hiddenDomLayer = 0
 
         const maxTry = Math.min(20, elementList.length)
+        let firstVisibleDom = null
         let index = 0
         let tryCount = 0
         while (tryCount < maxTry) {
