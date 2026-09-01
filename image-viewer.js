@@ -1681,28 +1681,23 @@ window.ImageViewer = (function () {
       const infoPopup = shadowRoot.querySelector('#iv-info-popup')
       const updateEvent = new CustomEvent('update-info')
 
-      function findNearestIndex(checkScroll) {
-        const liList = shadowRoot.querySelectorAll('#iv-image-list li')
-        if (liList.length === 0 || liList.length === 1) return liList.length - 1
-        const webtoonRect = webtoon.getBoundingClientRect()
-        // last scroll may block by scroll boundary
-        const [, , rotate, ,] = getTransform(wrapper)
-        if (checkScroll && rotate % 90 !== 0) {
-          const horizontal = (webtoonRect.width >= webtoon.scrollWidth && webtoon.scrollLeft === 0) || webtoon.scrollLeft + webtoonRect.width >= webtoon.scrollWidth
-          const vertical = webtoon.scrollTop === 0 || webtoon.scrollTop + webtoonRect.height >= webtoon.scrollHeight
-          if (horizontal || vertical) return -1
-        }
-        // left = y, top = x
-        const leftRect = liList[0].getBoundingClientRect()
-        const rightRect = liList[liList.length - 1].getBoundingClientRect()
-        const leftX = leftRect.top + leftRect.height / 2
-        const leftY = leftRect.left + leftRect.width / 2
-        const rightX = rightRect.top + rightRect.height / 2
-        const rightY = rightRect.left + rightRect.width / 2
-        const webtoonX = webtoonRect.top + webtoonRect.height / 2
-        const webtoonY = webtoonRect.left + webtoonRect.width / 2
+      function findNearestIndex() {
+        const imgList = shadowRoot.querySelectorAll('#iv-image-list img')
+        if (imgList.length === 0 || imgList.length === 1) return imgList.length - 1
 
+        // check if center within img
+        const webtoonRect = webtoon.getBoundingClientRect()
+        const webtoonX = webtoonRect.left + webtoonRect.width / 2
+        const webtoonY = webtoonRect.top + webtoonRect.height / 2
+        const elementsAtPoint = shadowRoot.elementsFromPoint(webtoonX, webtoonY)
+        if (elementsAtPoint[0].tagName === 'IMG') return Array.prototype.indexOf.call(imgList, elementsAtPoint[0])
         // find the nearest item by projection
+        const leftRect = imgList[0].getBoundingClientRect()
+        const rightRect = imgList[imgList.length - 1].getBoundingClientRect()
+        const leftX = leftRect.left + leftRect.width / 2
+        const leftY = leftRect.top + leftRect.height / 2
+        const rightX = rightRect.left + rightRect.width / 2
+        const rightY = rightRect.top + rightRect.height / 2
         const deltaX = rightX - leftX
         const deltaY = rightY - leftY
         const offsetX = webtoonX - leftX
@@ -1711,34 +1706,37 @@ window.ImageViewer = (function () {
         const projectRatio = (offsetX * deltaX + offsetY * deltaY) / lengthSquared
         const normalizedRatio = Math.min(Math.max(projectRatio, 0), 1)
 
-        let index = Math.round((liList.length - 1) * normalizedRatio)
+        // calc center distance
+        let index = Math.round((imgList.length - 1) * normalizedRatio)
         let minDistance = Number.MAX_VALUE
         let direction = 0
         while (true) {
-          const rect = liList[index].getBoundingClientRect()
-          const rectX = rect.top + rect.height / 2
-          const rectY = rect.left + rect.width / 2
+          const rect = imgList[index].getBoundingClientRect()
+          const rectX = rect.left + rect.width / 2
+          const rectY = rect.top + rect.height / 2
           if (direction === 0) {
-            const rectOffsetX = rectX - leftRect.top
-            const rectOffsetY = rectY - leftRect.left
+            const rectOffsetX = rectX - leftX
+            const rectOffsetY = rectY - leftY
             const rectProjectRatio = (rectOffsetX * deltaX + rectOffsetY * deltaY) / lengthSquared
             direction = projectRatio < rectProjectRatio ? -1 : 1
+            const order = imgList[index].style.order
+            const reverse = order && Number(order) !== index
+            direction *= reverse ? -1 : 1
           }
-          const distance = Math.hypot(rectY - webtoonY, rectX - webtoonX)
+          const distance = Math.hypot(rectX - webtoonX, rectY - webtoonY)
           if (distance > minDistance) return index - direction
           minDistance = distance
           index += direction
-          if (index === -1 || index === liList.length) return index - direction
+          if (index === -1 || index === imgList.length) return index - direction
         }
       }
 
       let timeout = 0
-      const action = trigger => {
+      const action = () => {
         clearTimeout(timeout)
         timeout = setTimeout(() => {
           if (!document.body.classList.contains('iv-attached')) return
-          const checkScroll = trigger instanceof Event
-          const nearestIndex = findNearestIndex(checkScroll)
+          const nearestIndex = findNearestIndex()
           if (nearestIndex === -1) return
           loadImageChunk(nearestIndex)
           const currentListItem = imageListNode.querySelector('li.current')
