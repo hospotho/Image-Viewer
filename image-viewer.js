@@ -2963,7 +2963,7 @@ window.ImageViewer = (function () {
         const adjustX = newCenterX - centerX
         const adjustY = newCenterY - centerY
         const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
-        applyTransform(wrapper, scaleX, scaleY, rotate, moveX + adjustX, moveY + adjustY)
+        applyTransform(wrapper, scaleX, scaleY, rotate, moveX - adjustX, moveY - adjustY)
         clear()
       }
       return () => {
