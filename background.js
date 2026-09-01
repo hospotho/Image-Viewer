@@ -128,11 +128,11 @@ async function getImageRealSize(src) {
       .then(res => res.blob())
       .then(blob => createImageBitmap(blob))
       .then(bitmap => {
-        const size = Math.min(bitmap.width, bitmap.height)
+        const size = [bitmap.width, bitmap.height]
         bitmap.close()
         resolve(size)
       })
-      .catch(() => resolve(0))
+      .catch(() => resolve([0, 0]))
   })
 
   srcLocalRealSizeMap.set(src, promise)
@@ -156,9 +156,9 @@ async function getImageLocalRealSize(id, src) {
       target: {tabId: id},
       func: src => {
         const img = new Image()
-        img.onload = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: img.naturalWidth})
-        img.onerror = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: 0})
-        setTimeout(() => img.complete || chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: 0}), 10000)
+        img.onload = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [img.naturalWidth, img.naturalHeight]})
+        img.onerror = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [0, 0]})
+        setTimeout(() => img.complete || chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [0, 0]}), 10000)
         img.src = src
       }
     })
@@ -192,7 +192,7 @@ async function getLocalUrl(tabId, src) {
   if (cache !== undefined) return cache
 
   const size = await getImageLocalRealSize(tabId, src)
-  if (size) {
+  if (size[0] > 0) {
     srcLocalUrlMap.set(src, src)
     return src
   }
@@ -479,7 +479,7 @@ function addMessageHandler() {
       case 'get_real_size': {
         ;(async () => {
           const size = await getImageRealSize(request.url)
-          sendResponse(size, false)
+          sendResponse(Math.min(...size), false)
         })()
         return true
       }
