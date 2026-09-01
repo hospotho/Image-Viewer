@@ -159,7 +159,6 @@ window.ImageViewer = (function () {
     return [Number(scale[0]) || 1, Number(scale[1]) || Math.abs(Number(scale[0])) || 1, Number(rotate) || 0, Number(translate[0]) || 0, Number(translate[1]) || 0]
   }
   const scheduleWebtoonReposition = (function () {
-    const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
     let timeout = 0
     let current = null
     let centerX = 0
@@ -181,6 +180,7 @@ window.ImageViewer = (function () {
       const newCenterY = currentRect.top + currentRect.height / 2
       const adjustX = newCenterX - centerX
       const adjustY = newCenterY - centerY
+      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
       const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
       applyTransform(wrapper, scaleX, scaleY, rotate, moveX - adjustX, moveY - adjustY)
       clear()
