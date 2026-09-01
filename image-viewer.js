@@ -165,28 +165,32 @@ window.ImageViewer = (function () {
     let centerY = 0
     const clear = () => {
       timeout = 0
+      current = null
       centerX = 0
       centerY = 0
-      current = null
     }
     const reposition = () => {
       if (!current.isConnected) {
         clear()
         return
       }
+      // reset translate
+      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
+      const event = new CustomEvent('reset-translate', {bubbles: true})
+      wrapper.dispatchEvent(event)
       current.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+      // calculate new translate
+      const [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       const currentRect = current.getBoundingClientRect()
       const newCenterX = currentRect.left + currentRect.width / 2
       const newCenterY = currentRect.top + currentRect.height / 2
-      const adjustX = newCenterX - centerX
-      const adjustY = newCenterY - centerY
-      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
-      const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
-      applyTransform(wrapper, scaleX, scaleY, rotate, moveX - adjustX, moveY - adjustY)
+      const adjustX = centerX - newCenterX
+      const adjustY = centerY - newCenterY
+      applyTransform(wrapper, scaleX, scaleY, rotate, adjustX, adjustY)
       clear()
     }
-    return () => {
-      if (timeout !== 0) {
+    return (immediate = false) => {
+      if (!immediate && timeout !== 0) {
         clearTimeout(timeout)
         timeout = setTimeout(reposition, 50)
         return
@@ -196,7 +200,8 @@ window.ImageViewer = (function () {
       current = currentImg
       centerX = currentRect.left + currentRect.width / 2
       centerY = currentRect.top + currentRect.height / 2
-      timeout = setTimeout(reposition, 50)
+      if (immediate) return reposition
+      else timeout = setTimeout(reposition, 50)
     }
   })()
 
@@ -767,13 +772,11 @@ window.ImageViewer = (function () {
         display: flex;
         flex-direction: column;
         list-style: none;
-        padding-block: 1000vmax;
-        padding-inline: 0;
+        padding-block: calc(100vh / var(--scale, 0.1));
+        padding-inline: calc(100vw / var(--scale, 0.1));
       }
       #image-viewer.webtoon #iv-image-list.row {
         flex-direction: row;
-        padding-block: 0;
-        padding-inline: 1000vmax;
       }
       #iv-image-list::before {
         content: "";
@@ -785,7 +788,7 @@ window.ImageViewer = (function () {
       }
       #image-viewer.webtoon #iv-image-list.row::before,
       #image-viewer.webtoon #iv-image-list.row::after {
-        flex: 0 0 1000vmax;
+        flex: 0 0 calc(100vmax / var(--scale, 0.1));
       }
       #iv-image-list li {
         position: absolute;
@@ -2384,6 +2387,10 @@ window.ImageViewer = (function () {
       scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
       scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
       applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate)
+      // adjust padding after zoom
+      const reposition = scheduleWebtoonReposition(true)
+      wrapper.style.setProperty('--scale', `${scaleX}`)
+      reposition()
     }
     function updateWebtoonRotate(webtoon, wrapper, rotateCount) {
       let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
