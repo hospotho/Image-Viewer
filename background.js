@@ -135,7 +135,7 @@ async function getImageRealSize(src) {
       .catch(() => resolve(0))
   })
 
-  srcLocalRealSizeResolveMap.set(src, promise)
+  srcLocalRealSizeMap.set(src, promise)
   return promise
 }
 async function getImageLocalRealSize(id, src) {
