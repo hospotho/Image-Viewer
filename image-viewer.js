@@ -20,6 +20,8 @@ window.ImageViewer = (function () {
   let lastSrc = ''
   let lastTransform = null
   let lastWebtoonTransform = null
+  let lastWebtoonCenterX = 0
+  let lastWebtoonCenterY = 0
 
   const hotkeyHandlerList = []
   const keyupHandlerList = []
@@ -81,8 +83,14 @@ window.ImageViewer = (function () {
     if (current) {
       const webtoonMode = viewer.classList.contains('webtoon')
       lastSrc = current.src || ''
-      lastTransform = !webtoonMode ? getTransform(current) : lastTransform
-      lastWebtoonTransform = webtoonMode ? getTransform(shadowRoot.querySelector('#iv-list-wrapper')) : lastWebtoonTransform
+      if (!webtoonMode) lastTransform = getTransform(current)
+      else {
+        const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
+        lastWebtoonTransform = getTransform(wrapper)
+        const rect = current.getBoundingClientRect()
+        lastWebtoonCenterX = rect.left + rect.width / 2
+        lastWebtoonCenterY = rect.top + rect.height / 2
+      }
     }
     hotkeyHandlerList.length = 0
     keyupHandlerList.length = 0
@@ -189,17 +197,22 @@ window.ImageViewer = (function () {
       applyTransform(wrapper, scaleX, scaleY, rotate, adjustX, adjustY)
       clear()
     }
-    return (immediate = false) => {
+    return (immediate = false, targetCenterX = 0, targetCenterY = 0) => {
       if (!immediate && timeout !== 0) {
         clearTimeout(timeout)
         timeout = setTimeout(reposition, 50)
         return
       }
       const currentImg = shadowRoot.querySelector('#iv-webtoon #iv-image-list li.current img')
-      const currentRect = currentImg.getBoundingClientRect()
       current = currentImg
-      centerX = currentRect.left + currentRect.width / 2
-      centerY = currentRect.top + currentRect.height / 2
+      if (targetCenterX) {
+        centerX = targetCenterX
+        centerY = targetCenterY
+      } else {
+        const currentRect = currentImg.getBoundingClientRect()
+        centerX = currentRect.left + currentRect.width / 2
+        centerY = currentRect.top + currentRect.height / 2
+      }
       if (immediate) return reposition
       else timeout = setTimeout(reposition, 50)
     }
@@ -2833,8 +2846,14 @@ window.ImageViewer = (function () {
       clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
       clearDom = imageDataList[clearIndex]?.dom || null
       clearSrc = current.src
-      if (options.webtoonMode) lastWebtoonTransform = getTransform(shadowRoot.querySelector('#iv-list-wrapper'))
-      else lastTransform = getTransform(current)
+      if (!options.webtoonMode) lastTransform = getTransform(current)
+      else {
+        const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
+        lastWebtoonTransform = getTransform(wrapper)
+        const rect = current.getBoundingClientRect()
+        lastWebtoonCenterX = rect.left + rect.width / 2
+        lastWebtoonCenterY = rect.top + rect.height / 2
+      }
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
       imageListNode.replaceChildren()
       buildImageList(newList, options)
@@ -2955,7 +2974,14 @@ window.ImageViewer = (function () {
     if (transform && targetDom === imageDataList[baseIndex]?.dom) {
       target.style.transition = 'none'
       applyTransform(target, ...transform)
-      options.webtoonMode ? (lastWebtoonTransform = null) : (lastTransform = null)
+      if (!options.webtoonMode) lastTransform = null
+      else {
+        const reposition = scheduleWebtoonReposition(true, lastWebtoonCenterX, lastWebtoonCenterY)
+        reposition()
+        lastWebtoonTransform = null
+        lastWebtoonCenterX = 0
+        lastWebtoonCenterY = 0
+      }
 
       const container = options.webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('#iv-image-list')
       const event = new CustomEvent('hotkey', {detail: {type: 'restore'}})
@@ -3028,6 +3054,8 @@ window.ImageViewer = (function () {
       lastSrc = ''
       lastTransform = null
       lastWebtoonTransform = null
+      lastWebtoonCenterX = 0
+      lastWebtoonCenterY = 0
       return
     }
 
@@ -3039,15 +3067,27 @@ window.ImageViewer = (function () {
     shadowRoot.querySelector('#iv-info-width').textContent = relateImage.naturalWidth
     shadowRoot.querySelector('#iv-info-height').textContent = relateImage.naturalHeight
 
-    const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
-    if (transform) {
-      const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : relateImage
-      applyTransform(target, ...transform)
-    }
-
     imageListNode.querySelector('li.current')?.classList.remove('current')
     relateListItem.classList.add('current')
     if (options.webtoonMode) relateImage.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+
+    const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
+    const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : relateImage
+    if (transform) {
+      applyTransform(target, ...transform)
+      if (!options.webtoonMode) lastTransform = null
+      else {
+        const reposition = scheduleWebtoonReposition(true, lastWebtoonCenterX, lastWebtoonCenterY)
+        reposition()
+        lastWebtoonTransform = null
+        lastWebtoonCenterX = 0
+        lastWebtoonCenterY = 0
+      }
+
+      const container = options.webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('#iv-image-list')
+      const event = new CustomEvent('hotkey', {detail: {type: 'restore'}})
+      container.dispatchEvent(event)
+    }
 
     clearIndex = -1
     clearDom = null
@@ -3055,8 +3095,6 @@ window.ImageViewer = (function () {
     lastIndex = -1
     lastDom = null
     lastSrc = ''
-    lastTransform = null
-    lastWebtoonTransform = null
   }
 
   function applyPendingReset() {
@@ -3071,6 +3109,8 @@ window.ImageViewer = (function () {
       lastSrc = ''
       lastTransform = null
       lastWebtoonTransform = null
+      lastWebtoonCenterX = 0
+      lastWebtoonCenterY = 0
     }
   }
 
