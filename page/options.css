@@ -59,9 +59,6 @@ ul {
   list-style-type: none;
 }
 
-#optionForm li.desc {
-  font-size: 13px;
-}
 .option-list > li:not(:last-child) {
   margin-bottom: 10px;
 }
