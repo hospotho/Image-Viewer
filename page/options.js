@@ -344,23 +344,29 @@
 
   //==========main==========
   function checkUpdate(options) {
-    const newOptionList = Object.keys(defaultOptions).filter(key => !(key in options))
-    if (newOptionList.length === 0) return
-
-    const message = newOptionList
-      .map(key => key.replace(/([A-Z])/g, '_$1').toLowerCase())
-      .map(tag => getMessage(tag) || tag)
-      .join('\n')
-    alert(getMessage('new_option') + ':\n' + message)
-
     // sync with default options
+    const newOptionList = Object.keys(defaultOptions).filter(key => !(key in options))
+    const newHotkeyList = Object.keys(defaultOptions.viewerHotkey).filter(key => !(key in (options.viewerHotkey || {})))
     for (const key of newOptionList) {
-      options[key] = defaultOptions[key]
+      options[key] = structuredClone(defaultOptions[key])
     }
-    chrome.storage.sync.set({options: options}, () => {
+    for (const key of newHotkeyList) {
+      options.viewerHotkey[key] = structuredClone(defaultOptions.viewerHotkey[key])
+    }
+    if (newOptionList.length === 0 && newHotkeyList.length === 0) return
+
+    chrome.storage.sync.set({options}, () => {
       if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
       console.log(options)
     })
+
+    const optionMessage = newOptionList.map(key => key.replace(/([A-Z])/g, '_$1').toLowerCase())
+    const hotkeyMessage = newHotkeyList.map(key => 'viewer_hotkey_' + key.replace(/([A-Z])/g, '_$1').toLowerCase())
+    const message = optionMessage
+      .concat(hotkeyMessage)
+      .map(tag => getMessage(tag) || tag)
+      .join('\n')
+    alert(`${getMessage('new_option')}:\n${message}`)
   }
 
   function initFormEvent() {
@@ -523,8 +529,8 @@
   async function init() {
     await i18n()
     const {options} = await chrome.storage.sync.get('options')
+    checkUpdate(options)
     const normalizedOptions = normalizeOptions(options)
-    checkUpdate(normalizedOptions)
     setValue(normalizedOptions)
     initFormEvent()
     initFormButton()

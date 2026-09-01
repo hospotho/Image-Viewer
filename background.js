@@ -334,24 +334,27 @@ chrome.runtime.onInstalled.addListener(details => {
 
 function resetLocalStorage() {
   chrome.storage.sync.get('options', res => {
-    if (res && Object.keys(res).length === 0 && Object.getPrototypeOf(res) === Object.prototype) {
+    const options = res.options
+    if (!options) {
       chrome.storage.sync.set({options: defaultOptions}, () => {
         console.log('Set options to default options')
         console.log(defaultOptions)
       })
+      currOptions = normalizeOptions(defaultOptions)
       chrome.runtime.openOptionsPage()
     } else {
-      currOptions = normalizeOptions(res.options)
+      const hasNewOptions = Object.keys(defaultOptions).some(key => !(key in options))
+      const hasNewViewerHotkeys = Object.keys(defaultOptions.viewerHotkey).some(key => !(key in (options.viewerHotkey || {})))
+      currOptions = normalizeOptions(options)
       console.log('Loaded options from storage')
       console.log(currOptions)
 
-      const existNewOptions = Object.keys(defaultOptions).some(key => key in currOptions === false)
-      if (existNewOptions) {
+      if (hasNewOptions || hasNewViewerHotkeys) {
         console.log('New options available')
         chrome.runtime.openOptionsPage()
       }
     }
-    currOptionsWithoutSize = Object.assign({}, currOptions)
+    currOptionsWithoutSize = {...currOptions}
     currOptionsWithoutSize.minWidth = 0
     currOptionsWithoutSize.minHeight = 0
   })
