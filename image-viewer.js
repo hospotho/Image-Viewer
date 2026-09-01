@@ -2344,8 +2344,8 @@ window.ImageViewer = (function () {
 
   function addImageEvent(options) {
     // webtoon transformation matrix
-    function calculateViewpointProjection(target, viewX, viewY, offsetX, offsetY) {
-      const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(target)
+    function calculateViewpointProjection(wrapper, viewX, viewY, offsetX, offsetY) {
+      const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
       const localX = viewX - offsetX - moveX
       const localY = viewY - offsetY - moveY
       const angle = -(rotate / 180) * Math.PI
@@ -2355,18 +2355,18 @@ window.ImageViewer = (function () {
       const contentY = (localX * sin + localY * cos) / scaleY
       return [contentX, contentY]
     }
-    function getSceneOffset(container) {
-      const viewportRect = container.getBoundingClientRect()
+    function getSceneOffset(webtoon) {
+      const viewportRect = webtoon.getBoundingClientRect()
       const sceneRect = shadowRoot.querySelector('#iv-scene').getBoundingClientRect()
       const offsetX = sceneRect.left - viewportRect.left
       const offsetY = sceneRect.top - viewportRect.top
       return [offsetX, offsetY]
     }
-    function applyWebtoonTransform(container, target, scaleX, scaleY, rotate) {
-      const viewX = container.clientWidth / 2
-      const viewY = container.clientHeight / 2
-      const [offsetX, offsetY] = getSceneOffset(container)
-      const [contentX, contentY] = calculateViewpointProjection(target, viewX, viewY, offsetX, offsetY)
+    function applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate) {
+      const viewX = webtoon.clientWidth / 2
+      const viewY = webtoon.clientHeight / 2
+      const [offsetX, offsetY] = getSceneOffset(webtoon)
+      const [contentX, contentY] = calculateViewpointProjection(wrapper, viewX, viewY, offsetX, offsetY)
 
       const angle = (rotate / 180) * Math.PI
       const cos = Math.cos(angle)
@@ -2377,19 +2377,19 @@ window.ImageViewer = (function () {
       const rotatedY = scaledX * sin + scaledY * cos
       const finalX = viewX - offsetX - rotatedX
       const finalY = viewY - offsetY - rotatedY
-      applyTransform(target, scaleX, scaleY, rotate, finalX, finalY)
+      applyTransform(wrapper, scaleX, scaleY, rotate, finalX, finalY)
     }
-    function updateWebtoonZoom(container, target, zoomCount) {
-      let [scaleX, scaleY, rotate, ,] = getTransform(target)
+    function updateWebtoonZoom(webtoon, wrapper, zoomCount) {
+      let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
       scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
-      applyWebtoonTransform(container, target, scaleX, scaleY, rotate)
+      applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate)
     }
-    function updateWebtoonRotate(container, target, rotateCount) {
-      let [scaleX, scaleY, rotate, ,] = getTransform(target)
+    function updateWebtoonRotate(webtoon, wrapper, rotateCount) {
+      let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       const mirror = Math.sign(scaleX) * Math.sign(scaleY)
       rotate = mirror * options.rotateDeg * rotateCount
-      applyWebtoonTransform(container, target, scaleX, scaleY, rotate)
+      applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate)
     }
     // transform function
     function updateZoom(img, deltaZoom, zoomCount) {
@@ -2420,7 +2420,7 @@ window.ImageViewer = (function () {
       applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
     }
 
-    function addTransformHandler(node, getTarget) {
+    function addTransformHandler(container, getTarget) {
       const nodeContextMap = new WeakMap()
       const getContext = target => {
         const context = nodeContextMap.get(target)
@@ -2440,7 +2440,7 @@ window.ImageViewer = (function () {
       }
 
       // zoom & rotate
-      node.addEventListener(
+      container.addEventListener(
         'wheel',
         e => {
           const target = getTarget()
@@ -2453,7 +2453,7 @@ window.ImageViewer = (function () {
             target.style.transition = ''
             const deltaZoom = e.deltaY > 0 ? -1 : 1
             context.zoomCount += deltaZoom
-            if (options.webtoonMode) updateWebtoonZoom(node, target, context.zoomCount)
+            if (options.webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
             else updateZoom(target, deltaZoom, context.zoomCount)
           } else {
             // transition cause flash when large offset
@@ -2462,7 +2462,7 @@ window.ImageViewer = (function () {
             target.style.transition = offset > 350 || options.webtoonMode ? 'none' : ''
             const deltaRotate = e.deltaY > 0 ? 1 : -1
             context.rotateCount += context.mirror ? -deltaRotate : deltaRotate
-            if (options.webtoonMode) updateWebtoonRotate(node, target, context.rotateCount)
+            if (options.webtoonMode) updateWebtoonRotate(container, target, context.rotateCount)
             else updateRotate(target, deltaRotate, context.rotateCount)
           }
         },
@@ -2470,19 +2470,19 @@ window.ImageViewer = (function () {
       )
 
       // mirror-reflect
-      node.addEventListener('click', e => {
+      container.addEventListener('click', e => {
         if (!e.altKey && !e.getModifierState('AltGraph')) return
         const target = getTarget()
         const context = getContext(target)
         const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(target)
         context.mirror = !context.mirror
-        if (options.webtoonMode) applyWebtoonTransform(node, target, -scaleX, scaleY, -rotate)
+        if (options.webtoonMode) applyWebtoonTransform(container, target, -scaleX, scaleY, -rotate)
         else applyTransform(target, -scaleX, scaleY, -rotate, -moveX, moveY)
       })
 
       // dragging and pinch zoom
       const getTouchPointList = context => [...context.pointerMap.values()].filter(point => point[0])
-      node.addEventListener('pointerdown', e => {
+      container.addEventListener('pointerdown', e => {
         if (shadowRoot.querySelector('#image-viewer').classList.contains('disable-drag')) return
         const target = getTarget()
         const context = getContext(target)
@@ -2495,8 +2495,8 @@ window.ImageViewer = (function () {
         // at least two touch points in webtoon mode
         if (options.webtoonMode && e.pointerType === 'touch' && touchPointList.length < 2) return
         e.preventDefault()
-        if (e.pointerType === 'mouse') node.setPointerCapture(e.pointerId)
-        else touchPointList.forEach(point => node.setPointerCapture(point.pointerId))
+        if (e.pointerType === 'mouse') container.setPointerCapture(e.pointerId)
+        else touchPointList.forEach(point => container.setPointerCapture(point.pointerId))
         // update context
         context.dragFlag = true
         if (touchPointList.length < 2) {
@@ -2509,7 +2509,7 @@ window.ImageViewer = (function () {
           context.pinchDistance = Math.hypot(first[3] - second[3], first[4] - second[4]) + 1e-6
         }
       })
-      node.addEventListener('pointermove', e => {
+      container.addEventListener('pointermove', e => {
         const target = getTarget()
         const context = getContext(target)
         if (!context.dragFlag) return
@@ -2540,7 +2540,7 @@ window.ImageViewer = (function () {
         if (deltaZoom !== 0) {
           context.zoomCount += deltaZoom
           context.pinchDistance = distance
-          if (options.webtoonMode) updateWebtoonZoom(node, target, context.zoomCount)
+          if (options.webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
           else updateZoom(target, deltaZoom, context.zoomCount)
         }
         // two touch drag
@@ -2566,8 +2566,8 @@ window.ImageViewer = (function () {
           context.lastPos[1] = pointerList[0][4]
         }
       }
-      node.addEventListener('pointerup', stopDragging)
-      node.addEventListener('pointercancel', stopDragging)
+      container.addEventListener('pointerup', stopDragging)
+      container.addEventListener('pointercancel', stopDragging)
 
       // reset
       const reset = async target => {
@@ -2591,17 +2591,17 @@ window.ImageViewer = (function () {
         applyTransform(target, 1, 1, 0, 0, 0)
         current?.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
       }
-      node.addEventListener('dblclick', () => reset(getTarget()))
+      container.addEventListener('dblclick', () => reset(getTarget()))
       // custom event
-      node.addEventListener('reset-transform', e => reset(e.target))
-      node.addEventListener('reset-translate', e => {
+      container.addEventListener('reset-transform', e => reset(e.target))
+      container.addEventListener('reset-translate', e => {
         const target = e.target
         const [scaleX, scaleY, rotate, ,] = getTransform(target)
         applyTransform(target, scaleX, scaleY, rotate, 0, 0)
       })
 
       // handle hotkey
-      node.addEventListener('hotkey', e => {
+      container.addEventListener('hotkey', e => {
         const {type, action} = e.detail
         const target = getTarget()
         const context = getContext(target)
@@ -2609,14 +2609,14 @@ window.ImageViewer = (function () {
           case 'zoom': {
             const deltaZoom = action === 1 ? -1 : 1
             context.zoomCount += deltaZoom
-            if (options.webtoonMode) updateWebtoonZoom(node, target, context.zoomCount)
+            if (options.webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
             else updateZoom(target, deltaZoom, context.zoomCount)
             break
           }
           case 'rotate': {
             const deltaRotate = action === 3 ? 1 : -1
             context.rotateCount += context.mirror ? -deltaRotate : deltaRotate
-            if (options.webtoonMode) updateWebtoonRotate(node, target, context.rotateCount)
+            if (options.webtoonMode) updateWebtoonRotate(container, target, context.rotateCount)
             else updateRotate(target, deltaRotate, context.rotateCount)
             break
           }
