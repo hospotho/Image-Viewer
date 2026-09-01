@@ -2896,6 +2896,9 @@ window.ImageViewer = (function () {
     if (options.webtoonMode && !current) {
       if (options.webtoonDirection === 'row') imageListNode.dispatchEvent(new CustomEvent('flip-direction'))
       if (options.webtoonOrder === 'reverse') imageListNode.dispatchEvent(new CustomEvent('reverse-order'))
+      if (options.webtoonDirection !== 'row' && options.webtoonOrder !== 'reverse') {
+        baseImg.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+      }
     }
 
     const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
