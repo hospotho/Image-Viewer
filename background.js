@@ -323,8 +323,9 @@ function normalizeOptions(options = {}) {
 
 let currOptions = defaultOptions
 let currOptionsWithoutSize = defaultOptions
-let lastImageNodeInfo = ['', 0]
+let lastImageNodeInfo = ['', Number.MAX_SAFE_INTEGER, 0, 0]
 let lastImageNodeInfoID = 0
+let lastImageNodeInfoTabID = 0
 
 chrome.runtime.onInstalled.addListener(details => {
   if (details.reason === 'update' || details.reason === 'install') {
@@ -437,24 +438,32 @@ function addMessageHandler() {
       }
       case 'update_info': {
         ;(async () => {
-          lastImageNodeInfo = request.data
-          lastImageNodeInfoID = sender.tab.id
+          // [src, minClientSize, width, height]
+          const info = [request.data[0], request.data[1], 0, 0]
+          const currId = ++lastImageNodeInfoID
           // get data url if CORS
           if (sender.tab.url !== sender.url) {
-            lastImageNodeInfo[0] = await getLocalUrl(sender.tab.id, lastImageNodeInfo[0])
+            info[0] = await getLocalUrl(sender.tab.id, info[0])
           }
-          // image size maybe decreased in dataURL
-          lastImageNodeInfo[1] -= 3
-          console.table(lastImageNodeInfo)
+          // reduce client size, image size maybe decreased in dataURL
+          info[1] -= 3
+          if (lastImageNodeInfoID !== currId) return
+          lastImageNodeInfo = info
+          lastImageNodeInfoTabID = sender.tab.id
+          // get image size from cache or fetch from tab
+          const [width, height] = await getImageLocalRealSize(sender.tab.id, info[0])
+          info[2] = width
+          info[3] = height
+          console.table(info)
           _sendResponse()
         })()
         return true
       }
       case 'get_info': {
-        if (lastImageNodeInfoID === sender.tab.id) {
+        if (lastImageNodeInfoTabID === sender.tab.id) {
           sendResponse(lastImageNodeInfo)
         } else {
-          sendResponse(['', Number.MAX_SAFE_INTEGER, ''])
+          sendResponse(['', Number.MAX_SAFE_INTEGER, 0, 0])
         }
         return
       }

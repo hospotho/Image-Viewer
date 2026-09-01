@@ -549,19 +549,18 @@ body:has(#image-viewer-root.webtoon) {
       // check if bad image set valid
       processLazyPlaceholder()
 
+      // [src, minClientSize, dom]
       const imageNodeInfo = await getImageNodeInfo(e.clientX, e.clientY)
       if (imageNodeInfo === null) {
         markingDom(null)
-        safeSendMessage({msg: 'update_info', data: ['', Number.MAX_SAFE_INTEGER, '']})
+        safeSendMessage({msg: 'update_info', data: ['', Number.MAX_SAFE_INTEGER]})
         return
       }
-      // display image dom
+      // output image dom to console
       const dom = imageNodeInfo[2]
-      imageNodeInfo[2] = dom.tagName
       console.debug(dom)
-
       markingDom(dom)
-      safeSendMessage({msg: 'update_info', data: imageNodeInfo})
+      safeSendMessage({msg: 'update_info', data: [imageNodeInfo[0], imageNodeInfo[1]]})
     },
     true
   )

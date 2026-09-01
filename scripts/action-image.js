@@ -26,13 +26,13 @@
 
   // update image size filter
   const nodeInfo = await safeSendMessage('get_info')
-  const [srcUrl, nodeSize] = nodeInfo
+  const [srcUrl, nodeSize, width, height] = nodeInfo
   options.minWidth = Math.min(nodeSize, options.minWidth)
   options.minHeight = Math.min(nodeSize, options.minHeight)
 
   const dom = window.ImageViewerLastDom
-  if (dom?.tagName === 'IMG') {
-    const imageRatio = dom.naturalWidth / dom.naturalHeight
+  if (width > 0 || dom?.tagName === 'IMG') {
+    const imageRatio = width > 0 ? width / height : dom.naturalWidth / dom.naturalHeight
     const webtoonPickRatio = options.webtoonPickRatio
     if (imageRatio >= webtoonPickRatio || imageRatio <= 1 / webtoonPickRatio) {
       options.webtoonMode = true
