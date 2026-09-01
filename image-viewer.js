@@ -158,6 +158,47 @@ window.ImageViewer = (function () {
     const translate = img.style.translate.replaceAll('px', '').split(' ')
     return [Number(scale[0]) || 1, Number(scale[1]) || Math.abs(Number(scale[0])) || 1, Number(rotate) || 0, Number(translate[0]) || 0, Number(translate[1]) || 0]
   }
+  const scheduleWebtoonReposition = (function () {
+    const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
+    let timeout = 0
+    let current = null
+    let centerX = 0
+    let centerY = 0
+    const clear = () => {
+      timeout = 0
+      centerX = 0
+      centerY = 0
+      current = null
+    }
+    const reposition = () => {
+      if (!current.isConnected) {
+        clear()
+        return
+      }
+      current.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+      const currentRect = current.getBoundingClientRect()
+      const newCenterX = currentRect.left + currentRect.width / 2
+      const newCenterY = currentRect.top + currentRect.height / 2
+      const adjustX = newCenterX - centerX
+      const adjustY = newCenterY - centerY
+      const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
+      applyTransform(wrapper, scaleX, scaleY, rotate, moveX - adjustX, moveY - adjustY)
+      clear()
+    }
+    return () => {
+      if (timeout !== 0) {
+        clearTimeout(timeout)
+        timeout = setTimeout(reposition, 50)
+        return
+      }
+      const currentImg = shadowRoot.querySelector('#iv-webtoon #iv-image-list li.current img')
+      const currentRect = currentImg.getBoundingClientRect()
+      current = currentImg
+      centerX = currentRect.left + currentRect.width / 2
+      centerY = currentRect.top + currentRect.height / 2
+      timeout = setTimeout(reposition, 50)
+    }
+  })()
 
   function loadImageChunk(index) {
     const chunkSize = 20
@@ -2938,51 +2979,10 @@ window.ImageViewer = (function () {
   }
 
   function fitImage(options, reset = true) {
-    const prepareWebtoonReposition = (function () {
-      if (!options.webtoonMode) return () => {}
-      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
-      let timeout = 0
-      let current = null
-      let centerX = 0
-      let centerY = 0
-      const clear = () => {
-        timeout = 0
-        centerX = 0
-        centerY = 0
-        current = null
-      }
-      const reposition = () => {
-        if (!current.isConnected) {
-          clear()
-          return
-        }
-        current.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
-        const currentRect = current.getBoundingClientRect()
-        const newCenterX = currentRect.left + currentRect.width / 2
-        const newCenterY = currentRect.top + currentRect.height / 2
-        const adjustX = newCenterX - centerX
-        const adjustY = newCenterY - centerY
-        const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
-        applyTransform(wrapper, scaleX, scaleY, rotate, moveX - adjustX, moveY - adjustY)
-        clear()
-      }
-      return () => {
-        if (timeout !== 0) {
-          clearTimeout(timeout)
-          timeout = setTimeout(reposition, 50)
-          return
-        }
-        const currentImg = shadowRoot.querySelector('#iv-webtoon #iv-image-list li.current img')
-        const currentRect = currentImg.getBoundingClientRect()
-        current = currentImg
-        centerX = currentRect.left + currentRect.width / 2
-        centerY = currentRect.top + currentRect.height / 2
-        timeout = setTimeout(reposition, 50)
-      }
-    })()
+    const reposition = options.webtoonMode && !reset ? scheduleWebtoonReposition : () => {}
     const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
     const action = img => {
-      if (!reset) prepareWebtoonReposition()
+      reposition()
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
       img.height = h
