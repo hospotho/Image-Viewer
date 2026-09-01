@@ -1796,6 +1796,8 @@ window.ImageViewer = (function () {
       }
       hotkeyHandlerList[COMMAND_ENUM.FLIP_LIST_DIRECTION] = () => recalculateWebtoonTransform(flipDirection)
       hotkeyHandlerList[COMMAND_ENUM.REVERSE_LIST_ORDER] = () => recalculateWebtoonTransform(reverseOrder)
+      imageListNode.addEventListener('flip-direction', () => recalculateWebtoonTransform(flipDirection))
+      imageListNode.addEventListener('reverse-order', () => recalculateWebtoonTransform(reverseOrder))
     }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
@@ -2892,6 +2894,8 @@ window.ImageViewer = (function () {
     const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : baseImg
     base.classList.add('current')
     if (options.webtoonMode && !current) {
+      if (options.webtoonDirection === 'row') imageListNode.dispatchEvent(new CustomEvent('flip-direction'))
+      if (options.webtoonOrder === 'reverse') imageListNode.dispatchEvent(new CustomEvent('reverse-order'))
       baseImg.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
     }
 
