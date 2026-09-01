@@ -81,9 +81,8 @@ window.ImageViewer = (function () {
     lastDom = imageDataList[lastIndex]?.dom || null
     const current = shadowRoot.querySelector('li.current img')
     if (current) {
-      const webtoonMode = viewer.classList.contains('webtoon')
-      lastSrc = current.src || ''
-      if (!webtoonMode) lastTransform = getTransform(current)
+      lastSrc = current.src
+      if (!viewer.classList.contains('webtoon')) lastTransform = getTransform(current)
       else {
         const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
         lastWebtoonTransform = getTransform(wrapper)
