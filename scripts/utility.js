@@ -1915,10 +1915,13 @@ window.ImageViewerUtils = (function () {
     const canvasList = deepQuerySelectorAll(document.body, 'canvas')
     for (const canvas of canvasList) {
       const {width, height} = canvas.getBoundingClientRect()
-      if (width < minWidth && height < minHeight) continue
+      if (width < minWidth || height < minHeight) continue
       const promise = new Promise(resolve => {
         canvas.toBlob(blob => {
-          if (blob.size === 0) resolve(null)
+          if (blob.size === 0) {
+            resolve(null)
+            return
+          }
           const url = URL.createObjectURL(blob)
           resolve({src: url, dom: canvas})
         })
