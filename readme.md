@@ -24,7 +24,7 @@ If you like this extension, you can [buy me a coffee](https://ko-fi.com/tonymilk
 
 [Web Demo](https://hospotho.github.io/Image-Viewer/page/) (Does not include some extension-only features)
 
-You can install release version from [Chrome Web Store](https://chromewebstore.google.com/detail/image-viewer/dmjomclickknjohanapndohecidojopn) and [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/makiato-image-viewer/).~~ For development version, follow steps below:
+You can install release version from [Chrome Web Store](https://chromewebstore.google.com/detail/image-viewer/dmjomclickknjohanapndohecidojopn) and [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/makiato-image-viewer/). For development version, follow steps below:
 
 1. Download the source code and place it anywhere you want.
 2. Open your browser and go to `chrome://extensions`.
