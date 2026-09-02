@@ -23,6 +23,7 @@ window.ImageViewer = (function () {
   let lastWebtoonCenterX = 0
   let lastWebtoonCenterY = 0
 
+  const observerList = []
   const hotkeyHandlerList = []
   const keyupHandlerList = []
   const resizeHandlerList = []
@@ -96,6 +97,8 @@ window.ImageViewer = (function () {
     hotkeyHandlerList.length = 0
     keyupHandlerList.length = 0
     resizeHandlerList.length = 0
+    observerList.forEach(observer => observer.disconnect())
+    observerList.length = 0
     keydownHotkeyMap.clear()
   }
 
@@ -1825,8 +1828,11 @@ window.ImageViewer = (function () {
         }, 100)
       }
       webtoon.addEventListener('scroll', action)
-      new MutationObserver(action).observe(wrapper, {attributeFilter: ['style']})
-      new ResizeObserver(action).observe(wrapper)
+      const styleObserver = new MutationObserver(action)
+      const resizeObserver = new ResizeObserver(action)
+      styleObserver.observe(wrapper, {attributeFilter: ['style']})
+      resizeObserver.observe(wrapper)
+      observerList.push(styleObserver, resizeObserver)
     }
     function addWebtoonOrientationHotkey() {
       const viewer = shadowRoot.querySelector('#image-viewer')
