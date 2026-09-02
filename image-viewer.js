@@ -171,6 +171,7 @@ window.ImageViewer = (function () {
     let centerX = 0
     let centerY = 0
     const clear = () => {
+      clearTimeout(timeout)
       timeout = 0
       current = null
       centerX = 0
@@ -197,11 +198,7 @@ window.ImageViewer = (function () {
       clear()
     }
     return (immediate = false, targetCenterX = 0, targetCenterY = 0) => {
-      if (!immediate && timeout !== 0) {
-        clearTimeout(timeout)
-        timeout = setTimeout(reposition, 50)
-        return
-      }
+      if (!immediate && timeout !== 0) return
       const currentImg = shadowRoot.querySelector('#iv-webtoon #iv-image-list li.current img')
       current = currentImg
       if (targetCenterX) {
@@ -213,7 +210,7 @@ window.ImageViewer = (function () {
         centerY = currentRect.top + currentRect.height / 2
       }
       if (immediate) return reposition
-      else timeout = setTimeout(reposition, 50)
+      else timeout = setTimeout(reposition, 20)
     }
   })()
 
