@@ -30,10 +30,6 @@ html.iv-worker-checking img {
 .disable-hover {
   pointer-events: none !important;
 }
-html:has(#image-viewer-root.webtoon),
-body:has(#image-viewer-root.webtoon) {
-  overflow: hidden !important;
-}
 `
     document.head.appendChild(styleSheet)
   }

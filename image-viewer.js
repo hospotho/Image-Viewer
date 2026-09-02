@@ -1107,6 +1107,7 @@ window.ImageViewer = (function () {
 
     // apply mode specific settings
     if (options.webtoonMode) {
+      viewer.classList.add('webtoon')
       // overlay existing scrollbar
       const [base, vertical, horizontal] = getScrollbarSize()
       const fullWidth = viewport.width + vertical
@@ -1115,9 +1116,6 @@ window.ImageViewer = (function () {
       viewer.style.setProperty('--vv-width', `${fullWidth}px`)
       viewer.style.setProperty('--vv-height', `${fullHeight}px`)
       fitFuncDict.init(fullWidth - base, fullHeight - base)
-      // disable body overflow
-      shadowHolder.classList.add('webtoon')
-      viewer.classList.add('webtoon')
       // use image raw size
       viewer.dataset.fitMode = 'none'
     }
