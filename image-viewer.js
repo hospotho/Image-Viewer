@@ -67,6 +67,8 @@ window.ImageViewer = (function () {
     const root = shadowRoot?.host
     if (!root || !document.body.classList.contains('iv-attached')) return
     document.body.classList.remove('iv-attached')
+    document.documentElement.classList.remove('iv-webtoon-attached')
+    document.body.classList.remove('iv-webtoon-attached')
 
     const viewer = shadowRoot.querySelector('#image-viewer')
     viewer.addEventListener('transitionend', () => root.remove())
@@ -1091,28 +1093,32 @@ window.ImageViewer = (function () {
     const stylesheet = document.createElement('style')
     stylesheet.textContent = style()
 
-    const viewer = document.createElement('div')
     const viewport = window.visualViewport
+    fitFuncDict.init(viewport.width, viewport.height)
+
+    const viewer = document.createElement('div')
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
-    viewer.dataset.fitMode = options.fitMode
     viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
     viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
     viewer.style.setProperty('--vv-width', `${viewport.width}px`)
     viewer.style.setProperty('--vv-height', `${viewport.height}px`)
-    fitFuncDict.init(viewport.width, viewport.height)
+    viewer.dataset.fitMode = options.fitMode
 
     // apply mode specific settings
     if (options.webtoonMode) {
       viewer.classList.add('webtoon')
+      // hide existing scrollbar
+      document.documentElement.classList.add('iv-webtoon-attached')
+      document.body.classList.add('iv-webtoon-attached')
       // overlay existing scrollbar
       const [base, vertical, horizontal] = getScrollbarSize()
       const fullWidth = viewport.width + vertical
       const fullHeight = viewport.height + horizontal
+      fitFuncDict.init(fullWidth - base, fullHeight - base)
       viewer.style.setProperty('--scrollbar-size', `${base}px`)
       viewer.style.setProperty('--vv-width', `${fullWidth}px`)
       viewer.style.setProperty('--vv-height', `${fullHeight}px`)
-      fitFuncDict.init(fullWidth - base, fullHeight - base)
       // use image raw size
       viewer.dataset.fitMode = 'none'
     }

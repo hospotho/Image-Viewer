@@ -30,6 +30,10 @@ html.iv-worker-checking img {
 .disable-hover {
   pointer-events: none !important;
 }
+html.iv-webtoon-attached,
+body.iv-webtoon-attached {
+  overflow: hidden !important;
+}
 `
     document.head.appendChild(styleSheet)
   }
