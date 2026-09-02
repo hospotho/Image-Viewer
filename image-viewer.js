@@ -1098,6 +1098,7 @@ window.ImageViewer = (function () {
     const viewport = window.visualViewport
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
+    viewer.dataset.fitMode = options.fitMode
     viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
     viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
     viewer.style.setProperty('--vv-width', `${viewport.width}px`)
@@ -1117,7 +1118,8 @@ window.ImageViewer = (function () {
       // disable body overflow
       shadowHolder.classList.add('webtoon')
       viewer.classList.add('webtoon')
-      options.fitMode = 'none'
+      // use image raw size
+      viewer.dataset.fitMode = 'none'
     }
     if (!options.closeButton) {
       // prevent image loading flash
@@ -1242,7 +1244,7 @@ window.ImageViewer = (function () {
             viewer.style.setProperty('--vv-width', `${viewport.width}px`)
             viewer.style.setProperty('--vv-height', `${viewport.height}px`)
             fitFuncDict.init(viewport.width, viewport.height)
-            fitImage(options)
+            fitImage()
           }
         : () => {
             // overlay existing scrollbar
@@ -1253,7 +1255,7 @@ window.ImageViewer = (function () {
             viewer.style.setProperty('--vv-width', `${fullWidth}px`)
             viewer.style.setProperty('--vv-height', `${fullHeight}px`)
             fitFuncDict.init(fullWidth - base, fullHeight - base)
-            fitImage(options)
+            fitImage()
           }
       resizeHandlerList.push(action)
     }
@@ -1278,6 +1280,7 @@ window.ImageViewer = (function () {
     }
     function addTransformationHotkey(options) {
       let lastHotkeyTime = 0
+      const container = options.webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('#iv-image-list')
       const transformHandler = (e, COMMAND_ENUM_VALUE) => {
         const now = Date.now()
         if (e.repeat && now - lastHotkeyTime < 30) return
@@ -1324,8 +1327,7 @@ window.ImageViewer = (function () {
         }
         const data = {detail: {type: type, action: action}}
         const event = new CustomEvent('hotkey', data)
-        const current = options.webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('#iv-image-list')
-        current.dispatchEvent(event)
+        container.dispatchEvent(event)
       }
       hotkeyHandlerList[COMMAND_ENUM.MOVE_UP] = transformHandler
       hotkeyHandlerList[COMMAND_ENUM.MOVE_DOWN] = transformHandler
@@ -1581,7 +1583,7 @@ window.ImageViewer = (function () {
       }
 
       const customHotkey = hotkey.slice(5)
-      const customUrl = options.customUrl
+      const customUrl = [...options.customUrl]
       if (customHotkey.length !== customUrl.length) return
       customHotkey.forEach((_, i) => {
         hotkeyHandlerList[COMMAND_ENUM.SEARCH_CUSTOM_BASE + i] = e => {
@@ -1725,16 +1727,17 @@ window.ImageViewer = (function () {
       })
       infoPopup.addEventListener('update-info', updateInfoPopup)
     }
-    function addFitButtonEvent(options) {
-      const currFitBtn = shadowRoot.querySelector(`#iv-control-${options.fitMode}`)
+    function addFitButtonEvent() {
+      const viewer = shadowRoot.querySelector('#image-viewer')
+      const currFitBtn = shadowRoot.querySelector(`#iv-control-${viewer.dataset.fitMode}`)
       currFitBtn?.classList.add('on')
       const fitBtnList = shadowRoot.querySelectorAll('#iv-control-buttons button[data-fit]')
       for (const fitBtn of fitBtnList) {
         fitBtn.addEventListener('click', () => {
           fitBtnList.forEach(btn => btn.classList.remove('on'))
           fitBtn.classList.add('on')
-          options.fitMode = fitBtn.getAttribute('data-fit')
-          fitImage(options)
+          viewer.dataset.fitMode = fitBtn.getAttribute('data-fit')
+          fitImage()
         })
       }
     }
@@ -2086,7 +2089,7 @@ window.ImageViewer = (function () {
     addImageReverseSearchHotkey(options)
     addControlPanelHideEvent(options)
     addInfoPopupEvent()
-    addFitButtonEvent(options)
+    addFitButtonEvent()
     if (options.webtoonMode) {
       addWebtoonInfoEvent()
       addWebtoonOrientationHotkey()
@@ -2106,6 +2109,7 @@ window.ImageViewer = (function () {
     const closeButton = shadowRoot.querySelector('#iv-control-close')
     const infoButton = shadowRoot.querySelector('#iv-control-info')
     const infoPopup = shadowRoot.querySelector('#iv-info-popup')
+    const webtoonMode = options.webtoonMode
 
     const current = shadowRoot.querySelector('#iv-counter-current')
     const total = shadowRoot.querySelector('#iv-counter-total')
@@ -2113,9 +2117,10 @@ window.ImageViewer = (function () {
     const infoHeight = shadowRoot.querySelector('#iv-info-height')
     const updateEvent = new CustomEvent('update-info')
 
+    const smoothThrottleRatio = 0.75
     const debouncePeriod = Math.ceil(options.debouncePeriod ?? 1500)
     const throttlePeriod = Math.ceil(options.throttlePeriod ?? 80)
-    const smoothThrottleRatio = 0.75
+    const autoPeriod = Math.ceil(options.autoPeriod ?? 2000)
 
     // throttle
     let lastCompleteTime = 0
@@ -2156,7 +2161,7 @@ window.ImageViewer = (function () {
       // update dom
       currentListItem?.classList.remove('current')
       relateListItem.classList.add('current')
-      if (options.webtoonMode) relateImage.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+      if (webtoonMode) relateImage.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
       current.textContent = index + 1
       infoWidth.textContent = relateImage.naturalWidth
       infoHeight.textContent = relateImage.naturalHeight
@@ -2301,16 +2306,9 @@ window.ImageViewer = (function () {
         resetThrottle()
         await moveToNode(newIndex)
         lastMoveCount = moveCount
-        await new Promise(resolve => setTimeout(resolve, options.autoPeriod))
+        await new Promise(resolve => setTimeout(resolve, autoPeriod))
       }
       autoNavigateState = 0
-    }
-    const resetNavigation = e => {
-      const direction = options.viewerHotkey.navigateNext.some(hotkey => checkKey(e, hotkey)) ? 1 : options.viewerHotkey.navigatePrev.some(hotkey => checkKey(e, hotkey)) ? 0 : -1
-      // only reset when same direction
-      if (direction === -1 || (navigateState & 0b1) === direction) {
-        navigateState = -1
-      }
     }
     hotkeyHandlerList[COMMAND_ENUM.NAVIGATE_PREV] = normalNavigation
     hotkeyHandlerList[COMMAND_ENUM.NAVIGATE_NEXT] = normalNavigation
@@ -2318,6 +2316,16 @@ window.ImageViewer = (function () {
     hotkeyHandlerList[COMMAND_ENUM.FAST_NAVIGATE_NEXT] = fastNavigation
     hotkeyHandlerList[COMMAND_ENUM.AUTO_NAVIGATE_PREV] = autoNavigation
     hotkeyHandlerList[COMMAND_ENUM.AUTO_NAVIGATE_NEXT] = autoNavigation
+    // keyup
+    const navigateNextHotkey = [...options.viewerHotkey.navigateNext]
+    const navigatePrevHotkey = [...options.viewerHotkey.navigatePrev]
+    const resetNavigation = e => {
+      const direction = navigateNextHotkey.some(hotkey => checkKey(e, hotkey)) ? 1 : navigatePrevHotkey.some(hotkey => checkKey(e, hotkey)) ? 0 : -1
+      // only reset when same direction
+      if (direction === -1 || (navigateState & 0b1) === direction) {
+        navigateState = -1
+      }
+    }
     keyupHandlerList.push(resetNavigation)
     // mouse wheel
     const wheelNavigation = e => {
@@ -2370,6 +2378,10 @@ window.ImageViewer = (function () {
   }
 
   function addImageEvent(options) {
+    const webtoonMode = options.webtoonMode
+    const zoomRatio = options.zoomRatio
+    const rotateDeg = options.rotateDeg
+
     // webtoon transformation matrix
     function calculateViewpointProjection(wrapper, viewX, viewY, offsetX, offsetY) {
       const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
@@ -2408,8 +2420,8 @@ window.ImageViewer = (function () {
     }
     function updateWebtoonZoom(webtoon, wrapper, zoomCount) {
       let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
-      scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
-      scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
+      scaleX = Math.sign(scaleX) * zoomRatio ** zoomCount
+      scaleY = Math.sign(scaleY) * zoomRatio ** zoomCount
       applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate)
       // adjust padding after zoom
       const reposition = scheduleWebtoonReposition(true)
@@ -2419,26 +2431,26 @@ window.ImageViewer = (function () {
     function updateWebtoonRotate(webtoon, wrapper, rotateCount) {
       let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       const mirror = Math.sign(scaleX) * Math.sign(scaleY)
-      rotate = mirror * options.rotateDeg * rotateCount
+      rotate = mirror * rotateDeg * rotateCount
       applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate)
     }
     // transform function
     function updateZoom(img, deltaZoom, zoomCount) {
       let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
-      scaleX = Math.sign(scaleX) * options.zoomRatio ** zoomCount
-      scaleY = Math.sign(scaleY) * options.zoomRatio ** zoomCount
+      scaleX = Math.sign(scaleX) * zoomRatio ** zoomCount
+      scaleY = Math.sign(scaleY) * zoomRatio ** zoomCount
       // recalculate displacement for zooming at the center of the viewpoint
-      moveX = moveX * options.zoomRatio ** deltaZoom
-      moveY = moveY * options.zoomRatio ** deltaZoom
+      moveX = moveX * zoomRatio ** deltaZoom
+      moveY = moveY * zoomRatio ** deltaZoom
       applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
     }
     function updateRotate(img, deltaRotate, rotateCount) {
       let [scaleX, scaleY, rotate, moveX, moveY] = getTransform(img)
       const mirror = Math.sign(scaleX) * Math.sign(scaleY)
-      rotate = mirror * options.rotateDeg * rotateCount
+      rotate = mirror * rotateDeg * rotateCount
       // recalculate displacement for rotation around the center of the viewpoint
       const radial = Math.hypot(moveX, moveY)
-      const deltaRadian = ((options.rotateDeg * deltaRotate) / 180) * Math.PI
+      const deltaRadian = ((rotateDeg * deltaRotate) / 180) * Math.PI
       const newRadian = Math.atan2(moveY, moveX) + deltaRadian
       moveX = radial * Math.cos(newRadian)
       moveY = radial * Math.sin(newRadian)
@@ -2477,23 +2489,23 @@ window.ImageViewer = (function () {
           const target = getTarget()
           const context = getContext(target)
           const isRotate = e.altKey || e.getModifierState('AltGraph')
-          const isZoom = !isRotate && (!options.webtoonMode || e.ctrlKey || context.dragFlag)
+          const isZoom = !isRotate && (!webtoonMode || e.ctrlKey || context.dragFlag)
           if (!isRotate && !isZoom) return
           e.preventDefault()
           if (isZoom) {
             target.style.transition = ''
             const deltaZoom = e.deltaY > 0 ? -1 : 1
             context.zoomCount += deltaZoom
-            if (options.webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
+            if (webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
             else updateZoom(target, deltaZoom, context.zoomCount)
           } else {
             // transition cause flash when large offset
             const [, , , moveX, moveY] = getTransform(target)
             const offset = Math.hypot(moveX, moveY)
-            target.style.transition = offset > 350 || options.webtoonMode ? 'none' : ''
+            target.style.transition = offset > 350 || webtoonMode ? 'none' : ''
             const deltaRotate = e.deltaY > 0 ? 1 : -1
             context.rotateCount += context.mirror ? -deltaRotate : deltaRotate
-            if (options.webtoonMode) updateWebtoonRotate(container, target, context.rotateCount)
+            if (webtoonMode) updateWebtoonRotate(container, target, context.rotateCount)
             else updateRotate(target, deltaRotate, context.rotateCount)
           }
         },
@@ -2507,7 +2519,7 @@ window.ImageViewer = (function () {
         const context = getContext(target)
         const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(target)
         context.mirror = !context.mirror
-        if (options.webtoonMode) applyWebtoonTransform(container, target, -scaleX, scaleY, -rotate)
+        if (webtoonMode) applyWebtoonTransform(container, target, -scaleX, scaleY, -rotate)
         else applyTransform(target, -scaleX, scaleY, -rotate, -moveX, moveY)
       })
 
@@ -2524,7 +2536,7 @@ window.ImageViewer = (function () {
         const touchPointList = getTouchPointList(context)
         if (touchPointList.length > 1) context.lastTap = null
         // at least two touch points in webtoon mode
-        if (options.webtoonMode && e.pointerType === 'touch' && touchPointList.length < 2) return
+        if (webtoonMode && e.pointerType === 'touch' && touchPointList.length < 2) return
         e.preventDefault()
         if (e.pointerType === 'mouse') container.setPointerCapture(e.pointerId)
         else touchPointList.forEach(point => container.setPointerCapture(point.pointerId))
@@ -2548,7 +2560,7 @@ window.ImageViewer = (function () {
         const point = context.pointerMap.get(e.pointerId)
         const touchPointList = getTouchPointList(context)
         if (point === undefined) return
-        if (options.webtoonMode && e.pointerType === 'touch' && touchPointList.length < 2) return
+        if (webtoonMode && e.pointerType === 'touch' && touchPointList.length < 2) return
         point[3] = e.clientX
         point[4] = e.clientY
         // reset transition
@@ -2567,11 +2579,11 @@ window.ImageViewer = (function () {
         // two touch pinch zoom
         const [first, second] = touchPointList
         const distance = Math.hypot(first[3] - second[3], first[4] - second[4])
-        const deltaZoom = Math.trunc(Math.log(distance / context.pinchDistance) / Math.log(options.zoomRatio))
+        const deltaZoom = Math.trunc(Math.log(distance / context.pinchDistance) / Math.log(zoomRatio))
         if (deltaZoom !== 0) {
           context.zoomCount += deltaZoom
           context.pinchDistance = distance
-          if (options.webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
+          if (webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
           else updateZoom(target, deltaZoom, context.zoomCount)
         }
         // two touch drag
@@ -2640,14 +2652,14 @@ window.ImageViewer = (function () {
           case 'zoom': {
             const deltaZoom = action === 1 ? -1 : 1
             context.zoomCount += deltaZoom
-            if (options.webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
+            if (webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
             else updateZoom(target, deltaZoom, context.zoomCount)
             break
           }
           case 'rotate': {
             const deltaRotate = action === 3 ? 1 : -1
             context.rotateCount += context.mirror ? -deltaRotate : deltaRotate
-            if (options.webtoonMode) updateWebtoonRotate(container, target, context.rotateCount)
+            if (webtoonMode) updateWebtoonRotate(container, target, context.rotateCount)
             else updateRotate(target, deltaRotate, context.rotateCount)
             break
           }
@@ -2659,8 +2671,8 @@ window.ImageViewer = (function () {
           case 'restore': {
             const [scaleX, scaleY, rotate, ,] = getTransform(target)
             context.mirror = scaleX < 0
-            context.zoomCount = Math.round(Math.log(scaleY) / Math.log(options.zoomRatio))
-            context.rotateCount = rotate / options.rotateDeg
+            context.zoomCount = Math.round(Math.log(scaleY) / Math.log(zoomRatio))
+            context.rotateCount = rotate / rotateDeg
             break
           }
           default:
@@ -2669,8 +2681,8 @@ window.ImageViewer = (function () {
       })
     }
 
-    const container = options.webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('#iv-image-list')
-    const getTarget = options.webtoonMode ? () => shadowRoot.querySelector('#iv-list-wrapper') : () => shadowRoot.querySelector('#iv-image-list li.current img')
+    const container = webtoonMode ? shadowRoot.querySelector('#iv-webtoon') : shadowRoot.querySelector('#iv-image-list')
+    const getTarget = webtoonMode ? () => shadowRoot.querySelector('#iv-list-wrapper') : () => shadowRoot.querySelector('#iv-image-list li.current img')
     addTransformHandler(container, getTarget)
   }
 
@@ -3005,10 +3017,11 @@ window.ImageViewer = (function () {
     setTimeout(removeFailedImg, 3000)
 
     // update viewer when base image complete
+    const imageTabMode = !options.closeButton
     const action = () => {
       target.style.transition = ''
       // prevent image loading flash
-      if (!options.closeButton) {
+      if (imageTabMode) {
         const viewer = shadowRoot.querySelector('#image-viewer')
         viewer.style.removeProperty('opacity')
       }
@@ -3022,9 +3035,12 @@ window.ImageViewer = (function () {
     else baseImg.addEventListener('load', action, {once: true})
   }
 
-  function fitImage(options, reset = true) {
-    const reposition = options.webtoonMode && !reset ? scheduleWebtoonReposition : () => {}
-    const fitFunc = fitFuncDict[options.fitMode] || fitFuncDict.both
+  function fitImage(reset = true) {
+    const webtoonMode = shadowRoot.querySelector('#iv-webtoon') !== null
+    const reposition = webtoonMode && !reset ? scheduleWebtoonReposition : () => {}
+    const fitMode = shadowRoot.querySelector('#image-viewer').dataset.fitMode
+    const fitFunc = fitFuncDict[fitMode] || fitFuncDict.both
+
     const action = img => {
       reposition()
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
@@ -3040,7 +3056,7 @@ window.ImageViewer = (function () {
     }
     if (reset) {
       const event = new CustomEvent('reset-transform', {bubbles: true})
-      if (options.webtoonMode) {
+      if (webtoonMode) {
         shadowRoot.querySelector('#iv-list-wrapper').dispatchEvent(event)
         return
       }
@@ -3176,7 +3192,7 @@ window.ImageViewer = (function () {
       updateImageList(imageDataList, options)
     }
     initImageList(options)
-    fitImage(options, false)
+    fitImage(false)
     restoreIndex(options)
   }
 
