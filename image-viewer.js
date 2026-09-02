@@ -1192,7 +1192,10 @@ window.ImageViewer = (function () {
         },
         true
       )
-      window.addEventListener('resize', () => resizeHandlerList.forEach(func => func()))
+      window.addEventListener('resize', () => {
+        if (!document.body.classList.contains('iv-attached')) return
+        resizeHandlerList.forEach(func => func())
+      })
     }
     function initHotkeyMapping(options) {
       hotkeyHandlerList.length = COMMAND_ENUM.SEARCH_CUSTOM_BASE
@@ -1229,15 +1232,29 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.SEARCH_ALL, [options.searchHotkey[4]])
       options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
     }
-    function addViewportResizeEvent() {
+    function addViewportResizeEvent(options) {
       const viewer = shadowRoot.querySelector('#image-viewer')
       const viewport = window.visualViewport
-      const action = () => {
-        viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
-        viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
-        viewer.style.setProperty('--vv-width', `${viewport.width}px`)
-        viewer.style.setProperty('--vv-height', `${viewport.height}px`)
-      }
+      const action = !options.webtoonMode
+        ? () => {
+            viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
+            viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
+            viewer.style.setProperty('--vv-width', `${viewport.width}px`)
+            viewer.style.setProperty('--vv-height', `${viewport.height}px`)
+            fitFuncDict.init(viewport.width, viewport.height)
+            fitImage(options)
+          }
+        : () => {
+            // overlay existing scrollbar
+            const [base, vertical, horizontal] = getScrollbarSize()
+            const fullWidth = viewport.width + vertical
+            const fullHeight = viewport.height + horizontal
+            viewer.style.setProperty('--scrollbar-size', `${base}px`)
+            viewer.style.setProperty('--vv-width', `${fullWidth}px`)
+            viewer.style.setProperty('--vv-height', `${fullHeight}px`)
+            fitFuncDict.init(fullWidth - base, fullHeight - base)
+            fitImage(options)
+          }
       resizeHandlerList.push(action)
     }
     function addChangeBackgroundHotkey(options) {
@@ -1720,11 +1737,6 @@ window.ImageViewer = (function () {
           fitImage(options)
         })
       }
-      // prevent fitImage trigger by observe() init reset lastTransform
-      let skipped = true
-      setTimeout(() => (skipped = false), 1)
-      const observer = new ResizeObserver(() => skipped || fitFuncDict.init() || fitImage(options))
-      observer.observe(shadowRoot.querySelector('#image-viewer'))
     }
     function addWebtoonInfoEvent() {
       const webtoon = shadowRoot.querySelector('#iv-webtoon')
@@ -2065,7 +2077,7 @@ window.ImageViewer = (function () {
 
     initWindowEventHandler()
     initHotkeyMapping(options)
-    addViewportResizeEvent()
+    addViewportResizeEvent(options)
     addChangeBackgroundHotkey(options)
     addDisableDragHotkey()
     addTransformationHotkey(options)
