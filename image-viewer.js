@@ -759,6 +759,7 @@ window.ImageViewer = (function () {
         height: var(--vv-height);
         background: rgba(0, 0, 0, 0.8) !important;
         touch-action: none;
+        outline: none;
       }
       #image-viewer.disable-drag {
         touch-action: auto;
