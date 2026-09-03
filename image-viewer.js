@@ -63,6 +63,10 @@ window.ImageViewer = (function () {
     SEARCH_CUSTOM_BASE: 29
   }
 
+  const globalStyle = document.createElement('style')
+  globalStyle.textContent = 'html.iv-webtoon-attached, body.iv-webtoon-attached { overflow: hidden !important; }'
+  document.head.appendChild(globalStyle)
+
   //==========utility==========
   function closeImageViewer() {
     const root = shadowRoot?.host
