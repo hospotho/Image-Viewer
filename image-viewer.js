@@ -1812,25 +1812,27 @@ window.ImageViewer = (function () {
       }
 
       let timeout = 0
+      const updateCurrent = () => {
+        timeout = 0
+        if (!document.body.classList.contains('iv-attached')) return
+        const nearestIndex = findNearestIndex()
+        if (nearestIndex === -1) return
+        loadImageChunk(nearestIndex)
+        const currentListItem = imageListNode.querySelector('li.current')
+        const relateListItem = shadowRoot.querySelector(`#iv-image-list li:nth-child(${nearestIndex + 1})`)
+        if (currentListItem !== relateListItem) {
+          currentListItem?.classList.remove('current')
+          relateListItem.classList.add('current')
+          current.textContent = nearestIndex + 1
+          const relateImage = relateListItem.querySelector('img')
+          infoWidth.textContent = relateImage.naturalWidth
+          infoHeight.textContent = relateImage.naturalHeight
+          infoPopup.dispatchEvent(updateEvent)
+        }
+      }
       const action = () => {
-        clearTimeout(timeout)
-        timeout = setTimeout(() => {
-          if (!document.body.classList.contains('iv-attached')) return
-          const nearestIndex = findNearestIndex()
-          if (nearestIndex === -1) return
-          loadImageChunk(nearestIndex)
-          const currentListItem = imageListNode.querySelector('li.current')
-          const relateListItem = shadowRoot.querySelector(`#iv-image-list li:nth-child(${nearestIndex + 1})`)
-          if (currentListItem !== relateListItem) {
-            currentListItem?.classList.remove('current')
-            relateListItem.classList.add('current')
-            current.textContent = nearestIndex + 1
-            const relateImage = relateListItem.querySelector('img')
-            infoWidth.textContent = relateImage.naturalWidth
-            infoHeight.textContent = relateImage.naturalHeight
-            infoPopup.dispatchEvent(updateEvent)
-          }
-        }, 100)
+        if (timeout !== 0) return
+        timeout = setTimeout(updateCurrent, 50)
       }
       webtoon.addEventListener('scroll', action)
       const styleObserver = new MutationObserver(action)
