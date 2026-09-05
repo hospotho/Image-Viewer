@@ -142,6 +142,15 @@ window.ImageViewer = (function () {
     const horizontal = document.documentElement.scrollWidth > document.documentElement.clientWidth && MAX_SIZE >= heightDiff && heightDiff > 0 ? heightDiff : 0
     return [base, vertical, horizontal]
   }
+  function updateWebtoonPadding(wrapper) {
+    const [scaleX, , , ,] = getTransform(wrapper)
+    const scale = Math.abs(scaleX)
+    const viewport = window.visualViewport
+    const viewportWidth = viewport.width
+    const viewportHeight = viewport.height
+    wrapper.style.setProperty('--iv-pad-x', `${viewportWidth / scale}px`)
+    wrapper.style.setProperty('--iv-pad-y', `${viewportHeight / scale}px`)
+  }
 
   function parseHotkey(hotkey) {
     const keyList = hotkey.split(' + ')
@@ -810,27 +819,41 @@ window.ImageViewer = (function () {
       #image-viewer.webtoon #iv-image-list {
         display: flex;
         flex-direction: column;
+        padding-inline: var(--iv-pad-x);
+        padding-block: 0;
         list-style: none;
-        padding-block: calc(100vh / var(--scale, 0.1));
-        padding-inline: calc(100vw / var(--scale, 0.1));
+        width: max-content;
+        height: max-content;
+        min-width: 100%;
       }
       #image-viewer.webtoon #iv-image-list.row {
         flex-direction: row;
+        padding-inline: 0;
+        padding-block: var(--iv-pad-y);
         scale: -1 1;
         transform: rotate(90deg);
+        transform-origin: 0 0;
       }
       #iv-image-list::before {
-        content: "";
         order: -1;
       }
       #iv-image-list::after {
-        content: "";
         order: 999999;
+      }
+      #image-viewer.webtoon #iv-image-list::before,
+      #image-viewer.webtoon #iv-image-list::after {
+        content: "";
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: var(--iv-pad-y);
+        pointer-events: none;
       }
       #image-viewer.webtoon #iv-image-list.row::before,
       #image-viewer.webtoon #iv-image-list.row::after {
-        flex: 0 0 calc(100vmax / var(--scale, 0.1));
+        flex-basis: var(--iv-pad-x);
       }
+
+      /* image item */
       #iv-image-list li {
         position: absolute;
         cursor: move;
@@ -1149,6 +1172,9 @@ window.ImageViewer = (function () {
       viewer.style.setProperty('--scrollbar-size', `${base}px`)
       viewer.style.setProperty('--vv-width', `${fullWidth}px`)
       viewer.style.setProperty('--vv-height', `${fullHeight}px`)
+      // init padding
+      viewer.style.setProperty('--iv-pad-x', `${viewport.width}px`)
+      viewer.style.setProperty('--iv-pad-y', `${viewport.height}px`)
       // use image raw size
       viewer.dataset.fitMode = 'none'
     }
@@ -2461,7 +2487,7 @@ window.ImageViewer = (function () {
 
       // normalize scroll after transform
       const reposition = scheduleWebtoonReposition(true)
-      wrapper.style.setProperty('--scale', `${Math.abs(scaleX)}`)
+      updateWebtoonPadding(wrapper)
       reposition()
     }
     function updateWebtoonZoom(webtoon, wrapper, zoomCount) {
@@ -2674,6 +2700,7 @@ window.ImageViewer = (function () {
         // reset
         target.style.transition = ''
         applyTransform(target, 1, 1, 0, 0, 0)
+        if (webtoonMode) updateWebtoonPadding(target)
         current?.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
       }
       container.addEventListener('dblclick', () => reset(getTarget()))
