@@ -191,12 +191,11 @@ window.ImageViewer = (function () {
         clear()
         return
       }
-      // reset translate
-      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
-      const event = new CustomEvent('reset-translate', {bubbles: true})
-      wrapper.dispatchEvent(event)
-      current.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+      // reset translate + update order + scroll into view
+      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      imageListNode.dispatchEvent(new CustomEvent('update-order'))
       // calculate new translate
+      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
       const [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       const currentRect = current.getBoundingClientRect()
       const newCenterX = currentRect.left + currentRect.width / 2
@@ -1869,9 +1868,7 @@ window.ImageViewer = (function () {
       }
       const reverseOrder = () => {
         const length = imageListNode.children.length
-        const firstOrder = imageListNode.children[0].style.order
-        const reverse = firstOrder && firstOrder !== '0'
-        if (reverse) {
+        if (imageListNode.classList.contains('reverse')) {
           imageListNode.classList.remove('reverse')
           for (let i = 0; i < length; i++) imageListNode.children[i].style.order = i
         } else {
@@ -1883,6 +1880,12 @@ window.ImageViewer = (function () {
       hotkeyHandlerList[COMMAND_ENUM.REVERSE_LIST_ORDER] = () => recalculateWebtoonTransform(reverseOrder)
       imageListNode.addEventListener('flip-direction', () => recalculateWebtoonTransform(flipDirection))
       imageListNode.addEventListener('reverse-order', () => recalculateWebtoonTransform(reverseOrder))
+      imageListNode.addEventListener('update-order', () => {
+        if (!imageListNode.classList.contains('reverse')) return
+        // flip order state before reverseOrder to cancel side effect
+        imageListNode.classList.remove('reverse')
+        recalculateWebtoonTransform(reverseOrder)
+      })
     }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
@@ -2896,9 +2899,14 @@ window.ImageViewer = (function () {
       buildImageList(newList, options)
     }
 
+    // prepare webtoon order update and reposition
+    const viewer = shadowRoot.querySelector('#image-viewer')
+    const reposition = viewer.classList.contains('webtoon') ? scheduleWebtoonReposition(true) : () => {}
+
     // impossible to update when shrink
     if (imageDataList.length > newList.length) {
       rebuildImageList()
+      reposition()
       console.log('Image list has been rebuilt')
       return
     }
@@ -2910,6 +2918,7 @@ window.ImageViewer = (function () {
     const invalidImageList = imageInserted && shadowRoot.querySelectorAll('img').length > newList.length
     if (invalidImageList) {
       rebuildImageList()
+      reposition()
       console.log('Image list has been rebuilt')
       return
     }
@@ -2924,6 +2933,7 @@ window.ImageViewer = (function () {
         shadowRoot.querySelector('#iv-counter-total').textContent = newList.length
       }
     }
+    reposition()
     lastUpdateTime = Date.now()
     imageDataList = Array.from(newList)
     console.log('Image viewer updated')
