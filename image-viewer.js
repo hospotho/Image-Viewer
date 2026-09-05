@@ -2657,6 +2657,7 @@ window.ImageViewer = (function () {
         if (webtoonMode && e.pointerType === 'touch' && touchPointList.length < 2) return
         point[3] = e.clientX
         point[4] = e.clientY
+        const [scaleX, scaleY, rotate, ,] = getTransform(target)
         // reset transition
         clearTimeout(context.finalDragTimeout)
         context.finalDragTimeout = setTimeout(() => (target.style.transition = ''), 30)
@@ -2668,6 +2669,7 @@ window.ImageViewer = (function () {
           context.lastPos[0] = e.clientX
           context.lastPos[1] = e.clientY
           updateDisplacement(target, deltaX, deltaY)
+          if (webtoonMode) applyWebtoonTransform(container, target, scaleX, scaleY, rotate)
           return
         }
         // two touch pinch zoom
@@ -2688,6 +2690,7 @@ window.ImageViewer = (function () {
         context.lastPos[0] = centerX
         context.lastPos[1] = centerY
         updateDisplacement(target, deltaX, deltaY)
+        if (webtoonMode) applyWebtoonTransform(container, target, scaleX, scaleY, rotate)
       })
       const stopDragging = e => {
         const target = getTarget()
