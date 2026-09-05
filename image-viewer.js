@@ -164,15 +164,29 @@ window.ImageViewer = (function () {
   }
 
   function applyTransform(img, scaleX, scaleY, rotate, moveX, moveY) {
-    img.style.scale = `${scaleX} ${scaleY}`
-    img.style.rotate = `${rotate}deg`
-    img.style.translate = `${moveX}px ${moveY}px`
+    const row = img.id === 'iv-list-wrapper' && img.firstElementChild.classList.contains('row')
+    if (!row) {
+      img.style.scale = `${scaleX} ${scaleY}`
+      img.style.rotate = `${rotate}deg`
+      img.style.translate = `${moveX}px ${moveY}px`
+    } else {
+      img.style.scale = `${scaleY} ${scaleX}`
+      img.style.rotate = `${-rotate}deg`
+      img.style.translate = `${moveY}px ${moveX}px`
+    }
   }
   function getTransform(img) {
     const scale = img.style.scale.split(' ')
     const rotate = img.style.rotate.replace('deg', '')
     const translate = img.style.translate.replaceAll('px', '').split(' ')
-    return [Number(scale[0]) || 1, Number(scale[1]) || Math.abs(Number(scale[0])) || 1, Number(rotate) || 0, Number(translate[0]) || 0, Number(translate[1]) || 0]
+    const scaleX = Number(scale[0]) || 1
+    const scaleY = Number(scale[1]) || Math.abs(Number(scale[0])) || 1
+    const rotateDeg = Number(rotate) || 0
+    const moveX = Number(translate[0]) || 0
+    const moveY = Number(translate[1]) || 0
+
+    const row = img.id === 'iv-list-wrapper' && img.firstElementChild.classList.contains('row')
+    return row ? [scaleY, scaleX, -rotateDeg, moveY, moveX] : [scaleX, scaleY, rotateDeg, moveX, moveY]
   }
   const scheduleWebtoonReposition = (function () {
     let timeout = 0
@@ -774,6 +788,13 @@ window.ImageViewer = (function () {
         overscroll-behavior: contain;
         touch-action: pan-x pan-y;
       }
+      #iv-webtoon:has(#iv-image-list.row) {
+        width: var(--vv-height);
+        height: var(--vv-width);
+        scale: -1 1;
+        rotate: -90deg;
+        transform-origin: 0 0;
+      }
       #iv-list-wrapper {
         width: 100%;
         transform-origin: 0 0;
@@ -795,6 +816,8 @@ window.ImageViewer = (function () {
       }
       #image-viewer.webtoon #iv-image-list.row {
         flex-direction: row;
+        scale: -1 1;
+        transform: rotate(90deg);
       }
       #iv-image-list::before {
         content: "";
@@ -2419,8 +2442,9 @@ window.ImageViewer = (function () {
       return [offsetX, offsetY]
     }
     function applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate) {
-      const viewX = webtoon.clientWidth / 2
-      const viewY = webtoon.clientHeight / 2
+      const row = wrapper.firstElementChild.classList.contains('row')
+      const viewX = (row ? webtoon.clientHeight : webtoon.clientWidth) / 2
+      const viewY = (row ? webtoon.clientWidth : webtoon.clientHeight) / 2
       const [offsetX, offsetY] = getSceneOffset(webtoon)
       const [contentX, contentY] = calculateViewpointProjection(wrapper, viewX, viewY, offsetX, offsetY)
 
@@ -2434,16 +2458,17 @@ window.ImageViewer = (function () {
       const finalX = viewX - offsetX - rotatedX
       const finalY = viewY - offsetY - rotatedY
       applyTransform(wrapper, scaleX, scaleY, rotate, finalX, finalY)
+
+      // normalize scroll after transform
+      const reposition = scheduleWebtoonReposition(true)
+      wrapper.style.setProperty('--scale', `${Math.abs(scaleX)}`)
+      reposition()
     }
     function updateWebtoonZoom(webtoon, wrapper, zoomCount) {
       let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       scaleX = Math.sign(scaleX) * zoomRatio ** zoomCount
       scaleY = Math.sign(scaleY) * zoomRatio ** zoomCount
       applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate)
-      // adjust padding after zoom
-      const reposition = scheduleWebtoonReposition(true)
-      wrapper.style.setProperty('--scale', `${scaleX}`)
-      reposition()
     }
     function updateWebtoonRotate(webtoon, wrapper, rotateCount) {
       let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
