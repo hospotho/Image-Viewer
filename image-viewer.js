@@ -197,6 +197,77 @@ window.ImageViewer = (function () {
     const row = img.id === 'iv-list-wrapper' && img.firstElementChild.classList.contains('row')
     return row ? [scaleY, scaleX, -rotateDeg, moveY, moveX] : [scaleX, scaleY, rotateDeg, moveX, moveY]
   }
+
+  function calculateViewpointProjection(wrapper, viewX, viewY, offsetX, offsetY) {
+    const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
+    const localX = viewX - offsetX - moveX
+    const localY = viewY - offsetY - moveY
+    const angle = -(rotate / 180) * Math.PI
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
+    const contentX = (localX * cos - localY * sin) / scaleX
+    const contentY = (localX * sin + localY * cos) / scaleY
+    return [contentX, contentY]
+  }
+  function getSceneOffset(webtoon) {
+    const viewportRect = webtoon.getBoundingClientRect()
+    const sceneRect = shadowRoot.querySelector('#iv-scene').getBoundingClientRect()
+    const offsetX = sceneRect.left - viewportRect.left
+    const offsetY = sceneRect.top - viewportRect.top
+    return [offsetX, offsetY]
+  }
+  function applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate) {
+    const row = wrapper.firstElementChild.classList.contains('row')
+    const viewX = (row ? webtoon.clientHeight : webtoon.clientWidth) / 2
+    const viewY = (row ? webtoon.clientWidth : webtoon.clientHeight) / 2
+    const [oldOffsetX, oldOffsetY] = getSceneOffset(webtoon)
+    const [oldContentX, oldContentY] = calculateViewpointProjection(wrapper, viewX, viewY, oldOffsetX, oldOffsetY)
+    const [oldScaleX, , , ,] = getTransform(wrapper)
+
+    // update padding
+    const viewport = window.visualViewport
+    const paddingX = viewport.width / Math.abs(scaleX)
+    const paddingY = viewport.height / Math.abs(scaleX)
+    const oldPaddingX = viewport.width / Math.abs(oldScaleX)
+    const oldPaddingY = viewport.height / Math.abs(oldScaleX)
+    const paddingChangeX = paddingX - oldPaddingX
+    const paddingChangeY = paddingY - oldPaddingY
+    wrapper.style.setProperty('--iv-pad-x', `${paddingX}px`)
+    wrapper.style.setProperty('--iv-pad-y', `${paddingY}px`)
+
+    // calculate transformed bounds
+    const contentX = oldContentX + paddingChangeX
+    const contentY = oldContentY + paddingChangeY
+    const contentWidth = row ? wrapper.scrollHeight : wrapper.scrollWidth
+    const contentHeight = row ? wrapper.scrollWidth : wrapper.scrollHeight
+    const angle = (rotate / 180) * Math.PI
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
+    const widthX = contentWidth * scaleX * cos
+    const widthY = contentWidth * scaleX * sin
+    const heightX = -contentHeight * scaleY * sin
+    const heightY = contentHeight * scaleY * cos
+    const minX = Math.min(0, widthX, heightX, widthX + heightX)
+    const minY = Math.min(0, widthY, heightY, widthY + heightY)
+    const moveX = -minX
+    const moveY = -minY
+
+    // calculate scroll for the same viewpoint
+    const scaledX = contentX * scaleX
+    const scaledY = contentY * scaleY
+    const rotatedX = scaledX * cos - scaledY * sin
+    const rotatedY = scaledX * sin + scaledY * cos
+    const [offsetX, offsetY] = getSceneOffset(webtoon)
+    const scrollX = row ? webtoon.scrollTop : webtoon.scrollLeft
+    const scrollY = row ? webtoon.scrollLeft : webtoon.scrollTop
+    const finalScrollX = scrollX + offsetX + moveX + rotatedX - viewX
+    const finalScrollY = scrollY + offsetY + moveY + rotatedY - viewY
+
+    // apply final transform and scroll
+    applyTransform(wrapper, scaleX, scaleY, rotate, moveX, moveY)
+    if (row) webtoon.scrollTo(finalScrollY, finalScrollX)
+    else webtoon.scrollTo(finalScrollX, finalScrollY)
+  }
   const scheduleWebtoonReposition = (function () {
     let timeout = 0
     let current = null
@@ -214,25 +285,32 @@ window.ImageViewer = (function () {
         clear()
         return
       }
-      // reset translate + update order + scroll into view
+      // update order
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
-      imageListNode.dispatchEvent(new CustomEvent('update-order'))
+      if (imageListNode.classList.contains('reverse')) {
+        for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
+      } else {
+        for (let i = 0; i < length; i++) imageListNode.children[i].style.order = i
+      }
       // calculate new translate
       const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
-      const [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
+      const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
       const currentRect = current.getBoundingClientRect()
       const newCenterX = currentRect.left + currentRect.width / 2
       const newCenterY = currentRect.top + currentRect.height / 2
       const adjustX = centerX - newCenterX
       const adjustY = centerY - newCenterY
-      applyTransform(wrapper, scaleX, scaleY, rotate, adjustX, adjustY)
+      applyTransform(wrapper, scaleX, scaleY, rotate, moveX + adjustX, moveY + adjustY)
       clear()
+      // normalize scroll and translate
+      const webtoon = shadowRoot.querySelector('#iv-webtoon')
+      applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate)
     }
-    return (immediate = false, targetCenterX = 0, targetCenterY = 0) => {
+    return (immediate = false, targetCenterX = Number.NEGATIVE_INFINITY, targetCenterY = Number.NEGATIVE_INFINITY) => {
       if (!immediate && timeout !== 0) return
       const currentImg = shadowRoot.querySelector('#iv-webtoon #iv-image-list li.current img')
       current = currentImg
-      if (targetCenterX) {
+      if (targetCenterX !== Number.NEGATIVE_INFINITY) {
         centerX = targetCenterX
         centerY = targetCenterY
       } else {
@@ -1891,25 +1969,20 @@ window.ImageViewer = (function () {
     }
     function addWebtoonOrientationHotkey() {
       const viewer = shadowRoot.querySelector('#image-viewer')
-      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
       const scrollbarSize = Number(viewer.style.getPropertyValue('--scrollbar-size').slice(0, -2))
 
       async function recalculateWebtoonTransform(action) {
-        // reset current translate then apply action
-        const current = shadowRoot.querySelector('li.current img')
-        const event = new CustomEvent('reset-translate', {bubbles: true})
-        wrapper.dispatchEvent(event)
-        action()
-        // restore scroll and reposition to center
-        current.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
-        const [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
-        const {left, top, width, height} = current.getBoundingClientRect()
+        // prepare reposition image to center
         const viewerWidth = viewer.clientWidth - scrollbarSize
         const viewerHeight = viewer.clientHeight - scrollbarSize
-        const moveX = viewerWidth / 2 - left - width / 2
-        const moveY = viewerHeight / 2 - top - height / 2
-        applyTransform(wrapper, scaleX, scaleY, rotate, moveX, moveY)
+        const centerX = viewerWidth / 2
+        const centerY = viewerHeight / 2
+        const reposition = scheduleWebtoonReposition(true, centerX, centerY)
+        // apply action
+        action()
+        // normalize scroll and translate
+        reposition()
       }
       const flipDirection = () => {
         if (imageListNode.classList.contains('row')) imageListNode.classList.remove('row')
@@ -1929,12 +2002,6 @@ window.ImageViewer = (function () {
       hotkeyHandlerList[COMMAND_ENUM.REVERSE_LIST_ORDER] = () => recalculateWebtoonTransform(reverseOrder)
       imageListNode.addEventListener('flip-direction', () => recalculateWebtoonTransform(flipDirection))
       imageListNode.addEventListener('reverse-order', () => recalculateWebtoonTransform(reverseOrder))
-      imageListNode.addEventListener('update-order', () => {
-        if (!imageListNode.classList.contains('reverse')) return
-        // flip order state before reverseOrder to cancel side effect
-        imageListNode.classList.remove('reverse')
-        recalculateWebtoonTransform(reverseOrder)
-      })
     }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
@@ -2448,48 +2515,7 @@ window.ImageViewer = (function () {
     const zoomRatio = options.zoomRatio
     const rotateDeg = options.rotateDeg
 
-    // webtoon transformation matrix
-    function calculateViewpointProjection(wrapper, viewX, viewY, offsetX, offsetY) {
-      const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(wrapper)
-      const localX = viewX - offsetX - moveX
-      const localY = viewY - offsetY - moveY
-      const angle = -(rotate / 180) * Math.PI
-      const cos = Math.cos(angle)
-      const sin = Math.sin(angle)
-      const contentX = (localX * cos - localY * sin) / scaleX
-      const contentY = (localX * sin + localY * cos) / scaleY
-      return [contentX, contentY]
-    }
-    function getSceneOffset(webtoon) {
-      const viewportRect = webtoon.getBoundingClientRect()
-      const sceneRect = shadowRoot.querySelector('#iv-scene').getBoundingClientRect()
-      const offsetX = sceneRect.left - viewportRect.left
-      const offsetY = sceneRect.top - viewportRect.top
-      return [offsetX, offsetY]
-    }
-    function applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate) {
-      const row = wrapper.firstElementChild.classList.contains('row')
-      const viewX = (row ? webtoon.clientHeight : webtoon.clientWidth) / 2
-      const viewY = (row ? webtoon.clientWidth : webtoon.clientHeight) / 2
-      const [offsetX, offsetY] = getSceneOffset(webtoon)
-      const [contentX, contentY] = calculateViewpointProjection(wrapper, viewX, viewY, offsetX, offsetY)
-
-      const angle = (rotate / 180) * Math.PI
-      const cos = Math.cos(angle)
-      const sin = Math.sin(angle)
-      const scaledX = contentX * scaleX
-      const scaledY = contentY * scaleY
-      const rotatedX = scaledX * cos - scaledY * sin
-      const rotatedY = scaledX * sin + scaledY * cos
-      const finalX = viewX - offsetX - rotatedX
-      const finalY = viewY - offsetY - rotatedY
-      applyTransform(wrapper, scaleX, scaleY, rotate, finalX, finalY)
-
-      // normalize scroll after transform
-      const reposition = scheduleWebtoonReposition(true)
-      updateWebtoonPadding(wrapper)
-      reposition()
-    }
+    // webtoon transform function
     function updateWebtoonZoom(webtoon, wrapper, zoomCount) {
       let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       scaleX = Math.sign(scaleX) * zoomRatio ** zoomCount
