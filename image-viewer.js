@@ -144,12 +144,11 @@ window.ImageViewer = (function () {
   }
   function updateWebtoonPadding(wrapper) {
     const [scaleX, , , ,] = getTransform(wrapper)
-    const scale = Math.abs(scaleX)
     const viewport = window.visualViewport
     const viewportWidth = viewport.width
     const viewportHeight = viewport.height
-    wrapper.style.setProperty('--iv-pad-x', `${viewportWidth / scale}px`)
-    wrapper.style.setProperty('--iv-pad-y', `${viewportHeight / scale}px`)
+    wrapper.style.setProperty('--iv-pad-x', `${viewportWidth / Math.abs(scaleX)}px`)
+    wrapper.style.setProperty('--iv-pad-y', `${viewportHeight / Math.abs(scaleX)}px`)
   }
 
   function parseHotkey(hotkey) {
@@ -222,27 +221,23 @@ window.ImageViewer = (function () {
     const viewY = (row ? webtoon.clientWidth : webtoon.clientHeight) / 2
     const [oldOffsetX, oldOffsetY] = getSceneOffset(webtoon)
     const [oldContentX, oldContentY] = calculateViewpointProjection(wrapper, viewX, viewY, oldOffsetX, oldOffsetY)
-    const [oldScaleX, , , ,] = getTransform(wrapper)
 
     // update padding
+    const [oldScaleX, , , ,] = getTransform(wrapper)
     const viewport = window.visualViewport
     const paddingX = viewport.width / Math.abs(scaleX)
     const paddingY = viewport.height / Math.abs(scaleX)
     const oldPaddingX = viewport.width / Math.abs(oldScaleX)
     const oldPaddingY = viewport.height / Math.abs(oldScaleX)
-    const paddingChangeX = paddingX - oldPaddingX
-    const paddingChangeY = paddingY - oldPaddingY
     wrapper.style.setProperty('--iv-pad-x', `${paddingX}px`)
     wrapper.style.setProperty('--iv-pad-y', `${paddingY}px`)
 
     // calculate transformed bounds
-    const contentX = oldContentX + paddingChangeX
-    const contentY = oldContentY + paddingChangeY
-    const contentWidth = row ? wrapper.scrollHeight : wrapper.scrollWidth
-    const contentHeight = row ? wrapper.scrollWidth : wrapper.scrollHeight
     const angle = (rotate / 180) * Math.PI
     const cos = Math.cos(angle)
     const sin = Math.sin(angle)
+    const contentWidth = row ? wrapper.scrollHeight : wrapper.scrollWidth
+    const contentHeight = row ? wrapper.scrollWidth : wrapper.scrollHeight
     const widthX = contentWidth * scaleX * cos
     const widthY = contentWidth * scaleX * sin
     const heightX = -contentHeight * scaleY * sin
@@ -253,6 +248,10 @@ window.ImageViewer = (function () {
     const moveY = -minY
 
     // calculate scroll for the same viewpoint
+    const paddingChangeX = paddingX - oldPaddingX
+    const paddingChangeY = paddingY - oldPaddingY
+    const contentX = oldContentX + paddingChangeX
+    const contentY = oldContentY + paddingChangeY
     const scaledX = contentX * scaleX
     const scaledY = contentY * scaleY
     const rotatedX = scaledX * cos - scaledY * sin
