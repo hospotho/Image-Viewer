@@ -131,16 +131,9 @@ window.ImageViewer = (function () {
     temp.style.contain = 'strict'
     document.body.appendChild(temp)
 
-    const base = temp.offsetWidth - temp.clientWidth
+    const size = temp.offsetWidth - temp.clientWidth
     temp.remove()
-
-    const widthDiff = window.innerWidth - document.documentElement.clientWidth
-    const heightDiff = window.innerHeight - document.documentElement.clientHeight
-
-    const MAX_SIZE = 25
-    const vertical = document.documentElement.scrollHeight > document.documentElement.clientHeight && MAX_SIZE >= widthDiff && widthDiff > 0 ? widthDiff : 0
-    const horizontal = document.documentElement.scrollWidth > document.documentElement.clientWidth && MAX_SIZE >= heightDiff && heightDiff > 0 ? heightDiff : 0
-    return [base, vertical, horizontal]
+    return size
   }
   function updateWebtoonPadding(wrapper) {
     const [scaleX, , , ,] = getTransform(wrapper)
@@ -1246,16 +1239,16 @@ window.ImageViewer = (function () {
       document.documentElement.classList.add('iv-webtoon-attached')
       document.body.classList.add('iv-webtoon-attached')
       // overlay existing scrollbar
-      const [base, vertical, horizontal] = getScrollbarSize()
-      const fullWidth = viewport.width + vertical
-      const fullHeight = viewport.height + horizontal
-      fitFuncDict.init(fullWidth - base, fullHeight - base)
-      viewer.style.setProperty('--scrollbar-size', `${base}px`)
+      const size = getScrollbarSize()
+      const fullWidth = viewport.width
+      const fullHeight = viewport.height
+      fitFuncDict.init(fullWidth - size, fullHeight - size)
+      viewer.style.setProperty('--scrollbar-size', `${size}px`)
       viewer.style.setProperty('--vv-width', `${fullWidth}px`)
       viewer.style.setProperty('--vv-height', `${fullHeight}px`)
       // init padding
-      viewer.style.setProperty('--iv-pad-x', `${viewport.width}px`)
-      viewer.style.setProperty('--iv-pad-y', `${viewport.height}px`)
+      viewer.style.setProperty('--iv-pad-x', `${fullWidth}px`)
+      viewer.style.setProperty('--iv-pad-y', `${fullHeight}px`)
       // use image raw size
       viewer.dataset.fitMode = 'none'
     }
@@ -1373,26 +1366,28 @@ window.ImageViewer = (function () {
       options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
     }
     function addViewportResizeEvent(options) {
-      const viewer = shadowRoot.querySelector('#image-viewer')
       const viewport = window.visualViewport
+      const viewer = shadowRoot.querySelector('#image-viewer')
       const action = !options.webtoonMode
         ? () => {
+            fitFuncDict.init(viewport.width, viewport.height)
             viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
             viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
             viewer.style.setProperty('--vv-width', `${viewport.width}px`)
             viewer.style.setProperty('--vv-height', `${viewport.height}px`)
-            fitFuncDict.init(viewport.width, viewport.height)
             fitImage()
           }
         : () => {
             // overlay existing scrollbar
-            const [base, vertical, horizontal] = getScrollbarSize()
-            const fullWidth = viewport.width + vertical
-            const fullHeight = viewport.height + horizontal
-            viewer.style.setProperty('--scrollbar-size', `${base}px`)
+            const size = getScrollbarSize()
+            const fullWidth = viewport.width
+            const fullHeight = viewport.height
+            fitFuncDict.init(fullWidth - size, fullHeight - size)
+            viewer.style.setProperty('--scrollbar-size', `${size}px`)
+            viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
+            viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
             viewer.style.setProperty('--vv-width', `${fullWidth}px`)
             viewer.style.setProperty('--vv-height', `${fullHeight}px`)
-            fitFuncDict.init(fullWidth - base, fullHeight - base)
             fitImage()
           }
       resizeHandlerList.push(action)
