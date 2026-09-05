@@ -494,7 +494,9 @@
       const mode = modalButton.dataset.mode
       if (mode === 'copy') {
         navigator.clipboard.writeText(optionsInput.value)
-      } else if (mode === 'import') {
+        return
+      }
+      if (mode === 'import') {
         let importData = null
         try {
           importData = JSON.parse(optionsInput.value)
