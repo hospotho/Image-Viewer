@@ -135,14 +135,6 @@ window.ImageViewer = (function () {
     temp.remove()
     return size
   }
-  function updateWebtoonPadding(wrapper) {
-    const [scaleX, , , ,] = getTransform(wrapper)
-    const viewport = window.visualViewport
-    const viewportWidth = viewport.width
-    const viewportHeight = viewport.height
-    wrapper.style.setProperty('--iv-pad-x', `${viewportWidth / Math.abs(scaleX)}px`)
-    wrapper.style.setProperty('--iv-pad-y', `${viewportHeight / Math.abs(scaleX)}px`)
-  }
 
   function parseHotkey(hotkey) {
     const keyList = hotkey.split(' + ')
@@ -218,12 +210,12 @@ window.ImageViewer = (function () {
     // update padding
     const [oldScaleX, , , ,] = getTransform(wrapper)
     const viewport = window.visualViewport
-    const paddingX = viewport.width / Math.abs(scaleX)
-    const paddingY = viewport.height / Math.abs(scaleX)
-    const oldPaddingX = viewport.width / Math.abs(oldScaleX)
-    const oldPaddingY = viewport.height / Math.abs(oldScaleX)
-    wrapper.style.setProperty('--iv-pad-x', `${paddingX}px`)
-    wrapper.style.setProperty('--iv-pad-y', `${paddingY}px`)
+    const scrollbarSize = webtoon.offsetWidth - webtoon.clientWidth
+    const paddingX = (viewport.width - scrollbarSize) / Math.abs(scaleX)
+    const paddingY = (viewport.height - scrollbarSize) / Math.abs(scaleX)
+    const oldPaddingX = (viewport.width - scrollbarSize) / Math.abs(oldScaleX)
+    const oldPaddingY = (viewport.height - scrollbarSize) / Math.abs(oldScaleX)
+    wrapper.style.setProperty('--scale', `${Math.abs(scaleX)}`)
 
     // calculate transformed bounds
     const angle = (rotate / 180) * Math.PI
@@ -845,11 +837,11 @@ window.ImageViewer = (function () {
       #image-viewer {
         position: fixed;
         z-index: 2147483647;
-        top: var(--vv-top);
-        left: var(--vv-left);
-        width: var(--vv-width);
-        height: var(--vv-height);
-        background: rgba(0, 0, 0, 0.8) !important;
+        top: var(--top);
+        left: var(--left);
+        width: var(--width);
+        height: var(--height);
+        background: rgba(0, 0, 0, 0.8);
         touch-action: none;
         outline: none;
       }
@@ -858,18 +850,18 @@ window.ImageViewer = (function () {
       }
       #iv-webtoon {
         position: fixed;
-        top: var(--vv-top);
-        left: var(--vv-left);
-        width: var(--vv-width);
-        height: var(--vv-height);
+        top: var(--top);
+        left: var(--left);
+        width: var(--width);
+        height: var(--height);
         overflow-x: scroll;
         overflow-y: scroll;
         overscroll-behavior: contain;
         touch-action: pan-x pan-y;
       }
       #iv-webtoon:has(#iv-image-list.row) {
-        width: var(--vv-height);
-        height: var(--vv-width);
+        width: var(--height);
+        height: var(--width);
         scale: -1 1;
         rotate: -90deg;
         transform-origin: 0 0;
@@ -893,7 +885,7 @@ window.ImageViewer = (function () {
       #image-viewer.webtoon #iv-image-list {
         display: flex;
         flex-direction: column;
-        padding-inline: calc(var(--iv-pad-x) - var(--scrollbar-size));
+        padding-inline: calc((var(--width) - var(--scrollbar-size)) / var(--scale));
         padding-block: 0;
         list-style: none;
         width: max-content;
@@ -903,7 +895,7 @@ window.ImageViewer = (function () {
       #image-viewer.webtoon #iv-image-list.row {
         flex-direction: row;
         padding-inline: 0;
-        padding-block: calc(var(--iv-pad-y) - var(--scrollbar-size));
+        padding-block: calc((var(--height) - var(--scrollbar-size)) / var(--scale));
         scale: -1 1;
         transform: rotate(90deg);
         transform-origin: 0 0;
@@ -919,12 +911,12 @@ window.ImageViewer = (function () {
         content: "";
         flex-grow: 0;
         flex-shrink: 0;
-        flex-basis: calc(var(--iv-pad-y) - var(--scrollbar-size));
+        flex-basis: calc((var(--height) - var(--scrollbar-size)) / var(--scale));
         pointer-events: none;
       }
       #image-viewer.webtoon #iv-image-list.row::before,
       #image-viewer.webtoon #iv-image-list.row::after {
-        flex-basis: calc(var(--iv-pad-x) - var(--scrollbar-size));
+        flex-basis: calc((var(--width) - var(--scrollbar-size)) / var(--scale));
       }
 
       /* image item */
@@ -968,15 +960,15 @@ window.ImageViewer = (function () {
       /* control panel */
       #iv-control {
         position: fixed;
-        top: calc(var(--vv-top) + var(--vv-height) - 60px);
-        left: var(--vv-left);
-        width: var(--vv-width);
+        top: calc(var(--top) + var(--height) - 60px);
+        left: var(--left);
+        width: var(--width);
         height: 60px;
         background: rgba(0, 0, 0, 0);
       }
       #image-viewer.webtoon #iv-control {
-        top: calc(var(--vv-top) + var(--vv-height) - var(--scrollbar-size) - 60px);
-        width: calc(var(--vv-width) - var(--scrollbar-size));
+        top: calc(var(--top) + var(--height) - var(--scrollbar-size) - 60px);
+        width: calc(var(--width) - var(--scrollbar-size));
       }
       #iv-control * {
         opacity: 0;
@@ -1103,7 +1095,7 @@ window.ImageViewer = (function () {
         cursor: pointer;
         display: none;
         position: fixed;
-        top: var(--vv-top);
+        top: var(--top);
         max-width: 70%;
         opacity: 0.9;
         background: #fff;
@@ -1226,10 +1218,10 @@ window.ImageViewer = (function () {
     const viewer = document.createElement('div')
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
-    viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
-    viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
-    viewer.style.setProperty('--vv-width', `${viewport.width}px`)
-    viewer.style.setProperty('--vv-height', `${viewport.height}px`)
+    viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
+    viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
+    viewer.style.setProperty('--width', `${viewport.width}px`)
+    viewer.style.setProperty('--height', `${viewport.height}px`)
     viewer.dataset.fitMode = options.fitMode
 
     // apply mode specific settings
@@ -1239,27 +1231,24 @@ window.ImageViewer = (function () {
       document.documentElement.classList.add('iv-webtoon-attached')
       document.body.classList.add('iv-webtoon-attached')
       // overlay existing scrollbar
-      const size = getScrollbarSize()
-      const fullWidth = viewport.width
-      const fullHeight = viewport.height
-      fitFuncDict.init(fullWidth - size, fullHeight - size)
-      viewer.style.setProperty('--scrollbar-size', `${size}px`)
-      viewer.style.setProperty('--vv-width', `${fullWidth}px`)
-      viewer.style.setProperty('--vv-height', `${fullHeight}px`)
+      const scrollbarSize = getScrollbarSize()
+      fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
+      viewer.style.setProperty('--scrollbar-size', `${scrollbarSize}px`)
+      viewer.style.setProperty('--width', `${viewport.width}px`)
+      viewer.style.setProperty('--height', `${viewport.height}px`)
       // init padding
-      viewer.style.setProperty('--iv-pad-x', `${fullWidth}px`)
-      viewer.style.setProperty('--iv-pad-y', `${fullHeight}px`)
+      viewer.style.setProperty('--scale', '1')
       // use image raw size
       viewer.dataset.fitMode = 'none'
     }
     if (!options.closeButton) {
       // prevent image loading flash
-      viewer.style.setProperty('background', 'rgb(0, 0, 0)', 'important')
-      viewer.style.setProperty('opacity', '0')
+      viewer.style.background = 'rgb(0, 0, 0)'
+      viewer.style.opacity = '0'
     }
     if (options.canvasMode) {
       // default white background for canvas
-      viewer.style.setProperty('background', 'rgb(255, 255, 255)', 'important')
+      viewer.style.background = 'rgb(255, 255, 255)'
     }
 
     // init frame
@@ -1371,38 +1360,34 @@ window.ImageViewer = (function () {
       const action = !options.webtoonMode
         ? () => {
             fitFuncDict.init(viewport.width, viewport.height)
-            viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
-            viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
-            viewer.style.setProperty('--vv-width', `${viewport.width}px`)
-            viewer.style.setProperty('--vv-height', `${viewport.height}px`)
+            viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
+            viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
+            viewer.style.setProperty('--width', `${viewport.width}px`)
+            viewer.style.setProperty('--height', `${viewport.height}px`)
             fitImage()
           }
         : () => {
             // overlay existing scrollbar
-            const size = getScrollbarSize()
-            const fullWidth = viewport.width
-            const fullHeight = viewport.height
-            fitFuncDict.init(fullWidth - size, fullHeight - size)
-            viewer.style.setProperty('--scrollbar-size', `${size}px`)
-            viewer.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
-            viewer.style.setProperty('--vv-left', `${viewport.offsetLeft}px`)
-            viewer.style.setProperty('--vv-width', `${fullWidth}px`)
-            viewer.style.setProperty('--vv-height', `${fullHeight}px`)
+            const webtoon = viewer.firstChild
+            const scrollbarSize = webtoon.offsetWidth - webtoon.clientWidth
+            fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
+            viewer.style.setProperty('--scrollbar-size', `${scrollbarSize}px`)
+            viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
+            viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
+            viewer.style.setProperty('--width', `${viewport.width}px`)
+            viewer.style.setProperty('--height', `${viewport.height}px`)
             fitImage()
           }
       resizeHandlerList.push(action)
     }
     function addChangeBackgroundHotkey(options) {
-      const backgroundList = [
-        ['rgb(0, 0, 0)', 'important'],
-        ['rgb(255, 255, 255)', 'important']
-      ]
+      const backgroundList = ['rgb(0, 0, 0)', 'rgb(255, 255, 255)']
       if (options.closeButton) backgroundList.unshift([''])
-      if (options.canvasMode) backgroundList.sort((a, b) => b[0].length - a[0].length)
+      if (options.canvasMode) backgroundList.reverse()
       let index = 0
       hotkeyHandlerList[COMMAND_ENUM.CHANGE_BACKGROUND] = () => {
         index = (index + 1) % backgroundList.length
-        shadowRoot.querySelector('#image-viewer').style.setProperty('background', ...backgroundList[index])
+        shadowRoot.querySelector('#image-viewer').style.setProperty('background', backgroundList[index])
       }
     }
     function addDisableDragHotkey() {
@@ -2711,7 +2696,6 @@ window.ImageViewer = (function () {
       const reset = async target => {
         const context = nodeContextMap.get(target)
         if (context === undefined) return
-        const current = target === shadowRoot.querySelector('#iv-list-wrapper') ? shadowRoot.querySelector('#iv-image-list li.current img') : null
         context.mirror = false
         context.zoomCount = 0
         context.rotateCount = 0
@@ -2727,8 +2711,11 @@ window.ImageViewer = (function () {
         // reset
         target.style.transition = ''
         applyTransform(target, 1, 1, 0, 0, 0)
-        if (webtoonMode) updateWebtoonPadding(target)
-        current?.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+        if (webtoonMode) {
+          target.style.setProperty('--scale', '1')
+          const current = shadowRoot.querySelector('#iv-image-list li.current img')
+          current.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+        }
       }
       container.addEventListener('dblclick', () => reset(getTarget()))
       // custom event
