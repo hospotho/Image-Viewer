@@ -882,6 +882,10 @@ window.ImageViewer = (function () {
         rotate: -90deg;
         transform-origin: 0 0;
       }
+      #iv-scene {
+        width: 100%;
+        height: 100%;
+      }
       #iv-list-wrapper {
         width: 100%;
         transform-origin: 0 0;
@@ -897,7 +901,7 @@ window.ImageViewer = (function () {
       #image-viewer.webtoon #iv-image-list {
         display: flex;
         flex-direction: column;
-        padding-inline: var(--iv-pad-x);
+        padding-inline: calc(var(--iv-pad-x) - var(--scrollbar-size));
         padding-block: 0;
         list-style: none;
         width: max-content;
@@ -907,7 +911,7 @@ window.ImageViewer = (function () {
       #image-viewer.webtoon #iv-image-list.row {
         flex-direction: row;
         padding-inline: 0;
-        padding-block: var(--iv-pad-y);
+        padding-block: calc(var(--iv-pad-y) - var(--scrollbar-size));
         scale: -1 1;
         transform: rotate(90deg);
         transform-origin: 0 0;
@@ -923,12 +927,12 @@ window.ImageViewer = (function () {
         content: "";
         flex-grow: 0;
         flex-shrink: 0;
-        flex-basis: var(--iv-pad-y);
+        flex-basis: calc(var(--iv-pad-y) - var(--scrollbar-size));
         pointer-events: none;
       }
       #image-viewer.webtoon #iv-image-list.row::before,
       #image-viewer.webtoon #iv-image-list.row::after {
-        flex-basis: var(--iv-pad-x);
+        flex-basis: calc(var(--iv-pad-x) - var(--scrollbar-size));
       }
 
       /* image item */
@@ -1151,7 +1155,7 @@ window.ImageViewer = (function () {
         visibility: visible;
       }
       #image-viewer.webtoon #iv-control-close {
-        right: calc(-50px + var(--scrollbar-size, 17px));
+        right: calc(-50px + var(--scrollbar-size));
       }
       #iv-control-close::before,
       #iv-control-close::after {
