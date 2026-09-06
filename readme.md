@@ -128,6 +128,10 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
     <td><kbd>Shift</kbd>+<kbd>o</kbd></td>
   </tr>
   <tr>
+    <td>Disable image drag</td>
+    <td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>d</kbd></td>
+  </tr>
+  <tr>
     <td>Change background color<br>(loop: transparent -> black -> white)</td>
     <td><kbd>Shift</kbd>+<kbd>b</kbd></td>
   </tr>
