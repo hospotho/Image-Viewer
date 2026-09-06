@@ -449,17 +449,20 @@ html.iv-worker-checking img {
       }
     }
   })()
-
-  function deepGetElementFromPoint(x, y) {
+  function deepGetElementsFromPoint(x, y) {
     function travelRoot(root, depth) {
       const elementList = root.elementsFromPoint(x, y)
-      for (let i = elementList.length - 1 - depth; i >= 0; i--) {
-        const element = elementList[i]
+      // root might outside point x y
+      let index = elementList.length - 1 - depth
+      if (root.host && root.host !== elementList[index + 1]) index++
+      while (index >= 0) {
+        const element = elementList[index]
         if (element.shadowRoot) {
-          travelRoot(element.shadowRoot, elementList.length - i)
+          travelRoot(element.shadowRoot, elementList.length - index)
         } else {
           result.unshift(element)
         }
+        index--
       }
     }
 
@@ -473,7 +476,7 @@ html.iv-worker-checking img {
           // lock pointer event back to auto
           document.documentElement.classList.add('iv-worker-checking')
           // get all elements include hover
-          const elementsBeforeDisableHover = deepGetElementFromPoint(mouseX, mouseY)
+          const elementsBeforeDisableHover = deepGetElementsFromPoint(mouseX, mouseY)
           // reset pointer event as default
           document.documentElement.classList.remove('iv-worker-checking')
           return elementsBeforeDisableHover
@@ -482,7 +485,7 @@ html.iv-worker-checking img {
           // lock pointer event back to auto
           document.documentElement.classList.add('iv-worker-checking')
           // get all elements include hover
-          const elementsBeforeDisableHover = deepGetElementFromPoint(mouseX, mouseY)
+          const elementsBeforeDisableHover = deepGetElementsFromPoint(mouseX, mouseY)
           // reset pointer event as default
           document.documentElement.classList.remove('iv-worker-checking')
 
@@ -499,7 +502,7 @@ html.iv-worker-checking img {
             element.classList.remove('disable-hover')
           }
           // get all non hover elements
-          const elementsAfterDisableHover = deepGetElementFromPoint(mouseX, mouseY)
+          const elementsAfterDisableHover = deepGetElementsFromPoint(mouseX, mouseY)
 
           const stableElements = []
           const unstableElements = []
