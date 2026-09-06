@@ -1966,7 +1966,7 @@ window.ImageViewer = (function () {
         e => {
           if (e.defaultPrevented || !imageListNode.classList.contains('row')) return
           const isRecentTouchpad = Date.now() - lastTouchpad < 50
-          const isTouchpad = e.deltaX !== 0 || e.deltaY < 50
+          const isTouchpad = e.deltaX !== 0 || Math.abs(e.deltaY) < 50
           if (isRecentTouchpad || isTouchpad) {
             e.preventDefault()
             lastTouchpad = Date.now()
