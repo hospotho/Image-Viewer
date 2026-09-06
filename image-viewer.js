@@ -1958,6 +1958,29 @@ window.ImageViewer = (function () {
       resizeObserver.observe(wrapper)
       observerList.push(styleObserver, resizeObserver)
     }
+    function addWebtoonWheelEvent() {
+      const viewer = shadowRoot.querySelector('#image-viewer')
+      const webtoon = shadowRoot.querySelector('#iv-webtoon')
+      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      let lastTouchpad = 0
+      // process at viewer to delay execution order
+      viewer.addEventListener(
+        'wheel',
+        e => {
+          if (e.defaultPrevented || !imageListNode.classList.contains('row')) return
+          const isRecentTouchpad = Date.now() - lastTouchpad < 50
+          const isTouchpad = e.deltaX !== 0 || e.deltaY < 50
+          if (isRecentTouchpad || isTouchpad) {
+            e.preventDefault()
+            lastTouchpad = Date.now()
+            // reverse in row mode
+            webtoon.scrollLeft += e.deltaY
+            webtoon.scrollTop += e.deltaX
+          }
+        },
+        {passive: false}
+      )
+    }
     function addWebtoonOrientationHotkey() {
       const viewer = shadowRoot.querySelector('#image-viewer')
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
@@ -2216,6 +2239,7 @@ window.ImageViewer = (function () {
     addFitButtonEvent()
     if (options.webtoonMode) {
       addWebtoonInfoEvent()
+      addWebtoonWheelEvent()
       addWebtoonOrientationHotkey()
     }
     if (options.closeButton) {
