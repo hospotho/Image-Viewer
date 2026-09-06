@@ -1929,6 +1929,7 @@ window.ImageViewer = (function () {
         if (!document.body.classList.contains('iv-attached')) return
         const nearestIndex = findNearestIndex()
         if (nearestIndex === -1) return
+        const reposition = scheduleWebtoonReposition()
         loadImageChunk(nearestIndex)
         const currentListItem = imageListNode.querySelector('li.current')
         const relateListItem = shadowRoot.querySelector(`#iv-image-list li:nth-child(${nearestIndex + 1})`)
@@ -1941,6 +1942,7 @@ window.ImageViewer = (function () {
           infoHeight.textContent = relateImage.naturalHeight
           infoPopup.dispatchEvent(updateEvent)
         }
+        reposition()
       }
       const action = () => {
         if (timeout !== 0) return
