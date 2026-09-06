@@ -276,6 +276,7 @@ window.ImageViewer = (function () {
       }
       // update order
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const length = imageListNode.children.length
       if (imageListNode.classList.contains('reverse')) {
         for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
       } else {
