@@ -256,14 +256,11 @@ window.ImageViewer = (function () {
     else webtoon.scrollTo(integerScrollX, integerScrollY)
   }
   const scheduleWebtoonReposition = (function () {
-    let timeout = 0
     let current = null
     let centerX = 0
     let centerY = 0
     let rowMode = false
     const clear = () => {
-      clearTimeout(timeout)
-      timeout = 0
       current = null
       centerX = 0
       centerY = 0
@@ -297,8 +294,7 @@ window.ImageViewer = (function () {
       else applyWebtoonTransform(webtoon, wrapper, scaleY, scaleX, -rotate, adjustX, adjustY)
       clear()
     }
-    return (immediate = false, targetCenterX = Number.NEGATIVE_INFINITY, targetCenterY = Number.NEGATIVE_INFINITY) => {
-      if (!immediate && timeout !== 0) return
+    return (targetCenterX = Number.NEGATIVE_INFINITY, targetCenterY = Number.NEGATIVE_INFINITY) => {
       const currentImg = shadowRoot.querySelector('#iv-webtoon #iv-image-list li.current img')
       current = currentImg
       if (targetCenterX !== Number.NEGATIVE_INFINITY) {
@@ -310,8 +306,7 @@ window.ImageViewer = (function () {
         centerY = currentRect.top + currentRect.height / 2
       }
       rowMode = shadowRoot.querySelector('#iv-image-list').classList.contains('row')
-      if (immediate) return reposition
-      else timeout = setTimeout(reposition, 20)
+      return reposition
     }
   })()
 
@@ -1992,7 +1987,7 @@ window.ImageViewer = (function () {
         const viewerHeight = viewer.clientHeight - scrollbarSize
         const centerX = viewerWidth / 2
         const centerY = viewerHeight / 2
-        const reposition = scheduleWebtoonReposition(true, centerX, centerY)
+        const reposition = scheduleWebtoonReposition(centerX, centerY)
         // apply action
         action()
         // normalize scroll and translate
@@ -3000,7 +2995,7 @@ window.ImageViewer = (function () {
 
     // prepare webtoon order update and reposition
     const viewer = shadowRoot.querySelector('#image-viewer')
-    const reposition = viewer.classList.contains('webtoon') ? scheduleWebtoonReposition(true) : () => {}
+    const reposition = viewer.classList.contains('webtoon') ? scheduleWebtoonReposition() : () => {}
 
     // impossible to update when shrink
     if (imageDataList.length > newList.length) {
@@ -3122,7 +3117,7 @@ window.ImageViewer = (function () {
       applyTransform(target, ...transform)
       if (!options.webtoonMode) lastTransform = null
       else {
-        const reposition = scheduleWebtoonReposition(true, lastWebtoonCenterX, lastWebtoonCenterY)
+        const reposition = scheduleWebtoonReposition(lastWebtoonCenterX, lastWebtoonCenterY)
         reposition()
         lastWebtoonTransform = null
         lastWebtoonCenterX = 0
@@ -3160,23 +3155,29 @@ window.ImageViewer = (function () {
 
   function fitImage(reset = true) {
     const webtoonMode = shadowRoot.querySelector('#iv-webtoon') !== null
-    const reposition = webtoonMode && !reset ? scheduleWebtoonReposition : () => {}
     const fitMode = shadowRoot.querySelector('#image-viewer').dataset.fitMode
     const fitFunc = fitFuncDict[fitMode] || fitFuncDict.both
-
     const action = img => {
-      reposition()
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
       img.width = w
       img.height = h
       img.classList.add('loaded')
     }
+    const delayFit = e => {
+      const reposition = webtoonMode && !reset ? scheduleWebtoonReposition() : () => {}
+      action(e.target)
+      reposition()
+    }
+    // prepare reposition
+    const reposition = webtoonMode && !reset ? scheduleWebtoonReposition() : () => {}
     const imgList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'} img`)
     for (const img of imgList) {
       img.setAttribute('resized', '')
       if (img.complete) action(img)
-      else img.addEventListener('load', () => action(img), {once: true})
+      else img.addEventListener('load', delayFit, {once: true})
     }
+    reposition()
+    // reset transform
     if (reset) {
       const event = new CustomEvent('reset-transform', {bubbles: true})
       if (webtoonMode) {
@@ -3227,7 +3228,7 @@ window.ImageViewer = (function () {
       applyTransform(target, ...transform)
       if (!options.webtoonMode) lastTransform = null
       else {
-        const reposition = scheduleWebtoonReposition(true, lastWebtoonCenterX, lastWebtoonCenterY)
+        const reposition = scheduleWebtoonReposition(lastWebtoonCenterX, lastWebtoonCenterY)
         reposition()
         lastWebtoonTransform = null
         lastWebtoonCenterX = 0
