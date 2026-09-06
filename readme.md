@@ -52,7 +52,7 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
   </tr>
   <tr>
     <td>Pick image<br>(size filter will use this image as reference)</td>
-    <td><kbd>right-click</kbd> on the image</td>
+    <td><kbd>right-click</kbd> on the image and activate Image Viewer</td>
   </tr>
   <tr>
     <td rowspan="2">View previous/next image</td>
