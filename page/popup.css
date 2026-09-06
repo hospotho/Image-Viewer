@@ -70,13 +70,18 @@ a > span {
   background-color: orange;
 }
 .bar::after {
-  content: '\02795'; /* Unicode character for "plus" sign (+) */
-  font-size: 15px;
+  content: '';
   float: right;
-  margin-left: 5px;
+  width: 8px;
+  height: 8px;
+  margin: 5px 6px 0 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
 }
 .active > .bar::after {
-  content: '\2796'; /* Unicode character for "minus" sign (-) */
+  transform: rotate(225deg);
 }
 
 .noteText {
