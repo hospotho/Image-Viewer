@@ -3172,10 +3172,10 @@ window.ImageViewer = (function () {
     }
     // prepare reposition
     const reposition = webtoonMode && !reset ? scheduleWebtoonReposition() : () => {}
-    const imgList = shadowRoot.querySelectorAll(`#iv-image-list li${reset ? '' : ':not([resized])'} img`)
+    const imgList = shadowRoot.querySelectorAll(`#iv-image-list img${reset ? '' : ':not([resized])'}`)
     for (const img of imgList) {
       img.setAttribute('resized', '')
-      if (img.complete) action(img)
+      if (img.complete && img.naturalWidth) action(img)
       else img.addEventListener('load', delayFit, {once: true})
     }
     reposition()
