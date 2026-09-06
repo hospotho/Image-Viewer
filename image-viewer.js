@@ -1237,6 +1237,8 @@ window.ImageViewer = (function () {
       const scrollbarSize = getScrollbarSize()
       fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
       viewer.style.setProperty('--scrollbar-size', `${scrollbarSize}px`)
+      viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
+      viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
       viewer.style.setProperty('--width', `${viewport.width}px`)
       viewer.style.setProperty('--height', `${viewport.height}px`)
       // init padding
