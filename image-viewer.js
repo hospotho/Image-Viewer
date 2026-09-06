@@ -1372,6 +1372,10 @@ window.ImageViewer = (function () {
             fitImage()
           }
         : () => {
+            // skip mobile address bar
+            const prevWidth = Number(viewer.style.getPropertyValue('--width').slice(0, -2))
+            const prevHeight = Number(viewer.style.getPropertyValue('--height').slice(0, -2))
+            if (prevWidth === viewport.width && prevHeight >= viewport.height) return
             // overlay existing scrollbar
             const webtoon = viewer.firstChild
             const scrollbarSize = webtoon.offsetWidth - webtoon.clientWidth
