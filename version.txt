@@ -1,3 +1,18 @@
+2.3 [2026-09-08]:
+Major Update
+1. Added support for restoring the reading position in webtoon mode.
+2. Added an option to automatically activate webtoon mode when selecting images with extreme aspect ratios.
+3. Added row mode for webtoon to display images horizontally.
+  // mouse wheel scrolls horizontally by default
+  // hold Shift to scroll vertically (not extension hotkey)
+  // touchpad is unaffected
+4. Added options for the default reading direction and image order in webtoon mode.
+5. Added hotkeys for changing the reading direction and image order in webtoon mode.
+6. Added a hotkey to disable image dragging.
+7. Added a language selector to the options page.
+8. Improved the webtoon mode UX by reducing layout shifts.
+9.  Other bug fixes and improvements.
+
 2.2 [2026-08-07]:
 Mobile and Stability Update
 First release version since v1.48, please also read v2.0 release note.
