@@ -1,14 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title data-i18n="support_title">Support - Image Viewer</title>
     <link id="icon" href="/icon/icon.png" type="img/x-icon" rel="Shortcut Icon" />
     <link rel="stylesheet" href="/page/support.css" />
+    <link rel="stylesheet" href="/page/theme.css" />
   </head>
   <body>
     <h1 id="title">Image Viewer <span data-i18n="support">Support</span></h1>
+    <fieldset class="theme-switch">
+      <legend data-i18n="page_theme">Theme</legend>
+      <label><input type="radio" name="page-theme" value="system" checked /> <span data-i18n="page_theme_system">System</span></label>
+      <label><input type="radio" name="page-theme" value="light" /> <span data-i18n="page_theme_light">Light</span></label>
+      <label><input type="radio" name="page-theme" value="dark" /> <span data-i18n="page_theme_dark">Dark</span></label>
+    </fieldset>
     <hr />
     <ul>
       <li id="version">Version: </li>
@@ -16,5 +24,6 @@
       <li>Email: syrupmakiato@proton.me</li>
     </ul>
     <script type="text/javascript" src="/page/support.js"></script>
+    <script type="text/javascript" src="/page/theme.js"></script>
   </body>
 </html>

@@ -172,3 +172,21 @@ h2#modalTitle {
   height: 300px;
   font-family: monospace;
 }
+
+:root[data-theme='dark'] .modal-content {
+  background-color: #393c41;
+}
+
+:root[data-theme='dark'] .hotkey-remove {
+  color: #aaa;
+}
+
+:root[data-theme='dark'] .hotkey-remove:hover {
+  background: #555961;
+  color: white;
+}
+
+:root[data-theme='dark'] .close:hover,
+:root[data-theme='dark'] .close:focus {
+  color: white;
+}

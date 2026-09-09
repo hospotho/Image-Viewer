@@ -137,6 +137,18 @@
   "options_title": {
     "message": "设定 - Image Viewer"
   },
+  "page_theme": {
+    "message": "主题"
+  },
+  "page_theme_dark": {
+    "message": "深色"
+  },
+  "page_theme_light": {
+    "message": "浅色"
+  },
+  "page_theme_system": {
+    "message": "跟随系统"
+  },
   "panel_desc": {
     "message": "当光标悬停在控制面板上时，Image Viewer会在此时间后隐藏控制面板<br>将此设置为0以永远不隐藏控制面板"
   },
@@ -187,33 +199,6 @@
   },
   "use_all_search": {
     "message": "以上所有"
-  },
-  "webtoon_direction": {
-    "message": "默认阅读方向"
-  },
-  "webtoon_direction_column": {
-    "message": "从上到下"
-  },
-  "webtoon_direction_row": {
-    "message": "从左到右"
-  },
-  "webtoon_mode": {
-    "message": "Webtoon模式"
-  },
-  "webtoon_order": {
-    "message": "默认图像顺序"
-  },
-  "webtoon_order_normal": {
-    "message": "正序"
-  },
-  "webtoon_order_reverse": {
-    "message": "倒序"
-  },
-  "webtoon_pick_ratio": {
-    "message": "自动打开比值"
-  },
-  "webtoon_pick_ratio_desc": {
-    "message": "打开所选图像时，若某条边大于另一条边此倍数，则自动启用Webtoon模式"
   },
   "view_all_images_in_image_viewer": {
     "message": "观看图片(无过滤)"
@@ -304,6 +289,33 @@
   },
   "viewer_hotkey_zoom_out": {
     "message": "缩小"
+  },
+  "webtoon_direction": {
+    "message": "默认阅读方向"
+  },
+  "webtoon_direction_column": {
+    "message": "从上到下"
+  },
+  "webtoon_direction_row": {
+    "message": "从左到右"
+  },
+  "webtoon_mode": {
+    "message": "Webtoon模式"
+  },
+  "webtoon_order": {
+    "message": "默认图像顺序"
+  },
+  "webtoon_order_normal": {
+    "message": "正序"
+  },
+  "webtoon_order_reverse": {
+    "message": "倒序"
+  },
+  "webtoon_pick_ratio": {
+    "message": "自动打开比值"
+  },
+  "webtoon_pick_ratio_desc": {
+    "message": "打开所选图像时，若某条边大于另一条边此倍数，则自动启用Webtoon模式"
   },
   "width": {
     "message": "宽度"

@@ -137,6 +137,18 @@
   "options_title": {
     "message": "オプション - Image Viewer"
   },
+  "page_theme": {
+    "message": "テーマ"
+  },
+  "page_theme_dark": {
+    "message": "ダーク"
+  },
+  "page_theme_light": {
+    "message": "ライト"
+  },
+  "page_theme_system": {
+    "message": "システム"
+  },
   "panel_desc": {
     "message": "カーソルがコントロールパネル上にある場合、Image Viewerは指定した時間が経過するとコントロールパネルを非表示にします<br>この時間を0に設定すると、この機能は無効になります"
   },
@@ -187,33 +199,6 @@
   },
   "use_all_search": {
     "message": "上記すべて"
-  },
-  "webtoon_direction": {
-    "message": "デフォルトの閲覧方向"
-  },
-  "webtoon_direction_column": {
-    "message": "上から下"
-  },
-  "webtoon_direction_row": {
-    "message": "左から右"
-  },
-  "webtoon_mode": {
-    "message": "Webtoonモード"
-  },
-  "webtoon_order": {
-    "message": "デフォルトの画像順序"
-  },
-  "webtoon_order_normal": {
-    "message": "通常"
-  },
-  "webtoon_order_reverse": {
-    "message": "逆順"
-  },
-  "webtoon_pick_ratio": {
-    "message": "自動表示比率"
-  },
-  "webtoon_pick_ratio_desc": {
-    "message": "選択した画像を開く際、一辺がもう一辺のこの倍数を超える場合はWebtoonモードを自動的に有効にします。"
   },
   "view_all_images_in_image_viewer": {
     "message": "画像を表示（フィルターなし）"
@@ -304,6 +289,33 @@
   },
   "viewer_hotkey_zoom_out": {
     "message": "縮小"
+  },
+  "webtoon_direction": {
+    "message": "デフォルトの閲覧方向"
+  },
+  "webtoon_direction_column": {
+    "message": "上から下"
+  },
+  "webtoon_direction_row": {
+    "message": "左から右"
+  },
+  "webtoon_mode": {
+    "message": "Webtoonモード"
+  },
+  "webtoon_order": {
+    "message": "デフォルトの画像順序"
+  },
+  "webtoon_order_normal": {
+    "message": "通常"
+  },
+  "webtoon_order_reverse": {
+    "message": "逆順"
+  },
+  "webtoon_pick_ratio": {
+    "message": "自動表示比率"
+  },
+  "webtoon_pick_ratio_desc": {
+    "message": "選択した画像を開く際、一辺がもう一辺のこの倍数を超える場合はWebtoonモードを自動的に有効にします。"
   },
   "width": {
     "message": "横幅"

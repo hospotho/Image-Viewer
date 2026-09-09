@@ -137,6 +137,18 @@
   "options_title": {
     "message": "Options - Image Viewer"
   },
+  "page_theme": {
+    "message": "Theme"
+  },
+  "page_theme_dark": {
+    "message": "Dark"
+  },
+  "page_theme_light": {
+    "message": "Light"
+  },
+  "page_theme_system": {
+    "message": "System"
+  },
   "panel_desc": {
     "message": "When the cursor is over the control panel, the Image Viewer will hide the control panel after the specified time.<br>Set the panel timeout to 0 to disable this feature."
   },
@@ -187,33 +199,6 @@
   },
   "use_all_search": {
     "message": "All of above"
-  },
-  "webtoon_direction": {
-    "message": "Default reading direction"
-  },
-  "webtoon_direction_column": {
-    "message": "Top to bottom"
-  },
-  "webtoon_direction_row": {
-    "message": "Left to right"
-  },
-  "webtoon_mode": {
-    "message": "Webtoon mode"
-  },
-  "webtoon_order": {
-    "message": "Default image order"
-  },
-  "webtoon_order_normal": {
-    "message": "Normal"
-  },
-  "webtoon_order_reverse": {
-    "message": "Reverse"
-  },
-  "webtoon_pick_ratio": {
-    "message": "Auto-open ratio"
-  },
-  "webtoon_pick_ratio_desc": {
-    "message": "Automatically enable Webtoon mode when opening a picked image if one side is more than this many times longer than the other."
   },
   "view_all_images_in_image_viewer": {
     "message": "View images (no filter)"
@@ -266,9 +251,6 @@
   "viewer_hotkey_flip_list_direction": {
     "message": "Flip webtoon direction"
   },
-  "viewer_hotkey_reverse_list_order": {
-    "message": "Reverse webtoon order"
-  },
   "viewer_hotkey_move_down": {
     "message": "Move down"
   },
@@ -293,6 +275,9 @@
   "viewer_hotkey_open_image_link": {
     "message": "Open image link"
   },
+  "viewer_hotkey_reverse_list_order": {
+    "message": "Reverse webtoon order"
+  },
   "viewer_hotkey_rotate_left": {
     "message": "Rotate left"
   },
@@ -304,6 +289,33 @@
   },
   "viewer_hotkey_zoom_out": {
     "message": "Zoom out"
+  },
+  "webtoon_direction": {
+    "message": "Default reading direction"
+  },
+  "webtoon_direction_column": {
+    "message": "Top to bottom"
+  },
+  "webtoon_direction_row": {
+    "message": "Left to right"
+  },
+  "webtoon_mode": {
+    "message": "Webtoon mode"
+  },
+  "webtoon_order": {
+    "message": "Default image order"
+  },
+  "webtoon_order_normal": {
+    "message": "Normal"
+  },
+  "webtoon_order_reverse": {
+    "message": "Reverse"
+  },
+  "webtoon_pick_ratio": {
+    "message": "Auto-open ratio"
+  },
+  "webtoon_pick_ratio_desc": {
+    "message": "Automatically enable Webtoon mode when opening a picked image if one side is more than this many times longer than the other."
   },
   "width": {
     "message": "Width"

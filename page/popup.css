@@ -95,3 +95,16 @@ a > span {
 .active > .noteText {
   transition: max-height 0.2s ease-in;
 }
+
+:root[data-theme='dark'] .bar {
+  background-color: #555961;
+}
+
+:root[data-theme='dark'] .bar:hover {
+  background-color: orange;
+  color: black;
+}
+
+:root[data-theme='dark'] .noteText {
+  background-color: #393c41;
+}
