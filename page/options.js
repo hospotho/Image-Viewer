@@ -136,9 +136,7 @@
     const preferredLang = localStorage.getItem('preferred-language')
     const defaultLang = await getDefaultLanguage()
     const targetLang = preferredLang || defaultLang
-    if (targetLang !== defaultLang) {
-      translation = await fetch(`/_locales/${targetLang}/messages.json`).then(response => response.json())
-    }
+    translation = await fetch(`/_locales/${targetLang}/messages.json`).then(response => response.json())
     languageSelect.value = targetLang
     document.documentElement.lang = targetLang.replace('_', '-')
     updateTranslation()
