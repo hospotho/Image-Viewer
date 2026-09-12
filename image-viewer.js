@@ -4,12 +4,12 @@ window.ImageViewer = (function () {
   let shadowRoot = null
   let lastHref = location.href
   let lastUpdateTime = 0
-  let imageDataList = []
-  const imageFailureCountMap = new Map()
 
+  let fps = getFPS().then(result => (fps = result)) && 60
   let pendingReset = false
   let filtering = false
-  let fps = getFPS().then(result => (fps = result)) && 60
+  let imageDataList = []
+  const imageFailureCountMap = new Map()
 
   let insertIndex = -1
   let clearIndex = -1
@@ -1208,6 +1208,9 @@ window.ImageViewer = (function () {
 
   //==========function define==========
   function buildApp(options) {
+    lastHref = location.href
+    lastUpdateTime = Date.now()
+
     const shadowHolder = document.createElement('div')
     shadowHolder.id = 'image-viewer-root'
     shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
@@ -2806,8 +2809,6 @@ window.ImageViewer = (function () {
   }
 
   function buildImageList(dataList, options) {
-    lastHref = location.href
-    lastUpdateTime = Date.now()
     imageDataList = Array.from(dataList)
     if (dataList.length > 1) {
       shadowRoot.querySelector('#iv-index').style.display = 'flex'
