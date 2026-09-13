@@ -246,7 +246,15 @@ window.ImageViewer = (function () {
     const finalScrollX = scrollX + offsetX + moveX + rotatedX - viewX
     const finalScrollY = scrollY + offsetY + moveY + rotatedY - viewY
 
-    // apply final transform and scroll
+    // apply transform and scroll if no rotation
+    if (rotate % 360 === 0) {
+      applyTransform(wrapper, scaleX, scaleY, rotate, moveX, moveY)
+      if (row) webtoon.scrollTo(finalScrollY, finalScrollX)
+      else webtoon.scrollTo(finalScrollX, finalScrollY)
+      return
+    }
+
+    // handle scroll error when rotating
     const integerScrollX = Math.round(finalScrollX)
     const integerScrollY = Math.round(finalScrollY)
     const adjustedMoveX = moveX - finalScrollX + integerScrollX
