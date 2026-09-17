@@ -1453,7 +1453,7 @@ window.ImageViewerUtils = (function () {
     const {origin, pathname, search} = url
 
     // likely
-    const nonThumbnailPath = pathname.replace(/[-_]thumb(?=nail)?\./, '.')
+    const nonThumbnailPath = pathname.replace(/[-_]thumb(?:nail)?\./, '.')
     if (pathname !== nonThumbnailPath) {
       attrList.push({name: 'non thumbnail path', url: origin + nonThumbnailPath + search})
     }
