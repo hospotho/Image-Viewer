@@ -1471,7 +1471,7 @@ window.ImageViewerUtils = (function () {
     }
     const filenameIndex = pathname.lastIndexOf('/')
     const filename = pathname.slice(filenameIndex + 1)
-    const lastMatch = filename.matchAll(/[-_]\d{3,4}(?:x\d{3,4})?/g).reduce((_, m) => m, null)
+    const lastMatch = filename.matchAll(/[-_]\d{3,4}(?:w|px|x\d{3,4})?/g).reduce((_, m) => m, null)
     if (lastMatch) {
       const rawFilename = filename.slice(0, lastMatch.index) + filename.slice(lastMatch.index + lastMatch[0].length)
       const rawSizePath = pathname.slice(0, filenameIndex + 1) + rawFilename
