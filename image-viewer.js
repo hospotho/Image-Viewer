@@ -1377,34 +1377,33 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.SEARCH_ALL, [options.searchHotkey[4]])
       options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
     }
-    function addViewportResizeEvent(options) {
+    function addViewportResizeEvent() {
       const viewport = window.visualViewport
       const viewer = shadowRoot.querySelector('#image-viewer')
-      const action = !options.webtoonMode
-        ? () => {
-            fitFuncDict.init(viewport.width, viewport.height)
-            viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
-            viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
-            viewer.style.setProperty('--width', `${viewport.width}px`)
-            viewer.style.setProperty('--height', `${viewport.height}px`)
-            fitImage()
-          }
-        : () => {
-            // skip mobile address bar
-            const prevWidth = Number(viewer.style.getPropertyValue('--width').slice(0, -2))
-            const prevHeight = Number(viewer.style.getPropertyValue('--height').slice(0, -2))
-            if (prevWidth === viewport.width && prevHeight >= viewport.height) return
-            // overlay existing scrollbar
-            const webtoon = viewer.firstChild
-            const scrollbarSize = webtoon.offsetWidth - webtoon.clientWidth
-            fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
-            viewer.style.setProperty('--scrollbar-size', `${scrollbarSize}px`)
-            viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
-            viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
-            viewer.style.setProperty('--width', `${viewport.width}px`)
-            viewer.style.setProperty('--height', `${viewport.height}px`)
-            fitImage()
-          }
+      const webtoon = shadowRoot.querySelector('#iv-webtoon')
+      const action = () => {
+        if (!viewer.classList.contains('webtoon')) {
+          fitFuncDict.init(viewport.width, viewport.height)
+          viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
+          viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
+          viewer.style.setProperty('--width', `${viewport.width}px`)
+          viewer.style.setProperty('--height', `${viewport.height}px`)
+          fitImage()
+          return
+        }
+        // skip mobile address bar
+        const prevWidth = Number(viewer.style.getPropertyValue('--width').slice(0, -2))
+        const prevHeight = Number(viewer.style.getPropertyValue('--height').slice(0, -2))
+        if (prevWidth === viewport.width && prevHeight >= viewport.height) return
+        // overlay existing scrollbar
+        const scrollbarSize = webtoon.offsetWidth - webtoon.clientWidth
+        fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
+        viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
+        viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
+        viewer.style.setProperty('--width', `${viewport.width}px`)
+        viewer.style.setProperty('--height', `${viewport.height}px`)
+        fitImage()
+      }
       resizeHandlerList.push(action)
     }
     function addChangeBackgroundHotkey(options) {
@@ -2280,7 +2279,6 @@ window.ImageViewer = (function () {
     const closeButton = shadowRoot.querySelector('#iv-control-close')
     const infoButton = shadowRoot.querySelector('#iv-control-info')
     const infoPopup = shadowRoot.querySelector('#iv-info-popup')
-    const webtoonMode = options.webtoonMode
 
     const current = shadowRoot.querySelector('#iv-counter-current')
     const total = shadowRoot.querySelector('#iv-counter-total')
@@ -2332,6 +2330,7 @@ window.ImageViewer = (function () {
       // update dom
       currentListItem?.classList.remove('current')
       relateListItem.classList.add('current')
+      const webtoonMode = viewer.classList.contains('webtoon')
       if (webtoonMode) relateImage.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
       current.textContent = index + 1
       infoWidth.textContent = relateImage.naturalWidth
@@ -3014,7 +3013,8 @@ window.ImageViewer = (function () {
       clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
       clearDom = imageDataList[clearIndex]?.dom || null
       clearSrc = current.src
-      if (!options.webtoonMode) lastTransform = getTransform(current)
+      const webtoonMode = viewer.classList.contains('webtoon')
+      if (!webtoonMode) lastTransform = getTransform(current)
       else {
         const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
         lastWebtoonTransform = getTransform(wrapper)
@@ -3128,14 +3128,17 @@ window.ImageViewer = (function () {
       filtering = false
     }
 
+    const viewer = shadowRoot.querySelector('#image-viewer')
     const imageListNode = shadowRoot.querySelector('#iv-image-list')
     const current = shadowRoot.querySelector('#iv-image-list li.current')
     const liList = imageListNode.children
     const base = current || liList[getBaseIndex(options)]
     const baseImg = base.firstChild
-    const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : baseImg
     base.classList.add('current')
-    if (options.webtoonMode && !current) {
+
+    const webtoonMode = viewer.classList.contains('webtoon')
+    const target = webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : baseImg
+    if (webtoonMode && !current) {
       if (options.webtoonDirection === 'row') imageListNode.dispatchEvent(new CustomEvent('flip-direction'))
       if (options.webtoonOrder === 'reverse') imageListNode.dispatchEvent(new CustomEvent('reverse-order'))
       if (options.webtoonDirection !== 'row' && options.webtoonOrder !== 'reverse') {
@@ -3143,13 +3146,13 @@ window.ImageViewer = (function () {
       }
     }
 
-    const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
+    const transform = webtoonMode ? lastWebtoonTransform : lastTransform
     const targetDom = clearDom || lastDom
     const baseIndex = Array.prototype.indexOf.call(liList, base)
     if (transform && targetDom === imageDataList[baseIndex]?.dom) {
       target.style.transition = 'none'
       applyTransform(target, ...transform)
-      if (!options.webtoonMode) lastTransform = null
+      if (!webtoonMode) lastTransform = null
       else {
         const reposition = scheduleWebtoonReposition(lastWebtoonCenterX, lastWebtoonCenterY)
         reposition()
@@ -3187,8 +3190,9 @@ window.ImageViewer = (function () {
   }
 
   function fitImage(reset = true) {
-    const webtoonMode = shadowRoot.querySelector('#iv-webtoon') !== null
-    const fitMode = shadowRoot.querySelector('#image-viewer').dataset.fitMode
+    const viewer = shadowRoot.querySelector('#image-viewer')
+    const webtoonMode = viewer.classList.contains('webtoon')
+    const fitMode = viewer.dataset.fitMode
     const fitFunc = fitFuncDict[fitMode] || fitFuncDict.both
     const action = img => {
       const [w, h] = fitFunc(img.naturalWidth, img.naturalHeight)
@@ -3244,16 +3248,17 @@ window.ImageViewer = (function () {
     shadowRoot.querySelector('#iv-counter-current').textContent = newIndex + 1
     shadowRoot.querySelector('#iv-info-width').textContent = relateImage.naturalWidth
     shadowRoot.querySelector('#iv-info-height').textContent = relateImage.naturalHeight
-
     imageListNode.querySelector('li.current')?.classList.remove('current')
     relateListItem.classList.add('current')
-    if (options.webtoonMode) relateImage.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
 
-    const transform = options.webtoonMode ? lastWebtoonTransform : lastTransform
-    const target = options.webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : relateImage
+    const webtoonMode = shadowRoot.querySelector('#image-viewer').classList.contains('webtoon')
+    if (webtoonMode) relateImage.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
+
+    const transform = webtoonMode ? lastWebtoonTransform : lastTransform
+    const target = webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : relateImage
     if (transform) {
       applyTransform(target, ...transform)
-      if (!options.webtoonMode) lastTransform = null
+      if (!webtoonMode) lastTransform = null
       else {
         const reposition = scheduleWebtoonReposition(lastWebtoonCenterX, lastWebtoonCenterY)
         reposition()
