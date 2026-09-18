@@ -200,7 +200,8 @@ window.ImageViewer = (function () {
     const offsetY = sceneRect.top - viewportRect.top
     return [offsetX, offsetY]
   }
-  function applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate, deltaX, deltaY) {
+  function applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, deltaX, deltaY) {
+    const webtoon = shadowRoot.querySelector('#iv-webtoon')
     const row = wrapper.firstElementChild.classList.contains('row')
     const viewX = (row ? webtoon.clientHeight : webtoon.clientWidth) / 2
     const viewY = (row ? webtoon.clientWidth : webtoon.clientHeight) / 2
@@ -296,10 +297,9 @@ window.ImageViewer = (function () {
       const adjustX = centerX - newCenterX
       const adjustY = centerY - newCenterY
       // normalize scroll and translate
-      const webtoon = shadowRoot.querySelector('#iv-webtoon')
       const sameMode = rowMode === imageListNode.classList.contains('row')
-      if (sameMode) applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate, adjustX, adjustY)
-      else applyWebtoonTransform(webtoon, wrapper, scaleY, scaleX, -rotate, adjustX, adjustY)
+      if (sameMode) applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, adjustX, adjustY)
+      else applyWebtoonTransform(wrapper, scaleY, scaleX, -rotate, adjustX, adjustY)
       clear()
     }
     return (targetCenterX = Number.NEGATIVE_INFINITY, targetCenterY = Number.NEGATIVE_INFINITY) => {
@@ -2547,21 +2547,21 @@ window.ImageViewer = (function () {
     const rotateDeg = options.rotateDeg
 
     // webtoon transform function
-    function updateWebtoonZoom(webtoon, wrapper, zoomCount) {
+    function updateWebtoonZoom(wrapper, zoomCount) {
       let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       scaleX = Math.sign(scaleX) * zoomRatio ** zoomCount
       scaleY = Math.sign(scaleY) * zoomRatio ** zoomCount
-      applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate, 0, 0)
+      applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, 0, 0)
     }
-    function updateWebtoonRotate(webtoon, wrapper, rotateCount) {
+    function updateWebtoonRotate(wrapper, rotateCount) {
       let [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       const mirror = Math.sign(scaleX) * Math.sign(scaleY)
       rotate = mirror * rotateDeg * rotateCount
-      applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate, 0, 0)
+      applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, 0, 0)
     }
-    function updateWebtoonDisplacement(webtoon, wrapper, deltaX, deltaY) {
+    function updateWebtoonDisplacement(wrapper, deltaX, deltaY) {
       const [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
-      applyWebtoonTransform(webtoon, wrapper, scaleX, scaleY, rotate, deltaX, deltaY)
+      applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, deltaX, deltaY)
     }
     // transform function
     function updateZoom(img, deltaZoom, zoomCount) {
@@ -2625,7 +2625,7 @@ window.ImageViewer = (function () {
             target.style.transition = ''
             const deltaZoom = e.deltaY > 0 ? -1 : 1
             context.zoomCount += deltaZoom
-            if (webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
+            if (webtoonMode) updateWebtoonZoom(target, context.zoomCount)
             else updateZoom(target, deltaZoom, context.zoomCount)
           } else {
             // transition cause flash when large offset
@@ -2634,7 +2634,7 @@ window.ImageViewer = (function () {
             target.style.transition = offset > 350 || webtoonMode ? 'none' : ''
             const deltaRotate = e.deltaY > 0 ? 1 : -1
             context.rotateCount += context.mirror ? -deltaRotate : deltaRotate
-            if (webtoonMode) updateWebtoonRotate(container, target, context.rotateCount)
+            if (webtoonMode) updateWebtoonRotate(target, context.rotateCount)
             else updateRotate(target, deltaRotate, context.rotateCount)
           }
         },
@@ -2648,7 +2648,7 @@ window.ImageViewer = (function () {
         const context = getContext(target)
         const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(target)
         context.mirror = !context.mirror
-        if (webtoonMode) applyWebtoonTransform(container, target, -scaleX, scaleY, -rotate, 0, 0)
+        if (webtoonMode) applyWebtoonTransform(target, -scaleX, scaleY, -rotate, 0, 0)
         else applyTransform(target, -scaleX, scaleY, -rotate, -moveX, moveY)
       })
 
@@ -2702,7 +2702,7 @@ window.ImageViewer = (function () {
           const deltaY = e.clientY - context.lastPos[1]
           context.lastPos[0] = e.clientX
           context.lastPos[1] = e.clientY
-          if (webtoonMode) updateWebtoonDisplacement(container, target, deltaX, deltaY)
+          if (webtoonMode) updateWebtoonDisplacement(target, deltaX, deltaY)
           else updateDisplacement(target, deltaX, deltaY)
           return
         }
@@ -2713,7 +2713,7 @@ window.ImageViewer = (function () {
         if (deltaZoom !== 0) {
           context.zoomCount += deltaZoom
           context.pinchDistance = distance
-          if (webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
+          if (webtoonMode) updateWebtoonZoom(target, context.zoomCount)
           else updateZoom(target, deltaZoom, context.zoomCount)
         }
         // two touch drag
@@ -2723,7 +2723,7 @@ window.ImageViewer = (function () {
         const deltaY = centerY - context.lastPos[1]
         context.lastPos[0] = centerX
         context.lastPos[1] = centerY
-        if (webtoonMode) updateWebtoonDisplacement(container, target, deltaX, deltaY)
+        if (webtoonMode) updateWebtoonDisplacement(target, deltaX, deltaY)
         else updateDisplacement(target, deltaX, deltaY)
       })
       const stopDragging = e => {
@@ -2781,14 +2781,14 @@ window.ImageViewer = (function () {
           case 'zoom': {
             const deltaZoom = action === 1 ? -1 : 1
             context.zoomCount += deltaZoom
-            if (webtoonMode) updateWebtoonZoom(container, target, context.zoomCount)
+            if (webtoonMode) updateWebtoonZoom(target, context.zoomCount)
             else updateZoom(target, deltaZoom, context.zoomCount)
             break
           }
           case 'rotate': {
             const deltaRotate = action === 3 ? 1 : -1
             context.rotateCount += context.mirror ? -deltaRotate : deltaRotate
-            if (webtoonMode) updateWebtoonRotate(container, target, context.rotateCount)
+            if (webtoonMode) updateWebtoonRotate(target, context.rotateCount)
             else updateRotate(target, deltaRotate, context.rotateCount)
             break
           }
@@ -2796,7 +2796,7 @@ window.ImageViewer = (function () {
             const displacement = action % 2 === 1 ? 50 : -50
             const deltaX = action > 1 ? displacement : 0
             const deltaY = action > 1 ? 0 : displacement
-            if (webtoonMode) updateWebtoonDisplacement(container, target, deltaX, deltaY)
+            if (webtoonMode) updateWebtoonDisplacement(target, deltaX, deltaY)
             else updateDisplacement(target, deltaX, deltaY)
             break
           }
