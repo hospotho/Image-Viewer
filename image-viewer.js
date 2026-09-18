@@ -794,7 +794,12 @@ window.ImageViewer = (function () {
               </div>
             </div>
           </div>`
-        : '<ul id="iv-image-list"></ul>'
+        : `<div id="iv-webtoon">
+            <div id="iv-scene">
+              <div id="iv-list-wrapper"></div>
+            </div>
+          </div>
+          <ul id="iv-image-list"></ul>`
     }
       <nav id="iv-control">
         <ul id="iv-index">
@@ -869,6 +874,9 @@ window.ImageViewer = (function () {
         overflow-y: scroll;
         overscroll-behavior: contain;
         touch-action: pan-x pan-y;
+      }
+      #image-viewer:not(.webtoon) #iv-webtoon {
+        display: none;
       }
       #iv-webtoon:has(#iv-image-list.row) {
         width: var(--height);
