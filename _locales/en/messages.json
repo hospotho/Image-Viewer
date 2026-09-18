@@ -284,6 +284,9 @@
   "viewer_hotkey_rotate_right": {
     "message": "Rotate right"
   },
+  "viewer_hotkey_toggle_webtoon_mode": {
+    "message": "Switch normal / webtoon mode"
+  },
   "viewer_hotkey_zoom_in": {
     "message": "Zoom in"
   },

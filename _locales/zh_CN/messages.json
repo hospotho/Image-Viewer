@@ -284,6 +284,9 @@
   "viewer_hotkey_rotate_right": {
     "message": "向右旋转"
   },
+  "viewer_hotkey_toggle_webtoon_mode": {
+    "message": "切换普通 / Webtoon模式"
+  },
   "viewer_hotkey_zoom_in": {
     "message": "放大"
   },

@@ -324,6 +324,7 @@ const defaultOptions = {
     fastNavigateNext: ['Ctrl + ArrowRight', 'Ctrl + ArrowDown'],
     autoNavigatePrev: ['Shift + ArrowLeft', 'Shift + ArrowUp'],
     autoNavigateNext: ['Shift + ArrowRight', 'Shift + ArrowDown'],
+    toggleWebtoonMode: ['Shift + M'],
     flipListDirection: ['Shift + I'],
     reverseListOrder: ['Shift + O'],
     disableDrag: ['Ctrl + Alt + D']
