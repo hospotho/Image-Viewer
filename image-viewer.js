@@ -1235,15 +1235,18 @@ window.ImageViewer = (function () {
     stylesheet.textContent = style()
 
     const viewport = window.visualViewport
+    const scrollbarSize = getScrollbarSize()
     fitFuncDict.init(viewport.width, viewport.height)
 
     const viewer = document.createElement('div')
     viewer.id = 'image-viewer'
     viewer.tabIndex = 0
+    viewer.style.setProperty('--scrollbar-size', `${scrollbarSize}px`)
     viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
     viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
     viewer.style.setProperty('--width', `${viewport.width}px`)
     viewer.style.setProperty('--height', `${viewport.height}px`)
+    viewer.style.setProperty('--scale', '1')
     viewer.dataset.fitMode = options.fitMode
 
     // apply mode specific settings
@@ -1253,15 +1256,11 @@ window.ImageViewer = (function () {
       document.documentElement.classList.add('iv-webtoon-attached')
       document.body.classList.add('iv-webtoon-attached')
       // overlay existing scrollbar
-      const scrollbarSize = getScrollbarSize()
       fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
-      viewer.style.setProperty('--scrollbar-size', `${scrollbarSize}px`)
       viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
       viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
       viewer.style.setProperty('--width', `${viewport.width}px`)
       viewer.style.setProperty('--height', `${viewport.height}px`)
-      // init padding
-      viewer.style.setProperty('--scale', '1')
       // use image raw size
       viewer.dataset.fitMode = 'none'
     }
