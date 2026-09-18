@@ -2000,18 +2000,6 @@ window.ImageViewer = (function () {
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
       const scrollbarSize = Number(viewer.style.getPropertyValue('--scrollbar-size').slice(0, -2))
 
-      async function recalculateWebtoonTransform(action) {
-        // prepare reposition image to center
-        const viewerWidth = viewer.clientWidth - scrollbarSize
-        const viewerHeight = viewer.clientHeight - scrollbarSize
-        const centerX = viewerWidth / 2
-        const centerY = viewerHeight / 2
-        const reposition = scheduleWebtoonReposition(centerX, centerY)
-        // apply action
-        action()
-        // normalize scroll and translate
-        reposition()
-      }
       const flipDirection = () => {
         if (imageListNode.classList.contains('row')) imageListNode.classList.remove('row')
         else imageListNode.classList.add('row')
@@ -2026,10 +2014,24 @@ window.ImageViewer = (function () {
           for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
         }
       }
-      hotkeyHandlerList[COMMAND_ENUM.FLIP_LIST_DIRECTION] = () => recalculateWebtoonTransform(flipDirection)
-      hotkeyHandlerList[COMMAND_ENUM.REVERSE_LIST_ORDER] = () => recalculateWebtoonTransform(reverseOrder)
-      imageListNode.addEventListener('flip-direction', () => recalculateWebtoonTransform(flipDirection))
-      imageListNode.addEventListener('reverse-order', () => recalculateWebtoonTransform(reverseOrder))
+      async function recalculateWebtoonTransform(e, COMMAND_ENUM_VALUE) {
+        e.preventDefault()
+        // prepare reposition image to center
+        const viewerWidth = viewer.clientWidth - scrollbarSize
+        const viewerHeight = viewer.clientHeight - scrollbarSize
+        const centerX = viewerWidth / 2
+        const centerY = viewerHeight / 2
+        const reposition = scheduleWebtoonReposition(centerX, centerY)
+        // apply action
+        const action = COMMAND_ENUM_VALUE ? (COMMAND_ENUM_VALUE === COMMAND_ENUM.FLIP_LIST_DIRECTION ? flipDirection : reverseOrder) : e.type === 'flip-direction' ? flipDirection : reverseOrder
+        action()
+        // normalize scroll and translate
+        reposition()
+      }
+      hotkeyHandlerList[COMMAND_ENUM.FLIP_LIST_DIRECTION] = recalculateWebtoonTransform
+      hotkeyHandlerList[COMMAND_ENUM.REVERSE_LIST_ORDER] = recalculateWebtoonTransform
+      imageListNode.addEventListener('flip-direction', recalculateWebtoonTransform)
+      imageListNode.addEventListener('reverse-order', recalculateWebtoonTransform)
     }
     function addMoveToButtonEvent() {
       function displayBorder(imgNode) {
