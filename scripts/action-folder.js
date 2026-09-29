@@ -24,6 +24,7 @@
   // natural sort
   const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'})
   const anchorList = [...document.getElementsByTagName('a')].filter(a => !a.href.endsWith('/')).sort(collator.compare)
+  if (anchorList.length === 0) return
 
   // collect image data
   let complete = false
@@ -69,7 +70,6 @@
   while (true) {
     await new Promise(resolve => setTimeout(resolve, 100))
     if (imageDataList.length) break
-    if (anchorList.length === 0) return
   }
   clearTimeout(overtime)
 
