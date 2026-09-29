@@ -1886,6 +1886,7 @@ window.ImageViewer = (function () {
       }
     }
     function addWebtoonInfoEvent() {
+      const viewer = shadowRoot.querySelector('#image-viewer')
       const webtoon = shadowRoot.querySelector('#iv-webtoon')
       const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
       const imageListNode = shadowRoot.querySelector('#iv-image-list')
@@ -1949,7 +1950,7 @@ window.ImageViewer = (function () {
       let timeout = 0
       const updateCurrent = () => {
         timeout = 0
-        if (!document.body.classList.contains('iv-attached')) return
+        if (!viewer.isConnected || !viewer.classList.contains('webtoon') || !document.body.classList.contains('iv-attached')) return
         const nearestIndex = findNearestIndex()
         if (nearestIndex === -1) return
         const reposition = scheduleWebtoonReposition()
@@ -1968,7 +1969,7 @@ window.ImageViewer = (function () {
         reposition()
       }
       const action = () => {
-        if (timeout !== 0) return
+        if (!viewer.classList.contains('webtoon') || timeout !== 0) return
         timeout = setTimeout(updateCurrent, 50)
       }
       webtoon.addEventListener('scroll', action)
@@ -1987,7 +1988,7 @@ window.ImageViewer = (function () {
       viewer.addEventListener(
         'wheel',
         e => {
-          if (e.defaultPrevented || !imageListNode.classList.contains('row')) return
+          if (!viewer.classList.contains('webtoon') || e.defaultPrevented || !imageListNode.classList.contains('row')) return
           const isRecentTouchpad = Date.now() - lastTouchpad < 50
           const isTouchpad = e.deltaX !== 0 || Math.abs(e.deltaY) < 50
           if (isRecentTouchpad || isTouchpad) {
@@ -2021,6 +2022,7 @@ window.ImageViewer = (function () {
         }
       }
       async function recalculateWebtoonTransform(e, COMMAND_ENUM_VALUE) {
+        if (!viewer.classList.contains('webtoon')) return
         e.preventDefault()
         // prepare reposition image to center
         const viewerWidth = viewer.clientWidth - scrollbarSize
@@ -2259,11 +2261,9 @@ window.ImageViewer = (function () {
     addControlPanelHideEvent(options)
     addInfoPopupEvent()
     addFitButtonEvent()
-    if (options.webtoonMode) {
-      addWebtoonInfoEvent()
-      addWebtoonWheelEvent()
-      addWebtoonOrientationHotkey()
-    }
+    addWebtoonInfoEvent()
+    addWebtoonWheelEvent()
+    addWebtoonOrientationHotkey()
     if (options.closeButton) {
       addMoveToButtonEvent()
       addCloseButtonEvent()
