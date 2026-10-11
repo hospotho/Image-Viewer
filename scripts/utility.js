@@ -93,6 +93,7 @@ window.ImageViewerUtils = (function () {
     'title',
     'loading',
     'crossorigin',
+    'referrerpolicy',
     'width',
     'height',
     'max-width',
@@ -102,11 +103,7 @@ window.ImageViewerUtils = (function () {
     'sizes',
     'onload',
     'onerror',
-    'data-error',
-    'iv-image',
-    'iv-bg',
-    'no-bg',
-    'no-shadow'
+    'data-error'
   ])
   const urlRegex = /(?:^| |https?:\/)\/\S+/g
   const protocol = location.protocol
@@ -1490,7 +1487,7 @@ window.ImageViewerUtils = (function () {
 
     // check attributes
     for (const {name, value} of img.attributes) {
-      if (attrWhiteList.has(name) || value.startsWith('data')) continue
+      if (value === '' || value.startsWith('data') || attrWhiteList.has(name)) continue
 
       const length = value.split(/\s+/).filter(str => str.includes('/') || str.includes('.')).length
       if (length === 0) continue
