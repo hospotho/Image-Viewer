@@ -41,6 +41,10 @@
   // canvas cache
   const srcBase64Map = new Map()
   const imageCORSMap = new Map()
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d', {alpha: false, willReadFrequently: true})
+  canvas.width = 1
+  canvas.height = 1
 
   // prevent canvas tainted
   async function getImageDataURL(src) {
@@ -94,33 +98,31 @@
     srcBase64Map.set(src, promise)
     return promise
   }
-  function checkCORS(image) {
-    const cached = imageCORSMap.get(image.src)
+  function willTaintCanvas(image) {
+    const src = image.currentSrc
+    const cached = imageCORSMap.get(src)
     if (cached !== undefined) return cached
-
+    // assume crossOrigin attr consistent
     if (image.crossOrigin === 'anonymous') {
-      imageCORSMap.set(image.src, false)
+      imageCORSMap.set(src, false)
       return false
     }
-
+    // reset tainted flag by assign canvas size
+    canvas.width = 1
+    realDrawImage.apply(ctx, [image, 0, 0])
     try {
-      const canvas = document.createElement('canvas')
-      canvas.width = 100
-      canvas.height = 100
-      const ctx = canvas.getContext('2d')
-      realDrawImage.apply(ctx, [image, 0, 0])
-      canvas.toDataURL('image/png')
-      imageCORSMap.set(image.src, false)
+      ctx.getImageData(0, 0, 1, 1)
+      imageCORSMap.set(src, false)
       return false
     } catch (error) {
-      imageCORSMap.set(image.src, true)
+      imageCORSMap.set(src, true)
       return true
     }
   }
 
   const realDrawImage = CanvasRenderingContext2D.prototype.drawImage
   CanvasRenderingContext2D.prototype.drawImage = function (...args) {
-    if (args[0] instanceof HTMLImageElement && checkCORS(args[0])) {
+    if (args[0] instanceof HTMLImageElement && willTaintCanvas(args[0])) {
       const result = getBase64Image(args[0].src)
       if (result instanceof HTMLImageElement) {
         args[0] = result
