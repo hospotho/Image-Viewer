@@ -208,24 +208,43 @@ window.ImageViewerUtils = (function () {
   hrefObserver.observe(document.body, {childList: true, subtree: true})
 
   // init observer for unlazy image being modify
+  const checkModifiedUnlazy = async item => {
+    const [img, attributeName] = item
+    img.setAttribute('iv-observing', '')
+    while (!img.complete) {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    const currentSrc = img[attributeName]
+    const attrList = getUnlazyAttrList(img)
+    if (attrList.length !== 0) await checkImageAttr(img, attrList)
+    // maybe dynamic image tile, collect all image
+    if (img.src === currentSrc) img.setAttribute('iv-dynamic', '')
+    img.removeAttribute('iv-observing')
+  }
+  const checkInvalidUnlazy = async item => {
+    const img = item[0]
+    const currentSrc = img.currentSrc
+    while (img.hasAttribute('iv-checking')) {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    if (img.currentSrc !== currentSrc) return
+    await checkModifiedUnlazy(item)
+    img.removeAttribute('iv-dynamic')
+  }
   const unlazyObserver = new MutationObserver(mutationsList => {
+    const invalidList = []
     const modifiedList = []
     for (const {target, attributeName} of mutationsList) {
-      if (target.tagName !== 'IMG' || target.hasAttribute('iv-observing') || target.hasAttribute('iv-checking') || target.hasAttribute('iv-dynamic') || !target.hasAttribute('iv-image')) continue
+      if (target.hasAttribute('iv-invalid')) {
+        target.removeAttribute('iv-invalid')
+        invalidList.push([target, 'src'])
+        continue
+      }
+      if (target.tagName !== 'IMG' || !target.hasAttribute('iv-image') || target.hasAttribute('iv-observing') || target.hasAttribute('iv-checking') || target.hasAttribute('iv-dynamic')) continue
       modifiedList.push([target, attributeName])
     }
-    modifiedList.forEach(async ([img, attributeName]) => {
-      while (!img.complete) {
-        await new Promise(resolve => setTimeout(resolve, 50))
-      }
-      img.setAttribute('iv-observing', '')
-      const currentSrc = img[attributeName]
-      const attrList = getUnlazyAttrList(img)
-      if (attrList.length !== 0) await checkImageAttr(img, attrList)
-      // maybe dynamic image tile, collect all image
-      if (img.src === currentSrc) img.setAttribute('iv-dynamic', '')
-      img.removeAttribute('iv-observing')
-    })
+    invalidList.forEach(checkInvalidUnlazy)
+    modifiedList.forEach(checkModifiedUnlazy)
   })
   unlazyObserver.observe(document.body, {attributes: true, subtree: true, attributeFilter: ['src', 'srcset']})
 

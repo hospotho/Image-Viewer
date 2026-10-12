@@ -59,7 +59,8 @@ html.iv-worker-checking img {
 
     // calculate lazy score
     const srcScoreMap = new Map()
-    for (const img of document.querySelectorAll('img[src]')) {
+    const imageList = document.querySelectorAll('img[src]')
+    for (const img of imageList) {
       const src = img.currentSrc.replace(/^https?:/, location.protocol)
 
       const smallImage = img.complete && img.naturalWidth + img.naturalHeight < 16 ? 1 : 0
@@ -83,6 +84,15 @@ html.iv-worker-checking img {
         srcRealSizeMap.set(src, -1)
         badImageSet.add(src)
       }
+    }
+
+    // trigger unlazy observer if unlazy before init
+    for (const img of imageList) {
+      if (!img.hasAttribute('iv-image')) continue
+      const src = img.currentSrc.replace(/^https?:/, location.protocol)
+      if (!badImageSet.has(src)) continue
+      img.src = src
+      img.setAttribute('iv-invalid', '')
     }
   }
 
