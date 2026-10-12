@@ -120,20 +120,37 @@
     }
   }
 
+  // skip ctx.createPattern as no valid sync return value for tainted input
   const realDrawImage = CanvasRenderingContext2D.prototype.drawImage
   CanvasRenderingContext2D.prototype.drawImage = function (...args) {
-    if (args[0] instanceof HTMLImageElement && willTaintCanvas(args[0])) {
-      const result = getBase64Image(args[0].src)
-      if (result instanceof HTMLImageElement) {
-        args[0] = result
-      } else if (result instanceof Promise) {
-        result.then(image => {
-          args[0] = image
-          realDrawImage.apply(this, args)
-        })
-        return
-      }
+    // assume only image will taint canvas
+    const image = args[0]
+    const isImage = image instanceof HTMLImageElement
+    if (!isImage) {
+      realDrawImage.apply(this, args)
+      return
     }
-    realDrawImage.apply(this, args)
+    // skip zero size or usable current source but pending load
+    if (image.naturalWidth === 0 || image.naturalHeight === 0 || !image.complete) return
+    // handle normal image
+    if (!willTaintCanvas(image)) {
+      realDrawImage.apply(this, args)
+      return
+    }
+    // pass cors img to hook helper
+    const result = getBase64Image(image.currentSrc || image.src)
+    if (result instanceof HTMLImageElement) {
+      args[0] = result
+      realDrawImage.apply(this, args)
+      return
+    }
+    // assume delaying tainted draw does not matter
+    if (result instanceof Promise) {
+      result.then(image => {
+        if (!image) return
+        args[0] = image
+        realDrawImage.apply(this, args)
+      })
+    }
   }
 })()
