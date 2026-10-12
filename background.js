@@ -602,9 +602,9 @@ function addMessageHandler() {
       case 'request_cors_url': {
         ;(async () => {
           const release = await semaphore.acquire()
-          const res = await fetch(request.url)
-          release()
+          const res = await fetch(request.url, {credentials: 'omit'})
           const blob = await res.blob()
+          release()
           const reader = new FileReader()
           const dataUrl = await new Promise(resolve => {
             reader.onload = () => resolve(reader.result)
