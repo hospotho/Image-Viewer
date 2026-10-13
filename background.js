@@ -170,17 +170,29 @@ async function getImageLocalRealSize(id, src) {
 async function fetchDataUrl(src) {
   const release = await semaphore.acquire()
   try {
-    const res = await fetch(src, {signal: AbortSignal.timeout(10000)})
+    const res = await fetch(src, {
+      credentials: 'omit',
+      // only supported by chrome but both chrome and firefox have LNA protection
+      targetAddressSpace: 'public',
+      signal: AbortSignal.timeout(10000)
+    })
+    // only image and css are allowed to bypass cors
+    const type = res.headers.get('content-type') || ''
+    const mime = type.split(';')[0].trim().toLowerCase()
+    if (!mime.startsWith('image/') && mime !== 'application/octet-stream' && mime !== 'text/css') {
+      return ['', '']
+    }
     const blob = await res.blob()
-    return new Promise(resolve => {
+    const dataUrl = await new Promise(resolve => {
       const reader = new FileReader()
-      reader.onload = e => resolve(e.target.result)
+      reader.onload = () => resolve(reader.result)
       reader.onerror = () => resolve('')
       reader.readAsDataURL(blob)
     })
+    return [dataUrl, mime]
   } catch (error) {
     console.log(`Failed to load ${src}`)
-    return ''
+    return ['', '']
   } finally {
     release()
   }
@@ -197,7 +209,7 @@ async function getLocalUrl(tabId, src) {
     return src
   }
 
-  const dataUrl = await fetchDataUrl(src)
+  const [dataUrl] = await fetchDataUrl(src)
   srcLocalUrlMap.set(src, dataUrl)
   return dataUrl
 }
@@ -601,17 +613,20 @@ function addMessageHandler() {
       }
       case 'request_cors_url': {
         ;(async () => {
-          const release = await semaphore.acquire()
-          const res = await fetch(request.url, {credentials: 'omit'})
-          const blob = await res.blob()
-          release()
-          const reader = new FileReader()
-          const dataUrl = await new Promise(resolve => {
-            reader.onload = () => resolve(reader.result)
-            reader.readAsDataURL(blob)
-          })
-          const mime = res.headers.get('content-type').split(';')[0] || 'image/jpeg'
-          sendResponse([dataUrl, mime])
+          // url is untrusted input
+          let url
+          try {
+            url = new URL(request.url)
+          } catch (error) {
+            sendResponse(['', ''])
+            return
+          }
+          if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+            sendResponse(['', ''])
+            return
+          }
+          const result = await fetchDataUrl(url.href)
+          sendResponse(result)
         })()
         return true
       }
