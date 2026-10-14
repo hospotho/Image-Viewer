@@ -85,7 +85,7 @@
     if (!result) return
     const [id, src] = result
     const [dataUrl, mime] = await safeSendMessage({msg: 'request_cors_url', url: src})
-    if (mime?.startsWith('image/')) sendResponse(id, dataUrl)
+    if (mime?.startsWith('image/') || mime?.startsWith('application/octet-stream')) sendResponse(id, dataUrl)
     else sendResponse(id, '')
   })
 })()
