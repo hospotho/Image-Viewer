@@ -1330,9 +1330,10 @@ window.ImageViewer = (function () {
       window.addEventListener(
         'keyup',
         e => {
-          e.stopImmediatePropagation()
           const released = (e.getModifierState('AltGraph') && e.key === 'Control') || (e.ctrlKey && e.key === 'AltGraph')
           ctrlWithAltGraph = !released && ctrlWithAltGraph
+          if (!document.body.classList.contains('iv-attached')) return
+          e.stopImmediatePropagation()
           keyupHandlerList.forEach(func => func(e))
         },
         true
