@@ -1799,7 +1799,11 @@ window.ImageViewerUtils = (function () {
     const regexList = []
     for (const str of rawDomainList) {
       if (str[0] === '/' && str[str.length - 1] === '/') {
-        regexList.push(new RegExp(str.slice(1, -1)))
+        try {
+          regexList.push(new RegExp(str.slice(1, -1)))
+        } catch (e) {
+          console.error(`Invalid domain regex: ${str}`)
+        }
       } else {
         domainList.push(str)
       }

@@ -13,7 +13,11 @@
   const regexList = []
   for (const str of options.hoverCheckDisableList) {
     if (str[0] === '/' && str[str.length - 1] === '/') {
-      regexList.push(str)
+      try {
+        regexList.push(new RegExp(str.slice(1, -1)))
+      } catch (e) {
+        console.error(`Invalid domain regex: ${str}`)
+      }
     } else {
       domainList.push(str)
     }
