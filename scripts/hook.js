@@ -1,4 +1,4 @@
-;(function () {
+;(async function () {
   'use strict'
 
   // prevent image blob revoked
@@ -38,6 +38,112 @@
     if (!isImage) realRevoke(url)
   }
 
+  if (!crypto.subtle || document.contentType !== 'text/html') return
+
+  const realCall = Function.prototype.call.bind(Function.prototype.call)
+  const realApply = Function.prototype.apply
+  const realMapGet = Map.prototype.get
+  const realMapSet = Map.prototype.set
+  const realMapDelete = Map.prototype.delete
+  const realFetch = window.fetch.bind(window)
+  const realSetTimeout = window.setTimeout.bind(window)
+  const realClearTimeout = window.clearTimeout.bind(window)
+  const realDispatch = window.dispatchEvent.bind(window)
+  const realBtoa = window.btoa.bind(window)
+  const realAtob = window.atob.bind(window)
+  const getRandomValues = crypto.getRandomValues.bind(crypto)
+  const encrypt = crypto.subtle.encrypt.bind(crypto.subtle)
+  const decrypt = crypto.subtle.decrypt.bind(crypto.subtle)
+  const realParse = JSON.parse
+  const realImageSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src').set
+  const realEventDetail = Object.getOwnPropertyDescriptor(CustomEvent.prototype, 'detail').get
+  const realReadAsDataURL = FileReader.prototype.readAsDataURL
+  const realAddEventListener = EventTarget.prototype.addEventListener
+  const withResolvers = Promise.withResolvers.bind(Promise)
+  const realThen = Promise.prototype.then
+
+  const RealImage = Image
+  const RealPromise = Promise
+  const RealFileReader = FileReader
+  const RealCustomEvent = CustomEvent
+  const encoder = new TextEncoder()
+  const decoder = new TextDecoder()
+  const encodeText = encoder.encode.bind(encoder)
+  const decodeText = decoder.decode.bind(decoder)
+
+  let bridgeKey = null
+  let channel = ''
+  let requestId = 0
+  const resolveMap = new Map()
+
+  function getCryptoParams(iv, id, direction) {
+    return {name: 'AES-GCM', iv: iv, additionalData: encodeText(`${channel}:${id}:${direction}`), tagLength: 128}
+  }
+  async function sendRequest(src) {
+    // prepare request promise
+    const id = ++requestId
+    const {promise, resolve} = withResolvers()
+    const timeout = realSetTimeout(() => resolve('') || realCall(realMapDelete, resolveMap, id), 20000)
+    const _resolve = result => resolve(result) || realClearTimeout(timeout) || realCall(realMapDelete, resolveMap, id)
+    realCall(realMapSet, resolveMap, id, _resolve)
+    // encrypt src
+    const iv = getRandomValues(new Uint8Array(12))
+    const bytes = encodeText(src)
+    const cipher = await encrypt(getCryptoParams(iv, id, 'request'), bridgeKey, bytes)
+    const payload = new Uint8Array(iv.length + cipher.byteLength)
+    payload.set(iv)
+    payload.set(new Uint8Array(cipher), iv.length)
+    let payloadStr = ''
+    for (let i = 0; i < payload.length; i += 32768) {
+      payloadStr += String.fromCharCode(...payload.subarray(i, i + 32768))
+    }
+    // send request
+    const payloadB64 = realBtoa(payloadStr)
+    const event = new RealCustomEvent(`${channel}-request`, {detail: JSON.stringify([id, payloadB64])})
+    realDispatch(event)
+    return promise
+  }
+  async function handleResponse(e) {
+    try {
+      // process response
+      const detail = realCall(realEventDetail, e)
+      const [id, payloadB64] = realParse(detail)
+      const resolve = realCall(realMapGet, resolveMap, id)
+      if (!resolve || typeof payloadB64 !== 'string') return
+      // decrypt dataUrl
+      const payloadStr = realAtob(payloadB64)
+      const payload = Uint8Array.from(payloadStr, char => char.charCodeAt(0))
+      if (payload.length < 28) return
+      const iv = payload.subarray(0, 12)
+      const cipher = payload.subarray(12)
+      const bytes = await decrypt(getCryptoParams(iv, id, 'response'), bridgeKey, cipher)
+      const dataUrl = decodeText(bytes)
+      // complete request
+      resolve(dataUrl)
+    } catch (error) {}
+  }
+
+  // init handoff must finish at document_start
+  window.addEventListener(
+    'iv-hook-init',
+    async e => {
+      try {
+        const [eventChannel, keyStr] = JSON.parse(e.detail)
+        if (typeof eventChannel !== 'string' || !/^iv-hook-[0-9a-f-]{36}$/.test(eventChannel)) return
+        const keyB64 = atob(keyStr)
+        const keyBytes = Uint8Array.from(keyB64, c => c.charCodeAt(0))
+        if (keyBytes.length !== 32) return
+        const keyPromise = crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['encrypt', 'decrypt']).catch(() => {})
+        keyBytes.fill(0)
+        channel = eventChannel
+        window.addEventListener(`${channel}-response`, handleResponse)
+        e.preventDefault()
+        bridgeKey = await keyPromise
+      } catch (error) {}
+    },
+    {once: true}
+  )
+
   // canvas cache
   const srcBase64Map = new Map()
   const imageCORSMap = new Map()
@@ -49,73 +155,65 @@
   // prevent canvas tainted
   async function getImageDataURL(src) {
     try {
-      const res = await fetch(src)
+      const res = await realFetch(src)
       if (res.ok) {
         const blob = await res.blob()
-        const reader = new FileReader()
-        const dataUrl = await new Promise(resolve => {
+        const reader = new RealFileReader()
+        const dataUrl = await new RealPromise(resolve => {
           reader.onload = () => resolve(reader.result)
-          reader.readAsDataURL(blob)
+          reader.onerror = () => resolve('')
+          realCall(realReadAsDataURL, reader, blob)
         })
         return dataUrl
       }
     } catch (error) {}
 
-    // only possible to communicate through DOM in MAIN world
-    const {promise, resolve} = Promise.withResolvers()
-    const div = document.createElement('div')
-    div.id = 'iv-request-' + Math.random().toString(16).slice(2)
-    div.style.display = 'none'
-    div.setAttribute('iv-url', src)
+    while (true) {
+      if (bridgeKey) break
+      await new RealPromise(resolve => realSetTimeout(resolve, 50))
+    }
 
-    const observer = new MutationObserver(() => {
-      observer.disconnect()
-      resolve(div.getAttribute('iv-url'))
-      document.body.removeChild(div)
-    })
-    observer.observe(div, {attributeFilter: ['iv-url']})
-    document.body.appendChild(div)
-
-    const dataUrl = await promise
+    // communicate through encrypted secret channel
+    const dataUrl = await sendRequest(src)
     return dataUrl
   }
   function getBase64Image(src) {
-    const cache = srcBase64Map.get(src)
+    const cache = realCall(realMapGet, srcBase64Map, src)
     if (cache !== undefined) return cache
 
-    const promise = new Promise(_resolve => {
+    const promise = new RealPromise(_resolve => {
       const resolve = result => {
-        srcBase64Map.set(src, result)
+        realCall(realMapSet, srcBase64Map, src, result)
         _resolve(result)
       }
 
-      const dataImage = new Image()
-      dataImage.onload = () => resolve(dataImage)
-      dataImage.onerror = () => resolve(null)
-      getImageDataURL(src).then(dataUrl => (dataImage.src = dataUrl))
+      const dataImage = new RealImage()
+      realCall(realAddEventListener, dataImage, 'load', () => resolve(dataImage))
+      realCall(realAddEventListener, dataImage, 'error', () => resolve(null))
+      realCall(realThen, getImageDataURL(src), dataUrl => realCall(realImageSrc, dataImage, dataUrl))
     })
 
-    srcBase64Map.set(src, promise)
+    realCall(realMapSet, srcBase64Map, src, promise)
     return promise
   }
   function willTaintCanvas(image) {
     const src = image.currentSrc
-    const cached = imageCORSMap.get(src)
+    const cached = realCall(realMapGet, imageCORSMap, src)
     if (cached !== undefined) return cached
     // assume crossOrigin attr consistent
     if (image.crossOrigin === 'anonymous') {
-      imageCORSMap.set(src, false)
+      realCall(realMapSet, imageCORSMap, src, false)
       return false
     }
     // reset tainted flag by assign canvas size
     canvas.width = 1
-    realDrawImage.apply(ctx, [image, 0, 0])
+    realCall(realApply, realDrawImage, ctx, [image, 0, 0])
     try {
       ctx.getImageData(0, 0, 1, 1)
-      imageCORSMap.set(src, false)
+      realCall(realMapSet, imageCORSMap, src, false)
       return false
     } catch (error) {
-      imageCORSMap.set(src, true)
+      realCall(realMapSet, imageCORSMap, src, true)
       return true
     }
   }
@@ -127,29 +225,29 @@
     const image = args[0]
     const isImage = image instanceof HTMLImageElement
     if (!isImage) {
-      realDrawImage.apply(this, args)
+      realCall(realApply, realDrawImage, this, args)
       return
     }
     // skip zero size or usable current source but pending load
     if (image.naturalWidth === 0 || image.naturalHeight === 0 || !image.complete) return
     // handle normal image
     if (!willTaintCanvas(image)) {
-      realDrawImage.apply(this, args)
+      realCall(realApply, realDrawImage, this, args)
       return
     }
     // pass cors img to hook helper
     const result = getBase64Image(image.currentSrc || image.src)
-    if (result instanceof HTMLImageElement) {
+    if (result instanceof RealImage) {
       args[0] = result
-      realDrawImage.apply(this, args)
+      realCall(realApply, realDrawImage, this, args)
       return
     }
     // assume delaying tainted draw does not matter
-    if (result instanceof Promise) {
-      result.then(image => {
+    if (result instanceof RealPromise) {
+      realCall(realThen, result, image => {
         if (!image) return
         args[0] = image
-        realDrawImage.apply(this, args)
+        realCall(realApply, realDrawImage, this, args)
       })
     }
   }
