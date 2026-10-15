@@ -31,6 +31,7 @@
   let terminated = false
   const imageDataList = []
 
+  // process anchors with size
   let left = 0
   let right = anchorList.length - 1
   while (true) {
@@ -47,6 +48,7 @@
     }
   }
 
+  // process remaining anchors
   ;(async () => {
     const action = async anchor => {
       const attrSize = anchor.getAttribute('iv-size')
@@ -62,14 +64,14 @@
         if (size >= minSize) imageDataList.push({src: anchor.href, dom: anchor})
       }
     }
-    setTimeout(() => (complete = true), 1000)
+    setTimeout(() => (complete = true), 3000)
   })()
 
   // wait for image data
   const overtime = setTimeout(() => alert('Images still loading'), 3000)
   while (true) {
     await new Promise(resolve => setTimeout(resolve, 100))
-    if (imageDataList.length) break
+    if (complete || imageDataList.length) break
   }
   clearTimeout(overtime)
 
