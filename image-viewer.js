@@ -2679,7 +2679,7 @@ window.ImageViewer = (function () {
       if (webtoonMode && e.pointerType === 'touch' && touchPointList.length < 2) return
       e.preventDefault()
       if (e.pointerType === 'mouse') container.setPointerCapture(e.pointerId)
-      else touchPointList.forEach(point => container.setPointerCapture(point.pointerId))
+      else context.pointerMap.forEach((point, pointerId) => point[0] && container.setPointerCapture(pointerId))
       // update context
       context.dragFlag = true
       if (touchPointList.length < 2) {
