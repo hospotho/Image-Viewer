@@ -504,6 +504,22 @@
           alert(getMessage('import_failed_invalid_json'))
           return
         }
+        const isSameType = (obj, ref) => {
+          for (const key in ref) {
+            const value = obj[key]
+            if (value === undefined) continue
+            const refValue = ref[key]
+            const refConstructor = refValue.constructor
+            if (value?.constructor !== refConstructor) return false
+            if (refConstructor === Object && !isSameType(value, refValue)) return false
+            if (refConstructor === Array && value.some(item => item?.constructor !== String)) return false
+          }
+          return true
+        }
+        if (importData?.constructor !== Object || !isSameType(importData, defaultOptions)) {
+          alert(getMessage('import_failed_invalid_json'))
+          return
+        }
 
         const options = structuredClone(defaultOptions)
         for (const key in defaultOptions) {
@@ -512,9 +528,10 @@
           }
         }
         if ('viewerHotkey' in importData) {
-          options.viewerHotkey = {
-            ...defaultOptions.viewerHotkey,
-            ...importData.viewerHotkey
+          for (const key in defaultOptions.viewerHotkey) {
+            const keyList = importData.viewerHotkey[key]
+            if (!keyList) continue
+            options.viewerHotkey[key] = keyList.map(hotkey => hotkey.trim()).filter(Boolean)
           }
         }
         chrome.storage.sync.set({options: options}, () => {
