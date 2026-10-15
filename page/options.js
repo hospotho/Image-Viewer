@@ -144,6 +144,7 @@
 
   function resetDefaultOptions() {
     chrome.storage.sync.set({options: defaultOptions}, () => {
+      if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
       alert('Options have been reset to default.')
       console.log(defaultOptions)
     })
