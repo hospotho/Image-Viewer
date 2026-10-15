@@ -1452,7 +1452,9 @@ window.ImageViewerUtils = (function () {
       .map(str => str.trim().split(/ +/))
       .map(([url, size]) => [url, size ? Number(size.slice(0, -1)) : 1])
       .sort((a, b) => b[1] - a[1])
-      .map(([url]) => cachedGetUrl(url).href)
+      .map(([url]) => cachedGetUrl(url)?.href)
+      .filter(Boolean)
+    if (srcsetList.length === 0) return ''
     pendingBadImageMap.set(
       srcsetList[0],
       srcsetList.slice(1).filter(url => url !== srcsetList[0])
@@ -1462,6 +1464,7 @@ window.ImageViewerUtils = (function () {
   function getAttrUrl(value) {
     const src = cachedDeepDecode(value)
     const url = cachedGetUrl(src)
+    if (url === null) return ''
     const proxy = cachedGetProxySrc(url, /https?:\/\/\S+/g)
     return proxy || url.href
   }
@@ -1513,6 +1516,8 @@ window.ImageViewerUtils = (function () {
 
       // count multiple match as srcset
       const attrUrl = length > 1 ? getSrcsetUrl(value) : getAttrUrl(value)
+      if (attrUrl === '') continue
+
       if (attrUrl !== src) {
         attrList.push({name: name, url: attrUrl})
       }
@@ -1524,7 +1529,8 @@ window.ImageViewerUtils = (function () {
 
     // check srcset
     if (img.srcset && img.srcset !== src) {
-      attrList.push({name: 'srcset', url: getSrcsetUrl(img.srcset)})
+      const srcsetUrl = getSrcsetUrl(img.srcset)
+      if (srcsetUrl !== '') attrList.push({name: 'srcset', url: srcsetUrl})
     }
 
     // check url
