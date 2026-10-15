@@ -197,6 +197,7 @@
   // download
   async function getCorsImageBinary(url) {
     const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: url})
+    if (dataUrl === '') return new Uint8Array(0)
     return fetch(dataUrl)
       .then(res => res.arrayBuffer())
       .then(buffer => new Uint8Array(buffer))
@@ -205,8 +206,7 @@
     const release = await semaphore.acquire()
     const host = new URL(url).hostname
     if (corsHostSet.has(host)) {
-      const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: url})
-      url = dataUrl
+      return getCorsImageBinary(url).finally(release)
     }
     return fetch(url)
       .then(res => res.arrayBuffer())
@@ -225,8 +225,7 @@
       const filename = indexString + name + extension
       filenameList.push(filename)
 
-      const promise = getImageBinary(url)
-      promise.finally(() => (progress += 1))
+      const promise = getImageBinary(url).finally(() => (progress += 1))
       imageBinaryStream.push(promise)
     }
 
