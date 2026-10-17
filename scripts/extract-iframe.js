@@ -1,19 +1,6 @@
 window.ImageViewerExtractor = (function () {
   'use strict'
 
-  const safeSendMessage = function (...args) {
-    if (chrome.runtime?.id) {
-      return chrome.runtime.sendMessage(...args)
-    }
-  }
-
-  async function getSubFrameRedirectedHref() {
-    const subFrame = document.getElementsByTagName('iframe')
-    const subFrameHref = [...subFrame].map(iframe => iframe.src)
-    const subFrameRedirectedHref = subFrameHref.length ? await safeSendMessage({msg: 'get_redirect', data: subFrameHref}) : []
-    return subFrameRedirectedHref
-  }
-
   function isNodeSizeEnough(node, minWidth, minHeight) {
     const widthAttr = node.getAttribute('iv-width')
     const heightAttr = node.getAttribute('iv-height')
@@ -123,9 +110,8 @@ window.ImageViewerExtractor = (function () {
 
   return {
     extractImage: async function (options) {
-      const subFrameRedirectedHref = await getSubFrameRedirectedHref()
       const imageList = options.canvasMode ? getCanvasList(options) : getImageList(options)
-      return [location.href, subFrameRedirectedHref, imageList]
+      return imageList
     }
   }
 })()

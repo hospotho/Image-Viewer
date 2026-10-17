@@ -36,7 +36,6 @@ const srcBitSizeMap = new Map()
 const srcLocalRealSizeMap = new Map()
 const srcLocalRealSizeResolveMap = new Map()
 const srcLocalUrlMap = new Map()
-const redirectUrlMap = new Map()
 const tabSubtreeMap = new Map()
 let offscreenPromise = null
 
@@ -52,6 +51,18 @@ chrome.scripting.executeScript = async function () {
   }
 }
 
+async function loadExtractor(tabId, frameId) {
+  const target = {tabId: tabId, frameIds: [frameId]}
+  await chrome.scripting.executeScript({
+    args: [currOptions, frameId],
+    target: target,
+    func: (options, frameId) => {
+      window.ImageViewerOption = options
+      if (window.parent === window.top) window.parent.postMessage({type: 'iv-frame-id', frameId: String(frameId)}, '*')
+    }
+  })
+  return chrome.scripting.executeScript({target: target, files: ['/scripts/activate-worker.js', '/scripts/extract-iframe.js']})
+}
 function passOptionToTab(id, option, frameIds = undefined) {
   return chrome.scripting.executeScript({
     args: [option],
@@ -212,22 +223,6 @@ async function getLocalUrl(tabId, src) {
   const [dataUrl] = await fetchDataUrl(src)
   srcLocalUrlMap.set(src, dataUrl)
   return dataUrl
-}
-async function getRedirectUrl(url) {
-  if (url === '' || url === 'about:blank' || url.startsWith('javascript')) return url
-
-  const cache = redirectUrlMap.get(url)
-  if (cache !== undefined) return cache
-
-  try {
-    const res = await fetch(url)
-    const finalUrl = res.redirected ? res.url : url
-    redirectUrlMap.set(url, finalUrl)
-    return finalUrl
-  } catch (error) {}
-
-  redirectUrlMap.set(url, url)
-  return url
 }
 async function getFrameFromOffscreen(url) {
   const existingContexts = await chrome.runtime.getContexts({contextTypes: ['OFFSCREEN_DOCUMENT']})
@@ -420,8 +415,7 @@ function addMessageHandler() {
         return
       }
       case 'load_extractor': {
-        passOptionToTab(sender.tab.id, currOptions, [sender.frameId])
-        chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [sender.frameId]}, files: ['/scripts/activate-worker.js', '/scripts/extract-iframe.js']})
+        loadExtractor(sender.tab.id, sender.frameId)
         _sendResponse()
         return
       }
@@ -529,44 +523,33 @@ function addMessageHandler() {
             return
           }
 
-          const relation = new Map()
+          const frameMap = new Map(frameList.slice(1).map(frame => [frame.frameId, frame]))
           const pageDataList = []
           const asyncList = []
           for (const result of results) {
-            // load extractor if failed to extract
-            if (!result.result) {
-              passOptionToTab(sender.tab.id, currOptions, [result.frameId])
-              chrome.scripting.executeScript({target: {tabId: sender.tab.id, frameIds: [result.frameId]}, files: ['/scripts/activate-worker.js', '/scripts/extract-iframe.js']})
+            const imageList = result.result
+            // extractor unloaded by navigation
+            if (!imageList) {
+              loadExtractor(sender.tab.id, result.frameId)
               continue
             }
-            const [href, subHrefList, imageList] = result.result
-            for (const subHref of subHrefList) {
-              if (subHref !== href) relation.set(subHref, href)
-            }
+            let frame = frameMap.get(result.frameId)
+            while (frameMap.has(frame.parentFrameId)) frame = frameMap.get(frame.parentFrameId)
             const localImageList = imageList.map(src => getLocalUrl(sender.tab.id, src))
-            pageDataList.push([href, localImageList])
+            pageDataList.push([frame.frameId, localImageList])
             asyncList.push(localImageList)
           }
 
           await Promise.all(asyncList.flat())
 
           const result = []
-          for (const [href, asyncList] of pageDataList) {
-            let top = href
-            while (relation.has(top)) top = relation.get(top)
+          for (const [frameId, asyncList] of pageDataList) {
             const imageList = await Promise.all(asyncList)
             for (const image of imageList) {
-              result.push([image, top])
+              result.push([image, frameId])
             }
           }
           sendResponse(result)
-        })()
-        return true
-      }
-      case 'get_redirect': {
-        ;(async () => {
-          const resultList = await Promise.all(request.data.map(getRedirectUrl))
-          sendResponse(resultList)
         })()
         return true
       }

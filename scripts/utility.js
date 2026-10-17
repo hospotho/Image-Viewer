@@ -1870,16 +1870,7 @@ window.ImageViewerUtils = (function () {
   // get iframe images
   async function getIframeImageList(options) {
     const iframeList = deepQuerySelectorAll(document.body, 'iframe')
-    const iframeSrcList = []
-    for (const iframe of iframeList) {
-      // may throw security error
-      try {
-        const src = iframe.src || iframe.contentWindow.location.href
-        iframeSrcList.push(src)
-      } catch (e) {}
-    }
-    const filteredList = iframeSrcList.filter(src => src !== '' && src !== 'about:blank')
-    if (filteredList.length === 0) return []
+    if (iframeList.length === 0) return []
 
     const minSize = Math.min(options.minWidth, options.minHeight)
     const message = {msg: 'extract_frames', minSize: minSize}
@@ -1899,32 +1890,18 @@ window.ImageViewerUtils = (function () {
       const task = safeSendMessage(message)
       options.canvasMode ? (lastIframeCanvasTask = task) : (lastIframeImageTask = task)
     }
-    const iframeImage = (await currTask) || []
-    if (iframeImage.length === 0) return []
+    const iframeImageList = (await currTask) || []
+    if (iframeImageList.length === 0) return []
 
-    // src + iframe url
-    const uniqueIframeImage = []
-    const uniqueIframeImageUrls = new Set()
-    for (const image of iframeImage) {
-      if (!uniqueIframeImageUrls.has(image[0])) {
-        uniqueIframeImageUrls.add(image[0])
-        uniqueIframeImage.push(image)
-      }
-    }
-
-    // src + iframe dom
+    // map image to iframe by frame id
     const imageDataList = []
-    const iframeRedirectSrcList = (await safeSendMessage({msg: 'get_redirect', data: iframeSrcList})) || []
-    const rawIframeRedirectSrcList = iframeRedirectSrcList.map(src => src.slice(0, src.indexOf('/', 8)))
-    for (const [imageSrc, iframeSrc] of uniqueIframeImage) {
-      const index = iframeRedirectSrcList.indexOf(iframeSrc)
-      if (index !== -1) {
-        imageDataList.push({src: imageSrc, dom: iframeList[index]})
-        continue
-      }
-      // document url maybe change, search index by url origin
-      const rawIndex = rawIframeRedirectSrcList.indexOf(iframeSrc)
-      imageDataList.push({src: imageSrc, dom: iframeList[rawIndex !== -1 ? rawIndex : 0]})
+    const uniqueImageSet = new Set()
+    const frameIdMap = new Map(iframeList.map(iframe => [iframe.frameId, iframe]))
+    for (const [imageSrc, frameId] of iframeImageList) {
+      if (uniqueImageSet.has(imageSrc)) continue
+      uniqueImageSet.add(imageSrc)
+      const iframe = frameIdMap.get(frameId) || iframeList[0]
+      imageDataList.push({src: imageSrc, dom: iframe})
     }
 
     const imageFailureCountMap = ImageViewer('get_image_failure_count')

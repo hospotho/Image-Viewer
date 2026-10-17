@@ -1,10 +1,46 @@
-;(function () {
+;(async function () {
   'use strict'
 
   const safeSendMessage = function (...args) {
     if (chrome.runtime?.id) {
       return chrome.runtime.sendMessage(...args)
     }
+  }
+
+  // handle iframe tagging
+  if (window.top === window.self) {
+    const deepQuerySelectorAll = (target, selector) => {
+      const result = []
+      const stack = [target]
+      const visited = []
+      while (stack.length) {
+        const current = stack.shift()
+        // check shadowRoot
+        for (const node of current.querySelectorAll('*:not([no-shadow])')) {
+          if (node.shadowRoot) {
+            stack.push(node.shadowRoot)
+          } else {
+            visited.push(node)
+          }
+        }
+        result.push(...current.querySelectorAll(selector))
+      }
+      for (const node of visited) {
+        node.setAttribute('no-shadow', '')
+      }
+      return result
+    }
+    window.addEventListener('message', e => {
+      const data = e.data
+      if (!e.isTrusted || data?.type !== 'iv-frame-id' || typeof data.frameId !== 'string') return
+      const iframeList = deepQuerySelectorAll(document, 'iframe')
+      for (const iframe of iframeList) {
+        if (iframe.contentWindow !== e.source) continue
+        iframe.frameId = data.frameId
+        iframe.setAttribute('iv-frame-id', data.frameId)
+        return
+      }
+    })
   }
 
   async function loadOptions() {
@@ -210,6 +246,10 @@
   }
 
   async function init() {
+    if (document.readyState === 'loading') {
+      await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve, {once: true}))
+    }
+
     // safe to send message in iframe
     if (window.top !== window.self) {
       safeSendMessage('load_extractor')
