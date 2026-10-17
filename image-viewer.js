@@ -368,7 +368,7 @@ window.ImageViewer = (function () {
       const referrerPolicy = dom.getAttribute('referrerpolicy')
       if (referrerPolicy) img.referrerPolicy = referrerPolicy
       if (dom.tagName === 'IFRAME') {
-        img.setAttribute('data-iframe-src', dom.src)
+        if (dom.frameId !== undefined) img.setAttribute('data-iframe-id', dom.frameId)
         img.referrerPolicy = 'no-referrer'
       }
       img.src = delay ? EMPTY_IMAGE : data.src
@@ -568,9 +568,9 @@ window.ImageViewer = (function () {
     const dom = imageDataList.find(data => data.src === imgUrl)?.dom
     if (dom && dom.getRootNode({composed: true}) === document) return dom
 
-    const iframeSrc = img.getAttribute('data-iframe-src')
-    if (iframeSrc) {
-      return [...document.getElementsByTagName('iframe')].find(iframe => iframe.src === iframeSrc)
+    const iframeId = img.getAttribute('data-iframe-id')
+    if (iframeId) {
+      return [...document.getElementsByTagName('iframe')].find(iframe => iframe.frameId === String(iframeId))
     }
 
     let lastNode = null
