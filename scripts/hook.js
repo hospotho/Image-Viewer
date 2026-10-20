@@ -1,4 +1,4 @@
-;(async function () {
+;(function () {
   'use strict'
 
   // prevent image blob revoked
@@ -38,7 +38,7 @@
     if (!isImage) realRevoke(url)
   }
 
-  if (!crypto.subtle || document.contentType !== 'text/html') return
+  if (!crypto.randomUUID || document.contentType !== 'text/html') return
 
   const realCall = Function.prototype.call.bind(Function.prototype.call)
   const realApply = Function.prototype.apply
@@ -49,12 +49,8 @@
   const realSetTimeout = window.setTimeout.bind(window)
   const realClearTimeout = window.clearTimeout.bind(window)
   const realDispatch = window.dispatchEvent.bind(window)
-  const realBtoa = window.btoa.bind(window)
-  const realAtob = window.atob.bind(window)
-  const getRandomValues = crypto.getRandomValues.bind(crypto)
-  const encrypt = crypto.subtle.encrypt.bind(crypto.subtle)
-  const decrypt = crypto.subtle.decrypt.bind(crypto.subtle)
   const realParse = JSON.parse
+  const realStringify = JSON.stringify
   const realImageSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src').set
   const realEventDetail = Object.getOwnPropertyDescriptor(CustomEvent.prototype, 'detail').get
   const realReadAsDataURL = FileReader.prototype.readAsDataURL
@@ -66,80 +62,40 @@
   const RealPromise = Promise
   const RealFileReader = FileReader
   const RealCustomEvent = CustomEvent
-  const encoder = new TextEncoder()
-  const decoder = new TextDecoder()
-  const encodeText = encoder.encode.bind(encoder)
-  const decodeText = decoder.decode.bind(decoder)
 
-  let bridgeKey = null
   let channel = ''
   let requestId = 0
   const resolveMap = new Map()
 
-  function getCryptoParams(iv, id, direction) {
-    return {name: 'AES-GCM', iv: iv, additionalData: encodeText(`${channel}:${id}:${direction}`), tagLength: 128}
-  }
-  async function sendRequest(src) {
+  function sendRequest(src) {
     // prepare request promise
     const id = ++requestId
     const {promise, resolve} = withResolvers()
     const timeout = realSetTimeout(() => resolve('') || realCall(realMapDelete, resolveMap, id), 20000)
     const _resolve = result => resolve(result) || realClearTimeout(timeout) || realCall(realMapDelete, resolveMap, id)
     realCall(realMapSet, resolveMap, id, _resolve)
-    // encrypt src
-    const iv = getRandomValues(new Uint8Array(12))
-    const bytes = encodeText(src)
-    const cipher = await encrypt(getCryptoParams(iv, id, 'request'), bridgeKey, bytes)
-    const payload = new Uint8Array(iv.length + cipher.byteLength)
-    payload.set(iv)
-    payload.set(new Uint8Array(cipher), iv.length)
-    let payloadStr = ''
-    for (let i = 0; i < payload.length; i += 32768) {
-      payloadStr += String.fromCharCode(...payload.subarray(i, i + 32768))
-    }
     // send request
-    const payloadB64 = realBtoa(payloadStr)
-    const event = new RealCustomEvent(`${channel}-request`, {detail: JSON.stringify([id, payloadB64])})
+    const event = new RealCustomEvent(`${channel}-request`, {detail: realStringify([id, src])})
     realDispatch(event)
     return promise
   }
-  async function handleResponse(e) {
-    try {
-      // process response
-      const detail = realCall(realEventDetail, e)
-      const [id, payloadB64] = realParse(detail)
-      const resolve = realCall(realMapGet, resolveMap, id)
-      if (!resolve || typeof payloadB64 !== 'string') return
-      // decrypt dataUrl
-      const payloadStr = realAtob(payloadB64)
-      const payload = Uint8Array.from(payloadStr, char => char.charCodeAt(0))
-      if (payload.length < 28) return
-      const iv = payload.subarray(0, 12)
-      const cipher = payload.subarray(12)
-      const bytes = await decrypt(getCryptoParams(iv, id, 'response'), bridgeKey, cipher)
-      const dataUrl = decodeText(bytes)
-      // complete request
-      resolve(dataUrl)
-    } catch (error) {}
+  function handleResponse(e) {
+    const detail = realCall(realEventDetail, e)
+    const [id, dataUrl] = realParse(detail)
+    const resolve = realCall(realMapGet, resolveMap, id)
+    if (!resolve) return
+    resolve(dataUrl)
   }
 
   // init handoff must finish at document_start
   window.addEventListener(
     'iv-hook-init',
-    async e => {
-      try {
-        const [eventChannel, keyStr] = JSON.parse(e.detail)
-        if (typeof eventChannel !== 'string' || !/^iv-hook-[0-9a-f-]{36}$/.test(eventChannel)) return
-        const keyB64 = atob(keyStr)
-        const keyBytes = Uint8Array.from(keyB64, c => c.charCodeAt(0))
-        if (keyBytes.length !== 32) return
-        const keyPromise = crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['encrypt', 'decrypt']).catch(() => {})
-        keyBytes.fill(0)
-        channel = eventChannel
-        window.addEventListener(`${channel}-response`, handleResponse)
-        e.preventDefault()
-        bridgeKey = await keyPromise
-      } catch (error) {}
+    e => {
+      const eventChannel = e.detail
+      if (typeof eventChannel !== 'string' || !/^iv-hook-[0-9a-f-]{36}$/.test(eventChannel)) return
+      channel = eventChannel
+      window.addEventListener(`${channel}-response`, handleResponse)
+      e.preventDefault()
     },
     {once: true}
   )
@@ -168,12 +124,7 @@
       }
     } catch (error) {}
 
-    while (true) {
-      if (bridgeKey) break
-      await new RealPromise(resolve => realSetTimeout(resolve, 50))
-    }
-
-    // communicate through encrypted secret channel
+    // communicate through secret channel
     const dataUrl = await sendRequest(src)
     return dataUrl
   }
