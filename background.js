@@ -183,8 +183,8 @@ async function fetchDataUrl(src) {
   try {
     const res = await fetch(src, {
       credentials: 'omit',
-      // only supported by chrome but both chrome and firefox have LNA protection
-      targetAddressSpace: 'public',
+      // 2026-10-21: loopback failed as expected, but public was recognized as unknown and failed
+      // targetAddressSpace: 'public',
       signal: AbortSignal.timeout(10000)
     })
     // only image and css are allowed to bypass cors
