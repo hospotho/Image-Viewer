@@ -1379,6 +1379,7 @@ window.ImageViewer = (function () {
       options.searchHotkey.slice(5).forEach((hotkey, i) => registerHotkey(COMMAND_ENUM.SEARCH_CUSTOM_BASE + i, [hotkey]))
     }
     function addViewportResizeEvent() {
+      const isMobile = navigator.userAgent.includes('Android')
       const viewport = window.visualViewport
       const viewer = shadowRoot.querySelector('#image-viewer')
       const webtoon = shadowRoot.querySelector('#iv-webtoon')
@@ -1395,7 +1396,7 @@ window.ImageViewer = (function () {
         // skip mobile address bar
         const prevWidth = Number(viewer.style.getPropertyValue('--width').slice(0, -2))
         const prevHeight = Number(viewer.style.getPropertyValue('--height').slice(0, -2))
-        if (prevWidth === viewport.width && prevHeight >= viewport.height) return
+        if (isMobile && prevWidth === viewport.width && prevHeight >= viewport.height) return
         // overlay existing scrollbar
         const scrollbarSize = webtoon.offsetWidth - webtoon.clientWidth
         fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
