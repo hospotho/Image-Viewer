@@ -522,7 +522,6 @@ window.ImageViewerUtils = (function () {
   function deepQuerySelectorAll(target, selector) {
     const result = []
     const stack = [target]
-    const visited = []
     while (stack.length) {
       const current = stack.shift()
       // check shadowRoot
@@ -530,13 +529,10 @@ window.ImageViewerUtils = (function () {
         if (node.shadowRoot) {
           stack.push(node.shadowRoot)
         } else {
-          visited.push(node)
+          node.setAttribute('no-shadow', '')
         }
       }
       result.push(...current.querySelectorAll(selector))
-    }
-    for (const node of visited) {
-      node.setAttribute('no-shadow', '')
     }
     return result
   }
