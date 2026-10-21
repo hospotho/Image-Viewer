@@ -118,18 +118,8 @@ async function fetchBitSize(src, useGetMethod = false) {
     release()
   }
 }
-async function getImageBitSize(src) {
-  const cache = srcBitSizeMap.get(src)
-  if (cache !== undefined) return cache
-
-  const promise = fetchBitSize(src)
-  srcBitSizeMap.set(src, promise)
-  return promise
-}
-async function getImageRealSize(src) {
-  const cache = srcLocalRealSizeMap.get(src)
-  if (cache !== undefined) return cache
-
+async function fetchRealSize(src) {
+  const release = await semaphore.acquire()
   const promise = new Promise(_resolve => {
     const resolve = size => {
       srcLocalRealSizeMap.set(src, size)
@@ -144,17 +134,13 @@ async function getImageRealSize(src) {
         resolve(size)
       })
       .catch(() => resolve([0, 0]))
+      .finally(release)
   })
-
-  srcLocalRealSizeMap.set(src, promise)
   return promise
 }
-async function getImageLocalRealSize(id, src) {
-  const cache = srcLocalRealSizeMap.get(src)
-  if (cache !== undefined) return cache
-
+async function fetchImageLocalRealSize(id, src) {
   const release = await semaphore.acquire()
-  const promise = new Promise(_resolve => {
+  const size = await new Promise(_resolve => {
     const resolve = size => {
       srcLocalRealSizeMap.set(src, size)
       _resolve(size)
@@ -174,9 +160,7 @@ async function getImageLocalRealSize(id, src) {
       }
     })
   })
-
-  srcLocalRealSizeMap.set(src, promise)
-  return promise
+  return size
 }
 async function fetchDataUrl(src) {
   const release = await semaphore.acquire()
@@ -208,21 +192,53 @@ async function fetchDataUrl(src) {
     release()
   }
 }
+
+async function getImageBitSize(src) {
+  const cache = srcBitSizeMap.get(src)
+  if (cache !== undefined) return cache
+
+  const promise = fetchBitSize(src)
+  srcBitSizeMap.set(src, promise)
+  return promise
+}
+async function getImageRealSize(src) {
+  const cache = srcLocalRealSizeMap.get(src)
+  if (cache !== undefined) return cache
+
+  const promise = fetchRealSize(src)
+  srcLocalRealSizeMap.set(src, promise)
+  return promise
+}
+async function getImageLocalRealSize(id, src) {
+  const cache = srcLocalRealSizeMap.get(src)
+  if (cache !== undefined) return cache
+
+  const promise = fetchImageLocalRealSize(id, src)
+  srcLocalRealSizeMap.set(src, promise)
+  return promise
+}
 async function getLocalUrl(tabId, src) {
   if (src.startsWith('data:')) return src
 
   const cache = srcLocalUrlMap.get(src)
   if (cache !== undefined) return cache
 
+  const {promise, resolve} = Promise.withResolvers()
+  srcLocalUrlMap.set(src, promise)
+
   const size = await getImageLocalRealSize(tabId, src)
   if (size[0] > 0) {
     srcLocalUrlMap.set(src, src)
+    resolve(src)
     return src
   }
 
-  const [dataUrl] = await fetchDataUrl(src)
-  srcLocalUrlMap.set(src, dataUrl)
-  return dataUrl
+  const [dataUrl, mime] = await fetchDataUrl(src)
+  const isImage = mime.startsWith('image/') || mime === 'application/octet-stream'
+  const result = isImage ? dataUrl : ''
+  srcLocalUrlMap.set(src, result)
+  resolve(result)
+  return result
 }
 async function getFrameFromOffscreen(url) {
   const existingContexts = await chrome.runtime.getContexts({contextTypes: ['OFFSCREEN_DOCUMENT']})
@@ -245,6 +261,7 @@ async function getFrameFromOffscreen(url) {
 
   return dataUrl
 }
+
 async function openNewTab(senderTab, url) {
   const subtree = tabSubtreeMap.get(senderTab.id)
   if (subtree === undefined) {
