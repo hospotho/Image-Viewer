@@ -147,18 +147,19 @@ async function fetchImageLocalRealSize(id, src) {
       release()
     }
     srcLocalRealSizeResolveMap.set(src, resolve)
-
-    chrome.scripting.executeScript({
-      args: [src],
-      target: {tabId: id},
-      func: src => {
-        const img = new Image()
-        img.onload = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [img.naturalWidth, img.naturalHeight]})
-        img.onerror = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [0, 0]})
-        setTimeout(() => img.complete || chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [0, 0]}), 10000)
-        img.src = src
-      }
-    })
+    setTimeout(() => resolve([0, 0]), 10000)
+    chrome.scripting
+      .executeScript({
+        args: [src],
+        target: {tabId: id},
+        func: src => {
+          const img = new Image()
+          img.onload = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [img.naturalWidth, img.naturalHeight]})
+          img.onerror = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [0, 0]})
+          img.src = src
+        }
+      })
+      .catch(() => resolve([0, 0]))
   })
   return size
 }
