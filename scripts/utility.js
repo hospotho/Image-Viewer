@@ -1994,6 +1994,14 @@ window.ImageViewerUtils = (function () {
     const uniqueDataList = Array.from(urlDataMap, ([k, v]) => v)
     return uniqueDataList
   }
+  async function checkBackgroundSize(node, url) {
+    const realSize = await getImageRealSize(url, true) // high priority
+    const {width, height} = node.getBoundingClientRect()
+    node.removeAttribute('no-bg')
+    node.setAttribute('iv-bg', url)
+    node.setAttribute('iv-width', Math.min(realSize, width))
+    node.setAttribute('iv-height', Math.min(realSize, height))
+  }
   function getNodeSize(node) {
     const widthAttr = node.getAttribute('iv-width')
     const heightAttr = node.getAttribute('iv-height')
@@ -2009,14 +2017,6 @@ window.ImageViewerUtils = (function () {
     node.setAttribute('iv-width', width)
     node.setAttribute('iv-height', height)
     return [width, height]
-  }
-  async function checkBackgroundSize(node, url) {
-    const realSize = await getImageRealSize(url, true) // high priority
-    const {width, height} = node.getBoundingClientRect()
-    node.removeAttribute('no-bg')
-    node.setAttribute('iv-bg', url)
-    node.setAttribute('iv-width', Math.min(realSize, width))
-    node.setAttribute('iv-height', Math.min(realSize, height))
   }
   function getImageListWithoutFilter(svgFilter = true) {
     const imageDataList = []

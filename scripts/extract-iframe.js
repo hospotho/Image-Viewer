@@ -1,22 +1,52 @@
 window.ImageViewerExtractor = (function () {
   'use strict'
 
-  function isNodeSizeEnough(node, minWidth, minHeight) {
+  window.srcBitSizeMap ??= new Map()
+  const srcRealSizeMap = window.srcRealSizeMap
+
+  async function getImageRealSize(src) {
+    const cache = srcRealSizeMap.get(src)
+    if (cache !== undefined) return cache
+
+    const promise = new Promise(_resolve => {
+      const resolve = size => {
+        srcRealSizeMap.set(src, size)
+        _resolve(size)
+      }
+
+      const img = new Image()
+      img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
+      img.onerror = () => resolve(0)
+      setTimeout(() => img.complete || resolve(0), 10000)
+      img.src = src
+    })
+
+    srcRealSizeMap.set(src, promise)
+    return promise
+  }
+  async function checkBackgroundSize(node, url) {
+    const realSize = await getImageRealSize(url)
+    const {width, height} = node.getBoundingClientRect()
+    node.removeAttribute('no-bg')
+    node.setAttribute('iv-bg', url)
+    node.setAttribute('iv-width', Math.min(realSize, width))
+    node.setAttribute('iv-height', Math.min(realSize, height))
+  }
+  function getNodeSize(node) {
     const widthAttr = node.getAttribute('iv-width')
     const heightAttr = node.getAttribute('iv-height')
     if (widthAttr && heightAttr) {
       const width = Number(widthAttr)
       const height = Number(heightAttr)
-      return width >= minWidth && height >= minHeight
+      return [width, height]
     }
     const {width, height} = node.getBoundingClientRect()
     if (width === 0 || height === 0) {
       node.setAttribute('no-bg', '')
-      return false
     }
     node.setAttribute('iv-width', width)
     node.setAttribute('iv-height', height)
-    return width >= minWidth && height >= minHeight
+    return [width, height]
   }
   function deepQuerySelectorAll(target, selector) {
     const result = []
@@ -60,9 +90,10 @@ window.ImageViewerExtractor = (function () {
     }
 
     const uncheckedNodeList = deepQuerySelectorAll(document.body, '*:not([no-bg])')
-    if (!document.body.hasAttribute('no-bg')) uncheckedNodeList.push(document.body)
+    if (!document.body.hasAttribute('no-bg')) uncheckedNodeList.unshift(document.body)
     for (const node of uncheckedNodeList) {
-      if (!isNodeSizeEnough(node, minWidth, minHeight)) continue
+      const [width, height] = getNodeSize(node)
+      if (width < minWidth || height < minHeight) continue
       const attrUrl = node.getAttribute('iv-bg')
       if (attrUrl !== null) {
         imageList.push(attrUrl)
@@ -79,8 +110,8 @@ window.ImageViewerExtractor = (function () {
         continue
       }
       const url = bgList[0].slice(5, -2)
-      node.setAttribute('iv-bg', url)
-      imageList.push(url)
+      node.setAttribute('no-bg', '')
+      checkBackgroundSize(node, url)
     }
 
     return options.svgFilter
