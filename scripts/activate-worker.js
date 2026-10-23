@@ -329,12 +329,13 @@ html.iv-worker-checking img {
       const heightList = [height, dom.clientHeight, dom.naturalHeight, dom.videoHeight, dom.height].filter(Boolean)
       const minWidth = Math.min(...widthList)
       const minHeight = Math.min(...heightList)
-      if (dom.tagName === 'IMG') {
-        // real time size and rendered size
-        return [dom.currentSrc, minWidth, minHeight, dom]
-      }
-      if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
-        return [dom.poster, minWidth, minHeight, dom]
+      switch (dom.tagName) {
+        case 'IMG':
+          return [dom.currentSrc, minWidth, minHeight, dom]
+        case 'CANVAS':
+          return ['data:,', minWidth, minHeight, dom]
+        case 'VIDEO':
+          if (dom.hasAttribute('poster')) return [dom.poster, minWidth, minHeight, dom]
       }
       const bgInfo = extractBackgroundInfo(dom, minWidth, minHeight)
       return bgInfo
