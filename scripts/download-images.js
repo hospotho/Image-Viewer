@@ -252,6 +252,12 @@
         console.log('Download complete.')
       }
     }, 3000)
+    setTimeout(() => {
+      if (progress * 2 >= length) return
+      const remainingTime = (length - progress) * 2.5
+      const remainingMin = Math.round(remainingTime / 60)
+      alert(`Still downloading\nCurrent progress: ${progress} / ${length}\nExpected time: ${remainingMin}-${remainingMin + 1}min`)
+    }, 2500)
 
     return [filenameList, imageBinaryStream, errorLogList]
   }
