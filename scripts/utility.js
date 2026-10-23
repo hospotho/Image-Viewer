@@ -1335,22 +1335,21 @@ window.ImageViewerUtils = (function () {
     const cache = srcRealSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    const release = await semaphore.acquire(highPriority)
-    const promise = new Promise(_resolve => {
-      const resolve = size => {
-        srcRealSizeMap.set(src, size)
-        _resolve(size)
-        release()
-      }
-
-      const img = new Image()
-      img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
-      img.onerror = () => resolve(0)
-      setTimeout(() => img.complete || resolve(0), 10000)
-      img.src = src
-    })
-
+    const {promise, resolve} = Promise.withResolvers()
+    const _resolve = size => {
+      srcRealSizeMap.set(src, size)
+      resolve(size)
+      release()
+    }
     srcRealSizeMap.set(src, promise)
+
+    const release = await semaphore.acquire(highPriority)
+    const img = new Image()
+    img.onload = () => _resolve(Math.min(img.naturalWidth, img.naturalHeight))
+    img.onerror = () => _resolve(0)
+    setTimeout(() => img.complete || _resolve(0), 10000)
+    img.src = src
+
     return promise
   }
   async function isNewSrcBetter(currentSrc, bitSize, naturalSize, newSrc) {
