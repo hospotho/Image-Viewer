@@ -26,9 +26,9 @@
 
   // update image size filter
   const nodeInfo = await safeSendMessage('get_info')
-  const [srcUrl, nodeSize, width, height] = nodeInfo
-  options.minWidth = Math.min(nodeSize, options.minWidth)
-  options.minHeight = Math.min(nodeSize, options.minHeight)
+  const [srcUrl, width, height] = nodeInfo
+  options.minWidth = Math.min(width, options.minWidth)
+  options.minHeight = Math.min(height, options.minHeight)
 
   const dom = window.ImageViewerLastDom
   if (width > 0 || dom?.tagName === 'IMG') {

@@ -348,7 +348,7 @@ function normalizeOptions(options = {}) {
 
 let currOptions = defaultOptions
 let currOptionsWithoutSize = defaultOptions
-let lastImageNodeInfo = ['', Number.MAX_SAFE_INTEGER, 0, 0]
+let lastImageNodeInfo = ['', Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, '']
 let lastImageNodeInfoID = 0
 let lastImageNodeInfoTabID = 0
 
@@ -462,8 +462,8 @@ function addMessageHandler() {
       }
       case 'update_info': {
         ;(async () => {
-          // [src, minClientSize, width, height]
-          const info = [request.data[0], request.data[1], 0, 0]
+          // [src, width, height, tagName]
+          const info = request.data
           const currId = ++lastImageNodeInfoID
           // get data url if CORS
           if (sender.tab.url !== sender.url) {
@@ -471,13 +471,11 @@ function addMessageHandler() {
           }
           // reduce client size, image size maybe decreased in dataURL
           info[1] -= 3
+          info[2] -= 3
           if (lastImageNodeInfoID !== currId) return
           lastImageNodeInfo = info
           lastImageNodeInfoTabID = sender.tab.id
           // get image size from cache or fetch from tab
-          const [width, height] = await getImageLocalRealSize(sender.tab.id, info[0])
-          info[2] = width
-          info[3] = height
           console.table(info)
           _sendResponse()
         })()
@@ -487,7 +485,7 @@ function addMessageHandler() {
         if (lastImageNodeInfoTabID === sender.tab.id) {
           sendResponse(lastImageNodeInfo)
         } else {
-          sendResponse(['', Number.MAX_SAFE_INTEGER, 0, 0])
+          sendResponse(['', Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, ''])
         }
         return
       }
@@ -699,7 +697,7 @@ function createContextMenu() {
     switch (info.menuItemId) {
       case 'view_images_in_image_viewer': {
         await passOptionToTab(tab.id, currOptions)
-        const script = lastImageNodeInfoID === tab.id && lastImageNodeInfo[2] === 'CANVAS' ? '/scripts/action-canvas.js' : '/scripts/action-image.js'
+        const script = lastImageNodeInfoTabID === tab.id && lastImageNodeInfo[3] === 'CANVAS' ? '/scripts/action-canvas.js' : '/scripts/action-image.js'
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: [script]})
         break
       }
@@ -710,7 +708,7 @@ function createContextMenu() {
       }
       case 'view_last_right_click_image_in_image_viewer': {
         await passOptionToTab(tab.id, currOptions)
-        const script = lastImageNodeInfoID === tab.id && lastImageNodeInfo[2] === 'CANVAS' ? '/scripts/action-canvas.js' : '/scripts/action-image.js'
+        const script = lastImageNodeInfoTabID === tab.id && lastImageNodeInfo[3] === 'CANVAS' ? '/scripts/action-canvas.js' : '/scripts/action-image.js'
         chrome.scripting.executeScript({target: {tabId: tab.id}, files: [script]})
         break
       }

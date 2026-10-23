@@ -30,9 +30,9 @@
 
   // update image size filter
   const nodeInfo = await safeSendMessage('get_info')
-  const [, nodeSize] = nodeInfo
-  options.minWidth = Math.min(nodeSize, options.minWidth)
-  options.minHeight = Math.min(nodeSize, options.minHeight)
+  const [, width, height] = nodeInfo
+  options.minWidth = Math.min(width, options.minWidth)
+  options.minHeight = Math.min(height, options.minHeight)
 
   const orderedCanvasList = await ImageViewerUtils.getOrderedCanvasList(options)
   if (orderedCanvasList.length === 0) {

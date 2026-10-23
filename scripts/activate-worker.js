@@ -162,9 +162,9 @@ html.iv-worker-checking img {
       }
 
       const img = new Image()
-      img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
-      img.onerror = () => resolve(0)
-      setTimeout(() => img.complete || resolve(0), 10000)
+      img.onload = () => resolve([img.naturalWidth, img.naturalHeight])
+      img.onerror = () => resolve([0, 0])
+      setTimeout(() => img.complete || resolve([0, 0]), 10000)
       img.src = src
     })
 
@@ -317,25 +317,28 @@ html.iv-worker-checking img {
       if (afterURL) return afterURL
       return null
     }
-    async function extractBackgroundInfo(dom, minSize) {
+    async function extractBackgroundInfo(dom, minWidth, minHeight) {
       const bgUrl = getBackgroundURL(dom)
       if (!bgUrl) return null
-      const realMinSize = Math.min(minSize, await getImageRealSize(bgUrl))
-      return [bgUrl, realMinSize, dom]
+      const [realWidth, realHeight] = await getImageRealSize(bgUrl)
+      minWidth = realWidth ? Math.min(minWidth, realWidth) : minWidth
+      minHeight = realHeight ? Math.min(minHeight, realHeight) : minHeight
+      return [bgUrl, minWidth, minHeight, dom]
     }
     async function extractImageInfo(dom) {
       const {width, height} = dom.getBoundingClientRect()
+      const widthList = [width, dom.clientWidth, dom.naturalWidth, dom.videoWidth, dom.width].filter(Boolean)
+      const heightList = [height, dom.clientHeight, dom.naturalHeight, dom.videoHeight, dom.height].filter(Boolean)
+      const minWidth = Math.min(...widthList)
+      const minHeight = Math.min(...heightList)
       if (dom.tagName === 'IMG') {
         // real time size and rendered size
-        const sizeList = [width, height, dom.clientWidth, dom.clientHeight, dom.naturalWidth, dom.naturalHeight]
-        const minSize = Math.min(...sizeList.filter(Boolean))
-        return [dom.currentSrc, minSize, dom]
+        return [dom.currentSrc, minWidth, minHeight, dom]
       }
-      const minSize = Math.min(width, height, dom.clientWidth, dom.clientHeight)
       if (dom.tagName === 'VIDEO' && dom.hasAttribute('poster')) {
-        return [dom.poster, minSize, dom]
+        return [dom.poster, minWidth, minHeight, dom]
       }
-      const bgInfo = extractBackgroundInfo(dom, minSize)
+      const bgInfo = extractBackgroundInfo(dom, minWidth, minHeight)
       return bgInfo
     }
     async function extractImageInfoFromTree(dom) {
@@ -389,10 +392,12 @@ html.iv-worker-checking img {
       // size check
       const asyncList = [[newUrl, oldUrl].map(getImageBitSize), [newUrl, oldUrl].map(getImageRealSize)].flat()
       const [newBitSize, oldBitSize, newRealSize, oldRealSize] = await Promise.all(asyncList)
+      const newMinSize = Math.min(newRealSize[0], newRealSize[1]) || 1
+      const oldMinSize = Math.min(oldRealSize[0], oldRealSize[1]) || 1
       if (newBitSize * oldBitSize !== 0) {
-        return newBitSize / newRealSize > oldBitSize / oldRealSize
+        return newBitSize / newMinSize > oldBitSize / oldMinSize
       }
-      return newRealSize > oldRealSize
+      return newMinSize > oldMinSize
     }
 
     return {
@@ -449,8 +454,10 @@ html.iv-worker-checking img {
         if (canvasIndex !== -1) {
           console.debug(`Canvas image node found, layer ${canvasIndex}`)
           const canvas = elementList[canvasIndex]
-          const minSize = Math.min(canvas.clientWidth, canvas.clientHeight)
-          return ['', minSize, canvas]
+          const {width, height} = canvas.getBoundingClientRect()
+          const minWidth = Math.min(width, canvas.clientWidth, canvas.width)
+          const minHeight = Math.min(height, canvas.clientHeight, canvas.height)
+          return ['', minWidth, minHeight, canvas]
         }
 
         const imageInfoFromTree = await searchImageFromTree(firstVisibleDom, mouseX, mouseY)
@@ -562,18 +569,19 @@ html.iv-worker-checking img {
       // check if bad image set valid
       processLazyPlaceholder()
 
-      // [src, minClientSize, dom]
+      // [src, width, height, dom]
       const imageNodeInfo = await getImageNodeInfo(e.clientX, e.clientY)
       if (imageNodeInfo === null) {
         markingDom(null)
-        safeSendMessage({msg: 'update_info', data: ['', Number.MAX_SAFE_INTEGER]})
+        safeSendMessage({msg: 'update_info', data: ['', Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, '']})
         return
       }
       // output image dom to console
-      const dom = imageNodeInfo[2]
+      const dom = imageNodeInfo[3]
+      imageNodeInfo[3] = dom.tagName
       console.debug(dom)
       markingDom(dom)
-      safeSendMessage({msg: 'update_info', data: [imageNodeInfo[0], imageNodeInfo[1]]})
+      safeSendMessage({msg: 'update_info', data: imageNodeInfo})
     },
     true
   )
