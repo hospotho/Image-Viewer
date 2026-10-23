@@ -551,7 +551,7 @@ function addMessageHandler() {
             let frame = frameMap.get(result.frameId)
             while (frameMap.has(frame.parentFrameId)) frame = frameMap.get(frame.parentFrameId)
             const localImageList = imageList.map(src => getLocalUrl(sender.tab.id, src))
-            pageDataList.push([frame.frameId, localImageList])
+            pageDataList.push([String(frame.frameId), localImageList])
             asyncList.push(localImageList)
           }
 
