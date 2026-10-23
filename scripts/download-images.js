@@ -167,7 +167,7 @@
 
     return zipFile
   }
-  async function* buildZipStream(filenameList, imageBinaryStream) {
+  async function* buildZipStream(filenameList, imageBinaryStream, errorLogList) {
     const encoder = new TextEncoder()
     const maxSizeMask = 1 << 29 // 512MB
     const fileHeaderSize = LOCAL_FILE_HEADER_SIZE + CENTRAL_DIRECTORY_HEADER_SIZE
@@ -181,7 +181,7 @@
       const deltaSize = fileHeaderSize + encodedFilename.length * 2 + data.length
 
       const newSize = size + deltaSize
-      if (newSize & maxSizeMask) {
+      if (newSize >= maxSizeMask) {
         yield buildZip(encodedFilenameList, imageBinaryList)
         size = END_OF_CENTRAL_DIRECTORY_SIZE
         encodedFilenameList.length = 0
@@ -190,6 +190,13 @@
       size += deltaSize
       encodedFilenameList.push(encodedFilename)
       imageBinaryList.push(data)
+    }
+    if (errorLogList.length !== 0) {
+      const encodedLogName = encoder.encode('error.txt')
+      const errorLog = 'Failed to download following images:\n' + errorLogList.join('\n')
+      const encodedLog = encoder.encode(errorLog)
+      encodedFilenameList.push(encodedLogName)
+      imageBinaryList.push(encodedLog)
     }
     yield buildZip(encodedFilenameList, imageBinaryList)
   }
@@ -218,6 +225,7 @@
     let progress = 0
     const filenameList = []
     const imageBinaryStream = []
+    const errorLogList = []
     for (const [url, index] of selectedUrlList) {
       const indexString = ('0000' + (index + 1)).slice(-5)
       const name = url.startsWith('data') ? '' : '_' + url.split('?')[0].split('/').at(-1)
@@ -225,7 +233,12 @@
       const filename = indexString + name + extension
       filenameList.push(filename)
 
-      const promise = getImageBinary(url).finally(() => (progress += 1))
+      const promise = getImageBinary(url)
+        .then(data => {
+          if (data.length === 0) errorLogList.push(`${filename}: ${url}`)
+          return data
+        })
+        .finally(() => (progress += 1))
       imageBinaryStream.push(promise)
     }
 
@@ -238,7 +251,7 @@
       }
     }, 3000)
 
-    return [filenameList, imageBinaryStream]
+    return [filenameList, imageBinaryStream, errorLogList]
   }
 
   // utility
@@ -286,8 +299,8 @@
     const selectedUrlList = imageDataList.map((data, i) => selectionRange[i] && [data.src, i]).filter(Boolean)
     if (selectedUrlList.length === 0) return
 
-    const [filenameList, imageBinaryStream] = downloadImages(selectedUrlList)
-    const zipStream = buildZipStream(filenameList, imageBinaryStream)
+    const [filenameList, imageBinaryStream, errorLogList] = downloadImages(selectedUrlList)
+    const zipStream = buildZipStream(filenameList, imageBinaryStream, errorLogList)
 
     for await (const zip of zipStream) {
       const blob = new Blob([zip.buffer])
