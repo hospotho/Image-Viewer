@@ -1,4 +1,4 @@
-;(async function () {
+;(function () {
   'use strict'
 
   const safeSendMessage = function (...args) {
@@ -151,7 +151,7 @@ html.iv-worker-checking img {
     srcBitSizeMap.set(src, promise)
     return promise
   }
-  async function getImageRealSize(src) {
+  function getImageRealSize(src) {
     const cache = srcRealSizeMap.get(src)
     if (cache !== undefined) return cache
 
@@ -325,7 +325,7 @@ html.iv-worker-checking img {
       minHeight = realHeight ? Math.min(minHeight, realHeight) : minHeight
       return [bgUrl, minWidth, minHeight, dom]
     }
-    async function extractImageInfo(dom) {
+    function extractImageInfo(dom) {
       const {width, height} = dom.getBoundingClientRect()
       const widthList = [width, dom.clientWidth, dom.naturalWidth, dom.videoWidth, dom.width].filter(Boolean)
       const heightList = [height, dom.clientHeight, dom.naturalHeight, dom.videoHeight, dom.height].filter(Boolean)

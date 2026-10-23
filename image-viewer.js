@@ -1612,7 +1612,7 @@ window.ImageViewer = (function () {
       }
 
       const imageBufferCache = new Map()
-      async function getImageBuffer(imgUrl) {
+      function getImageBuffer(imgUrl) {
         if (imageBufferCache.has(imgUrl)) {
           return imageBufferCache.get(imgUrl)
         }
@@ -1694,7 +1694,7 @@ window.ImageViewer = (function () {
       const urlList = [googleUrl, yandexUrl, saucenaoUrl, ascii2dUrl]
       const searchImageFunctionList = [searchImageByGoogle, searchImageByYandex, searchImageBySaucenao, searchImageByAscii2d]
 
-      const singleSearchHandler = async (e, COMMAND_ENUM_VALUE) => {
+      const singleSearchHandler = (e, COMMAND_ENUM_VALUE) => {
         e.preventDefault()
         const imgUrl = getCurrentUrl()
         const index = COMMAND_ENUM_VALUE - COMMAND_ENUM.SEARCH_GOOGLE
@@ -1711,7 +1711,7 @@ window.ImageViewer = (function () {
       hotkeyHandlerList[COMMAND_ENUM.SEARCH_SAUCENAO] = singleSearchHandler
       hotkeyHandlerList[COMMAND_ENUM.SEARCH_ASCII2D] = singleSearchHandler
 
-      hotkeyHandlerList[COMMAND_ENUM.SEARCH_ALL] = async e => {
+      hotkeyHandlerList[COMMAND_ENUM.SEARCH_ALL] = e => {
         e.preventDefault()
         const imgUrl = getCurrentUrl()
         const isNormalImage = imgUrl.startsWith('http')
@@ -2023,7 +2023,7 @@ window.ImageViewer = (function () {
           for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
         }
       }
-      async function recalculateWebtoonTransform(e, COMMAND_ENUM_VALUE) {
+      function recalculateWebtoonTransform(e, COMMAND_ENUM_VALUE) {
         if (!viewer.classList.contains('webtoon')) return
         e.preventDefault()
         // prepare reposition image to center

@@ -194,7 +194,7 @@ async function fetchDataUrl(src) {
   }
 }
 
-async function getImageBitSize(src) {
+function getImageBitSize(src) {
   const cache = srcBitSizeMap.get(src)
   if (cache !== undefined) return cache
 
@@ -202,7 +202,7 @@ async function getImageBitSize(src) {
   srcBitSizeMap.set(src, promise)
   return promise
 }
-async function getImageRealSize(src) {
+function getImageRealSize(src) {
   const cache = srcLocalRealSizeMap.get(src)
   if (cache !== undefined) return cache
 
@@ -210,7 +210,7 @@ async function getImageRealSize(src) {
   srcLocalRealSizeMap.set(src, promise)
   return promise
 }
-async function getImageLocalRealSize(id, src) {
+function getImageLocalRealSize(id, src) {
   const cache = srcLocalRealSizeMap.get(src)
   if (cache !== undefined) return cache
 

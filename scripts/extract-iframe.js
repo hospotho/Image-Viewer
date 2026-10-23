@@ -4,7 +4,7 @@ window.ImageViewerExtractor = (function () {
   window.srcBitSizeMap ??= new Map()
   const srcRealSizeMap = window.srcRealSizeMap
 
-  async function getImageRealSize(src) {
+  function getImageRealSize(src) {
     const cache = srcRealSizeMap.get(src)
     if (cache !== undefined) return cache
 
@@ -136,7 +136,7 @@ window.ImageViewerExtractor = (function () {
   }
 
   return {
-    extractImage: async function (options) {
+    extractImage: function (options) {
       const imageList = options.canvasMode ? getCanvasList(options) : getImageList(options)
       return imageList
     }

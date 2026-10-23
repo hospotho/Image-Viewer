@@ -16,7 +16,8 @@ export default [
       '@stylistic/object-curly-spacing': 'off',
       '@stylistic/space-before-function-paren': 'off',
       '@stylistic/spaced-comment': 'off',
-      'object-shorthand': 'off'
+      'object-shorthand': 'off',
+      'require-await': 'error'
     }
   }
 ]
