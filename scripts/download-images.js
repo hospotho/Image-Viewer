@@ -178,6 +178,8 @@
     for (let i = 0; i < imageBinaryStream.length; i++) {
       const data = await imageBinaryStream[i]
       const encodedFilename = encoder.encode(filenameList[i])
+      imageBinaryStream[i] = null
+      filenameList[i] = null
       const deltaSize = fileHeaderSize + encodedFilename.length * 2 + data.length
 
       const newSize = size + deltaSize
