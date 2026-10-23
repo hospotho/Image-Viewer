@@ -27,10 +27,9 @@
     // handle request
     const detail = e.detail
     const [id, src] = JSON.parse(detail)
-    const [dataUrl, mime] = await safeSendMessage({msg: 'request_cors_url', url: src})
+    const [dataUrl] = await safeSendMessage({msg: 'request_cors_url', url: src})
     // send response
-    const isImage = mime?.startsWith('image/') || mime === 'application/octet-stream'
-    const response = JSON.stringify([id, isImage ? dataUrl : ''])
+    const response = `[${id},"${dataUrl}"]`
     window.dispatchEvent(new CustomEvent(`${channel}-response`, {detail: response}))
   })
 })()

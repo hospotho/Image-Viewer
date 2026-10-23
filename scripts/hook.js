@@ -52,7 +52,6 @@
   const realClearTimeout = window.clearTimeout.bind(window)
   const realDispatch = window.dispatchEvent.bind(window)
   const realParse = JSON.parse
-  const realStringify = JSON.stringify
   const realImageSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src').set
   const realEventDetail = Object.getOwnPropertyDescriptor(CustomEvent.prototype, 'detail').get
   const realReadAsDataURL = FileReader.prototype.readAsDataURL
@@ -77,7 +76,7 @@
     const _resolve = result => resolve(result) || realClearTimeout(timeout) || realCall(realMapDelete, resolveMap, id)
     realCall(realMapSet, resolveMap, id, _resolve)
     // send request
-    const event = new RealCustomEvent(`${channel}-request`, {detail: realStringify([id, src])})
+    const event = new RealCustomEvent(`${channel}-request`, {detail: `[${id},"${src}"]`})
     realDispatch(event)
     return promise
   }
