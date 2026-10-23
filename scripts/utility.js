@@ -1298,35 +1298,34 @@ window.ImageViewerUtils = (function () {
     const cache = srcBitSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    const promise = new Promise(_resolve => {
-      const resolve = size => {
-        srcBitSizeMap.set(src, size)
-        _resolve(size)
-      }
+    const {promise, resolve} = Promise.withResolvers()
+    const _resolve = size => {
+      srcBitSizeMap.set(src, size)
+      resolve(size)
+    }
 
-      let waiting = false
-      const updateSize = size => {
-        if (size) resolve(size)
-        else if (waiting) waiting = false
-        else if (src.startsWith('blob')) return resolve(Number.MAX_SAFE_INTEGER)
-        else resolve(0)
-      }
+    let waiting = false
+    const updateSize = size => {
+      if (size) _resolve(size)
+      else if (waiting) waiting = false
+      else if (src.startsWith('blob')) return _resolve(Number.MAX_SAFE_INTEGER)
+      else _resolve(0)
+    }
 
-      // protocol-relative URL
-      const url = cachedGetUrl(src)
-      const href = url.href
-      if (url.hostname !== location.hostname || corsHostSet.has(url.hostname)) {
-        waiting = true
-        safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
-      }
-      fetchBitSize(url)
-        .then(updateSize)
-        .catch(error => {
-          if (error.name !== 'TimeoutError') corsHostSet.add(url.hostname)
-          if (url.hostname !== location.hostname) updateSize(0)
-          else safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
-        })
-    })
+    // protocol-relative URL
+    const url = cachedGetUrl(src)
+    const href = url.href
+    if (url.hostname !== location.hostname || corsHostSet.has(url.hostname)) {
+      waiting = true
+      safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
+    }
+    fetchBitSize(url)
+      .then(updateSize)
+      .catch(error => {
+        if (error.name !== 'TimeoutError') corsHostSet.add(url.hostname)
+        if (url.hostname !== location.hostname) updateSize(0)
+        else safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
+      })
 
     srcBitSizeMap.set(src, promise)
     return promise

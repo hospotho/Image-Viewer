@@ -124,29 +124,28 @@ html.iv-worker-checking img {
     const cache = srcBitSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    const promise = new Promise(_resolve => {
-      const resolve = size => {
-        srcBitSizeMap.set(src, size)
-        _resolve(size)
-      }
+    const {promise, resolve} = Promise.withResolvers()
+    const _resolve = size => {
+      srcBitSizeMap.set(src, size)
+      resolve(size)
+    }
 
-      let waiting = false
-      const updateSize = size => {
-        if (size) resolve(size)
-        else if (waiting) waiting = false
-        else if (src.startsWith('blob')) return resolve(Number.MAX_SAFE_INTEGER)
-        else resolve(0)
-      }
+    let waiting = false
+    const updateSize = size => {
+      if (size) _resolve(size)
+      else if (waiting) waiting = false
+      else if (src.startsWith('blob')) return _resolve(Number.MAX_SAFE_INTEGER)
+      else _resolve(0)
+    }
 
-      // protocol-relative URL
-      const url = new URL(src, document.baseURI)
-      const href = url.href
-      if (url.hostname !== location.hostname) {
-        waiting = true
-        safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
-      }
-      fetchBitSize(url).then(updateSize)
-    })
+    // protocol-relative URL
+    const url = new URL(src, document.baseURI)
+    const href = url.href
+    if (url.hostname !== location.hostname) {
+      waiting = true
+      safeSendMessage({msg: 'get_size', url: href}).then(updateSize)
+    }
+    fetchBitSize(url).then(updateSize)
 
     srcBitSizeMap.set(src, promise)
     return promise
@@ -155,18 +154,17 @@ html.iv-worker-checking img {
     const cache = srcRealSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    const promise = new Promise(_resolve => {
-      const resolve = size => {
-        srcRealSizeMap.set(src, size)
-        _resolve(size)
-      }
+    const {promise, resolve} = Promise.withResolvers()
+    const _resolve = size => {
+      srcRealSizeMap.set(src, size)
+      resolve(size)
+    }
 
-      const img = new Image()
-      img.onload = () => resolve([img.naturalWidth, img.naturalHeight])
-      img.onerror = () => resolve([0, 0])
-      setTimeout(() => img.complete || resolve([0, 0]), 10000)
-      img.src = src
-    })
+    const img = new Image()
+    img.onload = () => _resolve([img.naturalWidth, img.naturalHeight])
+    img.onerror = () => _resolve([0, 0])
+    setTimeout(() => img.complete || _resolve([0, 0]), 10000)
+    img.src = src
 
     srcRealSizeMap.set(src, promise)
     return promise

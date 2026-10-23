@@ -20,17 +20,19 @@
       isImageUrlMap.set(url, false)
       return url
     }
-    const promise = new Promise(_resolve => {
-      const resolve = result => {
-        _resolve(result)
-        isImageUrlMap.set(url, result)
-      }
-      const img = new Image()
-      img.onload = () => resolve(true)
-      img.onerror = () => resolve(false)
-      img.src = url
-    })
+
+    const {promise, resolve} = Promise.withResolvers()
+    const _resolve = result => {
+      resolve(result)
+      isImageUrlMap.set(url, result)
+    }
     isImageUrlMap.set(url, promise)
+
+    const img = new Image()
+    img.onload = () => _resolve(true)
+    img.onerror = () => _resolve(false)
+    img.src = url
+
     return url
   }
   URL.revokeObjectURL = async function (url) {

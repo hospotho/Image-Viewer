@@ -8,18 +8,17 @@ window.ImageViewerExtractor = (function () {
     const cache = srcRealSizeMap.get(src)
     if (cache !== undefined) return cache
 
-    const promise = new Promise(_resolve => {
-      const resolve = size => {
-        srcRealSizeMap.set(src, size)
-        _resolve(size)
-      }
+    const {promise, resolve} = Promise.withResolvers()
+    const _resolve = size => {
+      srcRealSizeMap.set(src, size)
+      resolve(size)
+    }
 
-      const img = new Image()
-      img.onload = () => resolve(Math.min(img.naturalWidth, img.naturalHeight))
-      img.onerror = () => resolve(0)
-      setTimeout(() => img.complete || resolve(0), 10000)
-      img.src = src
-    })
+    const img = new Image()
+    img.onload = () => _resolve(Math.min(img.naturalWidth, img.naturalHeight))
+    img.onerror = () => _resolve(0)
+    setTimeout(() => img.complete || _resolve(0), 10000)
+    img.src = src
 
     srcRealSizeMap.set(src, promise)
     return promise

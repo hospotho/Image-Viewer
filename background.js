@@ -120,47 +120,46 @@ async function fetchBitSize(src, useGetMethod = false) {
 }
 async function fetchRealSize(src) {
   const release = await semaphore.acquire()
-  const promise = new Promise(_resolve => {
-    const resolve = size => {
-      srcLocalRealSizeMap.set(src, size)
-      _resolve(size)
-    }
-    fetch(src)
-      .then(res => res.blob())
-      .then(blob => createImageBitmap(blob))
-      .then(bitmap => {
-        const size = [bitmap.width, bitmap.height]
-        bitmap.close()
-        resolve(size)
-      })
-      .catch(() => resolve([0, 0]))
-      .finally(release)
-  })
-  return promise
+  const size = await fetch(src)
+    .then(res => res.blob())
+    .then(blob => createImageBitmap(blob))
+    .then(bitmap => {
+      const size = [bitmap.width, bitmap.height]
+      bitmap.close()
+      return size
+    })
+    .catch(() => [0, 0])
+    .finally(release)
+
+  srcLocalRealSizeMap.set(src, size)
+  return size
 }
 async function fetchImageLocalRealSize(id, src) {
   const release = await semaphore.acquire()
-  const size = await new Promise(_resolve => {
-    const resolve = size => {
-      srcLocalRealSizeMap.set(src, size)
-      _resolve(size)
-      release()
-    }
-    srcLocalRealSizeResolveMap.set(src, resolve)
-    setTimeout(() => resolve([0, 0]), 10000)
-    chrome.scripting
-      .executeScript({
-        args: [src],
-        target: {tabId: id},
-        func: src => {
-          const img = new Image()
-          img.onload = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [img.naturalWidth, img.naturalHeight]})
-          img.onerror = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [0, 0]})
-          img.src = src
-        }
-      })
-      .catch(() => resolve([0, 0]))
-  })
+  const {promise, resolve} = Promise.withResolvers()
+  const _resolve = size => {
+    srcLocalRealSizeMap.set(src, size)
+    resolve(size)
+    release()
+  }
+  srcLocalRealSizeResolveMap.set(src, _resolve)
+
+  const timeout = setTimeout(() => _resolve([0, 0]), 10000)
+  chrome.scripting
+    .executeScript({
+      args: [src],
+      target: {tabId: id},
+      func: src => {
+        const img = new Image()
+        img.onload = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [img.naturalWidth, img.naturalHeight]})
+        img.onerror = () => chrome.runtime.sendMessage({msg: 'reply_local_size', src: src, size: [0, 0]})
+        img.src = src
+      }
+    })
+    .catch(() => _resolve([0, 0]))
+
+  const size = await promise
+  clearTimeout(timeout)
   return size
 }
 async function fetchDataUrl(src) {
