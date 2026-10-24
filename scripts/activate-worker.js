@@ -304,24 +304,29 @@ html.iv-worker-checking img {
       if (backgroundImage === 'none') return null
       const bgList = backgroundImage.split(', ').filter(bg => bg.startsWith('url') && !bg.endsWith('.svg")'))
       if (bgList.length === 0) return null
-      return bgList[0].slice(5, -2)
+      const repeat = nodeStyle.backgroundRepeat !== 'no-repeat'
+      return [bgList[0].slice(5, -2), repeat]
     }
     function getBackgroundURL(dom) {
-      const nodeURL = extractNodeStyle(window.getComputedStyle(dom))
-      if (nodeURL) return nodeURL
-      const beforeURL = extractNodeStyle(window.getComputedStyle(dom, '::before'))
-      if (beforeURL) return beforeURL
-      const afterURL = extractNodeStyle(window.getComputedStyle(dom, '::after'))
-      if (afterURL) return afterURL
+      const nodeUrlInfo = extractNodeStyle(window.getComputedStyle(dom))
+      if (nodeUrlInfo) return nodeUrlInfo
+      const beforeUrlInfo = extractNodeStyle(window.getComputedStyle(dom, '::before'))
+      if (beforeUrlInfo) return beforeUrlInfo
+      const afterUrlInfo = extractNodeStyle(window.getComputedStyle(dom, '::after'))
+      if (afterUrlInfo) return afterUrlInfo
       return null
     }
     async function extractBackgroundInfo(dom, minWidth, minHeight) {
-      const bgUrl = getBackgroundURL(dom)
-      if (!bgUrl) return null
+      const bgInfo = getBackgroundURL(dom)
+      if (!bgInfo) return null
+      const [bgUrl, repeat] = bgInfo
       const [realWidth, realHeight] = await getImageRealSize(bgUrl)
-      minWidth = realWidth ? Math.min(minWidth, realWidth) : minWidth
-      minHeight = realHeight ? Math.min(minHeight, realHeight) : minHeight
-      return [bgUrl, minWidth, minHeight, dom]
+      if (repeat) {
+        minWidth = realWidth ? Math.min(minWidth, realWidth) : minWidth
+        minHeight = realHeight ? Math.min(minHeight, realHeight) : minHeight
+        return [bgUrl, minWidth, minHeight, dom]
+      }
+      return [bgUrl, realWidth, realHeight, dom]
     }
     function extractImageInfo(dom) {
       const {width, height} = dom.getBoundingClientRect()
