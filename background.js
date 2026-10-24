@@ -509,7 +509,7 @@ function addMessageHandler() {
       case 'get_real_size': {
         ;(async () => {
           const size = await getImageRealSize(request.url)
-          sendResponse(Math.min(...size), false)
+          sendResponse(size, false)
         })()
         return true
       }

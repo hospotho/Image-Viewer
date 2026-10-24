@@ -18,7 +18,6 @@
 
   // init
   const options = window.ImageViewerOption
-  const minSize = Math.min(options.minWidth, options.minHeight)
   options.closeButton = true
 
   // natural sort
@@ -36,36 +35,40 @@
   let right = anchorList.length - 1
   while (true) {
     const mid = Math.floor((left + right) / 2)
-    const size = anchorList[mid].getAttribute('iv-size')
-    size ? (left = mid + 1) : (right = mid - 1)
+    const width = anchorList[mid].getAttribute('iv-width')
+    width ? (left = mid + 1) : (right = mid - 1)
     if (left > right) break
   }
   if (right !== -1) {
     const skipList = anchorList.splice(0, right + 1)
     for (const anchor of skipList) {
-      const size = Number(anchor.getAttribute('iv-size'))
-      if (size >= minSize) imageDataList.push({src: anchor.href, dom: anchor})
+      const width = Number(anchor.getAttribute('iv-width'))
+      const height = Number(anchor.getAttribute('iv-height'))
+      if (width >= options.minWidth && height >= options.minHeight) imageDataList.push({src: anchor.href, dom: anchor})
     }
   }
 
   // process remaining anchors
-  ;(async () => {
-    const action = async anchor => {
-      const attrSize = anchor.getAttribute('iv-size')
-      if (attrSize) return Number(attrSize)
-      const size = await safeSendMessage({msg: 'get_real_size', url: anchor.href})
-      anchor.setAttribute('iv-size', size)
-      return size
-    }
+  const action = async anchor => {
+    const width = anchor.getAttribute('iv-width')
+    const height = anchor.getAttribute('iv-height')
+    if (width) return [Number(width), Number(height)]
+    const size = await safeSendMessage({msg: 'get_real_size', url: anchor.href})
+    anchor.setAttribute('iv-width', size[0])
+    anchor.setAttribute('iv-height', size[1])
+    return size
+  }
+  const startAsyncLoop = async () => {
     while (anchorList.length) {
       if (terminated) return
       const asyncList = anchorList.splice(0, 8).map(anchor => action(anchor).then(size => [size, anchor]))
       for await (const [size, anchor] of asyncList) {
-        if (size >= minSize) imageDataList.push({src: anchor.href, dom: anchor})
+        if (size[0] >= options.minWidth && size[1] >= options.minHeight) imageDataList.push({src: anchor.href, dom: anchor})
       }
     }
     setTimeout(() => (complete = true), 3000)
-  })()
+  }
+  startAsyncLoop()
 
   // wait for image data
   const overtime = setTimeout(() => alert('Images still loading'), 3000)
