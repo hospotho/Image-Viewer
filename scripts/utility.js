@@ -1344,9 +1344,9 @@ window.ImageViewerUtils = (function () {
 
     const release = await semaphore.acquire(highPriority)
     const img = new Image()
-    img.onload = () => _resolve(Math.min(img.naturalWidth, img.naturalHeight))
-    img.onerror = () => _resolve(0)
-    setTimeout(() => img.complete || _resolve(0), 10000)
+    img.onload = () => _resolve([img.naturalWidth, img.naturalHeight])
+    img.onerror = () => _resolve([0, 0])
+    setTimeout(() => img.complete || _resolve([0, 0]), 10000)
     img.src = src
 
     return promise
@@ -1358,11 +1358,13 @@ window.ImageViewerUtils = (function () {
 
     const baseSize = bitSize || naturalSize
     if (baseSize === 0) {
-      const lazySize = (await getImageBitSize(newSrc)) || (await getImageRealSize(newSrc))
-      return lazySize > 0
+      const newBitSize = await getImageBitSize(newSrc)
+      if (newBitSize > 0) return true
+      const [newWidth, newHeight] = await getImageRealSize(newSrc)
+      return newWidth > 0 || newHeight > 0
     }
-    const getSizeFunction = bitSize ? getImageBitSize : getImageRealSize
-    const lazySize = await getSizeFunction(newSrc)
+    const newSize = bitSize ? await getImageBitSize(newSrc) : await getImageRealSize(newSrc)
+    const lazySize = bitSize ? newSize : Math.min(newSize[0], newSize[1])
     if (lazySize === 0 || lazySize < baseSize) return false
     if (lazySize > baseSize) return true
     // when same size
@@ -1380,7 +1382,7 @@ window.ImageViewerUtils = (function () {
       const currentSrc = img.currentSrc
       const realSrc = currentSrc.replace(/^https?:/, protocol)
       const currentSize = Math.min(img.naturalWidth, img.naturalHeight)
-      const [bitSize, naturalSize] = await Promise.all([getImageBitSize(realSrc), currentSize || getImageRealSize(realSrc)])
+      const [bitSize, naturalSize] = await Promise.all([getImageBitSize(realSrc), currentSize || getImageRealSize(realSrc).then(size => Math.min(size[0], size[1]))])
       const isHighPriority = badImageSet.has(currentSrc)
 
       // loop thought remaining attr
@@ -1717,8 +1719,8 @@ window.ImageViewerUtils = (function () {
         const pseudoCss = window.getComputedStyle(dom, `::${position}`)
         if (pseudoCss.content === 'none') continue
         getImageRealSize(url).then(realSize => {
-          const width = Math.min(realSize, Number(pseudoCss.width.slice(0, -2)))
-          const height = Math.min(realSize, Number(pseudoCss.height.slice(0, -2)))
+          const width = Math.min(realSize[0], Number(pseudoCss.width.slice(0, -2)))
+          const height = Math.min(realSize[1], Number(pseudoCss.height.slice(0, -2)))
           pseudoImageDataList.push([url, dom, width, height])
         })
       }
@@ -1997,8 +1999,8 @@ window.ImageViewerUtils = (function () {
     const {width, height} = node.getBoundingClientRect()
     node.removeAttribute('no-bg')
     node.setAttribute('iv-bg', url)
-    node.setAttribute('iv-width', Math.min(realSize, width))
-    node.setAttribute('iv-height', Math.min(realSize, height))
+    node.setAttribute('iv-width', Math.min(realSize[0], width))
+    node.setAttribute('iv-height', Math.min(realSize[1], height))
   }
   function getNodeSize(node) {
     const widthAttr = node.getAttribute('iv-width')
@@ -2488,7 +2490,5 @@ window.ImageViewerUtils = (function () {
     getRawUrl: getRawUrl,
 
     getFilename: getFilename,
-
-    getImageRealSize: getImageRealSize
   }
 })()

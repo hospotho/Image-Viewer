@@ -159,6 +159,7 @@ html.iv-worker-checking img {
       srcRealSizeMap.set(src, size)
       resolve(size)
     }
+    srcRealSizeMap.set(src, promise)
 
     const img = new Image()
     img.onload = () => _resolve([img.naturalWidth, img.naturalHeight])
@@ -166,7 +167,6 @@ html.iv-worker-checking img {
     setTimeout(() => img.complete || _resolve([0, 0]), 10000)
     img.src = src
 
-    srcRealSizeMap.set(src, promise)
     return promise
   }
 

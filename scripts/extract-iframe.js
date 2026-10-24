@@ -13,14 +13,14 @@ window.ImageViewerExtractor = (function () {
       srcRealSizeMap.set(src, size)
       resolve(size)
     }
+    srcRealSizeMap.set(src, promise)
 
     const img = new Image()
-    img.onload = () => _resolve(Math.min(img.naturalWidth, img.naturalHeight))
-    img.onerror = () => _resolve(0)
-    setTimeout(() => img.complete || _resolve(0), 10000)
+    img.onload = () => _resolve([img.naturalWidth, img.naturalHeight])
+    img.onerror = () => _resolve([0, 0])
+    setTimeout(() => img.complete || _resolve([0, 0]), 10000)
     img.src = src
 
-    srcRealSizeMap.set(src, promise)
     return promise
   }
   async function checkBackgroundSize(node, url) {
@@ -28,8 +28,8 @@ window.ImageViewerExtractor = (function () {
     const {width, height} = node.getBoundingClientRect()
     node.removeAttribute('no-bg')
     node.setAttribute('iv-bg', url)
-    node.setAttribute('iv-width', Math.min(realSize, width))
-    node.setAttribute('iv-height', Math.min(realSize, height))
+    node.setAttribute('iv-width', Math.min(realSize[0], width))
+    node.setAttribute('iv-height', Math.min(realSize[1], height))
   }
   function getNodeSize(node) {
     const widthAttr = node.getAttribute('iv-width')
