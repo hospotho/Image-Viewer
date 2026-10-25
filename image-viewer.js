@@ -1,7 +1,33 @@
 window.ImageViewer = (function () {
   'use strict'
 
-  let shadowRoot = null
+  const ui = {
+    viewer: null,
+    webtoon: null,
+    scene: null,
+    wrapper: null,
+    imageList: null,
+    controlPanel: null,
+    index: null,
+    prevButton: null,
+    nextButton: null,
+    moveToButton: null,
+    closeButton: null,
+    infoButton: null,
+    counterCurrent: null,
+    counterTotal: null,
+    infoWidth: null,
+    infoHeight: null,
+    infoPopup: null,
+    infoSource: null,
+    infoSize: null,
+    infoType: null,
+    infoAlt: null,
+    navigationButtonList: null,
+    controlButtonList: null,
+    fitButtonList: null
+  }
+
   let lastHref = location.href
   let lastUpdateTime = 0
 
@@ -69,13 +95,13 @@ window.ImageViewer = (function () {
 
   //==========utility==========
   function closeImageViewer() {
-    const root = shadowRoot?.host
+    const root = ui.viewer?.getRootNode().host
     if (!root || !document.body.classList.contains('iv-attached')) return
     document.body.classList.remove('iv-attached')
     document.documentElement.classList.remove('iv-webtoon-attached')
     document.body.classList.remove('iv-webtoon-attached')
 
-    const viewer = shadowRoot.querySelector('#image-viewer')
+    const viewer = ui.viewer
     viewer.addEventListener('transitionend', () => root.remove())
     viewer.style.transition = 'opacity 0.2s'
     viewer.style.opacity = '0'
@@ -84,14 +110,14 @@ window.ImageViewer = (function () {
     clearIndex = -1
     clearDom = null
     clearSrc = ''
-    lastIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
+    lastIndex = Number(ui.counterCurrent.textContent) - 1
     lastDom = imageDataList[lastIndex]?.dom || null
-    const current = shadowRoot.querySelector('li.current img')
+    const current = ui.imageList.querySelector('li.current img')
     if (current) {
       lastSrc = current.src
       if (!viewer.classList.contains('webtoon')) lastTransform = getTransform(current)
       else {
-        const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
+        const wrapper = ui.wrapper
         lastWebtoonTransform = getTransform(wrapper)
         const rect = current.getBoundingClientRect()
         lastWebtoonCenterX = rect.left + rect.width / 2
@@ -193,19 +219,19 @@ window.ImageViewer = (function () {
     const contentY = (localX * sin + localY * cos) / scaleY
     return [scaleX, contentX, contentY]
   }
-  function getSceneOffset(webtoon) {
-    const viewportRect = webtoon.getBoundingClientRect()
-    const sceneRect = shadowRoot.querySelector('#iv-scene').getBoundingClientRect()
+  function getSceneOffset() {
+    const viewportRect = ui.webtoon.getBoundingClientRect()
+    const sceneRect = ui.scene.getBoundingClientRect()
     const offsetX = sceneRect.left - viewportRect.left
     const offsetY = sceneRect.top - viewportRect.top
     return [offsetX, offsetY]
   }
   function applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, deltaX, deltaY) {
-    const webtoon = shadowRoot.querySelector('#iv-webtoon')
+    const webtoon = ui.webtoon
     const row = wrapper.firstElementChild.classList.contains('row')
     const viewX = (row ? webtoon.clientHeight : webtoon.clientWidth) / 2
     const viewY = (row ? webtoon.clientWidth : webtoon.clientHeight) / 2
-    const [oldOffsetX, oldOffsetY] = getSceneOffset(webtoon)
+    const [oldOffsetX, oldOffsetY] = getSceneOffset()
     const [oldScaleX, oldContentX, oldContentY] = calculateViewpointProjection(wrapper, viewX, viewY, oldOffsetX, oldOffsetY, deltaX, deltaY)
 
     // update padding
@@ -241,7 +267,7 @@ window.ImageViewer = (function () {
     const scaledY = contentY * scaleY
     const rotatedX = scaledX * cos - scaledY * sin
     const rotatedY = scaledX * sin + scaledY * cos
-    const [offsetX, offsetY] = getSceneOffset(webtoon)
+    const [offsetX, offsetY] = getSceneOffset()
     const scrollX = row ? webtoon.scrollTop : webtoon.scrollLeft
     const scrollY = row ? webtoon.scrollLeft : webtoon.scrollTop
     const finalScrollX = scrollX + offsetX + moveX + rotatedX - viewX
@@ -281,7 +307,7 @@ window.ImageViewer = (function () {
         return
       }
       // update order
-      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const imageListNode = ui.imageList
       const length = imageListNode.children.length
       if (imageListNode.classList.contains('reverse')) {
         for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
@@ -289,7 +315,7 @@ window.ImageViewer = (function () {
         for (let i = 0; i < length; i++) imageListNode.children[i].style.order = i
       }
       // calculate new translate
-      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
+      const wrapper = ui.wrapper
       const [scaleX, scaleY, rotate, ,] = getTransform(wrapper)
       const currentRect = current.getBoundingClientRect()
       const newCenterX = currentRect.left + currentRect.width / 2
@@ -303,7 +329,7 @@ window.ImageViewer = (function () {
       clear()
     }
     return (targetCenterX = Number.NEGATIVE_INFINITY, targetCenterY = Number.NEGATIVE_INFINITY) => {
-      const currentImg = shadowRoot.querySelector('#iv-webtoon #iv-image-list li.current img')
+      const currentImg = ui.imageList.querySelector('li.current img')
       current = currentImg
       if (targetCenterX !== Number.NEGATIVE_INFINITY) {
         centerX = targetCenterX
@@ -313,14 +339,14 @@ window.ImageViewer = (function () {
         centerX = currentRect.left + currentRect.width / 2
         centerY = currentRect.top + currentRect.height / 2
       }
-      rowMode = shadowRoot.querySelector('#iv-image-list').classList.contains('row')
+      rowMode = ui.imageList.classList.contains('row')
       return reposition
     }
   })()
 
   function loadImageChunk(index) {
     const chunkSize = 20
-    const imgList = shadowRoot.querySelectorAll('img')
+    const imgList = ui.imageList.querySelectorAll('img')
     const length = imgList.length
 
     // load image src in chunks from center outward
@@ -695,7 +721,7 @@ window.ImageViewer = (function () {
   }
   async function getImgNode(container, targetTop) {
     // current pos
-    const img = shadowRoot.querySelector('li.current img')
+    const img = ui.imageList.querySelector('li.current img')
     let imgNode = searchImgNode(img)
     if (imgNode) return imgNode
 
@@ -722,7 +748,7 @@ window.ImageViewer = (function () {
         windowRatio = windowWidth / windowHeight
         return
       }
-      viewer = shadowRoot.querySelector('#iv-webtoon') || shadowRoot.querySelector('#image-viewer')
+      viewer = ui.webtoon || ui.viewer
       windowWidth = viewer.clientWidth
       windowHeight = viewer.clientHeight
       windowRatio = windowWidth / windowHeight
@@ -1229,7 +1255,6 @@ window.ImageViewer = (function () {
 
     const shadowHolder = document.createElement('div')
     shadowHolder.id = 'image-viewer-root'
-    shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
 
     const stylesheet = document.createElement('style')
     stylesheet.textContent = style()
@@ -1293,10 +1318,36 @@ window.ImageViewer = (function () {
     }
     viewer.innerHTML = frame(i18n, options.webtoonMode)
 
+    const shadowRoot = shadowHolder.attachShadow({mode: 'closed'})
     shadowRoot.append(stylesheet)
     shadowRoot.append(viewer)
     document.body.appendChild(shadowHolder)
     document.body.classList.add('iv-attached')
+
+    ui.viewer = viewer
+    ui.webtoon = shadowRoot.querySelector('#iv-webtoon')
+    ui.scene = shadowRoot.querySelector('#iv-scene')
+    ui.wrapper = shadowRoot.querySelector('#iv-list-wrapper')
+    ui.imageList = shadowRoot.querySelector('#iv-image-list')
+    ui.controlPanel = shadowRoot.querySelector('#iv-control')
+    ui.index = shadowRoot.querySelector('#iv-index')
+    ui.prevButton = shadowRoot.querySelector('#iv-control-prev')
+    ui.nextButton = shadowRoot.querySelector('#iv-control-next')
+    ui.moveToButton = shadowRoot.querySelector('#iv-control-moveto')
+    ui.closeButton = shadowRoot.querySelector('#iv-control-close')
+    ui.infoButton = shadowRoot.querySelector('#iv-control-info')
+    ui.counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+    ui.counterTotal = shadowRoot.querySelector('#iv-counter-total')
+    ui.infoWidth = shadowRoot.querySelector('#iv-info-width')
+    ui.infoHeight = shadowRoot.querySelector('#iv-info-height')
+    ui.infoPopup = shadowRoot.querySelector('#iv-info-popup')
+    ui.infoSource = shadowRoot.querySelector('#iv-info-source')
+    ui.infoSize = shadowRoot.querySelector('#iv-info-size')
+    ui.infoType = shadowRoot.querySelector('#iv-info-type')
+    ui.infoAlt = shadowRoot.querySelector('#iv-info-alt')
+    ui.navigationButtonList = shadowRoot.querySelectorAll('#iv-index button')
+    ui.controlButtonList = shadowRoot.querySelectorAll('#iv-control-buttons button')
+    ui.fitButtonList = shadowRoot.querySelectorAll('#iv-control-buttons button[data-fit]')
   }
 
   function addFrameEvent(options) {
@@ -1381,8 +1432,8 @@ window.ImageViewer = (function () {
     function addViewportResizeEvent() {
       const isMobile = navigator.userAgent.includes('Android')
       const viewport = window.visualViewport
-      const viewer = shadowRoot.querySelector('#image-viewer')
-      const webtoon = shadowRoot.querySelector('#iv-webtoon')
+      const viewer = ui.viewer
+      const webtoon = ui.webtoon
       const action = () => {
         if (!viewer.classList.contains('webtoon')) {
           fitFuncDict.init(viewport.width, viewport.height)
@@ -1415,18 +1466,17 @@ window.ImageViewer = (function () {
       let index = 0
       hotkeyHandlerList[COMMAND_ENUM.CHANGE_BACKGROUND] = () => {
         index = (index + 1) % backgroundList.length
-        shadowRoot.querySelector('#image-viewer').style.setProperty('background', backgroundList[index])
+        ui.viewer.style.setProperty('background', backgroundList[index])
       }
     }
     function addDisableDragHotkey() {
       hotkeyHandlerList[COMMAND_ENUM.DISABLE_DRAG] = e => {
         e.preventDefault()
-        shadowRoot.querySelector('#image-viewer').classList.toggle('disable-drag')
+        ui.viewer.classList.toggle('disable-drag')
       }
     }
     function addTransformationHotkey() {
       let lastHotkeyTime = 0
-      const container = shadowRoot.querySelector('#iv-image-list')
       const transformHandler = (e, COMMAND_ENUM_VALUE) => {
         const now = Date.now()
         if (e.repeat && now - lastHotkeyTime < 30) return
@@ -1473,7 +1523,7 @@ window.ImageViewer = (function () {
         }
         const data = {detail: {type: type, action: action}}
         const event = new CustomEvent('hotkey', data)
-        container.dispatchEvent(event)
+        ui.imageList.dispatchEvent(event)
       }
       hotkeyHandlerList[COMMAND_ENUM.MOVE_UP] = transformHandler
       hotkeyHandlerList[COMMAND_ENUM.MOVE_DOWN] = transformHandler
@@ -1488,7 +1538,7 @@ window.ImageViewer = (function () {
       hotkeyHandlerList[COMMAND_ENUM.DOWNLOAD_IMAGE] = async e => {
         e.preventDefault()
 
-        const imgSrc = shadowRoot.querySelector('li.current img').src
+        const imgSrc = ui.imageList.querySelector('li.current img').src
         const a = document.createElement('a')
         a.href = imgSrc
         if (a.host === location.host || imgSrc.startsWith('blob:') || imgSrc.startsWith('data:')) {
@@ -1522,7 +1572,7 @@ window.ImageViewer = (function () {
       const copyHandler = async (e, COMMAND_ENUM_VALUE) => {
         e.preventDefault()
 
-        const img = shadowRoot.querySelector('li.current img')
+        const img = ui.imageList.querySelector('li.current img')
         const src = img.src
         if (COMMAND_ENUM_VALUE === COMMAND_ENUM.COPY_IMAGE_URL) {
           navigator.clipboard.write([new ClipboardItem({'text/plain': src})])
@@ -1683,7 +1733,7 @@ window.ImageViewer = (function () {
 
       const extensionMode = !!chrome.runtime?.id
       const openNewTab = extensionMode ? url => chrome.runtime.sendMessage({msg: 'open_tab', url: url}) : url => window.open(url, '_blank')
-      const getCurrentUrl = () => shadowRoot.querySelector('li.current img').src
+      const getCurrentUrl = () => ui.imageList.querySelector('li.current img').src
 
       if (!options.searchHotkey || options.searchHotkey.length < 5) return
       const hotkey = options.searchHotkey
@@ -1745,9 +1795,9 @@ window.ImageViewer = (function () {
       })
     }
     function addControlPanelHideEvent(options) {
-      const controlPanel = shadowRoot.querySelector('#iv-control')
-      const navigationButtonList = shadowRoot.querySelectorAll('#iv-index button')
-      const controlButtonList = shadowRoot.querySelectorAll('#iv-control-buttons button')
+      const controlPanel = ui.controlPanel
+      const navigationButtonList = ui.navigationButtonList
+      const controlButtonList = ui.controlButtonList
       const buttonList = [...navigationButtonList, ...controlButtonList]
       const panelTimeout = options.panelTimeout
 
@@ -1828,13 +1878,13 @@ window.ImageViewer = (function () {
         }
       }
 
-      const infoButton = shadowRoot.querySelector('#iv-control-info')
-      const infoPopup = shadowRoot.querySelector('#iv-info-popup')
-      const infoSource = shadowRoot.querySelector('#iv-info-source')
-      const infoSize = shadowRoot.querySelector('#iv-info-size')
-      const infoType = shadowRoot.querySelector('#iv-info-type')
-      const infoAlt = shadowRoot.querySelector('#iv-info-alt')
-      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const infoButton = ui.infoButton
+      const infoPopup = ui.infoPopup
+      const infoSource = ui.infoSource
+      const infoSize = ui.infoSize
+      const infoType = ui.infoType
+      const infoAlt = ui.infoAlt
+      const imageListNode = ui.imageList
 
       let displayFlag = false
       infoButton.addEventListener('mouseenter', () => infoButton.classList.add('show'))
@@ -1854,7 +1904,7 @@ window.ImageViewer = (function () {
       infoPopup.addEventListener('click', async e => {
         if (e.defaultPrevented) await new Promise(resolve => setTimeout(resolve, 200))
         if (dbClickFlag) return
-        const selection = shadowRoot.getSelection()
+        const selection = ui.viewer.getRootNode().getSelection()
         const text = selection.toString()
         if (selection.type === 'Range' && lastSelectionText !== text && selection.containsNode(infoPopup, true)) {
           lastSelectionText = text
@@ -1865,7 +1915,7 @@ window.ImageViewer = (function () {
         lastSelectionText = null
       })
       infoPopup.addEventListener('dblclick', async () => {
-        const selection = shadowRoot.getSelection()
+        const selection = ui.viewer.getRootNode().getSelection()
         lastSelectionText = selection.toString()
         dbClickFlag = true
         await new Promise(resolve => setTimeout(resolve, 250))
@@ -1874,10 +1924,10 @@ window.ImageViewer = (function () {
       infoPopup.addEventListener('update-info', updateInfoPopup)
     }
     function addFitButtonEvent() {
-      const viewer = shadowRoot.querySelector('#image-viewer')
-      const currFitBtn = shadowRoot.querySelector(`#iv-control-${viewer.dataset.fitMode}`)
+      const viewer = ui.viewer
+      const currFitBtn = ui.viewer.querySelector(`#iv-control-${viewer.dataset.fitMode}`)
       currFitBtn?.classList.add('on')
-      const fitBtnList = shadowRoot.querySelectorAll('#iv-control-buttons button[data-fit]')
+      const fitBtnList = ui.fitButtonList
       for (const fitBtn of fitBtnList) {
         fitBtn.addEventListener('click', () => {
           fitBtnList.forEach(btn => btn.classList.remove('on'))
@@ -1888,26 +1938,26 @@ window.ImageViewer = (function () {
       }
     }
     function addWebtoonInfoEvent() {
-      const viewer = shadowRoot.querySelector('#image-viewer')
-      const webtoon = shadowRoot.querySelector('#iv-webtoon')
-      const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
-      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const viewer = ui.viewer
+      const webtoon = ui.webtoon
+      const wrapper = ui.wrapper
+      const imageListNode = ui.imageList
 
-      const current = shadowRoot.querySelector('#iv-counter-current')
-      const infoWidth = shadowRoot.querySelector('#iv-info-width')
-      const infoHeight = shadowRoot.querySelector('#iv-info-height')
-      const infoPopup = shadowRoot.querySelector('#iv-info-popup')
+      const current = ui.counterCurrent
+      const infoWidth = ui.infoWidth
+      const infoHeight = ui.infoHeight
+      const infoPopup = ui.infoPopup
       const updateEvent = new CustomEvent('update-info')
 
       function findNearestIndex() {
-        const imgList = shadowRoot.querySelectorAll('#iv-image-list img')
+        const imgList = ui.imageList.querySelectorAll('img')
         if (imgList.length === 0 || imgList.length === 1) return imgList.length - 1
 
         // check if center within img
         const webtoonRect = webtoon.getBoundingClientRect()
         const webtoonX = webtoonRect.left + webtoonRect.width / 2
         const webtoonY = webtoonRect.top + webtoonRect.height / 2
-        const elementsAtPoint = shadowRoot.elementsFromPoint(webtoonX, webtoonY)
+        const elementsAtPoint = ui.viewer.getRootNode().elementsFromPoint(webtoonX, webtoonY)
         if (elementsAtPoint[0].tagName === 'IMG') return Array.prototype.indexOf.call(imgList, elementsAtPoint[0])
         // find the nearest item by projection
         const leftRect = imgList[0].getBoundingClientRect()
@@ -1958,7 +2008,7 @@ window.ImageViewer = (function () {
         const reposition = scheduleWebtoonReposition()
         loadImageChunk(nearestIndex)
         const currentListItem = imageListNode.querySelector('li.current')
-        const relateListItem = shadowRoot.querySelector(`#iv-image-list li:nth-child(${nearestIndex + 1})`)
+        const relateListItem = ui.imageList.querySelector(`li:nth-child(${nearestIndex + 1})`)
         if (currentListItem !== relateListItem) {
           currentListItem?.classList.remove('current')
           relateListItem.classList.add('current')
@@ -1982,9 +2032,9 @@ window.ImageViewer = (function () {
       observerList.push(styleObserver, resizeObserver)
     }
     function addWebtoonWheelEvent() {
-      const viewer = shadowRoot.querySelector('#image-viewer')
-      const webtoon = shadowRoot.querySelector('#iv-webtoon')
-      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const viewer = ui.viewer
+      const webtoon = ui.webtoon
+      const imageListNode = ui.imageList
       let lastTouchpad = 0
       // process at viewer to delay execution order
       viewer.addEventListener(
@@ -2005,8 +2055,8 @@ window.ImageViewer = (function () {
       )
     }
     function addWebtoonOrientationHotkey() {
-      const viewer = shadowRoot.querySelector('#image-viewer')
-      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const viewer = ui.viewer
+      const imageListNode = ui.imageList
       const scrollbarSize = Number(viewer.style.getPropertyValue('--scrollbar-size').slice(0, -2))
 
       const flipDirection = () => {
@@ -2099,8 +2149,8 @@ window.ImageViewer = (function () {
         const event = new CustomEvent('iv-moveto')
         document.dispatchEvent(event)
 
-        const current = shadowRoot.querySelector('#iv-counter-current')
-        const total = shadowRoot.querySelector('#iv-counter-total')
+        const current = ui.counterCurrent
+        const total = ui.counterTotal
         const currIndex = Number(current.textContent) - 1
         const imageListLength = Number(total.textContent)
         closeImageViewer()
@@ -2143,14 +2193,14 @@ window.ImageViewer = (function () {
         document.body.style.scrollBehavior = bodyTemp
       }
 
-      shadowRoot.querySelector('#iv-control-moveto').addEventListener('click', moveTo)
+      ui.moveToButton.addEventListener('click', moveTo)
       hotkeyHandlerList[COMMAND_ENUM.MOVE_TO] = e => {
         e.preventDefault()
         moveTo()
       }
     }
     function addCloseButtonEvent() {
-      const closeButton = shadowRoot.querySelector('#iv-control-close')
+      const closeButton = ui.closeButton
       closeButton.classList.add('show')
       closeButton.addEventListener('click', closeImageViewer)
       closeButton.addEventListener('contextmenu', e => {
@@ -2165,7 +2215,7 @@ window.ImageViewer = (function () {
     }
     function addMiddleClickKeyEvent() {
       function searchImgAnchor() {
-        const img = shadowRoot.querySelector('li.current img')
+        const img = ui.imageList.querySelector('li.current img')
         const imgNode = searchImgNode(img)
         if (!imgNode || imgNode.tagName === 'IFRAME') return null
 
@@ -2207,7 +2257,7 @@ window.ImageViewer = (function () {
         const anchor = searchImgAnchor()
         if (anchor) openNewTab(anchor)
       }
-      const viewer = shadowRoot.querySelector('#image-viewer')
+      const viewer = ui.viewer
       // call preventDefault to trigger auxclick event
       viewer.addEventListener('mousedown', e => {
         if (e.button === 1) e.preventDefault()
@@ -2245,7 +2295,7 @@ window.ImageViewer = (function () {
         'wheel'
       ]
 
-      const viewer = shadowRoot.querySelector('#image-viewer')
+      const viewer = ui.viewer
       for (const event of disableList) {
         viewer.addEventListener(event, e => e.stopPropagation(), {passive: true})
       }
@@ -2275,17 +2325,17 @@ window.ImageViewer = (function () {
   }
 
   function addNavigationEvent(options) {
-    const viewer = shadowRoot.querySelector('#image-viewer')
-    const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    const controlBar = shadowRoot.querySelector('#iv-control')
-    const closeButton = shadowRoot.querySelector('#iv-control-close')
-    const infoButton = shadowRoot.querySelector('#iv-control-info')
-    const infoPopup = shadowRoot.querySelector('#iv-info-popup')
+    const viewer = ui.viewer
+    const imageListNode = ui.imageList
+    const controlBar = ui.controlPanel
+    const closeButton = ui.closeButton
+    const infoButton = ui.infoButton
+    const infoPopup = ui.infoPopup
 
-    const current = shadowRoot.querySelector('#iv-counter-current')
-    const total = shadowRoot.querySelector('#iv-counter-total')
-    const infoWidth = shadowRoot.querySelector('#iv-info-width')
-    const infoHeight = shadowRoot.querySelector('#iv-info-height')
+    const current = ui.counterCurrent
+    const total = ui.counterTotal
+    const infoWidth = ui.infoWidth
+    const infoHeight = ui.infoHeight
     const updateEvent = new CustomEvent('update-info')
 
     const smoothThrottleRatio = 0.75
@@ -2545,8 +2595,8 @@ window.ImageViewer = (function () {
         await new Promise(resolve => setTimeout(resolve, 0))
       }
     }
-    shadowRoot.querySelector('#iv-control-prev').addEventListener('pointerdown', e => arrowNavigation(e, false))
-    shadowRoot.querySelector('#iv-control-next').addEventListener('pointerdown', e => arrowNavigation(e, true))
+    ui.prevButton.addEventListener('pointerdown', e => arrowNavigation(e, false))
+    ui.nextButton.addEventListener('pointerdown', e => arrowNavigation(e, true))
   }
 
   function addImageEvent(options) {
@@ -2599,10 +2649,10 @@ window.ImageViewer = (function () {
       applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
     }
 
-    const viewer = shadowRoot.querySelector('#image-viewer')
-    const container = shadowRoot.querySelector('#iv-image-list')
+    const viewer = ui.viewer
+    const container = ui.imageList
     const nodeContextMap = new WeakMap()
-    const getTarget = () => (viewer.classList.contains('webtoon') ? shadowRoot.querySelector('#iv-list-wrapper') : shadowRoot.querySelector('#iv-image-list li.current img'))
+    const getTarget = () => (viewer.classList.contains('webtoon') ? ui.wrapper : ui.imageList.querySelector('li.current img'))
     const getContext = target => {
       const context = nodeContextMap.get(target)
       if (context) return context
@@ -2666,7 +2716,7 @@ window.ImageViewer = (function () {
     // dragging and pinch zoom
     const getTouchPointList = context => [...context.pointerMap.values()].filter(point => point[0])
     container.addEventListener('pointerdown', e => {
-      if (shadowRoot.querySelector('#image-viewer').classList.contains('disable-drag')) return
+      if (ui.viewer.classList.contains('disable-drag')) return
       const target = getTarget()
       const context = getContext(target)
       // [type, startX, startY, currX, currY]
@@ -2777,7 +2827,7 @@ window.ImageViewer = (function () {
       applyTransform(target, 1, 1, 0, 0, 0)
       if (viewer.classList.contains('webtoon')) {
         target.style.setProperty('--scale', '1')
-        const current = shadowRoot.querySelector('#iv-image-list li.current img')
+        const current = ui.imageList.querySelector('li.current img')
         current.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
       }
     }
@@ -2785,9 +2835,9 @@ window.ImageViewer = (function () {
     // custom event
     container.addEventListener('reset-transform', () => {
       const webtoonMode = viewer.classList.contains('webtoon')
-      if (webtoonMode) reset(shadowRoot.querySelector('#iv-list-wrapper'))
+      if (webtoonMode) reset(ui.wrapper)
       else {
-        const imgList = shadowRoot.querySelectorAll('#iv-image-list img')
+        const imgList = ui.imageList.querySelectorAll('img')
         for (const img of imgList) reset(img)
       }
     })
@@ -2837,13 +2887,13 @@ window.ImageViewer = (function () {
   function buildImageList(dataList, options) {
     imageDataList = Array.from(dataList)
     if (dataList.length > 1) {
-      shadowRoot.querySelector('#iv-index').style.display = 'flex'
-      shadowRoot.querySelector('#iv-counter-total').textContent = dataList.length
+      ui.index.style.display = 'flex'
+      ui.counterTotal.textContent = dataList.length
     }
     // trigger style recalculation
-    shadowRoot.querySelector('#image-viewer').focus()
+    ui.viewer.focus()
 
-    const imageList = shadowRoot.querySelector('#iv-image-list')
+    const imageList = ui.imageList
     const fragment = document.createDocumentFragment()
 
     // build all image node at once when the list is small
@@ -2896,7 +2946,7 @@ window.ImageViewer = (function () {
         }
       }
 
-      const imgList = shadowRoot.querySelectorAll('img')
+      const imgList = ui.imageList.querySelectorAll('img')
       const action = (i, src) => {
         currentUrlList[i] = src
         imgList[i].src = EMPTY_IMAGE
@@ -2924,12 +2974,12 @@ window.ImageViewer = (function () {
         }
       }
 
-      const current = shadowRoot.querySelector('li.current img')
-      const currentIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
+      const current = ui.imageList.querySelector('li.current img')
+      const currentIndex = Number(ui.counterCurrent.textContent) - 1
       if (current.src !== currentUrlList[currentIndex]) {
         current.src = currentUrlList[currentIndex]
         const updateEvent = new CustomEvent('update-info')
-        const infoPopup = shadowRoot.querySelector('#iv-info-popup')
+        const infoPopup = ui.infoPopup
         infoPopup.dispatchEvent(updateEvent)
       }
 
@@ -2945,11 +2995,11 @@ window.ImageViewer = (function () {
           imageListNode.insertBefore(node, list[index])
         }
       }
-      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const imageListNode = ui.imageList
       const list = imageListNode.children
       let listLength = list.length
 
-      const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+      const counterCurrent = ui.counterCurrent
       const currentIndex = counterCurrent.textContent - 1
       const currentUrlIndexMap = new Map(currentUrlList.map((url, i) => [url, i]))
       const newUrlInsertIndexMap = new Map()
@@ -3011,26 +3061,26 @@ window.ImageViewer = (function () {
     }
 
     function rebuildImageList() {
-      const current = shadowRoot.querySelector('li.current img')
-      clearIndex = Number(shadowRoot.querySelector('#iv-counter-current').textContent) - 1
+      const current = ui.imageList.querySelector('li.current img')
+      clearIndex = Number(ui.counterCurrent.textContent) - 1
       clearDom = imageDataList[clearIndex]?.dom || null
       clearSrc = current.src
       const webtoonMode = viewer.classList.contains('webtoon')
       if (!webtoonMode) lastTransform = getTransform(current)
       else {
-        const wrapper = shadowRoot.querySelector('#iv-list-wrapper')
+        const wrapper = ui.wrapper
         lastWebtoonTransform = getTransform(wrapper)
         const rect = current.getBoundingClientRect()
         lastWebtoonCenterX = rect.left + rect.width / 2
         lastWebtoonCenterY = rect.top + rect.height / 2
       }
-      const imageListNode = shadowRoot.querySelector('#iv-image-list')
+      const imageListNode = ui.imageList
       imageListNode.replaceChildren()
       buildImageList(newList, options)
     }
 
     // prepare webtoon order update and reposition
-    const viewer = shadowRoot.querySelector('#image-viewer')
+    const viewer = ui.viewer
     const reposition = viewer.classList.contains('webtoon') ? scheduleWebtoonReposition() : () => {}
 
     // impossible to update when shrink
@@ -3045,7 +3095,7 @@ window.ImageViewer = (function () {
     const imageInserted = tryInsert(currentUrlList)
 
     // failed update will became incorrect insertion
-    const invalidImageList = imageInserted && shadowRoot.querySelectorAll('img').length > newList.length
+    const invalidImageList = imageInserted && ui.imageList.querySelectorAll('img').length > newList.length
     if (invalidImageList) {
       rebuildImageList()
       reposition()
@@ -3059,8 +3109,8 @@ window.ImageViewer = (function () {
       clearDom = null
       clearSrc = ''
       if (options.closeButton) {
-        shadowRoot.querySelector('#iv-index').style.display = 'flex'
-        shadowRoot.querySelector('#iv-counter-total').textContent = newList.length
+        ui.index.style.display = 'flex'
+        ui.counterTotal.textContent = newList.length
       }
     }
     reposition()
@@ -3078,7 +3128,7 @@ window.ImageViewer = (function () {
         return
       }
 
-      const current = shadowRoot.querySelector('li.current')
+      const current = ui.imageList.querySelector('li.current')
       const currIndex = Array.prototype.indexOf.call(list, current)
 
       counterTotal.textContent = length
@@ -3098,7 +3148,7 @@ window.ImageViewer = (function () {
         }
         console.log(`Removing failed img: ${src}`)
         // update data list
-        const index = [...shadowRoot.querySelectorAll('img')].indexOf(img)
+        const index = [...ui.imageList.querySelectorAll('img')].indexOf(img)
         if (index !== -1) imageDataList.splice(index, 1)
         // set new current
         const target = img.parentNode
@@ -3115,7 +3165,7 @@ window.ImageViewer = (function () {
       filtering = true
 
       while (true) {
-        for (const img of shadowRoot.querySelectorAll(`img:not([src="${EMPTY_IMAGE}"]):not([checked])`)) {
+        for (const img of ui.imageList.querySelectorAll(`img:not([src="${EMPTY_IMAGE}"]):not([checked])`)) {
           if (!img.complete) continue
           img.setAttribute('checked', '')
           if (img.naturalWidth === 0) {
@@ -3123,23 +3173,23 @@ window.ImageViewer = (function () {
             action(img)
           }
         }
-        const length = shadowRoot.querySelectorAll('img:not([checked])').length
+        const length = ui.imageList.querySelectorAll('img:not([checked])').length
         if (length === 0) break
         await new Promise(resolve => setTimeout(resolve, 100))
       }
       filtering = false
     }
 
-    const viewer = shadowRoot.querySelector('#image-viewer')
-    const imageListNode = shadowRoot.querySelector('#iv-image-list')
-    const current = shadowRoot.querySelector('#iv-image-list li.current')
+    const viewer = ui.viewer
+    const imageListNode = ui.imageList
+    const current = ui.imageList.querySelector('li.current')
     const liList = imageListNode.children
     const base = current || liList[getBaseIndex(options)]
     const baseImg = base.firstChild
     base.classList.add('current')
 
     const webtoonMode = viewer.classList.contains('webtoon')
-    const target = webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : baseImg
+    const target = webtoonMode ? ui.wrapper : baseImg
     if (webtoonMode && !current) {
       if (options.webtoonDirection === 'row') imageListNode.dispatchEvent(new CustomEvent('flip-direction'))
       if (options.webtoonOrder === 'reverse') imageListNode.dispatchEvent(new CustomEvent('reverse-order'))
@@ -3167,8 +3217,8 @@ window.ImageViewer = (function () {
       imageListNode.dispatchEvent(event)
     }
 
-    const counterTotal = shadowRoot.querySelector('#iv-counter-total')
-    const counterCurrent = shadowRoot.querySelector('#iv-counter-current')
+    const counterTotal = ui.counterTotal
+    const counterCurrent = ui.counterCurrent
     updateCounter()
     setTimeout(removeFailedImg, 3000)
 
@@ -3178,12 +3228,12 @@ window.ImageViewer = (function () {
       target.style.transition = ''
       // prevent image loading flash
       if (imageTabMode) {
-        const viewer = shadowRoot.querySelector('#image-viewer')
+        const viewer = ui.viewer
         viewer.style.removeProperty('opacity')
       }
       if (base.classList.contains('current')) {
-        shadowRoot.querySelector('#iv-info-width').textContent = baseImg.naturalWidth
-        shadowRoot.querySelector('#iv-info-height').textContent = baseImg.naturalHeight
+        ui.infoWidth.textContent = baseImg.naturalWidth
+        ui.infoHeight.textContent = baseImg.naturalHeight
       }
       removeFailedImg()
     }
@@ -3192,7 +3242,7 @@ window.ImageViewer = (function () {
   }
 
   function fitImage(reset = true) {
-    const viewer = shadowRoot.querySelector('#image-viewer')
+    const viewer = ui.viewer
     const webtoonMode = viewer.classList.contains('webtoon')
     const fitMode = viewer.dataset.fitMode
     const fitFunc = fitFuncDict[fitMode] || fitFuncDict.both
@@ -3209,7 +3259,7 @@ window.ImageViewer = (function () {
     }
     // prepare reposition
     const reposition = webtoonMode && !reset ? scheduleWebtoonReposition() : () => {}
-    const imgList = shadowRoot.querySelectorAll(`#iv-image-list img${reset ? '' : ':not([resized])'}`)
+    const imgList = ui.imageList.querySelectorAll(`img${reset ? '' : ':not([resized])'}`)
     for (const img of imgList) {
       img.setAttribute('resized', '')
       if (img.complete && img.naturalWidth) action(img)
@@ -3219,7 +3269,7 @@ window.ImageViewer = (function () {
     // reset transform
     if (reset) {
       const event = new CustomEvent('reset-transform', {bubbles: true})
-      shadowRoot.querySelector('#iv-image-list').dispatchEvent(event)
+      ui.imageList.dispatchEvent(event)
     }
   }
 
@@ -3244,20 +3294,20 @@ window.ImageViewer = (function () {
     }
 
     const newIndex = getRestoreIndex(options)
-    const imageListNode = shadowRoot.querySelector('#iv-image-list')
+    const imageListNode = ui.imageList
     const relateListItem = imageListNode.querySelector(`li:nth-child(${newIndex + 1})`)
     const relateImage = relateListItem.querySelector('img')
-    shadowRoot.querySelector('#iv-counter-current').textContent = newIndex + 1
-    shadowRoot.querySelector('#iv-info-width').textContent = relateImage.naturalWidth
-    shadowRoot.querySelector('#iv-info-height').textContent = relateImage.naturalHeight
+    ui.counterCurrent.textContent = newIndex + 1
+    ui.infoWidth.textContent = relateImage.naturalWidth
+    ui.infoHeight.textContent = relateImage.naturalHeight
     imageListNode.querySelector('li.current')?.classList.remove('current')
     relateListItem.classList.add('current')
 
-    const webtoonMode = shadowRoot.querySelector('#image-viewer').classList.contains('webtoon')
+    const webtoonMode = ui.viewer.classList.contains('webtoon')
     if (webtoonMode) relateImage.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
 
     const transform = webtoonMode ? lastWebtoonTransform : lastTransform
-    const target = webtoonMode ? shadowRoot.querySelector('#iv-list-wrapper') : relateImage
+    const target = webtoonMode ? ui.wrapper : relateImage
     if (transform) {
       applyTransform(target, ...transform)
       if (!webtoonMode) lastTransform = null
