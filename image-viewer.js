@@ -2864,7 +2864,9 @@ window.ImageViewer = (function () {
           const [scaleX, scaleY, rotate, ,] = getTransform(target)
           context.mirror = scaleX < 0
           context.zoomCount = Math.round(Math.log(scaleY) / Math.log(zoomRatio))
-          context.rotateCount = rotate / rotateDeg
+          context.rotateCount = rotate / (Math.sign(scaleX * scaleY) * rotateDeg)
+          context.pointerMap.clear()
+          context.dragFlag = false
           break
         }
         default:
