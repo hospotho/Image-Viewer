@@ -290,22 +290,13 @@ window.ImageViewer = (function () {
     if (row) webtoon.scrollTo(integerScrollY, integerScrollX)
     else webtoon.scrollTo(integerScrollX, integerScrollY)
   }
-  const scheduleWebtoonReposition = (function () {
+  function scheduleWebtoonReposition(targetCenterX = Number.NEGATIVE_INFINITY, targetCenterY = Number.NEGATIVE_INFINITY) {
     let current = null
     let centerX = 0
     let centerY = 0
     let rowMode = false
-    const clear = () => {
-      current = null
-      centerX = 0
-      centerY = 0
-      rowMode = false
-    }
     const reposition = () => {
-      if (!current.isConnected) {
-        clear()
-        return
-      }
+      if (!current.isConnected) return
       // update order
       const imageListNode = ui.imageList
       const length = imageListNode.children.length
@@ -326,23 +317,21 @@ window.ImageViewer = (function () {
       const sameMode = rowMode === imageListNode.classList.contains('row')
       if (sameMode) applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, adjustX, adjustY)
       else applyWebtoonTransform(wrapper, scaleY, scaleX, -rotate, adjustX, adjustY)
-      clear()
     }
-    return (targetCenterX = Number.NEGATIVE_INFINITY, targetCenterY = Number.NEGATIVE_INFINITY) => {
-      const currentImg = ui.imageList.querySelector('li.current img')
-      current = currentImg
-      if (targetCenterX !== Number.NEGATIVE_INFINITY) {
-        centerX = targetCenterX
-        centerY = targetCenterY
-      } else {
-        const currentRect = currentImg.getBoundingClientRect()
-        centerX = currentRect.left + currentRect.width / 2
-        centerY = currentRect.top + currentRect.height / 2
-      }
-      rowMode = ui.imageList.classList.contains('row')
-      return reposition
+
+    const currentImg = ui.imageList.querySelector('li.current img')
+    current = currentImg
+    if (targetCenterX !== Number.NEGATIVE_INFINITY) {
+      centerX = targetCenterX
+      centerY = targetCenterY
+    } else {
+      const currentRect = currentImg.getBoundingClientRect()
+      centerX = currentRect.left + currentRect.width / 2
+      centerY = currentRect.top + currentRect.height / 2
     }
-  })()
+    rowMode = ui.imageList.classList.contains('row')
+    return reposition
+  }
 
   function loadImageChunk(index) {
     const chunkSize = 20
