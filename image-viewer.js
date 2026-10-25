@@ -183,7 +183,7 @@ window.ImageViewer = (function () {
   }
 
   function applyTransform(img, scaleX, scaleY, rotate, moveX, moveY) {
-    const row = img.id === 'iv-list-wrapper' && img.firstElementChild.classList.contains('row')
+    const row = img.id === 'iv-list-wrapper' && ui.viewer.classList.contains('row')
     if (row) {
       img.style.scale = `${scaleY} ${scaleX}`
       img.style.rotate = `${-rotate}deg`
@@ -204,7 +204,7 @@ window.ImageViewer = (function () {
     const moveX = Number(translate[0]) || 0
     const moveY = Number(translate[1]) || 0
 
-    const row = img.id === 'iv-list-wrapper' && img.firstElementChild.classList.contains('row')
+    const row = img.id === 'iv-list-wrapper' && ui.viewer.classList.contains('row')
     return row ? [scaleY, scaleX, -rotateDeg, moveY, moveX] : [scaleX, scaleY, rotateDeg, moveX, moveY]
   }
 
@@ -228,7 +228,7 @@ window.ImageViewer = (function () {
   }
   function applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, deltaX, deltaY) {
     const webtoon = ui.webtoon
-    const row = wrapper.firstElementChild.classList.contains('row')
+    const row = ui.viewer.classList.contains('row')
     const viewX = (row ? webtoon.clientHeight : webtoon.clientWidth) / 2
     const viewY = (row ? webtoon.clientWidth : webtoon.clientHeight) / 2
     const [oldOffsetX, oldOffsetY] = getSceneOffset()
@@ -300,7 +300,7 @@ window.ImageViewer = (function () {
       // update order
       const imageListNode = ui.imageList
       const length = imageListNode.children.length
-      if (imageListNode.classList.contains('reverse')) {
+      if (ui.viewer.classList.contains('reverse')) {
         for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
       } else {
         for (let i = 0; i < length; i++) imageListNode.children[i].style.order = i
@@ -314,7 +314,7 @@ window.ImageViewer = (function () {
       const adjustX = centerX - newCenterX
       const adjustY = centerY - newCenterY
       // normalize scroll and translate
-      const sameMode = rowMode === imageListNode.classList.contains('row')
+      const sameMode = rowMode === ui.viewer.classList.contains('row')
       if (sameMode) applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, adjustX, adjustY)
       else applyWebtoonTransform(wrapper, scaleY, scaleX, -rotate, adjustX, adjustY)
     }
@@ -329,7 +329,7 @@ window.ImageViewer = (function () {
       centerX = currentRect.left + currentRect.width / 2
       centerY = currentRect.top + currentRect.height / 2
     }
-    rowMode = ui.imageList.classList.contains('row')
+    rowMode = ui.viewer.classList.contains('row')
     return reposition
   }
 
@@ -893,7 +893,7 @@ window.ImageViewer = (function () {
       #image-viewer:not(.webtoon) #iv-webtoon {
         display: none;
       }
-      #iv-webtoon:has(#iv-image-list.row) {
+      #image-viewer.row #iv-webtoon {
         width: var(--height);
         height: var(--width);
         scale: -1 1;
@@ -926,7 +926,7 @@ window.ImageViewer = (function () {
         height: max-content;
         min-width: 100%;
       }
-      #image-viewer.webtoon #iv-image-list.row {
+      #image-viewer.webtoon.row #iv-image-list {
         flex-direction: row;
         padding-inline: 0;
         padding-block: calc((var(--height) - var(--scrollbar-size)) / var(--scale));
@@ -948,8 +948,8 @@ window.ImageViewer = (function () {
         flex-basis: calc((var(--height) - var(--scrollbar-size)) / var(--scale));
         pointer-events: none;
       }
-      #image-viewer.webtoon #iv-image-list.row::before,
-      #image-viewer.webtoon #iv-image-list.row::after {
+      #image-viewer.webtoon.row #iv-image-list::before,
+      #image-viewer.webtoon.row #iv-image-list::after {
         flex-basis: calc((var(--width) - var(--scrollbar-size)) / var(--scale));
       }
 
@@ -1261,6 +1261,8 @@ window.ImageViewer = (function () {
     viewer.style.setProperty('--width', `${viewport.width}px`)
     viewer.style.setProperty('--height', `${viewport.height}px`)
     viewer.style.setProperty('--scale', '1')
+    viewer.classList.add(options.webtoonDirection)
+    viewer.classList.add(options.webtoonOrder)
     viewer.dataset.fitMode = options.fitMode
 
     // apply mode specific settings
@@ -2023,13 +2025,12 @@ window.ImageViewer = (function () {
     function addWebtoonWheelEvent() {
       const viewer = ui.viewer
       const webtoon = ui.webtoon
-      const imageListNode = ui.imageList
       let lastTouchpad = 0
       // process at viewer to delay execution order
       viewer.addEventListener(
         'wheel',
         e => {
-          if (!viewer.classList.contains('webtoon') || e.defaultPrevented || !imageListNode.classList.contains('row')) return
+          if (!viewer.classList.contains('webtoon') || e.defaultPrevented || !viewer.classList.contains('row')) return
           const isRecentTouchpad = Date.now() - lastTouchpad < 50
           const isTouchpad = e.deltaX !== 0 || Math.abs(e.deltaY) < 50
           if (isRecentTouchpad || isTouchpad) {
@@ -2048,19 +2049,15 @@ window.ImageViewer = (function () {
       const imageListNode = ui.imageList
       const scrollbarSize = Number(viewer.style.getPropertyValue('--scrollbar-size').slice(0, -2))
 
-      const flipDirection = () => {
-        if (imageListNode.classList.contains('row')) imageListNode.classList.remove('row')
-        else imageListNode.classList.add('row')
-      }
+      const flipDirection = () => viewer.classList.toggle('row')
       const reverseOrder = () => {
         const length = imageListNode.children.length
-        if (imageListNode.classList.contains('reverse')) {
-          imageListNode.classList.remove('reverse')
+        if (viewer.classList.contains('reverse')) {
           for (let i = 0; i < length; i++) imageListNode.children[i].style.order = i
         } else {
-          imageListNode.classList.add('reverse')
           for (let i = 0; i < length; i++) imageListNode.children[i].style.order = length - 1 - i
         }
+        viewer.classList.toggle('reverse')
       }
       function recalculateWebtoonTransform(e, COMMAND_ENUM_VALUE) {
         if (!viewer.classList.contains('webtoon')) return
@@ -3181,13 +3178,7 @@ window.ImageViewer = (function () {
 
     const webtoonMode = viewer.classList.contains('webtoon')
     const target = webtoonMode ? ui.wrapper : baseImg
-    if (webtoonMode && !current) {
-      if (options.webtoonDirection === 'row') imageListNode.dispatchEvent(new CustomEvent('flip-direction'))
-      if (options.webtoonOrder === 'reverse') imageListNode.dispatchEvent(new CustomEvent('reverse-order'))
-      if (options.webtoonDirection !== 'row' && options.webtoonOrder !== 'reverse') {
-        baseImg.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
-      }
-    }
+    if (webtoonMode && !current) baseImg.scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'})
 
     const transform = webtoonMode ? lastWebtoonTransform : lastTransform
     const targetDom = clearDom || lastDom
