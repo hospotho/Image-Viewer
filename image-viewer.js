@@ -3242,7 +3242,7 @@ window.ImageViewer = (function () {
       img.classList.add('loaded')
     }
     const delayFit = e => {
-      const reposition = webtoonMode && !reset ? scheduleWebtoonReposition() : () => {}
+      const reposition = ui.viewer.classList.contains('webtoon') && !reset ? scheduleWebtoonReposition() : () => {}
       action(e.target)
       reposition()
     }
