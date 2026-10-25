@@ -2793,7 +2793,7 @@ window.ImageViewer = (function () {
     container.addEventListener('pointercancel', stopDragging)
 
     // reset
-    const reset = async target => {
+    const reset = target => {
       const context = nodeContextMap.get(target)
       if (context === undefined) return
       context.mirror = false
@@ -2806,7 +2806,7 @@ window.ImageViewer = (function () {
       if (rotate !== minRotate) {
         target.style.transition = 'none'
         applyTransform(target, scaleX, scaleY, minRotate, moveX, moveY)
-        await new Promise(resolve => setTimeout(resolve, 1000 / fps))
+        target.getBoundingClientRect()
       }
       // reset
       target.style.transition = ''
