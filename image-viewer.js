@@ -2083,8 +2083,8 @@ window.ImageViewer = (function () {
         const centerY = viewerHeight / 2
         const reposition = scheduleWebtoonReposition(centerX, centerY)
         // apply action
-        const action = COMMAND_ENUM_VALUE ? (COMMAND_ENUM_VALUE === COMMAND_ENUM.FLIP_LIST_DIRECTION ? flipDirection : reverseOrder) : e.type === 'flip-direction' ? flipDirection : reverseOrder
-        action()
+        const isFlipDirection = COMMAND_ENUM_VALUE === COMMAND_ENUM.FLIP_LIST_DIRECTION || e.type === 'flip-direction'
+        isFlipDirection ? flipDirection() : reverseOrder()
         // normalize scroll and translate
         reposition()
       }
