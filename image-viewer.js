@@ -78,15 +78,16 @@ window.ImageViewer = (function () {
     FAST_NAVIGATE_NEXT: 18,
     AUTO_NAVIGATE_PREV: 19,
     AUTO_NAVIGATE_NEXT: 20,
-    FLIP_LIST_DIRECTION: 21,
-    REVERSE_LIST_ORDER: 22,
-    DISABLE_DRAG: 23,
-    SEARCH_GOOGLE: 24,
-    SEARCH_YANDEX: 25,
-    SEARCH_SAUCENAO: 26,
-    SEARCH_ASCII2D: 27,
-    SEARCH_ALL: 28,
-    SEARCH_CUSTOM_BASE: 29
+    TOGGLE_WEBTOON_MODE: 21,
+    FLIP_LIST_DIRECTION: 22,
+    REVERSE_LIST_ORDER: 23,
+    DISABLE_DRAG: 24,
+    SEARCH_GOOGLE: 25,
+    SEARCH_YANDEX: 26,
+    SEARCH_SAUCENAO: 27,
+    SEARCH_ASCII2D: 28,
+    SEARCH_ALL: 29,
+    SEARCH_CUSTOM_BASE: 30
   }
 
   const globalStyle = document.createElement('style')
@@ -331,6 +332,32 @@ window.ImageViewer = (function () {
     }
     rowMode = ui.viewer.classList.contains('row')
     return reposition
+  }
+  function prepareModeTransform(img, webtoonMode) {
+    const wrapper = ui.wrapper
+    const [scaleX, scaleY, rotate] = getTransform(webtoonMode ? img : wrapper)
+    const rect = img.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    img.style.transition = 'none'
+
+    return () => {
+      if (webtoonMode) {
+        // applyTransform(img, 1, 1, 0, 0, 0)
+        applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, 0, 0)
+        const reposition = scheduleWebtoonReposition(centerX, centerY)
+        reposition()
+      } else {
+        applyTransform(img, scaleX, scaleY, rotate, 0, 0)
+        const newRect = img.getBoundingClientRect()
+        const moveX = centerX - newRect.left - newRect.width / 2
+        const moveY = centerY - newRect.top - newRect.height / 2
+        applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
+      }
+      // commit the transferred pose before restoring image transitions.
+      img.getBoundingClientRect()
+      img.style.transition = ''
+    }
   }
 
   function loadImageChunk(index) {
@@ -986,6 +1013,11 @@ window.ImageViewer = (function () {
         max-width: none;
         max-height: none;
       }
+      #image-viewer.webtoon img {
+        scale: 1 1 !important;
+        rotate: 0deg !important;
+        translate: 0 0 !important;
+      }
       #image-viewer.webtoon img:not(.loaded) {
         min-width: 80vw;
         min-height: 80vh;
@@ -1410,6 +1442,7 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.FAST_NAVIGATE_NEXT, options.viewerHotkey.fastNavigateNext)
       registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_PREV, options.viewerHotkey.autoNavigatePrev)
       registerHotkey(COMMAND_ENUM.AUTO_NAVIGATE_NEXT, options.viewerHotkey.autoNavigateNext)
+      registerHotkey(COMMAND_ENUM.TOGGLE_WEBTOON_MODE, options.viewerHotkey.toggleWebtoonMode || [])
       registerHotkey(COMMAND_ENUM.FLIP_LIST_DIRECTION, options.viewerHotkey.flipListDirection)
       registerHotkey(COMMAND_ENUM.REVERSE_LIST_ORDER, options.viewerHotkey.reverseListOrder)
       registerHotkey(COMMAND_ENUM.DISABLE_DRAG, options.viewerHotkey.disableDrag)
@@ -2044,6 +2077,45 @@ window.ImageViewer = (function () {
         {passive: false}
       )
     }
+    function addToggleWebtoonModeHotkey() {
+      const viewer = ui.viewer
+      const imageListNode = ui.imageList
+      hotkeyHandlerList[COMMAND_ENUM.TOGGLE_WEBTOON_MODE] = async e => {
+        e.preventDefault()
+        if (e.repeat) return
+        const current = imageListNode.querySelector('li.current img')
+        if (!current) return
+        // A mirror transition temporarily has unequal scale magnitudes.
+        while (true) {
+          const animations = current.getAnimations().filter(animation => animation.playState === 'running')
+          if (animations.length === 0) break
+          await Promise.allSettled(animations.map(animation => animation.finished))
+          if (!viewer.isConnected || !document.body.classList.contains('iv-attached') || current !== imageListNode.querySelector('li.current img')) return
+        }
+        const webtoonMode = !viewer.classList.contains('webtoon')
+        const applyModeTransform = prepareModeTransform(current, webtoonMode)
+        const restoreEvent = new CustomEvent('hotkey', {detail: {type: 'restore'}})
+        imageListNode.dispatchEvent(restoreEvent)
+
+        if (webtoonMode) {
+          ui.wrapper.appendChild(imageListNode)
+        } else {
+          viewer.insertBefore(imageListNode, ui.controlPanel)
+        }
+        viewer.classList.toggle('webtoon', webtoonMode)
+        document.documentElement.classList.toggle('iv-webtoon-attached', webtoonMode)
+        document.body.classList.toggle('iv-webtoon-attached', webtoonMode)
+        const viewport = window.visualViewport
+        viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
+        viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
+        viewer.style.setProperty('--width', `${viewport.width}px`)
+        viewer.style.setProperty('--height', `${viewport.height}px`)
+        const scrollbarSize = webtoonMode ? ui.webtoon.offsetWidth - ui.webtoon.clientWidth : 0
+        fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
+        applyModeTransform()
+        imageListNode.dispatchEvent(restoreEvent)
+      }
+    }
     function addWebtoonOrientationHotkey() {
       const viewer = ui.viewer
       const imageListNode = ui.imageList
@@ -2301,6 +2373,7 @@ window.ImageViewer = (function () {
     addFitButtonEvent()
     addWebtoonInfoEvent()
     addWebtoonWheelEvent()
+    addToggleWebtoonModeHotkey()
     addWebtoonOrientationHotkey()
     if (options.closeButton) {
       addMoveToButtonEvent()
