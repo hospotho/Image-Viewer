@@ -753,20 +753,12 @@ window.ImageViewer = (function () {
   }
 
   const fitFuncDict = (function () {
-    let viewer = null
     let windowWidth = 1
     let windowHeight = 1
     let windowRatio = 1
     function init(width = -1, height = -1) {
-      if (width !== -1 && height !== -1) {
-        windowWidth = width
-        windowHeight = height
-        windowRatio = windowWidth / windowHeight
-        return
-      }
-      viewer = ui.webtoon || ui.viewer
-      windowWidth = viewer.clientWidth
-      windowHeight = viewer.clientHeight
+      windowWidth = width
+      windowHeight = height
       windowRatio = windowWidth / windowHeight
     }
     function both(imageWidth, imageHeight) {
