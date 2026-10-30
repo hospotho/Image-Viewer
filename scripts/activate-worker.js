@@ -282,14 +282,14 @@ html.iv-worker-checking img {
         return childList.length < 5 ? searchImageFromTree(root.parentElement, mouseX, mouseY) : null
       }
       if (imageInfoList.length === 1) return imageInfoList[0]
-      const filteredImageInfoList = imageInfoList.filter(info => info[2].tagName === 'IMG')
+      const filteredImageInfoList = imageInfoList.filter(info => info[3].tagName === 'IMG')
       if (filteredImageInfoList.length === 1) return filteredImageInfoList[0]
 
       imageInfoList.sort((a, b) => {
-        if (a[2].tagName === 'IMG' && b[2].tagName === 'IMG') return a[2].compareDocumentPosition(b[2]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
-        if (a[2].tagName !== 'IMG' && b[2].tagName !== 'IMG') return getTopElement(a[2], b[2])
-        if (a[2].tagName === 'IMG') return -1
-        if (b[2].tagName === 'IMG') return 1
+        if (a[3].tagName === 'IMG' && b[3].tagName === 'IMG') return a[3].compareDocumentPosition(b[3]) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+        if (a[3].tagName !== 'IMG' && b[3].tagName !== 'IMG') return getTopElement(a[3], b[3])
+        if (a[3].tagName === 'IMG') return -1
+        if (b[3].tagName === 'IMG') return 1
         return 0
       })
       const first = imageInfoList[0]
@@ -372,20 +372,20 @@ html.iv-worker-checking img {
       const oldIsSvg = oldUrl.startsWith('data:image/svg') || oldUrl.includes('.svg')
       if (oldIsSvg && !newIsSvg) return true
       // element type
-      const oldIsImage = oldInfo[2].tagName === 'IMG' || oldInfo[2].tagName === 'VIDEO'
-      const newIsImage = newInfo[2].tagName === 'IMG' || newInfo[2].tagName === 'VIDEO'
+      const oldIsImage = oldInfo[3].tagName === 'IMG' || oldInfo[3].tagName === 'VIDEO'
+      const newIsImage = newInfo[3].tagName === 'IMG' || newInfo[3].tagName === 'VIDEO'
       // placeholder
       const oldIsPlaceholder = oldInfo[1] < 10
       if (oldIsImage && !newIsImage && !oldIsPlaceholder) return false
       // partial background
       if (!oldIsImage && newIsImage && !oldIsPlaceholder) {
-        const bgPos = window.getComputedStyle(oldInfo[2]).backgroundPosition
+        const bgPos = window.getComputedStyle(oldInfo[3]).backgroundPosition
         const isPartialBackground = bgPos.split('px').map(Number).some(Boolean)
         return isPartialBackground ? newInfo[1] >= oldInfo[1] : true
       }
       // mouse position
-      const newRect = newInfo[2].getBoundingClientRect()
-      const oldRect = oldInfo[2].getBoundingClientRect()
+      const newRect = newInfo[3].getBoundingClientRect()
+      const oldRect = oldInfo[3].getBoundingClientRect()
       const newOffsetX = mouseX - newRect.left - newRect.width / 2
       const newOffsetY = mouseY - newRect.top - newRect.height / 2
       const oldOffsetX = mouseX - oldRect.left - oldRect.width / 2
