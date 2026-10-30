@@ -40,7 +40,7 @@
     if (!isImage) realRevoke(url)
   }
 
-  if (!crypto.randomUUID || document.contentType !== 'text/html') return
+  if (document.contentType !== 'text/html') return
 
   const realCall = Function.prototype.call.bind(Function.prototype.call)
   const realApply = Function.prototype.apply
@@ -93,7 +93,7 @@
     'iv-hook-init',
     e => {
       const eventChannel = e.detail
-      if (typeof eventChannel !== 'string' || !/^iv-hook-[0-9a-f-]{36}$/.test(eventChannel)) return
+      if (typeof eventChannel !== 'string' || !/^iv-hook-[0-9a-f]{32}$/.test(eventChannel)) return
       channel = eventChannel
       window.addEventListener(`${channel}-response`, handleResponse)
       e.preventDefault()

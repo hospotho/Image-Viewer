@@ -7,9 +7,9 @@
     }
   }
 
-  if (document.contentType !== 'text/html' || !crypto.randomUUID || !chrome.runtime?.id) return
+  if (document.contentType !== 'text/html' || !chrome.runtime?.id) return
 
-  const channel = 'iv-hook-' + crypto.randomUUID()
+  const channel = 'iv-hook-' + Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('')
   const initEvent = new CustomEvent('iv-hook-init', {detail: channel, cancelable: true})
   // exchange channel synchronously before page scripts can observe the event
   const unhandled = window.dispatchEvent(initEvent)
