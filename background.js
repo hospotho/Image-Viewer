@@ -620,7 +620,9 @@ function addMessageHandler() {
             sendResponse(['', ''])
             return
           }
-          if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+          const isHttpRequest = url.protocol === 'http:' || url.protocol === 'https:'
+          const isLocalFileRequest = url.protocol === 'file:' && sender.url.startsWith('file://')
+          if (!isHttpRequest && !isLocalFileRequest) {
             sendResponse(['', ''])
             return
           }
