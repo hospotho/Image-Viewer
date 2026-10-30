@@ -91,16 +91,30 @@ window.ImageViewer = (function () {
   }
 
   const globalStyle = document.createElement('style')
-  globalStyle.textContent = 'html.iv-webtoon-attached, body.iv-webtoon-attached { overflow: hidden !important; }'
   document.head.appendChild(globalStyle)
 
   //==========utility==========
+  function setPageWebtoonMode(enabled) {
+    const html = document.documentElement
+    const body = document.body
+    if (enabled) {
+      const htmlStyle = getComputedStyle(html)
+      const bodyStyle = getComputedStyle(body)
+      globalStyle.textContent = `
+        html.iv-webtoon-attached, body.iv-webtoon-attached { overflow: hidden !important; }
+        html.iv-webtoon-attached { max-width: ${htmlStyle.width} !important; max-height: ${htmlStyle.height} !important; }
+        body.iv-webtoon-attached { max-width: ${bodyStyle.width} !important; max-height: ${bodyStyle.height} !important; }
+      `
+    }
+    html.classList.toggle('iv-webtoon-attached', enabled)
+    body.classList.toggle('iv-webtoon-attached', enabled)
+  }
+
   function closeImageViewer() {
     const root = ui.viewer?.getRootNode().host
     if (!root || !document.body.classList.contains('iv-attached')) return
     document.body.classList.remove('iv-attached')
-    document.documentElement.classList.remove('iv-webtoon-attached')
-    document.body.classList.remove('iv-webtoon-attached')
+    setPageWebtoonMode(false)
 
     const viewer = ui.viewer
     viewer.addEventListener('transitionend', () => root.remove())
@@ -1267,8 +1281,7 @@ window.ImageViewer = (function () {
     if (options.webtoonMode) {
       viewer.classList.add('webtoon')
       // hide existing scrollbar
-      document.documentElement.classList.add('iv-webtoon-attached')
-      document.body.classList.add('iv-webtoon-attached')
+      setPageWebtoonMode(true)
       // overlay existing scrollbar
       fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
       viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
@@ -2072,8 +2085,7 @@ window.ImageViewer = (function () {
         if (toggleWebtoon) wrapper.appendChild(imageListNode)
         else viewer.insertBefore(imageListNode, controlPanel)
         viewer.classList.toggle('webtoon', toggleWebtoon)
-        document.documentElement.classList.toggle('iv-webtoon-attached', toggleWebtoon)
-        document.body.classList.toggle('iv-webtoon-attached', toggleWebtoon)
+        setPageWebtoonMode(toggleWebtoon)
 
         // update viewer size
         const scrollbarSize = toggleWebtoon ? webtoon.offsetWidth - webtoon.clientWidth : 0
