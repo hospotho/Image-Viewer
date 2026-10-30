@@ -333,32 +333,6 @@ window.ImageViewer = (function () {
     rowMode = ui.viewer.classList.contains('row')
     return reposition
   }
-  function prepareModeTransform(img, webtoonMode) {
-    const wrapper = ui.wrapper
-    const [scaleX, scaleY, rotate] = getTransform(webtoonMode ? img : wrapper)
-    const rect = img.getBoundingClientRect()
-    const centerX = rect.left + rect.width / 2
-    const centerY = rect.top + rect.height / 2
-    img.style.transition = 'none'
-
-    return () => {
-      if (webtoonMode) {
-        // applyTransform(img, 1, 1, 0, 0, 0)
-        applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, 0, 0)
-        const reposition = scheduleWebtoonReposition(centerX, centerY)
-        reposition()
-      } else {
-        applyTransform(img, scaleX, scaleY, rotate, 0, 0)
-        const newRect = img.getBoundingClientRect()
-        const moveX = centerX - newRect.left - newRect.width / 2
-        const moveY = centerY - newRect.top - newRect.height / 2
-        applyTransform(img, scaleX, scaleY, rotate, moveX, moveY)
-      }
-      // commit the transferred pose before restoring image transitions.
-      img.getBoundingClientRect()
-      img.style.transition = ''
-    }
-  }
 
   function loadImageChunk(index) {
     const chunkSize = 20
@@ -2070,41 +2044,60 @@ window.ImageViewer = (function () {
       )
     }
     function addToggleWebtoonModeHotkey() {
+      const viewport = window.visualViewport
       const viewer = ui.viewer
+      const webtoon = ui.webtoon
+      const wrapper = ui.wrapper
       const imageListNode = ui.imageList
-      hotkeyHandlerList[COMMAND_ENUM.TOGGLE_WEBTOON_MODE] = async e => {
+      const controlPanel = ui.controlPanel
+      hotkeyHandlerList[COMMAND_ENUM.TOGGLE_WEBTOON_MODE] = e => {
         e.preventDefault()
         if (e.repeat) return
         const current = imageListNode.querySelector('li.current img')
         if (!current) return
-        // A mirror transition temporarily has unequal scale magnitudes.
-        while (true) {
-          const animations = current.getAnimations().filter(animation => animation.playState === 'running')
-          if (animations.length === 0) break
-          await Promise.allSettled(animations.map(animation => animation.finished))
-          if (!viewer.isConnected || !document.body.classList.contains('iv-attached') || current !== imageListNode.querySelector('li.current img')) return
-        }
-        const webtoonMode = !viewer.classList.contains('webtoon')
-        const applyModeTransform = prepareModeTransform(current, webtoonMode)
+        current.style.transition = 'none'
+
+        // get current transform and center
+        const toggleWebtoon = !viewer.classList.contains('webtoon')
+        const [scaleX, scaleY, rotate, ,] = getTransform(toggleWebtoon ? current : wrapper)
+        const rect = current.getBoundingClientRect()
+        const centerX = rect.left + rect.width / 2
+        const centerY = rect.top + rect.height / 2
+
+        // clear current context
         const restoreEvent = new CustomEvent('hotkey', {detail: {type: 'restore'}})
         imageListNode.dispatchEvent(restoreEvent)
 
-        if (webtoonMode) {
-          ui.wrapper.appendChild(imageListNode)
-        } else {
-          viewer.insertBefore(imageListNode, ui.controlPanel)
-        }
-        viewer.classList.toggle('webtoon', webtoonMode)
-        document.documentElement.classList.toggle('iv-webtoon-attached', webtoonMode)
-        document.body.classList.toggle('iv-webtoon-attached', webtoonMode)
-        const viewport = window.visualViewport
+        // update dom and class
+        if (toggleWebtoon) wrapper.appendChild(imageListNode)
+        else viewer.insertBefore(imageListNode, controlPanel)
+        viewer.classList.toggle('webtoon', toggleWebtoon)
+        document.documentElement.classList.toggle('iv-webtoon-attached', toggleWebtoon)
+        document.body.classList.toggle('iv-webtoon-attached', toggleWebtoon)
+
+        // update viewer size
+        const scrollbarSize = toggleWebtoon ? webtoon.offsetWidth - webtoon.clientWidth : 0
+        fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
         viewer.style.setProperty('--top', `${viewport.offsetTop}px`)
         viewer.style.setProperty('--left', `${viewport.offsetLeft}px`)
         viewer.style.setProperty('--width', `${viewport.width}px`)
         viewer.style.setProperty('--height', `${viewport.height}px`)
-        const scrollbarSize = webtoonMode ? ui.webtoon.offsetWidth - ui.webtoon.clientWidth : 0
-        fitFuncDict.init(viewport.width - scrollbarSize, viewport.height - scrollbarSize)
-        applyModeTransform()
+
+        // pass transform to target
+        if (toggleWebtoon) {
+          applyWebtoonTransform(wrapper, scaleX, scaleY, rotate, 0, 0)
+          const reposition = scheduleWebtoonReposition(centerX, centerY)
+          reposition()
+        } else {
+          const viewerRect = viewer.getBoundingClientRect()
+          const moveX = centerX - viewerRect.left - viewerRect.width / 2
+          const moveY = centerY - viewerRect.top - viewerRect.height / 2
+          applyTransform(current, scaleX, scaleY, rotate, moveX, moveY)
+        }
+        current.getBoundingClientRect()
+        current.style.transition = ''
+
+        // sync new transform to context
         imageListNode.dispatchEvent(restoreEvent)
       }
     }
@@ -2926,7 +2919,7 @@ window.ImageViewer = (function () {
           const [scaleX, scaleY, rotate, ,] = getTransform(target)
           context.mirror = scaleX < 0
           context.zoomCount = Math.round(Math.log(scaleY) / Math.log(zoomRatio))
-          context.rotateCount = rotate / (Math.sign(scaleX * scaleY) * rotateDeg)
+          context.rotateCount = rotate / (Math.sign(scaleX) * rotateDeg)
           context.pointerMap.clear()
           context.dragFlag = false
           break
