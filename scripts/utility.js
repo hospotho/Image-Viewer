@@ -1681,7 +1681,7 @@ window.ImageViewerUtils = (function () {
       if (score >= 4) {
         console.log(`Found src with ${score} lazy score ${src}`)
         srcBitSizeMap.set(src, -1)
-        srcRealSizeMap.set(src, -1)
+        srcRealSizeMap.set(src, [-1, -1])
         badImageSet.add(src)
       }
     }
