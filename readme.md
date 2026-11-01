@@ -116,8 +116,15 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
     <td><kbd>Alt</kbd>+<kbd>←</kbd><kbd>→</kbd><kbd>a</kbd><kbd>d</kbd></td>
   </tr>
   <tr>
-    <td>Mirror image</td>
+    <td rowspan="2">Mirror image</td>
     <td>Hold <kbd>Alt</kbd> and <kbd>click</kbd></td>
+  </tr>
+  <tr>
+    <td><kbd>Shift</kbd>+<kbd>h</kbd></td>
+  </tr>
+  <tr>
+    <td>Show image info</td>
+    <td><kbd>Shift</kbd>+<kbd>i</kbd></td>
   </tr>
   <tr>
     <td>Switch normal / webtoon mode</td>
@@ -125,11 +132,11 @@ Most hotkeys can be customize in the options page. The hotkeys listed below are 
   </tr>
   <tr>
     <td>Flip webtoon direction</td>
-    <td><kbd>Shift</kbd>+<kbd>i</kbd></td>
+    <td><kbd>Shift</kbd>+<kbd>j</kbd></td>
   </tr>
   <tr>
     <td>Reverse webtoon order</td>
-    <td><kbd>Shift</kbd>+<kbd>o</kbd></td>
+    <td><kbd>Shift</kbd>+<kbd>k</kbd></td>
   </tr>
   <tr>
     <td>Disable image drag</td>
