@@ -66,29 +66,30 @@ window.ImageViewer = (function () {
     ZOOM_OUT: 6,
     ROTATE_LEFT: 7,
     ROTATE_RIGHT: 8,
-    SHOW_INFO_POPUP: 9,
-    DOWNLOAD_IMAGE: 10,
-    COPY_IMAGE: 11,
-    COPY_IMAGE_URL: 12,
-    MOVE_TO: 13,
-    CLOSE_VIEWER: 14,
-    OPEN_IMAGE_LINK: 15,
-    NAVIGATE_PREV: 16,
-    NAVIGATE_NEXT: 17,
-    FAST_NAVIGATE_PREV: 18,
-    FAST_NAVIGATE_NEXT: 19,
-    AUTO_NAVIGATE_PREV: 20,
-    AUTO_NAVIGATE_NEXT: 21,
-    TOGGLE_WEBTOON_MODE: 22,
-    FLIP_LIST_DIRECTION: 23,
-    REVERSE_LIST_ORDER: 24,
-    DISABLE_DRAG: 25,
-    SEARCH_GOOGLE: 26,
-    SEARCH_YANDEX: 27,
-    SEARCH_SAUCENAO: 28,
-    SEARCH_ASCII2D: 29,
-    SEARCH_ALL: 30,
-    SEARCH_CUSTOM_BASE: 31
+    MIRROR_IMAGE: 9,
+    SHOW_INFO_POPUP: 10,
+    DOWNLOAD_IMAGE: 11,
+    COPY_IMAGE: 12,
+    COPY_IMAGE_URL: 13,
+    MOVE_TO: 14,
+    CLOSE_VIEWER: 15,
+    OPEN_IMAGE_LINK: 16,
+    NAVIGATE_PREV: 17,
+    NAVIGATE_NEXT: 18,
+    FAST_NAVIGATE_PREV: 19,
+    FAST_NAVIGATE_NEXT: 20,
+    AUTO_NAVIGATE_PREV: 21,
+    AUTO_NAVIGATE_NEXT: 22,
+    TOGGLE_WEBTOON_MODE: 23,
+    FLIP_LIST_DIRECTION: 24,
+    REVERSE_LIST_ORDER: 25,
+    DISABLE_DRAG: 26,
+    SEARCH_GOOGLE: 27,
+    SEARCH_YANDEX: 28,
+    SEARCH_SAUCENAO: 29,
+    SEARCH_ASCII2D: 30,
+    SEARCH_ALL: 31,
+    SEARCH_CUSTOM_BASE: 32
   }
 
   const globalStyle = document.createElement('style')
@@ -1410,6 +1411,7 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.ZOOM_OUT, options.viewerHotkey.zoomOut)
       registerHotkey(COMMAND_ENUM.ROTATE_LEFT, options.viewerHotkey.rotateLeft)
       registerHotkey(COMMAND_ENUM.ROTATE_RIGHT, options.viewerHotkey.rotateRight)
+      registerHotkey(COMMAND_ENUM.MIRROR_IMAGE, options.viewerHotkey.mirrorImage || [])
       registerHotkey(COMMAND_ENUM.SHOW_INFO_POPUP, options.viewerHotkey.showInfoPopup || [])
       registerHotkey(COMMAND_ENUM.DOWNLOAD_IMAGE, options.viewerHotkey.downloadImage)
       registerHotkey(COMMAND_ENUM.COPY_IMAGE, options.viewerHotkey.copyImage)
@@ -2764,8 +2766,7 @@ window.ImageViewer = (function () {
     )
 
     // mirror-reflect
-    container.addEventListener('click', e => {
-      if (!e.altKey && !e.getModifierState('AltGraph')) return
+    const mirrorImage = () => {
       const target = getTarget()
       const context = getContext(target)
       const [scaleX, scaleY, rotate, moveX, moveY] = getTransform(target)
@@ -2773,7 +2774,16 @@ window.ImageViewer = (function () {
       const webtoonMode = viewer.classList.contains('webtoon')
       if (webtoonMode) applyWebtoonTransform(target, -scaleX, scaleY, -rotate, 0, 0)
       else applyTransform(target, -scaleX, scaleY, -rotate, -moveX, moveY)
+    }
+    container.addEventListener('click', e => {
+      if (!e.altKey && !e.getModifierState('AltGraph')) return
+      mirrorImage()
     })
+    hotkeyHandlerList[COMMAND_ENUM.MIRROR_IMAGE] = e => {
+      e.preventDefault()
+      if (e.repeat) return
+      mirrorImage()
+    }
 
     // dragging and pinch zoom
     const getTouchPointList = context => [...context.pointerMap.values()].filter(point => point[0])
