@@ -251,6 +251,9 @@
   "viewer_hotkey_flip_list_direction": {
     "message": "切換Webtoon閱讀方向"
   },
+  "viewer_hotkey_mirror_image": {
+    "message": "水平翻轉圖片"
+  },
   "viewer_hotkey_move_down": {
     "message": "向下移動"
   },
@@ -283,6 +286,9 @@
   },
   "viewer_hotkey_rotate_right": {
     "message": "向右旋轉"
+  },
+  "viewer_hotkey_show_info_popup": {
+    "message": "顯示圖片資訊"
   },
   "viewer_hotkey_toggle_webtoon_mode": {
     "message": "切換一般 / Webtoon模式"

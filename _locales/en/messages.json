@@ -251,6 +251,9 @@
   "viewer_hotkey_flip_list_direction": {
     "message": "Flip webtoon direction"
   },
+  "viewer_hotkey_mirror_image": {
+    "message": "Mirror image"
+  },
   "viewer_hotkey_move_down": {
     "message": "Move down"
   },
@@ -283,6 +286,9 @@
   },
   "viewer_hotkey_rotate_right": {
     "message": "Rotate right"
+  },
+  "viewer_hotkey_show_info_popup": {
+    "message": "Show image info"
   },
   "viewer_hotkey_toggle_webtoon_mode": {
     "message": "Switch normal / webtoon mode"

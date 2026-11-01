@@ -251,6 +251,9 @@
   "viewer_hotkey_flip_list_direction": {
     "message": "Webtoon表示方向を切替"
   },
+  "viewer_hotkey_mirror_image": {
+    "message": "画像を左右反転"
+  },
   "viewer_hotkey_move_down": {
     "message": "下へ移動"
   },
@@ -283,6 +286,9 @@
   },
   "viewer_hotkey_rotate_right": {
     "message": "右回転"
+  },
+  "viewer_hotkey_show_info_popup": {
+    "message": "画像情報を表示"
   },
   "viewer_hotkey_toggle_webtoon_mode": {
     "message": "通常モード / Webtoonモードを切り替え"
