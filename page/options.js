@@ -153,6 +153,29 @@
     })
   }
 
+  function checkHotkeyOverlap() {
+    const hotkeyMap = new Map()
+    for (const input of document.querySelectorAll('input.hotkey')) {
+      input.classList.remove('hotkey-overlap')
+      const keyList = input.value.split(' + ')
+      const keyStr = keyList.at(-1)
+      if (!keyStr) continue
+      const key = keyStr.length === 1 ? keyStr.toLowerCase() : keyStr === 'Space' ? ' ' : keyStr
+      const flag = keyList.includes('Ctrl') | (keyList.includes('Alt') << 1) | (keyList.includes('Shift') << 2)
+      const hotkey = `${flag}:${key}`
+      if (!hotkeyMap.has(hotkey)) hotkeyMap.set(hotkey, [])
+      hotkeyMap.get(hotkey).push(input)
+    }
+
+    const overlappedHotkeys = []
+    for (const inputList of hotkeyMap.values()) {
+      if (inputList.length < 2) continue
+      for (const input of inputList) input.classList.add('hotkey-overlap')
+      overlappedHotkeys.push(inputList[0].value)
+    }
+    return overlappedHotkeys
+  }
+
   function keyToString(e) {
     const key = e.key.length === 1 ? e.key.toUpperCase() : e.key === ' ' ? 'Space' : e.key
     let result = ''
@@ -175,7 +198,7 @@
         removeBtn.className = 'hotkey-remove'
         removeBtn.textContent = 'x'
         removeBtn.type = 'button'
-        removeBtn.onclick = () => wrapper.remove()
+        removeBtn.onclick = () => wrapper.remove() || checkHotkeyOverlap()
         wrapper.appendChild(removeBtn)
 
         const newTrailingInput = document.createElement('input')
@@ -188,6 +211,7 @@
         setupViewerHotkeyInputEvent(newTrailingInput, newWrapper, container)
         container.appendChild(newWrapper)
       }
+      checkHotkeyOverlap()
     })
   }
   function createViewerHotkeyInput(hotkey, isPrimary) {
@@ -204,7 +228,7 @@
       removeBtn.className = 'hotkey-remove'
       removeBtn.textContent = 'x'
       removeBtn.type = 'button'
-      removeBtn.onclick = () => wrapper.remove()
+      removeBtn.onclick = () => wrapper.remove() || checkHotkeyOverlap()
       wrapper.appendChild(removeBtn)
     }
 
@@ -267,6 +291,7 @@
       input.addEventListener('keydown', e => {
         e.preventDefault()
         input.value = keyToString(e)
+        checkHotkeyOverlap()
       })
     }
   }
@@ -323,6 +348,7 @@
       autoScroll.value = options.autoScrollEnableList.join('\n')
       imageUnlazy.value = options.imageUnlazyDisableList.join('\n')
       imageBackup.value = options.imageBackupDisableList.join('\n')
+      checkHotkeyOverlap()
     } catch (e) {
       resetDefaultOptions()
       setValue(defaultOptions)
@@ -373,6 +399,7 @@
 
   function initFormEvent() {
     languageSelect.addEventListener('change', () => i18n(languageSelect.value))
+    document.addEventListener('input', e => e.target.matches('input.hotkey') && checkHotkeyOverlap())
 
     zoom.addEventListener('input', () => {
       document.querySelector('span#zoomDisplay').textContent = zoom.value
@@ -404,6 +431,7 @@
       input.addEventListener('keydown', e => {
         e.preventDefault()
         input.value = keyToString(e)
+        checkHotkeyOverlap()
       })
     }
 
@@ -461,10 +489,13 @@
       options.imageUnlazyDisableList = inputToArray(imageUnlazy.value)
       options.imageBackupDisableList = inputToArray(imageBackup.value)
 
+      const overlappedHotkeys = checkHotkeyOverlap()
       chrome.storage.sync.set({options: options}, () => {
         if (chrome.runtime?.id) chrome.runtime.sendMessage('update_options')
         console.log(options)
-        alert('Options have been saved.')
+        let message = 'Options have been saved.'
+        if (overlappedHotkeys.length) message += `\n\n${getMessage('hotkey_overlap')}:\n${overlappedHotkeys.join('\n')}`
+        alert(message)
       })
     })
 

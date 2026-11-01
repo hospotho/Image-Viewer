@@ -77,6 +77,9 @@
   "hotkey_notice": {
     "message": "多个搜索使用相同的快捷键时，触发后会同时启动，既有快捷键如'Ctrl + W' 'Ctrl + T'等不会被覆盖<br><br>使用自定义搜索引擎时，搜索图片的URL会置换'{imgSrc}'成真正的图像连结<br><br>软性禁止没有使用Ctrl/Alt/Shift的热键，可通过导入修改后的设置来保存"
   },
+  "hotkey_overlap": {
+    "message": "重复的快捷键"
+  },
   "hover_check_desc": {
     "message": "Image Viewer允许您通过右键來选择图像<br>为了选择视频缩略图，默认情况下会移除悬停元素<br>如果要選擇悬停元素，请在此处添加域名"
   },

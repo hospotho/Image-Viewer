@@ -77,6 +77,9 @@
   "hotkey_notice": {
     "message": "When more than one search using same hotkey, all search will be triggered, built-in hotkey like 'Ctrl + W' or 'Ctrl + T' will not be overridden.<br><br>When using custom search, '{imgSrc}' will be used to replace with real URL<br><br>Soft disable hotkey without Ctrl/Alt/Shift key, import a modified settings to save it."
   },
+  "hotkey_overlap": {
+    "message": "Overlapping hotkeys"
+  },
   "hover_check_desc": {
     "message": "Image Viewer allows you to select images by right-clicking on them.<br>By default, it removes hover elements to select video thumbnails.<br>Add domains here if you want to keep the hover elements for those websites."
   },

@@ -99,6 +99,11 @@ input.hotkey {
   padding-right: 20px;
 }
 
+input.hotkey.hotkey-overlap {
+  color: #c62828;
+  border-color: #c62828;
+}
+
 .hotkey-remove {
   position: absolute;
   top: 50%;
@@ -179,6 +184,11 @@ h2#modalTitle {
 
 :root[data-theme='dark'] .hotkey-remove {
   color: #aaa;
+}
+
+:root[data-theme='dark'] input.hotkey.hotkey-overlap {
+  color: #ff8080;
+  border-color: #ff8080;
 }
 
 :root[data-theme='dark'] .hotkey-remove:hover {
