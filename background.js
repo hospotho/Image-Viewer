@@ -314,6 +314,7 @@ const defaultOptions = {
     zoomOut: ['Alt + ArrowDown', 'Alt + S'],
     rotateLeft: ['Alt + ArrowLeft', 'Alt + A'],
     rotateRight: ['Alt + ArrowRight', 'Alt + D'],
+    showInfoPopup: ['Shift + I'],
     moveUp: ['Ctrl + Alt + ArrowUp', 'Ctrl + Alt + W'],
     moveDown: ['Ctrl + Alt + ArrowDown', 'Ctrl + Alt + S'],
     moveLeft: ['Ctrl + Alt + ArrowLeft', 'Ctrl + Alt + A'],

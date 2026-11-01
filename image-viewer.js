@@ -66,28 +66,29 @@ window.ImageViewer = (function () {
     ZOOM_OUT: 6,
     ROTATE_LEFT: 7,
     ROTATE_RIGHT: 8,
-    DOWNLOAD_IMAGE: 9,
-    COPY_IMAGE: 10,
-    COPY_IMAGE_URL: 11,
-    MOVE_TO: 12,
-    CLOSE_VIEWER: 13,
-    OPEN_IMAGE_LINK: 14,
-    NAVIGATE_PREV: 15,
-    NAVIGATE_NEXT: 16,
-    FAST_NAVIGATE_PREV: 17,
-    FAST_NAVIGATE_NEXT: 18,
-    AUTO_NAVIGATE_PREV: 19,
-    AUTO_NAVIGATE_NEXT: 20,
-    TOGGLE_WEBTOON_MODE: 21,
-    FLIP_LIST_DIRECTION: 22,
-    REVERSE_LIST_ORDER: 23,
-    DISABLE_DRAG: 24,
-    SEARCH_GOOGLE: 25,
-    SEARCH_YANDEX: 26,
-    SEARCH_SAUCENAO: 27,
-    SEARCH_ASCII2D: 28,
-    SEARCH_ALL: 29,
-    SEARCH_CUSTOM_BASE: 30
+    SHOW_INFO_POPUP: 9,
+    DOWNLOAD_IMAGE: 10,
+    COPY_IMAGE: 11,
+    COPY_IMAGE_URL: 12,
+    MOVE_TO: 13,
+    CLOSE_VIEWER: 14,
+    OPEN_IMAGE_LINK: 15,
+    NAVIGATE_PREV: 16,
+    NAVIGATE_NEXT: 17,
+    FAST_NAVIGATE_PREV: 18,
+    FAST_NAVIGATE_NEXT: 19,
+    AUTO_NAVIGATE_PREV: 20,
+    AUTO_NAVIGATE_NEXT: 21,
+    TOGGLE_WEBTOON_MODE: 22,
+    FLIP_LIST_DIRECTION: 23,
+    REVERSE_LIST_ORDER: 24,
+    DISABLE_DRAG: 25,
+    SEARCH_GOOGLE: 26,
+    SEARCH_YANDEX: 27,
+    SEARCH_SAUCENAO: 28,
+    SEARCH_ASCII2D: 29,
+    SEARCH_ALL: 30,
+    SEARCH_CUSTOM_BASE: 31
   }
 
   const globalStyle = document.createElement('style')
@@ -1409,6 +1410,7 @@ window.ImageViewer = (function () {
       registerHotkey(COMMAND_ENUM.ZOOM_OUT, options.viewerHotkey.zoomOut)
       registerHotkey(COMMAND_ENUM.ROTATE_LEFT, options.viewerHotkey.rotateLeft)
       registerHotkey(COMMAND_ENUM.ROTATE_RIGHT, options.viewerHotkey.rotateRight)
+      registerHotkey(COMMAND_ENUM.SHOW_INFO_POPUP, options.viewerHotkey.showInfoPopup || [])
       registerHotkey(COMMAND_ENUM.DOWNLOAD_IMAGE, options.viewerHotkey.downloadImage)
       registerHotkey(COMMAND_ENUM.COPY_IMAGE, options.viewerHotkey.copyImage)
       registerHotkey(COMMAND_ENUM.COPY_IMAGE_URL, options.viewerHotkey.copyImageUrl)
@@ -1890,15 +1892,19 @@ window.ImageViewer = (function () {
       const imageListNode = ui.imageList
 
       let displayFlag = false
+      let lastSelectionText = null
       infoButton.addEventListener('mouseenter', () => infoButton.classList.add('show'))
       infoButton.addEventListener('mouseleave', () => infoButton.classList.remove('show'))
-      infoButton.addEventListener('click', () => {
-        infoPopup.classList.add('show')
-        displayFlag = true
+      const showInfoPopup = e => {
+        e.preventDefault()
+        if (e.repeat) return
+        displayFlag = infoPopup.classList.toggle('show')
+        lastSelectionText = null
         updateInfoPopup()
-      })
+      }
+      infoButton.addEventListener('click', showInfoPopup)
+      hotkeyHandlerList[COMMAND_ENUM.SHOW_INFO_POPUP] = showInfoPopup
 
-      let lastSelectionText = null
       let dbClickFlag = false
       // indicate maybe double click
       infoSource.addEventListener('click', e => e.preventDefault())
